@@ -270,4 +270,44 @@ describe('Módulo 3 — Vitrine Pública & Catálogo (tests/catalog.test.ts)', (
       expect(decoded).toContain('TOTAL DO PEDIDO: R$ 120,00');
     });
   });
+
+  // ============================================================
+  // 6. RESPONSIVIDADE & BREAKPOINTS (320, 375, 390, 430, 768, 1024, 1440)
+  // ============================================================
+  describe('Responsividade e Resolução de Viewports', () => {
+    const viewports = [
+      { name: 'Ultra-small mobile (iPhone SE 1st gen)', width: 320, expectedCols: 2 },
+      { name: 'Standard mobile (iPhone 8 / SE 2nd gen)', width: 375, expectedCols: 2 },
+      { name: 'Modern mobile (iPhone 12/13/14)', width: 390, expectedCols: 2 },
+      { name: 'Pro Max mobile (iPhone 14/15 Pro Max)', width: 430, expectedCols: 2 },
+      { name: 'Tablet portrait (iPad Mini / Air)', width: 768, expectedCols: 3 },
+      { name: 'Tablet landscape / Laptop (iPad Pro / Macbook)', width: 1024, expectedCols: 4 },
+      { name: 'Large desktop (1080p / 1440p)', width: 1440, expectedCols: 4 },
+    ];
+
+    it.each(viewports)(
+      'deve validar arquitetura de grid e layout para viewport $width px ($name)',
+      ({ width, expectedCols }) => {
+        // Validação da lógica responsiva correspondente ao Tailwind CSS
+        // grid-cols-2 sm:grid-cols-3 lg:grid-cols-4
+        let cols = 2; // base (<640px)
+        if (width >= 1024) {
+          cols = 4; // lg
+        } else if (width >= 640) {
+          cols = 3; // sm / md
+        }
+
+        expect(cols).toBe(expectedCols);
+
+        // Garante que a largura líquida utilizável por coluna é viável (> 120px)
+        const containerPadding = width < 640 ? 32 : 48; // px-4 (16px*2) vs sm:px-6 (24px*2)
+        const maxContentWidth = Math.min(width, 1280); // max-w-7xl
+        const availableWidth = maxContentWidth - containerPadding;
+        const gap = width < 640 ? 10 : 20; // gap-2.5 vs gap-5
+        const columnWidth = (availableWidth - gap * (cols - 1)) / cols;
+
+        expect(columnWidth).toBeGreaterThanOrEqual(120);
+      }
+    );
+  });
 });

@@ -95,13 +95,13 @@ export function ProductModal({ product, onClose, store }: ProductModalProps) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-gray-100 flex flex-col relative">
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-xs flex items-center justify-center p-2.5 sm:p-4">
+      <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[92vh] overflow-y-auto shadow-2xl border border-gray-100 flex flex-col relative">
         {/* Botão Fechar */}
         <button
           type="button"
           onClick={onClose}
-          className="absolute top-4 right-4 z-10 p-2 rounded-full bg-white/80 hover:bg-white text-gray-700 shadow-sm transition"
+          className="absolute top-3.5 right-3.5 z-10 p-2 rounded-full bg-white/80 hover:bg-white text-gray-700 shadow-sm transition"
           aria-label="Fechar modal"
         >
           <X className="w-5 h-5" />
@@ -109,7 +109,7 @@ export function ProductModal({ product, onClose, store }: ProductModalProps) {
 
         <div className="grid grid-cols-1 md:grid-cols-2">
           {/* Coluna 1: Galeria de Imagens */}
-          <div className="p-6 bg-gray-50 flex flex-col justify-between border-b md:border-b-0 md:border-r border-gray-100">
+          <div className="p-4 sm:p-6 bg-gray-50 flex flex-col justify-between border-b md:border-b-0 md:border-r border-gray-100">
             {/* Imagem Principal */}
             <div className="aspect-square rounded-xl bg-white border border-gray-200 overflow-hidden flex items-center justify-center shadow-xs">
               {currentImage ? (
@@ -154,15 +154,15 @@ export function ProductModal({ product, onClose, store }: ProductModalProps) {
           </div>
 
           {/* Coluna 2: Informações e Seleção de Variações */}
-          <div className="p-6 flex flex-col justify-between space-y-5">
-            <div className="space-y-4">
+          <div className="p-4 sm:p-6 flex flex-col justify-between space-y-4 sm:space-y-5">
+            <div className="space-y-3 sm:space-y-4">
               {/* Título e Preço */}
               <div>
-                <h3 className="text-xl font-bold text-gray-900 leading-tight">
+                <h3 className="text-lg sm:text-xl font-bold text-gray-900 leading-tight">
                   {product.nome}
                 </h3>
                 <div className="flex items-baseline gap-2.5 mt-2">
-                  <span className="text-2xl font-black text-gray-900">
+                  <span className="text-xl sm:text-2xl font-black text-gray-900">
                     {formatCurrency(effectivePrice, store.currency)}
                   </span>
                   {product.precoPromocional && (

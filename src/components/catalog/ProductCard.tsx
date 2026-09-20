@@ -72,27 +72,27 @@ export function ProductCard({ product, store, onSelect }: ProductCardProps) {
       </div>
 
       {/* Detalhes do Card */}
-      <div className="p-3.5 sm:p-4 flex-1 flex flex-col justify-between space-y-3">
+      <div className="p-3 sm:p-4 flex-1 flex flex-col justify-between space-y-2 sm:space-y-3">
         <div className="space-y-1">
-          <h4 className="text-sm font-semibold text-gray-900 line-clamp-2 leading-tight group-hover:text-emerald-700 transition">
+          <h4 className="text-xs sm:text-sm font-semibold text-gray-900 line-clamp-2 leading-tight group-hover:text-emerald-700 transition">
             {product.nome}
           </h4>
           {product.variacoes && product.variacoes.length > 0 && (
-            <p className="text-[11px] text-gray-400">
+            <p className="text-[10px] sm:text-[11px] text-gray-400">
               {product.variacoes.map((v) => v.tipo).join(' • ')}
             </p>
           )}
         </div>
 
         {/* Preço e Botão de Ação */}
-        <div className="pt-2 border-t border-gray-100 flex items-center justify-between">
-          <div className="leading-none">
+        <div className="pt-2 border-t border-gray-100 flex items-center justify-between gap-1">
+          <div className="leading-none min-w-0">
             {hasDiscount && (
-              <span className="text-[11px] text-gray-400 line-through block mb-0.5">
+              <span className="text-[10px] sm:text-[11px] text-gray-400 line-through block mb-0.5 truncate">
                 {formatCurrency(product.preco, store.currency)}
               </span>
             )}
-            <span className="text-base font-extrabold text-gray-900 block">
+            <span className="text-xs sm:text-sm md:text-base font-extrabold text-gray-900 block truncate">
               {formatCurrency(effectivePrice, store.currency)}
             </span>
           </div>
