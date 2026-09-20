@@ -39,12 +39,12 @@ export default function AdminConfiguracoesPage() {
     setErrorMessage(null);
     try {
       const data = await api.getStore();
-      setStoreName(data.store_name || '');
-      setLogoUrl(data.logo_url || '');
-      setPrimaryColor(data.primary_color || '#10b981');
-      setSecondaryColor(data.secondary_color || '#047857');
-      setWhatsapp(data.whatsapp || '');
-      setDomain(data.domain || '');
+      setStoreName(String(data.store_name ?? ''));
+      setLogoUrl(String(data.logo_url ?? ''));
+      setPrimaryColor(String(data.primary_color ?? '#10b981'));
+      setSecondaryColor(String(data.secondary_color ?? '#047857'));
+      setWhatsapp(String(data.whatsapp ?? ''));
+      setDomain(String(data.domain ?? ''));
     } catch (err) {
       setErrorMessage(err instanceof Error ? err.message : 'Erro ao carregar configurações.');
     } finally {
@@ -82,24 +82,25 @@ export default function AdminConfiguracoesPage() {
     setErrorMessage(null);
 
     try {
+      const cleanWhatsapp = String(whatsapp ?? '').replace(/\D/g, '');
       const updated = await api.saveConfig(
         {
-          store_name: storeName.trim(),
-          logo_url: logoUrl.trim(),
-          primary_color: primaryColor,
-          secondary_color: secondaryColor,
-          whatsapp: whatsapp.replace(/\D/g, ''),
-          domain: domain.trim(),
+          store_name: String(storeName ?? '').trim(),
+          logo_url: String(logoUrl ?? '').trim(),
+          primary_color: String(primaryColor ?? '#10b981').trim(),
+          secondary_color: String(secondaryColor ?? '#047857').trim(),
+          whatsapp: cleanWhatsapp,
+          domain: String(domain ?? '').trim(),
         },
         token
       );
 
-      setStoreName(updated.store_name);
-      setLogoUrl(updated.logo_url);
-      setPrimaryColor(updated.primary_color);
-      setSecondaryColor(updated.secondary_color);
-      setWhatsapp(updated.whatsapp);
-      setDomain(updated.domain);
+      setStoreName(String(updated.store_name ?? ''));
+      setLogoUrl(String(updated.logo_url ?? ''));
+      setPrimaryColor(String(updated.primary_color ?? '#10b981'));
+      setSecondaryColor(String(updated.secondary_color ?? '#047857'));
+      setWhatsapp(String(updated.whatsapp ?? ''));
+      setDomain(String(updated.domain ?? ''));
 
       setSuccessMessage('Configurações da loja salvas com sucesso!');
       setTimeout(() => setSuccessMessage(null), 5000);

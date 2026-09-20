@@ -937,7 +937,8 @@ function getAllConfigsMap() {
   for (var i = 1; i < data.length; i++) {
     var k = String(data[i][0]).trim();
     if (k) {
-      map[k] = data[i][1];
+      var rawVal = data[i][1];
+      map[k] = (rawVal !== null && rawVal !== undefined) ? String(rawVal).trim() : '';
     }
   }
   return map;

@@ -140,15 +140,15 @@ export default function AdminProdutosPage() {
       setFormError('Selecione uma categoria.');
       return;
     }
-    const precoNum = parseFloat(formPreco.replace(',', '.'));
+    const precoNum = parseFloat(String(formPreco || '').replace(',', '.'));
     if (isNaN(precoNum) || precoNum <= 0) {
       setFormError('Preço deve ser um número maior que zero.');
       return;
     }
 
     let precoPromoNum: number | null = null;
-    if (formPrecoPromocional.trim()) {
-      precoPromoNum = parseFloat(formPrecoPromocional.replace(',', '.'));
+    if (String(formPrecoPromocional || '').trim()) {
+      precoPromoNum = parseFloat(String(formPrecoPromocional || '').replace(',', '.'));
       if (isNaN(precoPromoNum) || precoPromoNum <= 0) {
         setFormError('Preço promocional deve ser maior que zero.');
         return;
