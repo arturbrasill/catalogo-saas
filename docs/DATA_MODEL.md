@@ -81,3 +81,33 @@ Armazena os itens disponíveis no catálogo, histórico de preços, estoque e va
 3. **Estoque Valido**: O `estoque` deve ser um número inteiro maior ou igual a `-1` (onde `-1` representa estoque infinito ou sob encomenda).
 4. **Variações Estritas**: O JSON de variações deve conter uma lista de objetos com `tipo` (string não-vazia) e `opcoes` (array com pelo menos 1 string não-vazia).
 5. **Soft Delete**: Produtos ou categorias excluídos nunca são apagados fisicamente das linhas da planilha, assegurando rastreabilidade de pedidos realizados no WhatsApp.
+
+---
+
+## 5. Isolamento Físico e Registro Multi-Tenant
+
+Para garantir segurança rigorosa e isolamento estrito contra vazamento de dados entre empresas locais:
+
+1. **Isolamento de Persistência**: Cada tenant possui uma planilha Google Sheets exclusiva e uma publicação independente da Web App no Google Apps Script. Não há compartilhamento de abas nem co-localização de dados de clientes diferentes na mesma planilha.
+2. **Schema do Registro de Tenants (`tenants.json`)**:
+   ```json
+   {
+     "loja-a.com.br": {
+       "tenantId": "loja_a",
+       "apiUrl": "https://script.google.com/macros/s/DEPLOYMENT_A/exec",
+       "name": "Loja A Boutique",
+       "domain": "loja-a.com.br"
+     },
+     "loja-b.com.br": {
+       "tenantId": "loja_b",
+       "apiUrl": "https://script.google.com/macros/s/DEPLOYMENT_B/exec",
+       "name": "Loja B Esportes",
+       "domain": "loja-b.com.br"
+     }
+   }
+   ```
+3. **Garantia Anti-Vazamento (Zero Data Leakage)**:
+   - A vitrine do Tenant A nunca acessa ou renderiza itens do Tenant B.
+   - O `LockService` atua separadamente em cada script de cada loja, eliminando gargalos de concorrência global entre clientes.
+   - Nenhuma credencial ou token privado reside no arquivo de registro.
+

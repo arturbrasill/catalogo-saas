@@ -1,13 +1,20 @@
-# Contrato de API — Google Apps Script Web App (v1.1.0)
+# Contrato de API — Google Apps Script Web App & Gateway Proxy (v1.2.0)
 
 Este documento especifica o contrato estrito da API consumida pelo frontend da vitrine e pelo painel administrativo do catálogo multi-tenant.
 
 ---
 
-## 1. Visão Geral da API
+## 1. Visão Geral da API & Arquitetura Gateway
 
 - **Protocolo**: HTTP / HTTPS (JSON UTF-8).
-- **Endpoint**: URL da Web App publicada no Google Apps Script (`https://script.google.com/macros/s/{DEPLOYMENT_ID}/exec`).
+- **Endpoint do Backend Remoto**: URL da Web App publicada no Google Apps Script (`https://script.google.com/macros/s/{DEPLOYMENT_ID}/exec`).
+- **Gateway Proxy Multi-Tenant (`/api/backend`)**:
+  - Todo o tráfego do navegador consome o endpoint local `/api/backend` do Next.js.
+  - O Middleware do Next.js intercepta o `Host`, resolve o tenant no registro e injeta de forma segura os cabeçalhos:
+    - `x-tenant-id`: Identificador canônico do tenant (ex.: `loja_exemplo`).
+    - `x-tenant-api-url`: URL do Apps Script associado ao tenant.
+  - O Route Handler `/api/backend` atua como gateway server-side, repassando requisições ao Google Apps Script correspondente, seguindo redirecionamentos HTTP 302 de forma transparente e blindando o frontend contra bloqueios de preflight CORS.
+  - Em ambiente de testes ou desenvolvimento local sem URL remota, o gateway despacha automaticamente para instâncias isoladas em memória do `BackendEngine`.
 - **Segurança & CORS**:
   - GET: Requisições simples com parâmetros na query string.
   - POST: Suporte a `application/json` e `text/plain` contendo a string JSON no corpo (evitando bloqueios de preflight CORS no navegador).

@@ -7,6 +7,7 @@ import type {
   VariationOption,
   CreateCategoryInput,
   UpdateCategoryInput,
+  StoreConfigInternal,
 } from '../types';
 
 export class BackendEngine {
@@ -14,25 +15,30 @@ export class BackendEngine {
   private categories: Category[] = [];
   private products: Product[] = [];
 
-  constructor() {
-    this.initDatabase();
+  constructor(initialConfig?: Partial<StoreConfigInternal>) {
+    this.initDatabase(initialConfig);
   }
 
-  public initDatabase(): void {
-    const defaultPasswordHash = this.hashPassword('admin123');
-    const defaultApiToken = 'tok_mock_default_1234567890';
+  public initDatabase(initialConfig?: Partial<StoreConfigInternal>): void {
+    const defaultPasswordHash =
+      initialConfig?.admin_password_hash || this.hashPassword('admin123');
+    const defaultApiToken =
+      initialConfig?.api_token || 'tok_mock_default_1234567890';
 
-    this.configMap.set('store_id', 'loja_exemplo');
-    this.configMap.set('store_name', 'Minha Loja Digital');
-    this.configMap.set('logo_url', 'https://images.unsplash.com/photo-example.jpg');
-    this.configMap.set('primary_color', '#10b981');
-    this.configMap.set('secondary_color', '#047857');
-    this.configMap.set('whatsapp', '5511999999999');
+    this.configMap.set('store_id', initialConfig?.store_id || 'loja_exemplo');
+    this.configMap.set('store_name', initialConfig?.store_name || 'Minha Loja Digital');
+    this.configMap.set(
+      'logo_url',
+      initialConfig?.logo_url || 'https://images.unsplash.com/photo-example.jpg'
+    );
+    this.configMap.set('primary_color', initialConfig?.primary_color || '#10b981');
+    this.configMap.set('secondary_color', initialConfig?.secondary_color || '#047857');
+    this.configMap.set('whatsapp', initialConfig?.whatsapp || '5511999999999');
     this.configMap.set('admin_password_hash', defaultPasswordHash);
     this.configMap.set('api_token', defaultApiToken);
-    this.configMap.set('domain', 'loja-exemplo.com.br');
-    this.configMap.set('currency', 'BRL');
-    this.configMap.set('timezone', 'America/Sao_Paulo');
+    this.configMap.set('domain', initialConfig?.domain || 'loja-exemplo.com.br');
+    this.configMap.set('currency', initialConfig?.currency || 'BRL');
+    this.configMap.set('timezone', initialConfig?.timezone || 'America/Sao_Paulo');
 
     const now = new Date().toISOString();
     this.categories = [
@@ -589,3 +595,39 @@ export class BackendEngine {
       .replace(/^-+|-+$/g, '');
   }
 }
+
+// Gerenciador de instâncias in-memory por tenant para desenvolvimento e testes locais
+const engineInstances: Map<string, BackendEngine> = new Map();
+
+export function getLocalEngine(tenantId = 'loja_exemplo'): BackendEngine {
+  let engine = engineInstances.get(tenantId);
+  if (!engine) {
+    const isTenantB = tenantId === 'loja_b';
+    const isTenantA = tenantId === 'loja_a';
+    engine = new BackendEngine({
+      store_id: tenantId,
+      store_name: isTenantB
+        ? 'Esportes Radicais Store'
+        : isTenantA
+        ? 'Boutique Elegance'
+        : 'Minha Loja Digital',
+      whatsapp: isTenantB
+        ? '5511922222222'
+        : isTenantA
+        ? '5511911111111'
+        : '5511999999999',
+      domain: isTenantB
+        ? 'loja-b.localhost'
+        : isTenantA
+        ? 'loja-a.localhost'
+        : 'loja-exemplo.com.br',
+    });
+    engineInstances.set(tenantId, engine);
+  }
+  return engine;
+}
+
+export function resetLocalEngines(): void {
+  engineInstances.clear();
+}
+

@@ -1,9 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { BackendEngine } from '@/backend/engine';
+import { getLocalEngine } from '@/backend/engine';
 import { getTenantByHostname, normalizeHostname } from '@/lib/tenantResolver';
 
-// Singleton in-memory para desenvolvimento local e ambiente sem URL remota
-const globalEngine = new BackendEngine();
+function resolveTenantId(request: NextRequest): string {
+  const headerTenantId = request.headers.get('x-tenant-id');
+  if (headerTenantId && headerTenantId.trim().length > 0) {
+    return headerTenantId.trim();
+  }
+  const rawHost =
+    request.headers.get('x-forwarded-host') || request.headers.get('host');
+  const tenant = getTenantByHostname(rawHost);
+  if (tenant && tenant.tenantId) {
+    return tenant.tenantId;
+  }
+  return 'loja_exemplo';
+}
 
 function resolveTenantApiUrl(request: NextRequest): string | null {
   // 1. Tenta obter do header injetado com segurança pelo middleware
@@ -56,7 +67,8 @@ export async function GET(request: NextRequest) {
   }
 
   // Fallback para engine local integrado (desenvolvimento / teste)
-  const localResult = globalEngine.doGet({ action, categoryId });
+  const tenantId = resolveTenantId(request);
+  const localResult = getLocalEngine(tenantId).doGet({ action, categoryId });
   return NextResponse.json(localResult);
 }
 
@@ -79,7 +91,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Fallback para engine local integrado
-    const localResult = globalEngine.doPost(payload);
+    const tenantId = resolveTenantId(request);
+    const localResult = getLocalEngine(tenantId).doPost(payload);
     return NextResponse.json(localResult);
   } catch (err) {
     return NextResponse.json(

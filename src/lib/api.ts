@@ -12,12 +12,16 @@ import type {
   APIResponse,
 } from '@/types';
 
-class ApiClient {
+export class ApiClient {
   private baseUrl: string;
+  private defaultHeaders: Record<string, string>;
 
-  constructor() {
-    // Aponta para a rota proxy interna do Next.js ou URL configurada
-    this.baseUrl = '/api/backend';
+  constructor(
+    baseUrl = '/api/backend',
+    defaultHeaders: Record<string, string> = {}
+  ) {
+    this.baseUrl = baseUrl;
+    this.defaultHeaders = defaultHeaders;
   }
 
   private async request<T>(endpoint: string, options?: RequestInit): Promise<T> {
@@ -27,6 +31,7 @@ class ApiClient {
         headers: {
           'Content-Type': 'application/json',
           Accept: 'application/json',
+          ...this.defaultHeaders,
           ...(options?.headers || {}),
         },
       });
