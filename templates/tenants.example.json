@@ -1,0 +1,6 @@
+{
+  "loja-exemplo.com.br": {
+    "tenantId": "loja_exemplo",
+    "apiUrl": "https://script.google.com/macros/s/EXEMPLO/exec"
+  }
+}
