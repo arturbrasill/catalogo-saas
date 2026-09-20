@@ -77,6 +77,8 @@ export class BackendEngine {
             error: null,
           };
         case 'all':
+        case 'catalog':
+        case 'getCatalog':
           return { success: true, data: this.getInitialCatalogData(), error: null };
         default:
           return {

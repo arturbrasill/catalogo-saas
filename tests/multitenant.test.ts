@@ -1,4 +1,7 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
+import { NextRequest } from 'next/server';
+import { GET } from '../src/app/api/backend/route';
+import { getLocalEngine, resetLocalEngines } from '../src/backend/engine';
 import {
   normalizeHostname,
   getTenantByHostname,
@@ -8,6 +11,9 @@ import {
 import type { TenantRegistry } from '../src/types';
 
 describe('Módulo 5 — Multi-Tenant e Resolução de Domínios (src/lib/tenantResolver.ts)', () => {
+  beforeEach(() => {
+    resetLocalEngines();
+  });
   const mockRegistry: TenantRegistry = {
     'loja-exemplo.com.br': {
       tenantId: 'loja_exemplo',
@@ -130,6 +136,93 @@ describe('Módulo 5 — Multi-Tenant e Resolução de Domínios (src/lib/tenantR
       expect(isValidTenant('moda_style', mockRegistry)).toBe(true);
       expect(isValidTenant('hacker_id_invalido', mockRegistry)).toBe(false);
       expect(isValidTenant('', mockRegistry)).toBe(false);
+    });
+  });
+
+  // ============================================================
+  // 4. TESTE DE ISOLAMENTO DE DADOS ENTRE DOIS TENANTS FICTÍCIOS
+  // ============================================================
+  describe('Isolamento de Dados Ponta a Ponta entre Tenants Fictícios (loja_a vs loja_b)', () => {
+    it('deve garantir que produtos e categorias de loja_a NUNCA apareçam no catálogo de loja_b', async () => {
+      // 1. Popula tenant A (loja-a.localhost)
+      const engineA = getLocalEngine('loja_a');
+      const loginA = engineA.doPost({ action: 'login', password: 'admin123' });
+      const tokenA = (loginA.data as any).token;
+      const catResA = engineA.doPost({
+        action: 'createCategory',
+        token: tokenA,
+        category: { nome: 'Calçados Alpha', ativo: true, ordem: 1 },
+      });
+      const catA = catResA.data as any;
+      engineA.doPost({
+        action: 'createProduct',
+        token: tokenA,
+        product: {
+          categoriaId: catA.id,
+          nome: 'Tênis Runner Alpha',
+          preco: 299.9,
+          estoque: 10,
+          ativo: true,
+        },
+      });
+
+      // 2. Popula tenant B (loja-b.localhost)
+      const engineB = getLocalEngine('loja_b');
+      const loginB = engineB.doPost({ action: 'login', password: 'admin123' });
+      const tokenB = (loginB.data as any).token;
+      const catResB = engineB.doPost({
+        action: 'createCategory',
+        token: tokenB,
+        category: { nome: 'Esportes Beta', ativo: true, ordem: 1 },
+      });
+      const catB = catResB.data as any;
+      engineB.doPost({
+        action: 'createProduct',
+        token: tokenB,
+        product: {
+          categoriaId: catB.id,
+          nome: 'Camisa DryFit Beta',
+          preco: 129.9,
+          estoque: 25,
+          ativo: true,
+        },
+      });
+
+      // 3. Consulta Catálogo da Loja A via hostname
+      const reqA = new NextRequest('http://loja-a.localhost:3000/api/backend?action=all', {
+        headers: { host: 'loja-a.localhost:3000' },
+      });
+      const resA = await GET(reqA);
+      const jsonA = await resA.json();
+
+      expect(jsonA.success).toBe(true);
+      expect(jsonA.data.store.store_id).toBe('loja_a');
+
+      const productNamesA = jsonA.data.products.map((p: any) => p.nome);
+      expect(productNamesA).toContain('Tênis Runner Alpha');
+      expect(productNamesA).not.toContain('Camisa DryFit Beta');
+
+      const categoryNamesA = jsonA.data.categories.map((c: any) => c.nome);
+      expect(categoryNamesA).toContain('Calçados Alpha');
+      expect(categoryNamesA).not.toContain('Esportes Beta');
+
+      // 4. Consulta Catálogo da Loja B via hostname
+      const reqB = new NextRequest('http://loja-b.localhost:3000/api/backend?action=all', {
+        headers: { host: 'loja-b.localhost:3000' },
+      });
+      const resB = await GET(reqB);
+      const jsonB = await resB.json();
+
+      expect(jsonB.success).toBe(true);
+      expect(jsonB.data.store.store_id).toBe('loja_b');
+
+      const productNamesB = jsonB.data.products.map((p: any) => p.nome);
+      expect(productNamesB).toContain('Camisa DryFit Beta');
+      expect(productNamesB).not.toContain('Tênis Runner Alpha');
+
+      const categoryNamesB = jsonB.data.categories.map((c: any) => c.nome);
+      expect(categoryNamesB).toContain('Esportes Beta');
+      expect(categoryNamesB).not.toContain('Calçados Alpha');
     });
   });
 });

@@ -41,9 +41,9 @@ class DefaultImageUploadService implements ImageUploadService {
       throw new Error(validation.error || 'Imagem inválida.');
     }
 
-    const provider = process.env['NEXT_PUBLIC_IMAGE_UPLOAD_PROVIDER'];
-    const cloudName = process.env['NEXT_PUBLIC_IMAGE_UPLOAD_CLOUD_NAME'];
-    const preset = process.env['NEXT_PUBLIC_IMAGE_UPLOAD_PRESET'];
+    const cloudName = process.env['NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME'] || process.env['NEXT_PUBLIC_IMAGE_UPLOAD_CLOUD_NAME'];
+    const preset = process.env['NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET'] || process.env['NEXT_PUBLIC_IMAGE_UPLOAD_PRESET'];
+    const provider = process.env['NEXT_PUBLIC_IMAGE_UPLOAD_PROVIDER'] || (cloudName && preset ? 'cloudinary' : undefined);
 
     // 1. Provedor Cloudinary com Unsigned Preset (quando configurado no .env)
     if (provider === 'cloudinary' && cloudName && preset) {

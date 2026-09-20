@@ -46,6 +46,8 @@ function doGet(e) {
         response = getActiveProducts(categoryId);
         break;
       case 'all':
+      case 'catalog':
+      case 'getCatalog':
         response = getInitialCatalogData();
         break;
       default:
