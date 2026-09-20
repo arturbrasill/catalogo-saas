@@ -91,6 +91,28 @@ function resolveContextTenant(request: NextRequest): {
   };
 }
 
+/**
+ * Assegura que o campo whatsapp e outros campos sensíveis retornados da API
+ * estejam no formato estrito de string, prevenindo erros de tipo em clients.
+ */
+function sanitizeStoreResponse<T>(data: T): T {
+  if (data && typeof data === 'object' && 'data' in data) {
+    const raw = (data as { data?: Record<string, unknown> }).data;
+    if (raw && typeof raw === 'object') {
+      if ('whatsapp' in raw && raw['whatsapp'] !== undefined && raw['whatsapp'] !== null) {
+        raw['whatsapp'] = String(raw['whatsapp']).trim();
+      }
+      if ('store' in raw && raw['store'] && typeof raw['store'] === 'object') {
+        const store = raw['store'] as Record<string, unknown>;
+        if (store['whatsapp'] !== undefined && store['whatsapp'] !== null) {
+          store['whatsapp'] = String(store['whatsapp']).trim();
+        }
+      }
+    }
+  }
+  return data;
+}
+
 export async function GET(request: NextRequest) {
   const { tenantId, apiUrl, isAllowed } = resolveContextTenant(request);
 
@@ -125,7 +147,7 @@ export async function GET(request: NextRequest) {
         redirect: 'follow',
       });
       const data = await response.json();
-      return NextResponse.json(data);
+      return NextResponse.json(sanitizeStoreResponse(data));
     } catch (err) {
       return NextResponse.json(
         {
@@ -143,7 +165,7 @@ export async function GET(request: NextRequest) {
 
   // Fallback para engine local integrado (desenvolvimento / teste)
   const localResult = getLocalEngine(tenantId).doGet({ action, categoryId });
-  return NextResponse.json(localResult);
+  return NextResponse.json(sanitizeStoreResponse(localResult));
 }
 
 export async function POST(request: NextRequest) {
@@ -176,12 +198,12 @@ export async function POST(request: NextRequest) {
         redirect: 'follow',
       });
       const data = await response.json();
-      return NextResponse.json(data);
+      return NextResponse.json(sanitizeStoreResponse(data));
     }
 
     // Fallback para engine local integrado
     const localResult = getLocalEngine(tenantId).doPost(payload);
-    return NextResponse.json(localResult);
+    return NextResponse.json(sanitizeStoreResponse(localResult));
   } catch (err) {
     return NextResponse.json(
       {

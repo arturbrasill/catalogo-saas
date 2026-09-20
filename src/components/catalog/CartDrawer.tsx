@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useCart } from '@/lib/cart';
 import { formatCurrency, formatVariation, buildWhatsAppUrl } from '@/lib/whatsapp';
 import type { StoreConfig } from '@/types';
@@ -12,6 +12,7 @@ import {
   ShoppingBag,
   ArrowRight,
   MessageCircle,
+  AlertCircle,
 } from 'lucide-react';
 
 interface CartDrawerProps {
@@ -53,6 +54,13 @@ export function CartDrawer({ store }: CartDrawerProps) {
     };
   }, [isCartOpen]);
 
+  const [checkoutError, setCheckoutError] = useState<string | null>(null);
+
+  // Limpa erros ao abrir/fechar drawer
+  useEffect(() => {
+    setCheckoutError(null);
+  }, [isCartOpen]);
+
   if (!isCartOpen) return null;
 
   const total = getSubtotal();
@@ -60,18 +68,28 @@ export function CartDrawer({ store }: CartDrawerProps) {
 
   const handleCheckoutWhatsApp = () => {
     if (items.length === 0) return;
+    setCheckoutError(null);
+
+    const rawPhone = store?.whatsapp !== undefined && store?.whatsapp !== null ? String(store.whatsapp).trim() : '';
+    if (!rawPhone) {
+      setCheckoutError('Número de WhatsApp ainda não cadastrado para esta loja.');
+      return;
+    }
+
     try {
       const url = buildWhatsAppUrl(
         {
           store_name: store.store_name,
-          whatsapp: store.whatsapp,
+          whatsapp: rawPhone,
           currency: store.currency,
         },
         items
       );
       window.open(url, '_blank', 'noopener,noreferrer');
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Erro ao gerar pedido no WhatsApp.');
+      setCheckoutError(
+        err instanceof Error ? err.message : 'Erro ao gerar pedido no WhatsApp.'
+      );
     }
   };
 
@@ -235,6 +253,26 @@ export function CartDrawer({ store }: CartDrawerProps) {
                   </span>
                 </div>
               </div>
+
+              {/* Alerta de Erro de WhatsApp */}
+              {checkoutError && (
+                <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl flex items-start gap-2.5 text-xs text-amber-900">
+                  <AlertCircle className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
+                  <div className="space-y-1">
+                    <p className="font-semibold">{checkoutError}</p>
+                    <p className="text-[11px] text-amber-700">
+                      Para cadastrar ou corrigir o número, acesse o{' '}
+                      <a
+                        href="/admin/configuracoes"
+                        className="underline font-bold text-amber-900 hover:text-amber-950"
+                      >
+                        Painel Admin (/admin/configuracoes)
+                      </a>
+                      .
+                    </p>
+                  </div>
+                </div>
+              )}
 
               {/* Botão WhatsApp */}
               <button

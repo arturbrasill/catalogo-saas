@@ -267,11 +267,11 @@ export default function AdminConfiguracoesPage() {
                     required
                     value={whatsapp}
                     onChange={(e) => setWhatsapp(e.target.value)}
-                    placeholder="Ex: 5511999999999 (com DDI e DDD)"
+                    placeholder="Ex: (86) 99945-6987 ou 5586999456987"
                     className="w-full rounded-lg border border-gray-300 px-3.5 py-2.5 text-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
                   />
-                  <p className="text-[11px] text-gray-400 mt-1">
-                    Os clientes serão direcionados para este número ao finalizar a sacola.
+                  <p className="text-[11px] text-gray-500 mt-1">
+                    Digite com DDD. O código do país (+55 Brasil) é adicionado automaticamente caso omitido.
                   </p>
                 </div>
 

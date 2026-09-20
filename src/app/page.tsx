@@ -35,6 +35,9 @@ function CatalogContent() {
     setErrorMessage(null);
     try {
       const initialData = await api.getAll();
+      if (initialData.store) {
+        initialData.store.whatsapp = String(initialData.store.whatsapp ?? '').trim();
+      }
       setStore(initialData.store);
       setCategories(initialData.categories || []);
       setProducts(initialData.products || []);

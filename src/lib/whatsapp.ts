@@ -142,7 +142,7 @@ export function formatCartItem(item: CartItem, index?: number): string {
 export function normalizePhoneNumber(
   phone: string | number | null | undefined
 ): string {
-  if (phone === null || phone === undefined || phone === '') {
+  if (phone === null || phone === undefined || String(phone).trim() === '') {
     throw new Error('Número de WhatsApp não fornecido.');
   }
 
