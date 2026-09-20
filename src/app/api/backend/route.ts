@@ -22,7 +22,7 @@ function isValidGasApiUrl(urlStr: string): boolean {
       urlStr.includes('_ID/') ||
       urlStr.includes('_ID/exec');
 
-    if (process.env.NODE_ENV === 'test' && isPlaceholder) {
+    if (process.env.NODE_ENV === 'test') {
       return false;
     }
 
@@ -49,8 +49,12 @@ function resolveContextTenant(request: NextRequest): {
   const tenant = getTenantByHostname(rawHost);
 
   if (!tenant) {
-    // Se não for localhost e o domínio for desconhecido, bloqueia
-    if (normalized !== 'localhost' && normalized !== '127.0.0.1') {
+    // Se não for localhost ou vercel.app e o domínio for desconhecido, bloqueia
+    if (
+      normalized !== 'localhost' &&
+      normalized !== '127.0.0.1' &&
+      !normalized.endsWith('.vercel.app')
+    ) {
       return {
         tenant: null,
         tenantId: '',

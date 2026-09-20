@@ -36,8 +36,12 @@ export function getTenantByHostname(
     return registry[normalized]!;
   }
 
-  // 2. Tratamento para desenvolvimento local (localhost e 127.0.0.1)
-  if (normalized === 'localhost' || normalized === '127.0.0.1') {
+  // 2. Tratamento para desenvolvimento local (localhost e 127.0.0.1) e domínios padrão Vercel (*.vercel.app)
+  if (
+    normalized === 'localhost' ||
+    normalized === '127.0.0.1' ||
+    normalized.endsWith('.vercel.app')
+  ) {
     const defaultTenantKey = process.env['NEXT_PUBLIC_DEFAULT_TENANT'] || 'loja_exemplo';
 
     // Tenta encontrar tenant cujo tenantId seja o defaultTenantKey
