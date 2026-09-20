@@ -149,6 +149,7 @@ export type APIResponse<T> = APIResponseSuccess<T> | APIResponseError;
 export interface Tenant {
   tenantId: string;
   apiUrl: string;
+  name?: string;
   domain?: string;
 }
 

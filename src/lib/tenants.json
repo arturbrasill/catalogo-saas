@@ -1,0 +1,38 @@
+{
+  "localhost": {
+    "tenantId": "loja_exemplo",
+    "apiUrl": "",
+    "name": "Loja Local de Testes",
+    "domain": "localhost"
+  },
+  "loja-exemplo.com.br": {
+    "tenantId": "loja_exemplo",
+    "apiUrl": "https://script.google.com/macros/s/EXEMPLO_DEPLOYMENT_ID/exec",
+    "name": "Minha Loja Digital",
+    "domain": "loja-exemplo.com.br"
+  },
+  "moda-style.com.br": {
+    "tenantId": "moda_style",
+    "apiUrl": "https://script.google.com/macros/s/MODA_STYLE_ID/exec",
+    "name": "Moda & Estilo Store",
+    "domain": "moda-style.com.br"
+  },
+  "calcados-express.com.br": {
+    "tenantId": "calcados_express",
+    "apiUrl": "https://script.google.com/macros/s/CALCADOS_ID/exec",
+    "name": "Calçados Express",
+    "domain": "calcados-express.com.br"
+  },
+  "loja-a.localhost": {
+    "tenantId": "loja_a",
+    "apiUrl": "https://script.google.com/macros/s/LOJA_A_ID/exec",
+    "name": "Boutique Local A",
+    "domain": "loja-a.localhost"
+  },
+  "loja-b.localhost": {
+    "tenantId": "loja_b",
+    "apiUrl": "https://script.google.com/macros/s/LOJA_B_ID/exec",
+    "name": "Esportes Local B",
+    "domain": "loja-b.localhost"
+  }
+}
