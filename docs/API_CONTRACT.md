@@ -1,16 +1,19 @@
-# Contrato de API — Google Apps Script Web App
+# Contrato de API — Google Apps Script Web App (v1.1.0)
 
-Este documento especifica a especificação estrita da API consumida pelo frontend e pelo painel administrativo do catálogo multi-tenant.
+Este documento especifica o contrato estrito da API consumida pelo frontend da vitrine e pelo painel administrativo do catálogo multi-tenant.
 
 ---
 
-## 1. Visão Geral
+## 1. Visão Geral da API
 
-- **Formato de Comunicação**: JSON (UTF-8).
-- **Endpoint Base**: URL da Web App publicada no Google Apps Script (`https://script.google.com/macros/s/{DEPLOYMENT_ID}/exec`).
-- **Padrão de Resposta**:
-  - Toda requisição HTTP bem-sucedida retorna status 200 com JSON uniforme.
-  - Formato de Sucesso:
+- **Protocolo**: HTTP / HTTPS (JSON UTF-8).
+- **Endpoint**: URL da Web App publicada no Google Apps Script (`https://script.google.com/macros/s/{DEPLOYMENT_ID}/exec`).
+- **Segurança & CORS**:
+  - GET: Requisições simples com parâmetros na query string.
+  - POST: Suporte a `application/json` e `text/plain` contendo a string JSON no corpo (evitando bloqueios de preflight CORS no navegador).
+  - Todas as mutações operam sob bloqueio atômico com `LockService.getScriptLock().tryLock(30000)`.
+- **Formato Uniforme de Resposta**:
+  - **Sucesso**:
     ```json
     {
       "success": true,
@@ -18,284 +21,370 @@ Este documento especifica a especificação estrita da API consumida pelo fronte
       "error": null
     }
     ```
-  - Formato de Erro:
+  - **Erro**:
     ```json
     {
       "success": false,
       "data": null,
       "error": {
         "code": "CODIGO_DO_ERRO",
-        "message": "Descrição legível do erro ocorrido."
+        "message": "Descrição amigável do erro."
       }
     }
     ```
 
 ---
 
-## 2. Peculiaridades da Plataforma Google Apps Script
+## 2. Endpoints Públicos (GET)
 
-1. **Redirecionamento HTTP 302**:
-   - As requisições para a URL `/exec` são respondidas pelo Google com status HTTP 302 temporário para `script.googleusercontent.com`.
-   - Clientes HTTP (`fetch`, `axios`) devem seguir redirects automaticamente.
-2. **Preflight CORS & Método OPTIONS**:
-   - O Google Apps Script **não suporta requisições HTTP OPTIONS** (retorna erro caso o browser envie preflight CORS).
-   - Para evitar preflights bloqueados:
-     - Requisições públicas GET utilizam query strings simples.
-     - Requisições POST enviadas diretamente pelo navegador devem enviar `Content-Type: text/plain` contendo o payload em JSON stringificado. O backend processa o payload via `e.postData.contents`.
-     - Alternativamente, o frontend Next.js realiza as chamadas server-side (Route Handlers `/api/...`), eliminando restrições de CORS no browser.
+Acessíveis a clientes e vitrines sem necessidade de token.
 
----
-
-## 3. Endpoints Públicos (GET)
-
-Acesso irrestrito a vitrines e clientes. Não exige token.
-
-### 3.1 `GET ?action=store`
+### 2.1 `GET ?action=store`
 Retorna as informações e identidade visual pública da loja.
 
-**Query Parameters**:
-- `action`: `store`
-
-**Resposta de Sucesso (`data`)**:
+**Exemplo de Resposta**:
 ```json
 {
-  "store_id": "loja_exemplo",
-  "store_name": "Moda & Estilo Store",
-  "logo_url": "https://res.cloudinary.com/demo/image/upload/v1/logo.png",
-  "primary_color": "#10b981",
-  "secondary_color": "#047857",
-  "whatsapp": "5511999999999",
-  "domain": "loja-exemplo.com.br",
-  "currency": "BRL",
-  "timezone": "America/Sao_Paulo"
+  "success": true,
+  "data": {
+    "store_id": "loja_exemplo",
+    "store_name": "Minha Loja Digital",
+    "logo_url": "https://images.unsplash.com/photo-example.jpg",
+    "primary_color": "#10b981",
+    "secondary_color": "#047857",
+    "whatsapp": "5511999999999",
+    "domain": "loja-exemplo.com.br",
+    "currency": "BRL",
+    "timezone": "America/Sao_Paulo"
+  },
+  "error": null
 }
 ```
-*Aviso de Segurança*: Os campos `admin_password_hash` e `api_token` **NUNCA** são retornados neste endpoint.
+*Garantia de Segurança*: Campos confidenciais (`admin_password_hash` e `api_token`) **nunca** são retornados.
 
 ---
 
-### 3.2 `GET ?action=categories`
-Retorna a lista de categorias ativas da loja, ordenadas pelo campo `ordem`.
+### 2.2 `GET ?action=categories`
+Retorna a lista de categorias ativas da loja, ordenadas crescentemente pelo campo `ordem`.
 
-**Query Parameters**:
-- `action`: `categories`
-
-**Resposta de Sucesso (`data`)**:
-```json
-[
-  {
-    "id": "cat_1a2b3c",
-    "nome": "Camisetas",
-    "slug": "camisetas",
-    "ativo": true,
-    "ordem": 1,
-    "createdAt": "2026-09-20T12:00:00.000Z",
-    "updatedAt": "2026-09-20T12:00:00.000Z"
-  }
-]
-```
-
----
-
-### 3.3 `GET ?action=products`
-Retorna a lista de produtos ativos que não sofreram exclusão lógica (`deletedAt == null` e `ativo == true`).
-
-**Query Parameters**:
-- `action`: `products`
-- `categoryId` *(opcional)*: filtra produtos por ID da categoria.
-
-**Resposta de Sucesso (`data`)**:
-```json
-[
-  {
-    "id": "prod_7f8a9b",
-    "categoriaId": "cat_1a2b3c",
-    "nome": "Camiseta Algodão Premium",
-    "slug": "camiseta-algodao-premium",
-    "descricao": "Camiseta 100% algodão egípcio com toque macio.",
-    "preco": 89.90,
-    "precoPromocional": 69.90,
-    "imagens": [
-      "https://res.cloudinary.com/demo/image/upload/v1/cam-preta.png"
-    ],
-    "variacoes": [
-      {
-        "tipo": "Tamanho",
-        "opcoes": ["P", "M", "G"]
-      },
-      {
-        "tipo": "Cor",
-        "opcoes": ["Preto", "Branco"]
-      }
-    ],
-    "estoque": 25,
-    "ativo": true,
-    "createdAt": "2026-09-20T12:00:00.000Z",
-    "updatedAt": "2026-09-20T12:00:00.000Z",
-    "deletedAt": null
-  }
-]
-```
-
----
-
-### 3.4 `GET ?action=all`
-Retorna o payload consolidado (`store`, `categories` e `products`) para inicialização de alta performance do catálogo em uma única chamada HTTP.
-
-**Resposta de Sucesso (`data`)**:
+**Exemplo de Resposta**:
 ```json
 {
-  "store": { /* Objeto StoreConfig público */ },
-  "categories": [ /* Array de categorias */ ],
-  "products": [ /* Array de produtos */ ]
+  "success": true,
+  "data": [
+    {
+      "id": "cat_geral",
+      "nome": "Geral",
+      "slug": "geral",
+      "ativo": true,
+      "ordem": 1,
+      "createdAt": "2026-09-20T12:00:00.000Z",
+      "updatedAt": "2026-09-20T12:00:00.000Z"
+    }
+  ],
+  "error": null
 }
 ```
 
 ---
 
-## 4. Endpoints Administrativos (POST)
+### 2.3 `GET ?action=products`
+Retorna a lista de produtos ativos (que não sofreram soft delete e cuja categoria também está ativa).
 
-Exigem autenticação ou validação de credencial. Todas as operações de modificação executam sob bloqueio exclusivo do `LockService`.
+**Query Parameters Opcionais**:
+- `categoryId`: Filtra produtos pertencentes a uma categoria específica.
 
-### 4.1 `POST { "action": "login", ... }`
-Valida a senha administrativa e retorna o token de sessão ou confirmação de autorização.
+**Exemplo de Resposta**:
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": "prod_7f8a9b1c2d3e",
+      "categoriaId": "cat_geral",
+      "nome": "Camisa Polo Confort",
+      "slug": "camisa-polo-confort",
+      "descricao": "Polo 100% algodão piquet com toque macio.",
+      "preco": 99.90,
+      "precoPromocional": 79.90,
+      "imagens": [
+        "https://cdn.example.com/polo-azul.jpg"
+      ],
+      "variacoes": [
+        {
+          "tipo": "Tamanho",
+          "opcoes": ["P", "M", "G"]
+        },
+        {
+          "tipo": "Cor",
+          "opcoes": ["Azul", "Branco"]
+        }
+      ],
+      "estoque": 20,
+      "ativo": true,
+      "createdAt": "2026-09-20T12:00:00.000Z",
+      "updatedAt": "2026-09-20T12:00:00.000Z",
+      "deletedAt": null
+    }
+  ],
+  "error": null
+}
+```
 
-**Payload**:
+---
+
+### 2.4 `GET ?action=all`
+Retorna o payload consolidado (`store`, `categories` e `products`) para inicialização de alta velocidade em requisição única.
+
+**Exemplo de Resposta**:
+```json
+{
+  "success": true,
+  "data": {
+    "store": { /* Objeto StoreConfig público */ },
+    "categories": [ /* Array de categorias ativas */ ],
+    "products": [ /* Array de produtos ativos */ ]
+  },
+  "error": null
+}
+```
+
+---
+
+## 3. Endpoints Administrativos (POST)
+
+Exigem autenticação com `token` (retornado no login). Operam sob bloqueio exclusivo do `LockService`.
+
+### 3.1 `POST` com `action: "login"`
+Autentica o administrador através da senha e retorna confirmação com token.
+
+**Request Payload**:
 ```json
 {
   "action": "login",
-  "password": "senha_do_administrador"
+  "password": "sua_senha_secreta"
 }
 ```
 
-**Resposta de Sucesso (`data`)**:
+**Response de Sucesso**:
 ```json
 {
-  "authenticated": true,
-  "token": "token_gerado_ou_api_token",
-  "expiresAt": "2026-09-21T12:00:00.000Z"
+  "success": true,
+  "data": {
+    "authenticated": true,
+    "token": "tok_mock_default_1234567890"
+  },
+  "error": null
 }
 ```
 
-**Erros Comuns**:
-- `INVALID_CREDENTIALS`: Senha incorreta.
-- `MISSING_PASSWORD`: Campo de senha omitido.
+**Response de Erro (Senha incorreta)**:
+```json
+{
+  "success": false,
+  "data": null,
+  "error": {
+    "code": "INVALID_CREDENTIALS",
+    "message": "Senha incorreta."
+  }
+}
+```
 
 ---
 
-### 4.2 `POST { "action": "createProduct", ... }`
+### 3.2 `POST` com `action: "createProduct"`
 Cria um novo produto.
 
-**Headers ou Propriedade no Payload**:
-- `token`: token retornado no login ou `api_token` configurado.
+**Regras de Validação**:
+- `categoriaId`: Obrigatória e deve existir e estar ativa na aba `categorias`.
+- `nome`: String não vazia (mínimo 2 caracteres).
+- `preco`: Número decimal estritamente positivo (> 0).
+- `precoPromocional`: Se informado, deve ser menor que `preco`.
+- `estoque`: Número inteiro >= -1 (-1 indica estoque sob encomenda/ilimitado).
+- `variacoes`: Array de objetos `{ "tipo": "...", "opcoes": ["..."] }`.
 
-**Payload**:
+**Request Payload**:
 ```json
 {
   "action": "createProduct",
-  "token": "seu_token_aqui",
+  "token": "tok_mock_default_1234567890",
   "product": {
-    "categoriaId": "cat_1a2b3c",
+    "categoriaId": "cat_geral",
     "nome": "Bermuda Jeans Slim",
     "slug": "bermuda-jeans-slim",
-    "descricao": "Bermuda jeans com elastano.",
+    "descricao": "Bermuda jeans masculina com elastano.",
     "preco": 119.90,
-    "precoPromocional": null,
-    "imagens": ["https://res.cloudinary.com/demo/image/upload/v1/bermuda.png"],
+    "precoPromocional": 99.90,
+    "imagens": [
+      "https://cdn.example.com/bermuda1.jpg"
+    ],
     "variacoes": [
       {
         "tipo": "Tamanho",
         "opcoes": ["38", "40", "42"]
       }
     ],
-    "estoque": 10,
+    "estoque": 15,
     "ativo": true
   }
 }
 ```
 
-**Resposta de Sucesso (`data`)**:
-Objeto do produto criado contendo seu `id` gerado, `createdAt`, `updatedAt` e `deletedAt: null`.
+**Response de Sucesso**:
+```json
+{
+  "success": true,
+  "data": {
+    "id": "prod_a1b2c3d4e5f6",
+    "categoriaId": "cat_geral",
+    "nome": "Bermuda Jeans Slim",
+    "slug": "bermuda-jeans-slim",
+    "descricao": "Bermuda jeans masculina com elastano.",
+    "preco": 119.90,
+    "precoPromocional": 99.90,
+    "imagens": ["https://cdn.example.com/bermuda1.jpg"],
+    "variacoes": [{ "tipo": "Tamanho", "opcoes": ["38", "40", "42"] }],
+    "estoque": 15,
+    "ativo": true,
+    "createdAt": "2026-09-20T15:45:00.000Z",
+    "updatedAt": "2026-09-20T15:45:00.000Z",
+    "deletedAt": null
+  },
+  "error": null
+}
+```
 
 ---
 
-### 4.3 `POST { "action": "updateProduct", ... }`
-Atualiza dados de um produto existente.
+### 3.3 `POST` com `action: "updateProduct"`
+Atualiza campos de um produto existente. Preserva campos não enviados e atualiza `updatedAt`.
 
-**Payload**:
+**Request Payload**:
 ```json
 {
   "action": "updateProduct",
-  "token": "seu_token_aqui",
+  "token": "tok_mock_default_1234567890",
   "product": {
-    "id": "prod_7f8a9b",
-    "nome": "Camiseta Algodão Premium V2",
-    "preco": 99.90,
-    "estoque": 30
+    "id": "prod_a1b2c3d4e5f6",
+    "preco": 109.90,
+    "estoque": 12
   }
 }
 ```
 
-**Resposta de Sucesso (`data`)**:
-Objeto do produto com as alterações aplicadas e `updatedAt` atualizado.
-
 ---
 
-### 4.4 `POST { "action": "deleteProduct", ... }`
-Executa exclusão lógica (**soft delete**) do produto especificado.
+### 3.4 `POST` com `action: "deleteProduct"`
+Executa exclusão lógica (**soft delete**). Não remove a linha da planilha; preenche `deletedAt` com timestamp ISO e marca `ativo = false`.
 
-**Payload**:
+**Request Payload**:
 ```json
 {
   "action": "deleteProduct",
-  "token": "seu_token_aqui",
-  "id": "prod_7f8a9b"
+  "token": "tok_mock_default_1234567890",
+  "id": "prod_a1b2c3d4e5f6"
 }
 ```
 
-**Resposta de Sucesso (`data`)**:
+**Response de Sucesso**:
 ```json
 {
-  "id": "prod_7f8a9b",
-  "deleted": true,
-  "deletedAt": "2026-09-20T15:30:00.000Z"
+  "success": true,
+  "data": {
+    "id": "prod_a1b2c3d4e5f6",
+    "deleted": true,
+    "deletedAt": "2026-09-20T15:47:00.000Z"
+  },
+  "error": null
 }
 ```
 
 ---
 
-### 4.5 `POST { "action": "saveConfig", ... }`
-Atualiza configurações visuais e operacionais da loja.
+### 3.5 `POST` com `action: "createCategory"`
+Cria uma nova categoria para classificação de produtos.
 
-**Payload**:
+**Request Payload**:
+```json
+{
+  "action": "createCategory",
+  "token": "tok_mock_default_1234567890",
+  "category": {
+    "nome": "Calçados & Tênis",
+    "slug": "calcados-tenis",
+    "ordem": 2,
+    "ativo": true
+  }
+}
+```
+
+---
+
+### 3.6 `POST` com `action: "updateCategory"`
+Atualiza dados de uma categoria existente.
+
+**Request Payload**:
+```json
+{
+  "action": "updateCategory",
+  "token": "tok_mock_default_1234567890",
+  "category": {
+    "id": "cat_geral",
+    "nome": "Coleção Principal",
+    "ordem": 1
+  }
+}
+```
+
+---
+
+### 3.7 `POST` com `action: "deleteCategory"`
+Desativa uma categoria via exclusão lógica (`ativo = false`).
+
+**Request Payload**:
+```json
+{
+  "action": "deleteCategory",
+  "token": "tok_mock_default_1234567890",
+  "id": "cat_antiga"
+}
+```
+
+---
+
+### 3.8 `POST` com `action: "saveConfig"`
+Atualiza propriedades visuais e operacionais da loja.
+
+**Regra de Segurança**:
+- Tentativas de enviar `store_id`, `api_token` ou `admin_password_hash` são **bloqueadas e rejeitadas** com erro `FORBIDDEN_MODIFICATION`.
+
+**Request Payload**:
 ```json
 {
   "action": "saveConfig",
-  "token": "seu_token_aqui",
+  "token": "tok_mock_default_1234567890",
   "config": {
-    "store_name": "Novo Nome da Loja",
-    "primary_color": "#2563eb",
-    "secondary_color": "#1e40af",
+    "store_name": "Nova Elegância Boutique",
+    "primary_color": "#059669",
+    "secondary_color": "#064e3b",
     "whatsapp": "5511988887777"
   }
 }
 ```
 
-*Regras de Segurança*:
-- A tentativa de alterar as chaves `api_token` ou `store_id` via este endpoint é rejeitada com erro `FORBIDDEN_MODIFICATION`.
-- Para alterar a senha, deve ser enviado um comando específico `changePassword` com confirmação da senha antiga.
-
 ---
 
-## 5. Tabela de Códigos de Erro
+## 4. Tabela de Códigos de Erro
 
-| Código | Descrição |
+| Código de Erro | Causa / Descrição |
 | :--- | :--- |
-| `UNAUTHORIZED` | Token ausente, inválido ou expirado. |
-| `INVALID_CREDENTIALS` | Senha incorreta no login. |
-| `FORBIDDEN_MODIFICATION` | Tentativa de alterar campos imutáveis de segurança (`store_id`, `api_token`). |
-| `VALIDATION_ERROR` | Payload com formato ou campos inválidos (ex.: preço negativo, nome vazio). |
-| `NOT_FOUND` | Registro não encontrado (produto ou categoria inexistente). |
-| `LOCK_TIMEOUT` | Servidor ocupado com outra escrita concorrente (tente novamente). |
-| `INTERNAL_ERROR` | Falha inesperada durante a execução no Google Apps Script. |
-| `UNKNOWN_ACTION` | Ação solicitada em `action` não reconhecida. |
+| `UNAUTHORIZED` | Token de autorização ausente, inválido ou expirado. |
+| `INVALID_CREDENTIALS` | Senha de login incorreta. |
+| `MISSING_PASSWORD` | Campo de senha não fornecido na ação de login. |
+| `FORBIDDEN_MODIFICATION` | Tentativa de adulterar chaves imutáveis de segurança (`store_id`, `api_token`, `admin_password_hash`). |
+| `VALIDATION_ERROR` | Violação de regra de negócio (ex.: preço negativo, preço promocional >= preço normal, estoque < -1, variações sem opções). |
+| `NOT_FOUND` | Registro não encontrado (ID de produto ou categoria inexistente). |
+| `INVALID_PAYLOAD` | Corpo da requisição ausente ou JSON sintaticamente malformado. |
+| `LOCK_TIMEOUT` | Planilha bloqueada por outra escrita concorrente após 30 segundos. |
+| `UNKNOWN_ACTION` | Parâmetro `action` não reconhecido pelo roteador da API. |
+| `INTERNAL_ERROR` | Falha interna no ambiente Google Apps Script. |

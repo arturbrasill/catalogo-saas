@@ -4,11 +4,13 @@ import {
   CreateProductSchema,
   UpdateProductSchema,
   VariationOptionSchema,
+  CreateCategorySchema,
+  UpdateCategorySchema,
   SaveConfigSchema,
 } from '../src/lib/schemas';
-import type { StoreConfig, Product } from '../src/types';
+import type { StoreConfig, Product, Category } from '../src/types';
 
-describe('Módulo 1 — Backend Google Sheets + Apps Script', () => {
+describe('Módulo 1 — Backend Google Sheets + Apps Script (Auditoria & Testes Finais)', () => {
   let engine: BackendEngine;
   let adminToken: string;
 
@@ -22,311 +24,556 @@ describe('Módulo 1 — Backend Google Sheets + Apps Script', () => {
     adminToken = (loginRes.data as { token: string }).token;
   });
 
-  describe('1. Inicialização do Banco & Isolamento de Segurança', () => {
-    it('deve inicializar o banco com configurações e categoria padrão', () => {
-      const storeRes = engine.doGet({ action: 'store' });
-      expect(storeRes.success).toBe(true);
+  // ============================================================
+  // TESTES GET (CONSULTAS PÚBLICAS)
+  // ============================================================
+  describe('1. Consultas Públicas (GET)', () => {
+    it('GET store: deve retornar dados públicos da loja e NUNCA segredos', () => {
+      const res = engine.doGet({ action: 'store' });
+      expect(res.success).toBe(true);
+      expect(res.data).toBeTruthy();
 
-      const store = storeRes.data as StoreConfig;
+      const store = res.data as StoreConfig;
       expect(store.store_id).toBe('loja_exemplo');
       expect(store.store_name).toBe('Minha Loja Digital');
       expect(store.currency).toBe('BRL');
+      expect(store.whatsapp).toBe('5511999999999');
 
-      const catRes = engine.doGet({ action: 'categories' });
-      expect(catRes.success).toBe(true);
-      expect(Array.isArray(catRes.data)).toBe(true);
-      expect((catRes.data as any[]).length).toBe(1);
+      const raw = res.data as Record<string, any>;
+      expect(raw['admin_password_hash']).toBeUndefined();
+      expect(raw['api_token']).toBeUndefined();
     });
 
-    it('NUNCA deve expor admin_password_hash nem api_token em consultas públicas', () => {
-      const storeRes = engine.doGet({ action: 'store' });
-      expect(storeRes.success).toBe(true);
+    it('GET categories: deve retornar categorias ativas ordenadas por ordem', () => {
+      // Criar mais uma categoria para testar ordenação
+      engine.doPost({
+        action: 'createCategory',
+        token: adminToken,
+        category: {
+          nome: 'Acessórios',
+          ordem: 0,
+          ativo: true,
+        },
+      });
 
-      const rawData = storeRes.data as Record<string, any>;
-      expect(rawData['admin_password_hash']).toBeUndefined();
-      expect(rawData['api_token']).toBeUndefined();
-
-      const allRes = engine.doGet({ action: 'all' });
-      expect(allRes.success).toBe(true);
-      const allStore = (allRes.data as any).store as Record<string, any>;
-      expect(allStore['admin_password_hash']).toBeUndefined();
-      expect(allStore['api_token']).toBeUndefined();
+      const res = engine.doGet({ action: 'categories' });
+      expect(res.success).toBe(true);
+      const categories = res.data as Category[];
+      expect(categories.length).toBe(2);
+      // 'Acessórios' com ordem 0 deve vir antes de 'Geral' com ordem 1
+      expect(categories[0]?.nome).toBe('Acessórios');
+      expect(categories[1]?.nome).toBe('Geral');
     });
 
-    it('deve retornar erro adequado para ação GET desconhecida', () => {
-      const res = engine.doGet({ action: 'nonExistentAction' });
+    it('GET products: deve retornar apenas produtos ativos de categorias ativas', () => {
+      const createRes = engine.doPost({
+        action: 'createProduct',
+        token: adminToken,
+        product: {
+          categoriaId: 'cat_geral',
+          nome: 'Produto Ativo',
+          preco: 50,
+          estoque: 10,
+        },
+      });
+      expect(createRes.success).toBe(true);
+
+      const res = engine.doGet({ action: 'products' });
+      expect(res.success).toBe(true);
+      const products = res.data as Product[];
+      expect(products.length).toBe(1);
+      expect(products[0]?.nome).toBe('Produto Ativo');
+      expect(products[0]?.deletedAt).toBeNull();
+    });
+
+    it('GET products: deve permitir filtragem por categoryId', () => {
+      const catRes = engine.doPost({
+        action: 'createCategory',
+        token: adminToken,
+        category: { nome: 'Calçados', ordem: 2 },
+      });
+      const novaCat = catRes.data as Category;
+
+      engine.doPost({
+        action: 'createProduct',
+        token: adminToken,
+        product: { categoriaId: 'cat_geral', nome: 'Item Geral', preco: 10, estoque: 5 },
+      });
+      engine.doPost({
+        action: 'createProduct',
+        token: adminToken,
+        product: { categoriaId: novaCat.id, nome: 'Tênis Esportivo', preco: 150, estoque: 3 },
+      });
+
+      const filterRes = engine.doGet({ action: 'products', categoryId: novaCat.id });
+      expect(filterRes.success).toBe(true);
+      const filtered = filterRes.data as Product[];
+      expect(filtered.length).toBe(1);
+      expect(filtered[0]?.nome).toBe('Tênis Esportivo');
+    });
+
+    it('GET all: deve consolidar store, categories e products com alto desempenho', () => {
+      const res = engine.doGet({ action: 'all' });
+      expect(res.success).toBe(true);
+      const data = res.data as { store: StoreConfig; categories: Category[]; products: Product[] };
+      expect(data.store).toBeTruthy();
+      expect(data.categories).toBeTruthy();
+      expect(data.products).toBeTruthy();
+      expect((data.store as any)['admin_password_hash']).toBeUndefined();
+    });
+
+    it('GET com ação inválida: deve retornar erro UNKNOWN_ACTION', () => {
+      const res = engine.doGet({ action: 'invalid_action_xyz' });
       expect(res.success).toBe(false);
       expect(res.error?.code).toBe('UNKNOWN_ACTION');
     });
   });
 
-  describe('2. Autenticação & Autorização', () => {
-    it('deve autenticar com senha correta e retornar token', () => {
-      const res = engine.doPost({
-        action: 'login',
-        password: 'admin123',
-      });
+  // ============================================================
+  // TESTES POST (MUTATOR & AUTH)
+  // ============================================================
+  describe('2. Autenticação & Autorização (POST)', () => {
+    it('POST login: deve autenticar com senha correta e retornar token', () => {
+      const res = engine.doPost({ action: 'login', password: 'admin123' });
       expect(res.success).toBe(true);
       expect(res.data).toHaveProperty('authenticated', true);
       expect(res.data).toHaveProperty('token');
     });
 
-    it('deve rejeitar login com senha incorreta', () => {
-      const res = engine.doPost({
-        action: 'login',
-        password: 'senha_errada_123',
-      });
+    it('POST login: deve falhar com senha incorreta (INVALID_CREDENTIALS)', () => {
+      const res = engine.doPost({ action: 'login', password: 'senha_errada' });
       expect(res.success).toBe(false);
       expect(res.error?.code).toBe('INVALID_CREDENTIALS');
     });
 
-    it('deve rejeitar login sem campo de senha', () => {
-      const res = engine.doPost({
-        action: 'login',
-      });
+    it('POST login: deve falhar se senha não for enviada (MISSING_PASSWORD)', () => {
+      const res = engine.doPost({ action: 'login' });
       expect(res.success).toBe(false);
       expect(res.error?.code).toBe('MISSING_PASSWORD');
     });
 
-    it('deve rejeitar operações de escrita administrativas sem token', () => {
-      const res = engine.doPost({
-        action: 'createProduct',
-        product: {
-          nome: 'Produto Sem Auth',
-          categoriaId: 'cat_geral',
-          preco: 50,
-        },
-      });
-      expect(res.success).toBe(false);
-      expect(res.error?.code).toBe('UNAUTHORIZED');
-    });
-
-    it('deve rejeitar operações de escrita administrativas com token inválido', () => {
+    it('POST com token inválido: deve retornar UNAUTHORIZED', () => {
       const res = engine.doPost({
         action: 'createProduct',
         token: 'token_falso_invalido',
-        product: {
-          nome: 'Produto Token Invalido',
-          categoriaId: 'cat_geral',
-          preco: 50,
-        },
+        product: { categoriaId: 'cat_geral', nome: 'Item Teste', preco: 10, estoque: 1 },
       });
       expect(res.success).toBe(false);
       expect(res.error?.code).toBe('UNAUTHORIZED');
     });
+
+    it('POST sem token: deve retornar UNAUTHORIZED', () => {
+      const res = engine.doPost({
+        action: 'createProduct',
+        product: { categoriaId: 'cat_geral', nome: 'Item Teste', preco: 10, estoque: 1 },
+      });
+      expect(res.success).toBe(false);
+      expect(res.error?.code).toBe('UNAUTHORIZED');
+    });
+
+    it('POST com payload inválido/vazio: deve retornar INVALID_PAYLOAD', () => {
+      const res = engine.doPost(null);
+      expect(res.success).toBe(false);
+      expect(res.error?.code).toBe('INVALID_PAYLOAD');
+
+      const resEmpty = engine.doPost({});
+      expect(resEmpty.success).toBe(false);
+      expect(resEmpty.error?.code).toBe('INVALID_PAYLOAD');
+    });
   });
 
-  describe('3. CRUD de Produtos & Soft Delete', () => {
-    it('deve criar um produto com sucesso sob autenticação', () => {
-      const newProductPayload = {
+  // ============================================================
+  // TESTES DE CRUD DE PRODUTOS & VALIDAÇÕES CRÍTICAS
+  // ============================================================
+  describe('3. CRUD de Produtos & Casos Extremos (Edge Cases)', () => {
+    it('POST createProduct: deve criar produto com dados válidos completos', () => {
+      const payload = {
         categoriaId: 'cat_geral',
-        nome: 'Camiseta Básica Algodão',
-        slug: 'camiseta-basica-algodao',
-        descricao: '100% algodão',
-        preco: 79.9,
-        precoPromocional: 59.9,
-        imagens: ['https://example.com/cam.png'],
+        nome: 'Camisa Polo Confort',
+        slug: 'camisa-polo-confort',
+        descricao: 'Polo em piquet de algodão',
+        preco: 99.9,
+        precoPromocional: 79.9,
+        imagens: ['https://cdn.example.com/polo1.jpg'],
         variacoes: [
-          {
-            tipo: 'Tamanho',
-            opcoes: ['P', 'M', 'G'],
-          },
+          { tipo: 'Tamanho', opcoes: ['P', 'M', 'G'] },
+          { tipo: 'Cor', opcoes: ['Azul', 'Branco'] },
         ],
-        estoque: 15,
+        estoque: 20,
         ativo: true,
       };
 
       const res = engine.doPost({
         action: 'createProduct',
         token: adminToken,
-        product: newProductPayload,
+        product: payload,
       });
 
       expect(res.success).toBe(true);
-      const created = res.data as Product;
-      expect(created.id).toMatch(/^prod_/);
-      expect(created.nome).toBe('Camiseta Básica Algodão');
-      expect(created.preco).toBe(79.9);
-      expect(created.deletedAt).toBeNull();
-
-      // Verificar listagem pública
-      const listRes = engine.doGet({ action: 'products' });
-      expect(listRes.success).toBe(true);
-      const products = listRes.data as Product[];
-      expect(products.length).toBe(1);
-      expect(products[0]?.id).toBe(created.id);
+      const prod = res.data as Product;
+      expect(prod.id).toMatch(/^prod_/);
+      expect(prod.nome).toBe('Camisa Polo Confort');
+      expect(prod.preco).toBe(99.9);
+      expect(prod.precoPromocional).toBe(79.9);
+      expect(prod.variacoes.length).toBe(2);
+      expect(prod.deletedAt).toBeNull();
     });
 
-    it('deve rejeitar criação de produto com dados inválidos (preço negativo / sem nome)', () => {
-      const invalidPayload = {
-        categoriaId: 'cat_geral',
-        nome: '',
-        preco: -10,
-      };
-
+    it('POST createProduct: deve rejeitar se categoria inexistente', () => {
       const res = engine.doPost({
         action: 'createProduct',
         token: adminToken,
-        product: invalidPayload,
-      });
-
-      expect(res.success).toBe(false);
-      expect(res.error?.code).toBe('VALIDATION_ERROR');
-    });
-
-    it('deve atualizar campos de um produto existente', () => {
-      const createRes = engine.doPost({
-        action: 'createProduct',
-        token: adminToken,
         product: {
-          categoriaId: 'cat_geral',
-          nome: 'Produto para Atualizar',
-          preco: 100,
+          categoriaId: 'cat_fantasma_inexistente',
+          nome: 'Produto Sem Categoria',
+          preco: 50,
           estoque: 10,
         },
       });
-      const created = createRes.data as Product;
 
-      const updateRes = engine.doPost({
-        action: 'updateProduct',
-        token: adminToken,
-        product: {
-          id: created.id,
-          nome: 'Produto Atualizado com Sucesso',
-          preco: 120,
-          estoque: 8,
-        },
-      });
-
-      expect(updateRes.success).toBe(true);
-      const updated = updateRes.data as Product;
-      expect(updated.nome).toBe('Produto Atualizado com Sucesso');
-      expect(updated.preco).toBe(120);
-      expect(updated.estoque).toBe(8);
+      expect(res.success).toBe(false);
+      expect(res.error?.code).toBe('NOT_FOUND');
+      expect(res.error?.message).toContain('A categoria informada não existe');
     });
 
-    it('deve realizar exclusão lógica (soft delete) sem apagar histórico', () => {
-      const createRes = engine.doPost({
+    it('POST createProduct: deve rejeitar preço inválido (zero ou negativo)', () => {
+      const resZero = engine.doPost({
+        action: 'createProduct',
+        token: adminToken,
+        product: { categoriaId: 'cat_geral', nome: 'Item Grátis', preco: 0, estoque: 10 },
+      });
+      expect(resZero.success).toBe(false);
+      expect(resZero.error?.code).toBe('VALIDATION_ERROR');
+
+      const resNeg = engine.doPost({
+        action: 'createProduct',
+        token: adminToken,
+        product: { categoriaId: 'cat_geral', nome: 'Item Negativo', preco: -15, estoque: 10 },
+      });
+      expect(resNeg.success).toBe(false);
+      expect(resNeg.error?.code).toBe('VALIDATION_ERROR');
+    });
+
+    it('POST createProduct: deve rejeitar preço promocional maior ou igual ao preço normal', () => {
+      const res = engine.doPost({
         action: 'createProduct',
         token: adminToken,
         product: {
           categoriaId: 'cat_geral',
-          nome: 'Produto para Soft Delete',
-          preco: 50,
+          nome: 'Promo Falsa',
+          preco: 100,
+          precoPromocional: 120, // maior que o preço normal!
           estoque: 5,
         },
       });
-      const created = createRes.data as Product;
+      expect(res.success).toBe(false);
+      expect(res.error?.code).toBe('VALIDATION_ERROR');
+      expect(res.error?.message).toContain('estritamente menor');
+    });
 
+    it('POST createProduct: deve rejeitar estoque inválido (< -1 ou não inteiro)', () => {
+      const resNegativo = engine.doPost({
+        action: 'createProduct',
+        token: adminToken,
+        product: { categoriaId: 'cat_geral', nome: 'Estoque Ruim', preco: 50, estoque: -5 },
+      });
+      expect(resNegativo.success).toBe(false);
+      expect(resNegativo.error?.code).toBe('VALIDATION_ERROR');
+
+      const resFracionado = engine.doPost({
+        action: 'createProduct',
+        token: adminToken,
+        product: { categoriaId: 'cat_geral', nome: 'Estoque Quebrado', preco: 50, estoque: 2.5 },
+      });
+      expect(resFracionado.success).toBe(false);
+      expect(resFracionado.error?.code).toBe('VALIDATION_ERROR');
+    });
+
+    it('POST createProduct: deve aceitar estoque -1 (estoque ilimitado)', () => {
+      const res = engine.doPost({
+        action: 'createProduct',
+        token: adminToken,
+        product: {
+          categoriaId: 'cat_geral',
+          nome: 'Produto Sob Encomenda',
+          preco: 150,
+          estoque: -1,
+        },
+      });
+      expect(res.success).toBe(true);
+      const prod = res.data as Product;
+      expect(prod.estoque).toBe(-1);
+    });
+
+    it('POST createProduct: deve rejeitar JSON de variações inválido', () => {
+      // Caso 1: Variação sem tipo
+      const resSemTipo = engine.doPost({
+        action: 'createProduct',
+        token: adminToken,
+        product: {
+          categoriaId: 'cat_geral',
+          nome: 'Produto Var Ruim',
+          preco: 50,
+          estoque: 10,
+          variacoes: [{ tipo: '', opcoes: ['A', 'B'] }],
+        },
+      });
+      expect(resSemTipo.success).toBe(false);
+      expect(resSemTipo.error?.code).toBe('VALIDATION_ERROR');
+
+      // Caso 2: Variação com opções vazias
+      const resOpcoesVazias = engine.doPost({
+        action: 'createProduct',
+        token: adminToken,
+        product: {
+          categoriaId: 'cat_geral',
+          nome: 'Produto Var Vazia',
+          preco: 50,
+          estoque: 10,
+          variacoes: [{ tipo: 'Tamanho', opcoes: [] }],
+        },
+      });
+      expect(resOpcoesVazias.success).toBe(false);
+      expect(resOpcoesVazias.error?.code).toBe('VALIDATION_ERROR');
+
+      // Caso 3: Opções contendo strings vazias
+      const resStringVazia = engine.doPost({
+        action: 'createProduct',
+        token: adminToken,
+        product: {
+          categoriaId: 'cat_geral',
+          nome: 'Produto Var String Vazia',
+          preco: 50,
+          estoque: 10,
+          variacoes: [{ tipo: 'Cor', opcoes: [''] }],
+        },
+      });
+      expect(resStringVazia.success).toBe(false);
+      expect(resStringVazia.error?.code).toBe('VALIDATION_ERROR');
+    });
+
+    it('POST updateProduct: deve atualizar produto e rejeitar se ID inexistente', () => {
+      const createRes = engine.doPost({
+        action: 'createProduct',
+        token: adminToken,
+        product: { categoriaId: 'cat_geral', nome: 'Original', preco: 100, estoque: 5 },
+      });
+      const original = createRes.data as Product;
+
+      // Update válido
+      const updateRes = engine.doPost({
+        action: 'updateProduct',
+        token: adminToken,
+        product: { id: original.id, nome: 'Nome Modificado', preco: 110 },
+      });
+      expect(updateRes.success).toBe(true);
+      const updated = updateRes.data as Product;
+      expect(updated.nome).toBe('Nome Modificado');
+      expect(updated.preco).toBe(110);
+
+      // Update com ID inexistente
+      const updateInexistente = engine.doPost({
+        action: 'updateProduct',
+        token: adminToken,
+        product: { id: 'prod_nao_existe', nome: 'Fantasma' },
+      });
+      expect(updateInexistente.success).toBe(false);
+      expect(updateInexistente.error?.code).toBe('NOT_FOUND');
+    });
+
+    it('POST deleteProduct: deve realizar soft delete e rejeitar se ID inexistente', () => {
+      const createRes = engine.doPost({
+        action: 'createProduct',
+        token: adminToken,
+        product: { categoriaId: 'cat_geral', nome: 'Para Deletar', preco: 80, estoque: 2 },
+      });
+      const original = createRes.data as Product;
+
+      // Delete válido
       const deleteRes = engine.doPost({
         action: 'deleteProduct',
         token: adminToken,
-        id: created.id,
+        id: original.id,
       });
-
       expect(deleteRes.success).toBe(true);
       expect((deleteRes.data as any).deleted).toBe(true);
       expect((deleteRes.data as any).deletedAt).toBeTruthy();
 
-      // Consulta pública não deve mais retornar o produto excluído
-      const publicProductsRes = engine.doGet({ action: 'products' });
-      const products = publicProductsRes.data as Product[];
-      const found = products.find((p) => p.id === created.id);
-      expect(found).toBeUndefined();
+      // Verificar que sumiu da vitrine pública
+      const publicList = engine.doGet({ action: 'products' });
+      const prods = publicList.data as Product[];
+      expect(prods.find((p) => p.id === original.id)).toBeUndefined();
+
+      // Delete com ID inexistente
+      const deleteInexistente = engine.doPost({
+        action: 'deleteProduct',
+        token: adminToken,
+        id: 'prod_inexistente_123',
+      });
+      expect(deleteInexistente.success).toBe(false);
+      expect(deleteInexistente.error?.code).toBe('NOT_FOUND');
     });
   });
 
-  describe('4. Salvamento de Configurações & Proteção Imutável', () => {
-    it('deve salvar configurações permitidas com sucesso', () => {
+  // ============================================================
+  // TESTES DE CONFIGURAÇÃO & CAMPOS PROTEGIDOS
+  // ============================================================
+  describe('4. Configuração da Loja & Proteção de Campos', () => {
+    it('POST saveConfig: deve salvar configurações permitidas', () => {
       const res = engine.doPost({
         action: 'saveConfig',
         token: adminToken,
         config: {
-          store_name: 'Minha Nova Loja Digital',
-          primary_color: '#3b82f6',
-          whatsapp: '5511988887777',
+          store_name: 'Boutique Elegância',
+          primary_color: '#059669',
+          secondary_color: '#064e3b',
+          whatsapp: '5511977776666',
         },
       });
 
       expect(res.success).toBe(true);
-      const updatedConfig = res.data as StoreConfig;
-      expect(updatedConfig.store_name).toBe('Minha Nova Loja Digital');
-      expect(updatedConfig.primary_color).toBe('#3b82f6');
-      expect(updatedConfig.whatsapp).toBe('5511988887777');
+      const conf = res.data as StoreConfig;
+      expect(conf.store_name).toBe('Boutique Elegância');
+      expect(conf.primary_color).toBe('#059669');
+      expect(conf.whatsapp).toBe('5511977776666');
     });
 
-    it('deve BLOQUEAR qualquer tentativa de alterar api_token ou store_id via saveConfig', () => {
+    it('POST saveConfig: deve BLOQUEAR tentativa de alterar campos protegidos (store_id, api_token, admin_password_hash)', () => {
+      // Teste store_id
+      const resStoreId = engine.doPost({
+        action: 'saveConfig',
+        token: adminToken,
+        config: { store_id: 'tentativa_de_hack' },
+      });
+      expect(resStoreId.success).toBe(false);
+      expect(resStoreId.error?.code).toBe('FORBIDDEN_MODIFICATION');
+
+      // Teste api_token
       const resToken = engine.doPost({
         action: 'saveConfig',
         token: adminToken,
-        config: {
-          api_token: 'hacker_injected_token',
-        },
+        config: { api_token: 'novo_token_injetado' },
       });
       expect(resToken.success).toBe(false);
       expect(resToken.error?.code).toBe('FORBIDDEN_MODIFICATION');
 
-      const resStoreId = engine.doPost({
+      // Teste admin_password_hash
+      const resHash = engine.doPost({
         action: 'saveConfig',
         token: adminToken,
-        config: {
-          store_id: 'loja_roubada',
-        },
+        config: { admin_password_hash: 'hash_injetado' },
       });
-      expect(resStoreId.success).toBe(false);
-      expect(resStoreId.error?.code).toBe('FORBIDDEN_MODIFICATION');
+      expect(resHash.success).toBe(false);
+      expect(resHash.error?.code).toBe('FORBIDDEN_MODIFICATION');
     });
   });
 
-  describe('5. Validação de Esquemas Zod', () => {
-    it('deve validar schema de variação de produto', () => {
-      const validVariation = {
-        tipo: 'Tamanho',
-        opcoes: ['P', 'M', 'G'],
-      };
-      expect(() => VariationOptionSchema.parse(validVariation)).not.toThrow();
+  // ============================================================
+  // TESTES DE CRUD DE CATEGORIAS
+  // ============================================================
+  describe('5. Gestão de Categorias (CRUD Completo)', () => {
+    it('POST createCategory: deve criar uma nova categoria com sucesso', () => {
+      const res = engine.doPost({
+        action: 'createCategory',
+        token: adminToken,
+        category: {
+          nome: 'Moda Feminina',
+          slug: 'moda-feminina',
+          ordem: 2,
+        },
+      });
 
-      const invalidVariation = {
-        tipo: '',
-        opcoes: [],
-      };
-      expect(() => VariationOptionSchema.parse(invalidVariation)).toThrow();
+      expect(res.success).toBe(true);
+      const cat = res.data as Category;
+      expect(cat.id).toMatch(/^cat_/);
+      expect(cat.nome).toBe('Moda Feminina');
+      expect(cat.ativo).toBe(true);
     });
 
-    it('deve validar schema de criação de produto', () => {
-      const validProduct = {
+    it('POST updateCategory: deve atualizar categoria existente e falhar se inexistente', () => {
+      const createRes = engine.doPost({
+        action: 'createCategory',
+        token: adminToken,
+        category: { nome: 'Infantil' },
+      });
+      const cat = createRes.data as Category;
+
+      const updateRes = engine.doPost({
+        action: 'updateCategory',
+        token: adminToken,
+        category: { id: cat.id, nome: 'Moda Infantil & Bebê' },
+      });
+      expect(updateRes.success).toBe(true);
+      expect((updateRes.data as Category).nome).toBe('Moda Infantil & Bebê');
+
+      const notFoundRes = engine.doPost({
+        action: 'updateCategory',
+        token: adminToken,
+        category: { id: 'cat_inexistente', nome: 'Fantasma' },
+      });
+      expect(notFoundRes.success).toBe(false);
+      expect(notFoundRes.error?.code).toBe('NOT_FOUND');
+    });
+
+    it('POST deleteCategory: deve desativar categoria com soft delete', () => {
+      const createRes = engine.doPost({
+        action: 'createCategory',
+        token: adminToken,
+        category: { nome: 'Categoria Temporaria' },
+      });
+      const cat = createRes.data as Category;
+
+      const delRes = engine.doPost({
+        action: 'deleteCategory',
+        token: adminToken,
+        id: cat.id,
+      });
+      expect(delRes.success).toBe(true);
+
+      // Categoria inativa não deve aparecer na vitrine pública
+      const publicCats = engine.doGet({ action: 'categories' });
+      const cats = publicCats.data as Category[];
+      expect(cats.find((c) => c.id === cat.id)).toBeUndefined();
+    });
+  });
+
+  // ============================================================
+  // TESTES DE SCHEMAS ZOD
+  // ============================================================
+  describe('6. Validações Zod Runtime', () => {
+    it('deve validar e rejeitar variações com formatos inválidos', () => {
+      expect(() =>
+        VariationOptionSchema.parse({ tipo: 'Cor', opcoes: ['Azul'] })
+      ).not.toThrow();
+
+      expect(() =>
+        VariationOptionSchema.parse({ tipo: '', opcoes: ['Azul'] })
+      ).toThrow();
+
+      expect(() =>
+        VariationOptionSchema.parse({ tipo: 'Cor', opcoes: [] })
+      ).toThrow();
+    });
+
+    it('deve rejeitar criação de produto com precoPromocional >= preco', () => {
+      const invalido = {
         categoriaId: 'cat_geral',
-        nome: 'Tenis Esportivo',
-        slug: 'tenis-esportivo',
-        descricao: 'Confortável para corrida',
-        preco: 199.9,
+        nome: 'Tenis',
+        preco: 100,
+        precoPromocional: 150,
         estoque: 10,
-        ativo: true,
       };
-      expect(() => CreateProductSchema.parse(validProduct)).not.toThrow();
-
-      const invalidProduct = {
-        categoriaId: '',
-        nome: 'T',
-        preco: -50,
-        estoque: -5,
-      };
-      expect(() => CreateProductSchema.parse(invalidProduct)).toThrow();
+      expect(() => CreateProductSchema.parse(invalido)).toThrow();
     });
 
-    it('deve validar schema de configurações da loja', () => {
-      const validConfig = {
-        store_name: 'Boutique Flor',
-        primary_color: '#ff5500',
-        whatsapp: '5511999999999',
-      };
-      expect(() => SaveConfigSchema.parse(validConfig)).not.toThrow();
+    it('deve validar categoria Zod', () => {
+      expect(() =>
+        CreateCategorySchema.parse({ nome: 'Eletrônicos', ordem: 1 })
+      ).not.toThrow();
 
-      const invalidConfig = {
-        primary_color: 'cor-invalida',
-        whatsapp: 'telefone com letras',
-      };
-      expect(() => SaveConfigSchema.parse(invalidConfig)).toThrow();
+      expect(() =>
+        CreateCategorySchema.parse({ nome: 'A', ordem: -1 })
+      ).toThrow();
     });
   });
 });

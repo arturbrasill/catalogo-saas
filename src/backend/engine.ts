@@ -3,23 +3,22 @@ import type {
   Category,
   Product,
   StoreConfig,
-  StoreConfigInternal,
   APIResponse,
   VariationOption,
+  CreateCategoryInput,
+  UpdateCategoryInput,
 } from '../types';
 
 export class BackendEngine {
   private configMap: Map<string, string> = new Map();
   private categories: Category[] = [];
   private products: Product[] = [];
-  private lockAcquired = false;
 
   constructor() {
     this.initDatabase();
   }
 
   public initDatabase(): void {
-    // Configurações padrão
     const defaultPasswordHash = this.hashPassword('admin123');
     const defaultApiToken = 'tok_mock_default_1234567890';
 
@@ -35,7 +34,6 @@ export class BackendEngine {
     this.configMap.set('currency', 'BRL');
     this.configMap.set('timezone', 'America/Sao_Paulo');
 
-    // Categoria inicial
     const now = new Date().toISOString();
     this.categories = [
       {
@@ -49,7 +47,6 @@ export class BackendEngine {
       },
     ];
 
-    // Produtos inicial vazia
     this.products = [];
   }
 
@@ -99,7 +96,7 @@ export class BackendEngine {
 
   public doPost(payload: any): APIResponse<unknown> {
     try {
-      if (!payload || !payload.action) {
+      if (!payload || typeof payload !== 'object' || !payload.action) {
         return {
           success: false,
           data: null,
@@ -115,7 +112,6 @@ export class BackendEngine {
         return { success: true, data: result, error: null };
       }
 
-      // Validação de autorização para ações administrativas
       const authError = this.validateAuthorization(payload.token);
       if (authError) {
         return {
@@ -139,6 +135,18 @@ export class BackendEngine {
         }
         case 'deleteProduct': {
           const deleted = this.handleDeleteProduct(payload.id);
+          return { success: true, data: deleted, error: null };
+        }
+        case 'createCategory': {
+          const category = this.handleCreateCategory(payload.category);
+          return { success: true, data: category, error: null };
+        }
+        case 'updateCategory': {
+          const updated = this.handleUpdateCategory(payload.category);
+          return { success: true, data: updated, error: null };
+        }
+        case 'deleteCategory': {
+          const deleted = this.handleDeleteCategory(payload.id);
           return { success: true, data: deleted, error: null };
         }
         case 'saveConfig': {
@@ -189,8 +197,11 @@ export class BackendEngine {
   }
 
   public getActiveProducts(filterCategoryId?: string): Product[] {
+    const activeCategoryIds = new Set(this.getActiveCategories().map((c) => c.id));
+
     return this.products.filter((p) => {
       if (!p.ativo || p.deletedAt !== null) return false;
+      if (!activeCategoryIds.has(p.categoriaId)) return false;
       if (filterCategoryId && p.categoriaId !== filterCategoryId) return false;
       return true;
     });
@@ -228,17 +239,20 @@ export class BackendEngine {
   }
 
   public handleCreateProduct(productData: any): Product {
-    if (!productData) {
-      throw new Error('VALIDATION_ERROR: Dados do produto ausentes.');
+    if (!productData || typeof productData !== 'object') {
+      throw new Error('VALIDATION_ERROR: Dados do produto ausentes ou inválidos.');
     }
 
     if (!productData.nome || typeof productData.nome !== 'string' || productData.nome.trim().length < 2) {
       throw new Error('VALIDATION_ERROR: Nome do produto deve ter no mínimo 2 caracteres.');
     }
 
-    if (!productData.categoriaId) {
+    if (!productData.categoriaId || typeof productData.categoriaId !== 'string') {
       throw new Error('VALIDATION_ERROR: ID da categoria é obrigatório.');
     }
+
+    // Integridade referencial
+    this.assertCategoryExists(productData.categoriaId.trim());
 
     const preco = parseFloat(productData.preco);
     if (isNaN(preco) || preco <= 0) {
@@ -246,12 +260,34 @@ export class BackendEngine {
     }
 
     let precoPromocional: number | null = null;
-    if (productData.precoPromocional !== undefined && productData.precoPromocional !== null && productData.precoPromocional !== '') {
+    if (
+      productData.precoPromocional !== undefined &&
+      productData.precoPromocional !== null &&
+      productData.precoPromocional !== ''
+    ) {
       precoPromocional = parseFloat(productData.precoPromocional);
       if (isNaN(precoPromocional) || precoPromocional <= 0) {
         throw new Error('VALIDATION_ERROR: O preço promocional deve ser maior que zero.');
       }
+      if (precoPromocional >= preco) {
+        throw new Error('VALIDATION_ERROR: O preço promocional deve ser estritamente menor que o preço original.');
+      }
     }
+
+    // Validação de estoque
+    if (productData.estoque === undefined || productData.estoque === null || productData.estoque === '') {
+      throw new Error('VALIDATION_ERROR: O estoque é obrigatório.');
+    }
+    const estoqueNum = Number(productData.estoque);
+    if (!Number.isInteger(estoqueNum) || estoqueNum < -1) {
+      throw new Error('VALIDATION_ERROR: O estoque deve ser um número inteiro maior ou igual a -1.');
+    }
+
+    // Validação de variações
+    const validatedVariations = this.validateVariations(productData.variacoes);
+
+    // Validação de imagens
+    const validatedImagens = this.validateImages(productData.imagens);
 
     const id = 'prod_' + crypto.randomUUID().replace(/-/g, '').substring(0, 12);
     const slug = productData.slug ? String(productData.slug).trim() : this.generateSlug(productData.nome);
@@ -259,15 +295,15 @@ export class BackendEngine {
 
     const product: Product = {
       id,
-      categoriaId: String(productData.categoriaId),
+      categoriaId: productData.categoriaId.trim(),
       nome: String(productData.nome).trim(),
       slug,
-      descricao: productData.descricao ? String(productData.descricao) : '',
+      descricao: productData.descricao ? String(productData.descricao).trim() : '',
       preco,
       precoPromocional,
-      imagens: Array.isArray(productData.imagens) ? productData.imagens : [],
-      variacoes: Array.isArray(productData.variacoes) ? productData.variacoes : [],
-      estoque: Number.isInteger(productData.estoque) ? productData.estoque : 0,
+      imagens: validatedImagens,
+      variacoes: validatedVariations,
+      estoque: estoqueNum,
       ativo: productData.ativo !== false,
       createdAt: nowIso,
       updatedAt: nowIso,
@@ -283,7 +319,7 @@ export class BackendEngine {
       throw new Error('VALIDATION_ERROR: ID do produto é obrigatório para atualização.');
     }
 
-    const targetIndex = this.products.findIndex((p) => p.id === String(productData.id));
+    const targetIndex = this.products.findIndex((p) => p.id === String(productData.id).trim());
     if (targetIndex === -1) {
       throw new Error('NOT_FOUND: Produto não encontrado com ID: ' + productData.id);
     }
@@ -291,42 +327,82 @@ export class BackendEngine {
     const current = this.products[targetIndex]!;
     const nowIso = new Date().toISOString();
 
-    if (productData.preco !== undefined) {
-      const p = parseFloat(productData.preco);
-      if (isNaN(p) || p <= 0) throw new Error('VALIDATION_ERROR: Preço deve ser positivo.');
-      current.preco = p;
+    let updatedCategoriaId = current.categoriaId;
+    if (productData.categoriaId !== undefined) {
+      const catId = String(productData.categoriaId).trim();
+      this.assertCategoryExists(catId);
+      updatedCategoriaId = catId;
     }
 
+    let updatedPreco = current.preco;
+    if (productData.preco !== undefined) {
+      const p = parseFloat(productData.preco);
+      if (isNaN(p) || p <= 0) throw new Error('VALIDATION_ERROR: O preço deve ser um número positivo.');
+      updatedPreco = p;
+    }
+
+    let updatedPrecoPromocional = current.precoPromocional;
     if (productData.precoPromocional !== undefined) {
       if (productData.precoPromocional === null || productData.precoPromocional === '') {
-        current.precoPromocional = null;
+        updatedPrecoPromocional = null;
       } else {
         const pp = parseFloat(productData.precoPromocional);
-        if (isNaN(pp) || pp <= 0) throw new Error('VALIDATION_ERROR: Preço promocional deve ser positivo.');
-        current.precoPromocional = pp;
+        if (isNaN(pp) || pp <= 0) throw new Error('VALIDATION_ERROR: O preço promocional deve ser maior que zero.');
+        if (pp >= updatedPreco) {
+          throw new Error('VALIDATION_ERROR: O preço promocional deve ser estritamente menor que o preço original.');
+        }
+        updatedPrecoPromocional = pp;
       }
     }
 
-    if (productData.nome !== undefined) current.nome = String(productData.nome).trim();
-    if (productData.categoriaId !== undefined) current.categoriaId = String(productData.categoriaId);
-    if (productData.slug !== undefined) current.slug = String(productData.slug).trim();
-    if (productData.descricao !== undefined) current.descricao = String(productData.descricao);
-    if (productData.imagens !== undefined && Array.isArray(productData.imagens)) current.imagens = productData.imagens;
-    if (productData.variacoes !== undefined && Array.isArray(productData.variacoes)) current.variacoes = productData.variacoes;
-    if (productData.estoque !== undefined) current.estoque = parseInt(productData.estoque, 10) || 0;
-    if (productData.ativo !== undefined) current.ativo = Boolean(productData.ativo);
+    let updatedEstoque = current.estoque;
+    if (productData.estoque !== undefined) {
+      const est = Number(productData.estoque);
+      if (!Number.isInteger(est) || est < -1) {
+        throw new Error('VALIDATION_ERROR: O estoque deve ser um número inteiro maior ou igual a -1.');
+      }
+      updatedEstoque = est;
+    }
 
-    current.updatedAt = nowIso;
-    this.products[targetIndex] = current;
-    return current;
+    let updatedVariacoes = current.variacoes;
+    if (productData.variacoes !== undefined) {
+      updatedVariacoes = this.validateVariations(productData.variacoes);
+    }
+
+    let updatedImagens = current.imagens;
+    if (productData.imagens !== undefined) {
+      updatedImagens = this.validateImages(productData.imagens);
+    }
+
+    const updatedProduct: Product = {
+      ...current,
+      categoriaId: updatedCategoriaId,
+      nome: productData.nome !== undefined ? String(productData.nome).trim() : current.nome,
+      slug: productData.slug !== undefined ? String(productData.slug).trim() : current.slug,
+      descricao: productData.descricao !== undefined ? String(productData.descricao).trim() : current.descricao,
+      preco: updatedPreco,
+      precoPromocional: updatedPrecoPromocional,
+      imagens: updatedImagens,
+      variacoes: updatedVariacoes,
+      estoque: updatedEstoque,
+      ativo: productData.ativo !== undefined ? Boolean(productData.ativo) : current.ativo,
+      updatedAt: nowIso,
+    };
+
+    if (updatedProduct.nome.length < 2) {
+      throw new Error('VALIDATION_ERROR: Nome do produto deve ter no mínimo 2 caracteres.');
+    }
+
+    this.products[targetIndex] = updatedProduct;
+    return updatedProduct;
   }
 
   public handleDeleteProduct(productId: string) {
-    if (!productId) {
+    if (!productId || typeof productId !== 'string') {
       throw new Error('VALIDATION_ERROR: ID do produto é obrigatório.');
     }
 
-    const target = this.products.find((p) => p.id === String(productId));
+    const target = this.products.find((p) => p.id === String(productId).trim());
     if (!target) {
       throw new Error('NOT_FOUND: Produto não encontrado com ID: ' + productId);
     }
@@ -337,7 +413,86 @@ export class BackendEngine {
     target.deletedAt = nowIso;
 
     return {
-      id: productId,
+      id: productId.trim(),
+      deleted: true,
+      deletedAt: nowIso,
+    };
+  }
+
+  public handleCreateCategory(categoryData: CreateCategoryInput): Category {
+    if (!categoryData || typeof categoryData !== 'object') {
+      throw new Error('VALIDATION_ERROR: Dados da categoria ausentes.');
+    }
+
+    if (!categoryData.nome || typeof categoryData.nome !== 'string' || categoryData.nome.trim().length < 2) {
+      throw new Error('VALIDATION_ERROR: Nome da categoria deve ter no mínimo 2 caracteres.');
+    }
+
+    const id = 'cat_' + crypto.randomUUID().replace(/-/g, '').substring(0, 8);
+    const slug = categoryData.slug ? String(categoryData.slug).trim() : this.generateSlug(categoryData.nome);
+    const nowIso = new Date().toISOString();
+
+    const category: Category = {
+      id,
+      nome: categoryData.nome.trim(),
+      slug,
+      ativo: categoryData.ativo !== false,
+      ordem: Number.isInteger(Number(categoryData.ordem)) ? Number(categoryData.ordem) : 0,
+      createdAt: nowIso,
+      updatedAt: nowIso,
+    };
+
+    this.categories.push(category);
+    return category;
+  }
+
+  public handleUpdateCategory(categoryData: UpdateCategoryInput): Category {
+    if (!categoryData || !categoryData.id) {
+      throw new Error('VALIDATION_ERROR: ID da categoria é obrigatório.');
+    }
+
+    const targetIndex = this.categories.findIndex((c) => c.id === String(categoryData.id).trim());
+    if (targetIndex === -1) {
+      throw new Error('NOT_FOUND: Categoria não encontrada com ID: ' + categoryData.id);
+    }
+
+    const current = this.categories[targetIndex]!;
+    const nowIso = new Date().toISOString();
+
+    const updatedNome = categoryData.nome !== undefined ? String(categoryData.nome).trim() : current.nome;
+    if (categoryData.nome !== undefined && updatedNome.length < 2) {
+      throw new Error('VALIDATION_ERROR: Nome da categoria deve ter no mínimo 2 caracteres.');
+    }
+
+    const updatedCategory: Category = {
+      ...current,
+      nome: updatedNome,
+      slug: categoryData.slug !== undefined ? String(categoryData.slug).trim() : current.slug,
+      ativo: categoryData.ativo !== undefined ? Boolean(categoryData.ativo) : current.ativo,
+      ordem: categoryData.ordem !== undefined ? Number(categoryData.ordem) || 0 : current.ordem,
+      updatedAt: nowIso,
+    };
+
+    this.categories[targetIndex] = updatedCategory;
+    return updatedCategory;
+  }
+
+  public handleDeleteCategory(categoryId: string) {
+    if (!categoryId) {
+      throw new Error('VALIDATION_ERROR: ID da categoria é obrigatório.');
+    }
+
+    const target = this.categories.find((c) => c.id === String(categoryId).trim());
+    if (!target) {
+      throw new Error('NOT_FOUND: Categoria não encontrada com ID: ' + categoryId);
+    }
+
+    const nowIso = new Date().toISOString();
+    target.ativo = false;
+    target.updatedAt = nowIso;
+
+    return {
+      id: String(categoryId).trim(),
       deleted: true,
       deletedAt: nowIso,
     };
@@ -362,6 +517,54 @@ export class BackendEngine {
     }
 
     return this.getPublicStoreConfig();
+  }
+
+  public validateVariations(variacoes: any): VariationOption[] {
+    if (variacoes === undefined || variacoes === null) {
+      return [];
+    }
+    if (!Array.isArray(variacoes)) {
+      throw new Error('VALIDATION_ERROR: O campo "variacoes" deve ser um array.');
+    }
+
+    for (const v of variacoes) {
+      if (!v || typeof v !== 'object' || Array.isArray(v)) {
+        throw new Error('VALIDATION_ERROR: Cada variação deve ser um objeto.');
+      }
+      if (!v.tipo || typeof v.tipo !== 'string' || v.tipo.trim().length === 0) {
+        throw new Error('VALIDATION_ERROR: O "tipo" da variação é obrigatório e não pode ser vazio.');
+      }
+      if (!Array.isArray(v.opcoes) || v.opcoes.length === 0) {
+        throw new Error(`VALIDATION_ERROR: O campo "opcoes" da variação "${v.tipo}" deve ser um array com pelo menos 1 item.`);
+      }
+      for (const opt of v.opcoes) {
+        if (typeof opt !== 'string' || opt.trim().length === 0) {
+          throw new Error(`VALIDATION_ERROR: As opções da variação "${v.tipo}" devem ser strings não vazias.`);
+        }
+      }
+    }
+
+    return variacoes as VariationOption[];
+  }
+
+  public validateImages(imagens: any): string[] {
+    if (imagens === undefined || imagens === null) {
+      return [];
+    }
+    if (!Array.isArray(imagens)) {
+      throw new Error('VALIDATION_ERROR: O campo "imagens" deve ser um array de URLs.');
+    }
+    return imagens.map((url) => String(url).trim());
+  }
+
+  public assertCategoryExists(categoriaId: string): void {
+    const found = this.categories.find((c) => c.id === categoriaId);
+    if (!found) {
+      throw new Error('NOT_FOUND: A categoria informada não existe: ' + categoriaId);
+    }
+    if (!found.ativo) {
+      throw new Error('VALIDATION_ERROR: A categoria informada está inativa: ' + categoriaId);
+    }
   }
 
   private validateAuthorization(token: any): string | null {

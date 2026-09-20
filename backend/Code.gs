@@ -1,10 +1,10 @@
 /**
  * ============================================================================
- * CATÁLOGO SAAS MULTI-TENANT — BACKEND GOOGLE APPS SCRIPT (v1.0.0)
+ * CATÁLOGO SAAS MULTI-TENANT — BACKEND GOOGLE APPS SCRIPT (v1.1.0)
  * ============================================================================
  * 
- * Este arquivo contém o backend completo executado no Google Apps Script.
- * Integração: Google Sheets como banco de dados NoSQL/Relacional simplificado.
+ * Backend completo para execução no Google Apps Script acoplado ao Google Sheets.
+ * Arquitetura NoSQL/Relacional sobre abas de planilha com controle de concorrência.
  * 
  * ABAS DA PLANILHA:
  * 1. config      -> chave | valor
@@ -19,10 +19,10 @@ var SHEET_CONFIG = 'config';
 var SHEET_CATEGORIES = 'categorias';
 var SHEET_PRODUCTS = 'produtos';
 
-// Chaves sensíveis que NUNCA devem ser retornadas em requisições públicas
+// Chaves sensíveis que NUNCA devem ser retornadas em consultas públicas
 var SENSITIVE_CONFIG_KEYS = ['admin_password_hash', 'api_token'];
 
-// Chaves que não podem ser alteradas arbitrariamente via saveConfig
+// Chaves protegidas que não podem ser alteradas arbitrariamente via saveConfig
 var IMMUTABLE_CONFIG_KEYS = ['store_id', 'api_token', 'admin_password_hash'];
 
 /**
@@ -59,21 +59,26 @@ function doGet(e) {
 }
 
 /**
- * Ponto de entrada para requisições HTTP POST (Ações administrativas com Lock)
+ * Ponto de entrada para requisições HTTP POST (Ações administrativas protegidas)
  */
 function doPost(e) {
   var lock = LockService.getScriptLock();
   var lockAcquired = false;
 
   try {
-    var payload = parsePostPayload(e);
+    var payloadResult = parsePostPayload(e);
+    if (!payloadResult.success) {
+      return createJsonResponse(false, null, 'INVALID_PAYLOAD', payloadResult.error);
+    }
+
+    var payload = payloadResult.data;
     if (!payload || !payload.action) {
       return createJsonResponse(false, null, 'INVALID_PAYLOAD', 'Payload ausente ou sem campo "action".');
     }
 
     var action = payload.action;
 
-    // Ação pública de login (não requer token prévio)
+    // Ação pública de login (não requer token prévio e não requer lock de planilha)
     if (action === 'login') {
       var loginResult = handleLogin(payload.password);
       return createJsonResponse(true, loginResult, null, null);
@@ -85,7 +90,7 @@ function doPost(e) {
       return createJsonResponse(false, null, 'LOCK_TIMEOUT', 'O servidor de dados está ocupado. Tente novamente em alguns segundos.');
     }
 
-    // Validação de autorização em ações administrativas
+    // Validação de autorização para ações administrativas
     var authError = validateAuthorization(payload.token);
     if (authError) {
       return createJsonResponse(false, null, 'UNAUTHORIZED', authError);
@@ -102,6 +107,15 @@ function doPost(e) {
       case 'deleteProduct':
         result = handleDeleteProduct(payload.id);
         break;
+      case 'createCategory':
+        result = handleCreateCategory(payload.category);
+        break;
+      case 'updateCategory':
+        result = handleUpdateCategory(payload.category);
+        break;
+      case 'deleteCategory':
+        result = handleDeleteCategory(payload.id);
+        break;
       case 'saveConfig':
         result = handleSaveConfig(payload.config);
         break;
@@ -111,7 +125,14 @@ function doPost(e) {
 
     return createJsonResponse(true, result, null, null);
   } catch (error) {
-    return createJsonResponse(false, null, 'INTERNAL_ERROR', error.message || String(error));
+    var errorMsg = error.message || String(error);
+    var errorCode = 'INTERNAL_ERROR';
+    var match = errorMsg.match(/^([A-Z_]+):\s*(.+)$/);
+    if (match) {
+      errorCode = match[1];
+      errorMsg = match[2];
+    }
+    return createJsonResponse(false, null, errorCode, errorMsg);
   } finally {
     if (lockAcquired) {
       lock.releaseLock();
@@ -124,7 +145,7 @@ function doPost(e) {
 // ============================================================================
 
 /**
- * Cria abas, define cabeçalhos e insere dados padrão caso a planilha seja nova.
+ * Cria abas, define cabeçalhos, formata e insere dados padrão caso vazias.
  * Execute manualmente no editor do Apps Script ao configurar uma nova loja.
  */
 function initDatabase() {
@@ -134,6 +155,9 @@ function initDatabase() {
   var configSheet = getOrCreateSheet(ss, SHEET_CONFIG);
   if (configSheet.getLastRow() === 0) {
     configSheet.appendRow(['chave', 'valor']);
+    configSheet.getRange(1, 1, 1, 2).setFontWeight('bold');
+    configSheet.setFrozenRows(1);
+
     var defaultPasswordHash = hashPassword('admin123');
     var defaultApiToken = 'tok_' + generateUuid().replace(/-/g, '').substring(0, 24);
 
@@ -160,6 +184,9 @@ function initDatabase() {
   var catSheet = getOrCreateSheet(ss, SHEET_CATEGORIES);
   if (catSheet.getLastRow() === 0) {
     catSheet.appendRow(['id', 'nome', 'slug', 'ativo', 'ordem', 'createdAt', 'updatedAt']);
+    catSheet.getRange(1, 1, 1, 7).setFontWeight('bold');
+    catSheet.setFrozenRows(1);
+
     var catId = 'cat_' + generateUuid().substring(0, 8);
     var nowIso = new Date().toISOString();
     catSheet.appendRow([catId, 'Geral', 'geral', true, 1, nowIso, nowIso]);
@@ -173,9 +200,11 @@ function initDatabase() {
       'precoPromocional', 'imagens', 'variacoes', 'estoque', 'ativo', 
       'createdAt', 'updatedAt', 'deletedAt'
     ]);
+    prodSheet.getRange(1, 1, 1, 14).setFontWeight('bold');
+    prodSheet.setFrozenRows(1);
   }
 
-  Logger.log('Banco de dados da loja inicializado com sucesso!');
+  Logger.log('Banco de dados do Catálogo SaaS inicializado com sucesso!');
 }
 
 // ============================================================================
@@ -183,7 +212,7 @@ function initDatabase() {
 // ============================================================================
 
 /**
- * Retorna as configurações da loja excluindo qualquer informação sensível.
+ * Retorna as configurações públicas da loja excluindo qualquer dado sensível.
  */
 function getPublicStoreConfig() {
   var configs = getAllConfigsMap();
@@ -201,7 +230,7 @@ function getPublicStoreConfig() {
 }
 
 /**
- * Retorna lista de categorias ativas ordenadas por 'ordem'.
+ * Retorna lista de categorias ativas ordenadas pelo campo 'ordem'.
  */
 function getActiveCategories() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -212,15 +241,18 @@ function getActiveCategories() {
   if (data.length <= 1) return [];
 
   var categories = [];
-  // Cabeçalhos na linha 0: id(0), nome(1), slug(2), ativo(3), ordem(4), createdAt(5), updatedAt(6)
+  // Linha 0: cabeçalho. Linhas 1..N: dados
   for (var i = 1; i < data.length; i++) {
     var row = data[i];
+    var id = String(row[0] || '').trim();
+    if (!id) continue;
+
     var ativo = row[3] === true || String(row[3]).toUpperCase() === 'TRUE';
     if (ativo) {
       categories.push({
-        id: String(row[0]),
-        nome: String(row[1]),
-        slug: String(row[2]),
+        id: id,
+        nome: String(row[1] || '').trim(),
+        slug: String(row[2] || '').trim(),
         ativo: true,
         ordem: Number(row[4]) || 0,
         createdAt: row[5] ? String(row[5]) : '',
@@ -247,24 +279,29 @@ function getActiveProducts(filterCategoryId) {
   var data = sheet.getDataRange().getValues();
   if (data.length <= 1) return [];
 
+  var activeCategoriesMap = getActiveCategoriesMap();
   var products = [];
-  // Colunas: id(0), categoriaId(1), nome(2), slug(3), descricao(4), preco(5),
-  // precoPromocional(6), imagens(7), variacoes(8), estoque(9), ativo(10),
-  // createdAt(11), updatedAt(12), deletedAt(13)
+
   for (var i = 1; i < data.length; i++) {
     var row = data[i];
-    var id = String(row[0] || '');
+    var id = String(row[0] || '').trim();
     if (!id) continue;
 
     var ativo = row[10] === true || String(row[10]).toUpperCase() === 'TRUE';
     var deletedAt = row[13] ? String(row[13]).trim() : '';
 
-    // Filtrar soft delete e inativos
+    // Filtrar produtos excluídos via soft delete ou inativos
     if (!ativo || deletedAt !== '') {
       continue;
     }
 
-    var categoriaId = String(row[1] || '');
+    var categoriaId = String(row[1] || '').trim();
+
+    // Integridade: garantir que a categoria vinculada também esteja ativa
+    if (!activeCategoriesMap[categoriaId]) {
+      continue;
+    }
+
     if (filterCategoryId && categoriaId !== filterCategoryId) {
       continue;
     }
@@ -279,8 +316,8 @@ function getActiveProducts(filterCategoryId) {
     products.push({
       id: id,
       categoriaId: categoriaId,
-      nome: String(row[2] || ''),
-      slug: String(row[3] || ''),
+      nome: String(row[2] || '').trim(),
+      slug: String(row[3] || '').trim(),
       descricao: String(row[4] || ''),
       preco: preco,
       precoPromocional: precoPromocional,
@@ -298,7 +335,7 @@ function getActiveProducts(filterCategoryId) {
 }
 
 /**
- * Retorna payload agregado completo para inicialização rápida da vitrine.
+ * Retorna payload consolidado para carregamento de alta velocidade da vitrine.
  */
 function getInitialCatalogData() {
   return {
@@ -313,7 +350,7 @@ function getInitialCatalogData() {
 // ============================================================================
 
 /**
- * Autentica o administrador através da senha e retorna confirmação com token.
+ * Autentica o administrador através de comparação de hash SHA-256 com salt.
  */
 function handleLogin(password) {
   if (!password || typeof password !== 'string') {
@@ -325,7 +362,7 @@ function handleLogin(password) {
   var apiToken = configs['api_token'];
 
   if (!storedHash) {
-    throw new Error('CONFIG_ERROR: Senha administrativa não configurada.');
+    throw new Error('CONFIG_ERROR: Senha administrativa não configurada na planilha.');
   }
 
   var inputHash = hashPassword(password);
@@ -340,20 +377,23 @@ function handleLogin(password) {
 }
 
 /**
- * Cria um novo produto na planilha.
+ * Cria um novo produto na planilha com validação completa.
  */
 function handleCreateProduct(productData) {
-  if (!productData) {
-    throw new Error('VALIDATION_ERROR: Dados do produto ausentes.');
+  if (!productData || typeof productData !== 'object') {
+    throw new Error('VALIDATION_ERROR: Dados do produto ausentes ou inválidos.');
   }
 
   if (!productData.nome || typeof productData.nome !== 'string' || productData.nome.trim().length < 2) {
     throw new Error('VALIDATION_ERROR: Nome do produto deve ter no mínimo 2 caracteres.');
   }
 
-  if (!productData.categoriaId) {
+  if (!productData.categoriaId || typeof productData.categoriaId !== 'string') {
     throw new Error('VALIDATION_ERROR: ID da categoria é obrigatório.');
   }
+
+  // Integridade referencial: validar se a categoria existe
+  assertCategoryExists(productData.categoriaId.trim());
 
   var preco = parseFloat(productData.preco);
   if (isNaN(preco) || preco <= 0) {
@@ -366,15 +406,29 @@ function handleCreateProduct(productData) {
     if (isNaN(precoPromocional) || precoPromocional <= 0) {
       throw new Error('VALIDATION_ERROR: O preço promocional deve ser maior que zero.');
     }
+    if (precoPromocional >= preco) {
+      throw new Error('VALIDATION_ERROR: O preço promocional deve ser estritamente menor que o preço original.');
+    }
   }
 
-  var id = 'prod_' + generateUuid().substring(0, 12);
+  // Validação de estoque (número inteiro >= -1)
+  if (productData.estoque === undefined || productData.estoque === null || productData.estoque === '') {
+    throw new Error('VALIDATION_ERROR: O estoque é obrigatório.');
+  }
+  var estoqueNum = Number(productData.estoque);
+  if (!Number.isInteger(estoqueNum) || estoqueNum < -1) {
+    throw new Error('VALIDATION_ERROR: O estoque deve ser um número inteiro maior ou igual a -1.');
+  }
+
+  // Validação do formato das variações
+  var validatedVariations = validateVariations(productData.variacoes);
+
+  // Validação de imagens
+  var validatedImagens = validateImages(productData.imagens);
+
+  var id = 'prod_' + generateUuid().replace(/-/g, '').substring(0, 12);
   var slug = productData.slug ? String(productData.slug).trim() : generateSlug(productData.nome);
-  var descricao = productData.descricao ? String(productData.descricao) : '';
-  var imagensJson = JSON.stringify(Array.isArray(productData.imagens) ? productData.imagens : []);
-  var variacoesJson = JSON.stringify(Array.isArray(productData.variacoes) ? productData.variacoes : []);
-  var estoque = parseInt(productData.estoque, 10);
-  if (isNaN(estoque)) estoque = 0;
+  var descricao = productData.descricao ? String(productData.descricao).trim() : '';
   var ativo = productData.ativo !== false;
   var nowIso = new Date().toISOString();
 
@@ -383,15 +437,15 @@ function handleCreateProduct(productData) {
 
   sheet.appendRow([
     id,
-    productData.categoriaId,
+    productData.categoriaId.trim(),
     productData.nome.trim(),
     slug,
     descricao,
     preco,
     precoPromocional !== null ? precoPromocional : '',
-    imagensJson,
-    variacoesJson,
-    estoque,
+    JSON.stringify(validatedImagens),
+    JSON.stringify(validatedVariations),
+    estoqueNum,
     ativo,
     nowIso,
     nowIso,
@@ -400,15 +454,15 @@ function handleCreateProduct(productData) {
 
   return {
     id: id,
-    categoriaId: productData.categoriaId,
+    categoriaId: productData.categoriaId.trim(),
     nome: productData.nome.trim(),
     slug: slug,
     descricao: descricao,
     preco: preco,
     precoPromocional: precoPromocional,
-    imagens: Array.isArray(productData.imagens) ? productData.imagens : [],
-    variacoes: Array.isArray(productData.variacoes) ? productData.variacoes : [],
-    estoque: estoque,
+    imagens: validatedImagens,
+    variacoes: validatedVariations,
+    estoque: estoqueNum,
     ativo: ativo,
     createdAt: nowIso,
     updatedAt: nowIso,
@@ -434,8 +488,8 @@ function handleUpdateProduct(productData) {
   var targetRowIndex = -1;
 
   for (var i = 1; i < data.length; i++) {
-    if (String(data[i][0]) === String(productData.id)) {
-      targetRowIndex = i + 1; // +1 porque getRange é 1-indexed
+    if (String(data[i][0]).trim() === String(productData.id).trim()) {
+      targetRowIndex = i + 1; // 1-indexed
       break;
     }
   }
@@ -447,48 +501,70 @@ function handleUpdateProduct(productData) {
   var currentRow = data[targetRowIndex - 1];
   var nowIso = new Date().toISOString();
 
-  var updatedCategoriaId = productData.categoriaId !== undefined ? productData.categoriaId : currentRow[1];
+  var updatedCategoriaId = currentRow[1];
+  if (productData.categoriaId !== undefined) {
+    var catId = String(productData.categoriaId).trim();
+    assertCategoryExists(catId);
+    updatedCategoriaId = catId;
+  }
+
   var updatedNome = productData.nome !== undefined ? String(productData.nome).trim() : currentRow[2];
+  if (productData.nome !== undefined && updatedNome.length < 2) {
+    throw new Error('VALIDATION_ERROR: Nome do produto deve ter no mínimo 2 caracteres.');
+  }
+
   var updatedSlug = productData.slug !== undefined ? String(productData.slug).trim() : currentRow[3];
-  var updatedDescricao = productData.descricao !== undefined ? String(productData.descricao) : currentRow[4];
-  
-  var updatedPreco = currentRow[5];
+  var updatedDescricao = productData.descricao !== undefined ? String(productData.descricao).trim() : currentRow[4];
+
+  var updatedPreco = parseFloat(currentRow[5]);
   if (productData.preco !== undefined) {
     var p = parseFloat(productData.preco);
-    if (isNaN(p) || p <= 0) throw new Error('VALIDATION_ERROR: Preço deve ser positivo.');
+    if (isNaN(p) || p <= 0) throw new Error('VALIDATION_ERROR: O preço deve ser um número positivo.');
     updatedPreco = p;
   }
 
-  var updatedPrecoPromocional = currentRow[6];
+  var updatedPrecoPromocional = currentRow[6] !== '' && currentRow[6] !== null ? parseFloat(currentRow[6]) : null;
   if (productData.precoPromocional !== undefined) {
     if (productData.precoPromocional === null || productData.precoPromocional === '') {
-      updatedPrecoPromocional = '';
+      updatedPrecoPromocional = null;
     } else {
       var pp = parseFloat(productData.precoPromocional);
-      if (isNaN(pp) || pp <= 0) throw new Error('VALIDATION_ERROR: Preço promocional deve ser positivo.');
+      if (isNaN(pp) || pp <= 0) throw new Error('VALIDATION_ERROR: O preço promocional deve ser maior que zero.');
+      if (pp >= updatedPreco) {
+        throw new Error('VALIDATION_ERROR: O preço promocional deve ser estritamente menor que o preço original.');
+      }
       updatedPrecoPromocional = pp;
     }
   }
 
-  var updatedImagens = productData.imagens !== undefined ? JSON.stringify(productData.imagens) : currentRow[7];
-  var updatedVariacoes = productData.variacoes !== undefined ? JSON.stringify(productData.variacoes) : currentRow[8];
-  
+  var updatedImagens = currentRow[7];
+  if (productData.imagens !== undefined) {
+    updatedImagens = JSON.stringify(validateImages(productData.imagens));
+  }
+
+  var updatedVariacoes = currentRow[8];
+  if (productData.variacoes !== undefined) {
+    updatedVariacoes = JSON.stringify(validateVariations(productData.variacoes));
+  }
+
   var updatedEstoque = currentRow[9];
   if (productData.estoque !== undefined) {
-    var est = parseInt(productData.estoque, 10);
-    if (isNaN(est)) throw new Error('VALIDATION_ERROR: Estoque deve ser um número inteiro.');
+    var est = Number(productData.estoque);
+    if (!Number.isInteger(est) || est < -1) {
+      throw new Error('VALIDATION_ERROR: O estoque deve ser um número inteiro maior ou igual a -1.');
+    }
     updatedEstoque = est;
   }
 
   var updatedAtivo = productData.ativo !== undefined ? (productData.ativo === true) : currentRow[10];
 
-  // Escrever valores atualizados mantendo id (col 1), createdAt (col 12) e deletedAt (col 14)
+  // Gravação atômica dos valores atualizados
   sheet.getRange(targetRowIndex, 2).setValue(updatedCategoriaId);
   sheet.getRange(targetRowIndex, 3).setValue(updatedNome);
   sheet.getRange(targetRowIndex, 4).setValue(updatedSlug);
   sheet.getRange(targetRowIndex, 5).setValue(updatedDescricao);
   sheet.getRange(targetRowIndex, 6).setValue(updatedPreco);
-  sheet.getRange(targetRowIndex, 7).setValue(updatedPrecoPromocional);
+  sheet.getRange(targetRowIndex, 7).setValue(updatedPrecoPromocional !== null ? updatedPrecoPromocional : '');
   sheet.getRange(targetRowIndex, 8).setValue(updatedImagens);
   sheet.getRange(targetRowIndex, 9).setValue(updatedVariacoes);
   sheet.getRange(targetRowIndex, 10).setValue(updatedEstoque);
@@ -496,13 +572,13 @@ function handleUpdateProduct(productData) {
   sheet.getRange(targetRowIndex, 13).setValue(nowIso);
 
   return {
-    id: productData.id,
+    id: String(productData.id).trim(),
     categoriaId: updatedCategoriaId,
     nome: updatedNome,
     slug: updatedSlug,
     descricao: updatedDescricao,
-    preco: parseFloat(updatedPreco),
-    precoPromocional: updatedPrecoPromocional !== '' ? parseFloat(updatedPrecoPromocional) : null,
+    preco: updatedPreco,
+    precoPromocional: updatedPrecoPromocional,
     imagens: parseJsonSafe(updatedImagens, []),
     variacoes: parseJsonSafe(updatedVariacoes, []),
     estoque: updatedEstoque,
@@ -512,10 +588,10 @@ function handleUpdateProduct(productData) {
 }
 
 /**
- * Executa exclusão lógica (soft delete) do produto.
+ * Realiza exclusão lógica (soft delete) do produto.
  */
 function handleDeleteProduct(productId) {
-  if (!productId) {
+  if (!productId || typeof productId !== 'string') {
     throw new Error('VALIDATION_ERROR: ID do produto é obrigatório.');
   }
 
@@ -529,7 +605,7 @@ function handleDeleteProduct(productId) {
   var targetRowIndex = -1;
 
   for (var i = 1; i < data.length; i++) {
-    if (String(data[i][0]) === String(productId)) {
+    if (String(data[i][0]).trim() === String(productId).trim()) {
       targetRowIndex = i + 1;
       break;
     }
@@ -540,33 +616,155 @@ function handleDeleteProduct(productId) {
   }
 
   var nowIso = new Date().toISOString();
-  // Coluna 11 = ativo -> FALSE
+  // Marca inativo e preenche data de exclusão
   sheet.getRange(targetRowIndex, 11).setValue(false);
-  // Coluna 13 = updatedAt -> nowIso
   sheet.getRange(targetRowIndex, 13).setValue(nowIso);
-  // Coluna 14 = deletedAt -> nowIso
   sheet.getRange(targetRowIndex, 14).setValue(nowIso);
 
   return {
-    id: productId,
+    id: productId.trim(),
     deleted: true,
     deletedAt: nowIso
   };
 }
 
 /**
- * Salva configurações da loja impedindo modificação de chaves imutáveis.
+ * Cria uma nova categoria.
+ */
+function handleCreateCategory(categoryData) {
+  if (!categoryData || typeof categoryData !== 'object') {
+    throw new Error('VALIDATION_ERROR: Dados da categoria ausentes.');
+  }
+
+  if (!categoryData.nome || typeof categoryData.nome !== 'string' || categoryData.nome.trim().length < 2) {
+    throw new Error('VALIDATION_ERROR: Nome da categoria deve ter no mínimo 2 caracteres.');
+  }
+
+  var id = 'cat_' + generateUuid().replace(/-/g, '').substring(0, 8);
+  var slug = categoryData.slug ? String(categoryData.slug).trim() : generateSlug(categoryData.nome);
+  var ativo = categoryData.ativo !== false;
+  var ordem = Number.isInteger(Number(categoryData.ordem)) ? Number(categoryData.ordem) : 0;
+  var nowIso = new Date().toISOString();
+
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = getOrCreateSheet(ss, SHEET_CATEGORIES);
+
+  sheet.appendRow([id, categoryData.nome.trim(), slug, ativo, ordem, nowIso, nowIso]);
+
+  return {
+    id: id,
+    nome: categoryData.nome.trim(),
+    slug: slug,
+    ativo: ativo,
+    ordem: ordem,
+    createdAt: nowIso,
+    updatedAt: nowIso
+  };
+}
+
+/**
+ * Atualiza uma categoria existente.
+ */
+function handleUpdateCategory(categoryData) {
+  if (!categoryData || !categoryData.id) {
+    throw new Error('VALIDATION_ERROR: ID da categoria é obrigatório.');
+  }
+
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName(SHEET_CATEGORIES);
+  if (!sheet) throw new Error('NOT_FOUND: Planilha de categorias não encontrada.');
+
+  var data = sheet.getDataRange().getValues();
+  var targetRowIndex = -1;
+
+  for (var i = 1; i < data.length; i++) {
+    if (String(data[i][0]).trim() === String(categoryData.id).trim()) {
+      targetRowIndex = i + 1;
+      break;
+    }
+  }
+
+  if (targetRowIndex === -1) {
+    throw new Error('NOT_FOUND: Categoria não encontrada com ID: ' + categoryData.id);
+  }
+
+  var currentRow = data[targetRowIndex - 1];
+  var updatedNome = categoryData.nome !== undefined ? String(categoryData.nome).trim() : currentRow[1];
+  if (categoryData.nome !== undefined && updatedNome.length < 2) {
+    throw new Error('VALIDATION_ERROR: Nome da categoria deve ter no mínimo 2 caracteres.');
+  }
+
+  var updatedSlug = categoryData.slug !== undefined ? String(categoryData.slug).trim() : currentRow[2];
+  var updatedAtivo = categoryData.ativo !== undefined ? Boolean(categoryData.ativo) : currentRow[3];
+  var updatedOrdem = categoryData.ordem !== undefined ? Number(categoryData.ordem) || 0 : currentRow[4];
+  var nowIso = new Date().toISOString();
+
+  sheet.getRange(targetRowIndex, 2).setValue(updatedNome);
+  sheet.getRange(targetRowIndex, 3).setValue(updatedSlug);
+  sheet.getRange(targetRowIndex, 4).setValue(updatedAtivo);
+  sheet.getRange(targetRowIndex, 5).setValue(updatedOrdem);
+  sheet.getRange(targetRowIndex, 7).setValue(nowIso);
+
+  return {
+    id: String(categoryData.id).trim(),
+    nome: updatedNome,
+    slug: updatedSlug,
+    ativo: updatedAtivo,
+    ordem: updatedOrdem,
+    updatedAt: nowIso
+  };
+}
+
+/**
+ * Desativa categoria (soft delete).
+ */
+function handleDeleteCategory(categoryId) {
+  if (!categoryId) {
+    throw new Error('VALIDATION_ERROR: ID da categoria é obrigatório.');
+  }
+
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName(SHEET_CATEGORIES);
+  if (!sheet) throw new Error('NOT_FOUND: Planilha de categorias não encontrada.');
+
+  var data = sheet.getDataRange().getValues();
+  var targetRowIndex = -1;
+
+  for (var i = 1; i < data.length; i++) {
+    if (String(data[i][0]).trim() === String(categoryId).trim()) {
+      targetRowIndex = i + 1;
+      break;
+    }
+  }
+
+  if (targetRowIndex === -1) {
+    throw new Error('NOT_FOUND: Categoria não encontrada com ID: ' + categoryId);
+  }
+
+  var nowIso = new Date().toISOString();
+  sheet.getRange(targetRowIndex, 4).setValue(false); // ativo = false
+  sheet.getRange(targetRowIndex, 7).setValue(nowIso);
+
+  return {
+    id: String(categoryId).trim(),
+    deleted: true,
+    deletedAt: nowIso
+  };
+}
+
+/**
+ * Salva configurações da loja com proteção contra alteração de campos sensíveis.
  */
 function handleSaveConfig(newConfigs) {
   if (!newConfigs || typeof newConfigs !== 'object') {
     throw new Error('VALIDATION_ERROR: Objeto de configuração inválido.');
   }
 
-  // Verificar se há tentativa de alterar chaves proibidas
+  // Bloqueio mandatória de chaves de segurança
   for (var i = 0; i < IMMUTABLE_CONFIG_KEYS.length; i++) {
     var forbiddenKey = IMMUTABLE_CONFIG_KEYS[i];
     if (newConfigs.hasOwnProperty(forbiddenKey)) {
-      throw new Error('FORBIDDEN_MODIFICATION: A chave "' + forbiddenKey + '" não pode ser alterada via API.');
+      throw new Error('FORBIDDEN_MODIFICATION: A chave protegida "' + forbiddenKey + '" não pode ser alterada via API.');
     }
   }
 
@@ -586,10 +784,8 @@ function handleSaveConfig(newConfigs) {
     if (newConfigs.hasOwnProperty(prop)) {
       var val = String(newConfigs[prop]);
       if (existingKeysMap[prop]) {
-        // Atualiza linha existente
         sheet.getRange(existingKeysMap[prop], 2).setValue(val);
       } else {
-        // Adiciona nova linha de configuração
         sheet.appendRow([prop, val]);
       }
     }
@@ -599,8 +795,88 @@ function handleSaveConfig(newConfigs) {
 }
 
 // ============================================================================
-// FUNÇÕES AUXILIARES, SEGURANÇA E PARSING
+// VALIDAÇÃO, SEGURANÇA E AUXILIARES
 // ============================================================================
+
+/**
+ * Valida o schema de variações rigorosamente.
+ */
+function validateVariations(variacoes) {
+  if (variacoes === undefined || variacoes === null) {
+    return [];
+  }
+  if (!Array.isArray(variacoes)) {
+    throw new Error('VALIDATION_ERROR: O campo "variacoes" deve ser um array.');
+  }
+
+  for (var i = 0; i < variacoes.length; i++) {
+    var v = variacoes[i];
+    if (!v || typeof v !== 'object' || Array.isArray(v)) {
+      throw new Error('VALIDATION_ERROR: Cada variação deve ser um objeto.');
+    }
+    if (!v.tipo || typeof v.tipo !== 'string' || v.tipo.trim().length === 0) {
+      throw new Error('VALIDATION_ERROR: O "tipo" da variação é obrigatório e não pode ser vazio.');
+    }
+    if (!Array.isArray(v.opcoes) || v.opcoes.length === 0) {
+      throw new Error('VALIDATION_ERROR: O campo "opcoes" da variação "' + v.tipo + '" deve ser um array com pelo menos 1 item.');
+    }
+    for (var j = 0; j < v.opcoes.length; j++) {
+      if (typeof v.opcoes[j] !== 'string' || v.opcoes[j].trim().length === 0) {
+        throw new Error('VALIDATION_ERROR: As opções da variação "' + v.tipo + '" devem ser strings não vazias.');
+      }
+    }
+  }
+
+  return variacoes;
+}
+
+/**
+ * Valida a lista de imagens.
+ */
+function validateImages(imagens) {
+  if (imagens === undefined || imagens === null) {
+    return [];
+  }
+  if (!Array.isArray(imagens)) {
+    throw new Error('VALIDATION_ERROR: O campo "imagens" deve ser um array de URLs.');
+  }
+  return imagens;
+}
+
+/**
+ * Garante que a categoria informada existe e está ativa na aba 'categorias'.
+ */
+function assertCategoryExists(categoriaId) {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName(SHEET_CATEGORIES);
+  if (!sheet) throw new Error('NOT_FOUND: Aba de categorias não encontrada.');
+
+  var data = sheet.getDataRange().getValues();
+  for (var i = 1; i < data.length; i++) {
+    var id = String(data[i][0]).trim();
+    if (id === categoriaId) {
+      var ativo = data[i][3] === true || String(data[i][3]).toUpperCase() === 'TRUE';
+      if (!ativo) {
+        throw new Error('VALIDATION_ERROR: A categoria informada (' + categoriaId + ') está desativada.');
+      }
+      return true;
+    }
+  }
+
+  throw new Error('NOT_FOUND: A categoria informada não existe: ' + categoriaId);
+}
+
+/**
+ * Retorna um mapa de categorias ativas { id: true }.
+ */
+function getActiveCategoriesMap() {
+  var categories = getActiveCategories();
+  var map = {};
+  for (var i = 0; i < categories.length; i++) {
+    map[categories[i].id] = true;
+  }
+  return map;
+}
 
 /**
  * Valida o token de autorização administrativo.
@@ -617,7 +893,7 @@ function validateAuthorization(token) {
     return 'Token de autorização inválido ou expirado.';
   }
 
-  return null; // Autorizado
+  return null;
 }
 
 /**
@@ -662,21 +938,25 @@ function hashPassword(password) {
 }
 
 /**
- * Extrai o payload JSON do evento doPost com suporte a text/plain e application/json.
+ * Extrai e valida o payload JSON do evento doPost com proteção contra JSON malformado.
  */
 function parsePostPayload(e) {
-  if (!e) return null;
-  if (e.postData && e.postData.contents) {
-    return JSON.parse(e.postData.contents);
+  if (!e) return { success: false, error: 'Evento de requisição vazio.' };
+  try {
+    if (e.postData && e.postData.contents) {
+      return { success: true, data: JSON.parse(e.postData.contents) };
+    }
+    if (e.parameter && e.parameter.payload) {
+      return { success: true, data: JSON.parse(e.parameter.payload) };
+    }
+    return { success: false, error: 'Corpo da requisição ausente.' };
+  } catch (err) {
+    return { success: false, error: 'Payload JSON inválido ou malformado: ' + err.message };
   }
-  if (e.parameter && e.parameter.payload) {
-    return JSON.parse(e.parameter.payload);
-  }
-  return null;
 }
 
 /**
- * Formata a resposta padrão da API em JSON.
+ * Formata a resposta padrão da API em JSON uniforme.
  */
 function createJsonResponse(success, data, errorCode, errorMessage) {
   var output = {
@@ -694,7 +974,7 @@ function createJsonResponse(success, data, errorCode, errorMessage) {
 }
 
 /**
- * Parse seguro de JSON com fallback.
+ * Parse seguro de JSON com fallback garantido.
  */
 function parseJsonSafe(jsonString, fallbackValue) {
   if (!jsonString) return fallbackValue;
@@ -713,7 +993,7 @@ function generateUuid() {
 }
 
 /**
- * Gera um slug a partir de uma string.
+ * Gera slug limpo e normalizado a partir de texto com caracteres latinos.
  */
 function generateSlug(text) {
   return String(text)

@@ -46,6 +46,21 @@ export interface Category {
   updatedAt: string;
 }
 
+export interface CreateCategoryInput {
+  nome: string;
+  slug?: string;
+  ativo?: boolean;
+  ordem?: number;
+}
+
+export interface UpdateCategoryInput extends Partial<CreateCategoryInput> {
+  id: string;
+}
+
+export interface DeleteCategoryInput {
+  id: string;
+}
+
 // ============================================================
 // 3. PRODUTOS E VARIAÇÕES
 // ============================================================
