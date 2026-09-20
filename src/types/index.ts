@@ -107,9 +107,16 @@ export interface CartItem {
   name: string;
   image: string;
   unitPrice: number;
+  promotionalPrice?: number | null;
   quantity: number;
   variations: SelectedVariation;
   subtotal: number;
+}
+
+export interface Cart {
+  items: CartItem[];
+  total: number;
+  totalItems: number;
 }
 
 // ============================================================
