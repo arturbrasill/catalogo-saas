@@ -112,6 +112,18 @@ describe('Módulo 4 — Motor de WhatsApp (src/lib/whatsapp.ts)', () => {
       expect(normalizePhoneNumber('+55-21-98888-7777')).toBe('5521988887777');
     });
 
+    it('deve adicionar automaticamente DDI 55 para números de 10 ou 11 dígitos sem DDI', () => {
+      expect(normalizePhoneNumber('(86) 99945-6987')).toBe('5586999456987');
+      expect(normalizePhoneNumber('86999456987')).toBe('5586999456987');
+      expect(normalizePhoneNumber('11987654321')).toBe('5511987654321');
+      expect(normalizePhoneNumber('086999456987')).toBe('5586999456987');
+    });
+
+    it('deve aceitar tipo numérico vindo do Google Sheets sem erros', () => {
+      expect(normalizePhoneNumber(5586999456987)).toBe('5586999456987');
+      expect(normalizePhoneNumber(86999456987)).toBe('5586999456987');
+    });
+
     it('deve lançar erro para telefones inválidos com menos de 10 dígitos', () => {
       expect(() => normalizePhoneNumber('12345')).toThrow(/inválido/i);
       expect(() => normalizePhoneNumber('')).toThrow(/não fornecido/i);

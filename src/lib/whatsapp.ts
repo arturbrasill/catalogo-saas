@@ -5,7 +5,9 @@
 
 import type { StoreConfig, CartItem, SelectedVariation, Cart } from '@/types';
 
-export type WhatsAppStoreInfo = Pick<StoreConfig, 'store_name' | 'whatsapp'> & {
+export type WhatsAppStoreInfo = {
+  store_name: string;
+  whatsapp: string | number;
   currency?: string;
 };
 
@@ -137,21 +139,33 @@ export function formatCartItem(item: CartItem, index?: number): string {
  * Normaliza e valida o número de telefone do WhatsApp.
  * Remove caracteres especiais e valida tamanho.
  */
-export function normalizePhoneNumber(phone: string): string {
-  if (!phone || typeof phone !== 'string') {
+export function normalizePhoneNumber(
+  phone: string | number | null | undefined
+): string {
+  if (phone === null || phone === undefined || phone === '') {
     throw new Error('Número de WhatsApp não fornecido.');
   }
 
+  const str = String(phone).trim();
   // Remove caracteres não numéricos (+, -, (, ), espaços, etc.)
-  const digitsOnly = phone.replace(/\D/g, '');
+  let digits = str.replace(/\D/g, '');
 
-  if (digitsOnly.length < 10 || digitsOnly.length > 15) {
+  // Remove zeros à esquerda (ex.: 086999999999 -> 86999999999)
+  digits = digits.replace(/^0+/, '');
+
+  // Se o número tiver 10 ou 11 dígitos (DDD + 8 ou 9 dígitos no Brasil) e não começar com 55,
+  // adiciona automaticamente o DDI 55 do Brasil para garantir que o link wa.me abra no Brasil
+  if ((digits.length === 10 || digits.length === 11) && !digits.startsWith('55')) {
+    digits = '55' + digits;
+  }
+
+  if (digits.length < 10 || digits.length > 15) {
     throw new Error(
-      `Número de WhatsApp inválido: "${phone}". O número deve conter entre 10 e 15 dígitos (incluindo DDI e DDD).`
+      `Número de WhatsApp inválido: "${phone}". O número deve conter entre 10 e 15 dígitos com DDD (exemplo: (11) 99999-9999 ou 5511999999999).`
     );
   }
 
-  return digitsOnly;
+  return digits;
 }
 
 /**

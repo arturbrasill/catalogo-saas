@@ -82,7 +82,10 @@ export default function AdminConfiguracoesPage() {
     setErrorMessage(null);
 
     try {
-      const cleanWhatsapp = String(whatsapp ?? '').replace(/\D/g, '');
+      let cleanWhatsapp = String(whatsapp ?? '').replace(/\D/g, '').replace(/^0+/, '');
+      if ((cleanWhatsapp.length === 10 || cleanWhatsapp.length === 11) && !cleanWhatsapp.startsWith('55')) {
+        cleanWhatsapp = '55' + cleanWhatsapp;
+      }
       const updated = await api.saveConfig(
         {
           store_name: String(storeName ?? '').trim(),

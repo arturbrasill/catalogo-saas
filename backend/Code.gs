@@ -788,9 +788,12 @@ function handleSaveConfig(newConfigs) {
     if (newConfigs.hasOwnProperty(prop) && allowedKeys.indexOf(prop) !== -1) {
       var val = String(newConfigs[prop]).trim();
       if (prop === 'whatsapp') {
-        var digits = val.replace(/\D/g, '');
+        var digits = val.replace(/\D/g, '').replace(/^0+/, '');
+        if ((digits.length === 10 || digits.length === 11) && !digits.startsWith('55')) {
+          digits = '55' + digits;
+        }
         if (digits.length < 10 || digits.length > 15) {
-          throw new Error('VALIDATION_ERROR: O campo "whatsapp" deve conter entre 10 e 15 dígitos.');
+          throw new Error('VALIDATION_ERROR: O campo "whatsapp" deve conter entre 10 e 15 dígitos com DDD (ex: 5511999999999 ou 11999999999).');
         }
         val = digits;
       } else if (prop === 'primary_color' || prop === 'secondary_color') {

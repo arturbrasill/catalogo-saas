@@ -533,9 +533,12 @@ export class BackendEngine {
       if (allowedKeys.includes(key) && value !== undefined && value !== null) {
         let strVal = String(value).trim();
         if (key === 'whatsapp') {
-          const digits = strVal.replace(/\D/g, '');
+          let digits = strVal.replace(/\D/g, '').replace(/^0+/, '');
+          if ((digits.length === 10 || digits.length === 11) && !digits.startsWith('55')) {
+            digits = '55' + digits;
+          }
           if (digits.length < 10 || digits.length > 15) {
-            throw new Error('VALIDATION_ERROR: O campo "whatsapp" deve conter entre 10 e 15 dígitos.');
+            throw new Error('VALIDATION_ERROR: O campo "whatsapp" deve conter entre 10 e 15 dígitos com DDD (ex: 5511999999999 ou 11999999999).');
           }
           strVal = digits;
         } else if (key === 'primary_color' || key === 'secondary_color') {
