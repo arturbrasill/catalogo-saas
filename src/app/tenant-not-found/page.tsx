@@ -6,7 +6,10 @@ import { AlertOctagon, RefreshCw, HelpCircle } from 'lucide-react';
 
 function TenantNotFoundContent() {
   const searchParams = useSearchParams();
-  const host = searchParams.get('host') || 'Domínio não informado';
+  const rawHost = searchParams.get('host') || 'Domínio não informado';
+  const host =
+    rawHost.replace(/[^a-zA-Z0-9.:_-]/g, '').slice(0, 100) ||
+    'Domínio não informado';
 
   return (
     <div className="max-w-md w-full bg-white rounded-2xl shadow-xl border border-gray-100 p-8 text-center space-y-6">

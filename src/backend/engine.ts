@@ -516,9 +516,32 @@ export class BackendEngine {
       }
     }
 
+    const allowedKeys = [
+      'store_name',
+      'logo_url',
+      'primary_color',
+      'secondary_color',
+      'whatsapp',
+      'domain',
+      'currency',
+      'timezone',
+    ];
+
     for (const [key, value] of Object.entries(newConfigs)) {
-      if (value !== undefined && value !== null) {
-        this.configMap.set(key, String(value));
+      if (allowedKeys.includes(key) && value !== undefined && value !== null) {
+        let strVal = String(value).trim();
+        if (key === 'whatsapp') {
+          const digits = strVal.replace(/\D/g, '');
+          if (digits.length < 10 || digits.length > 15) {
+            throw new Error('VALIDATION_ERROR: O campo "whatsapp" deve conter entre 10 e 15 dígitos.');
+          }
+          strVal = digits;
+        } else if (key === 'primary_color' || key === 'secondary_color') {
+          if (!/^#([0-9a-fA-F]{3}){1,2}$/.test(strVal)) {
+            throw new Error(`VALIDATION_ERROR: O campo "${key}" deve ser uma cor hexadecimal válida (ex: #10b981).`);
+          }
+        }
+        this.configMap.set(key, strVal);
       }
     }
 
@@ -560,7 +583,13 @@ export class BackendEngine {
     if (!Array.isArray(imagens)) {
       throw new Error('VALIDATION_ERROR: O campo "imagens" deve ser um array de URLs.');
     }
-    return imagens.map((url) => String(url).trim());
+    return imagens.map((url) => {
+      const trimmed = String(url).trim();
+      if (!trimmed.startsWith('https://') && !trimmed.startsWith('http://') && !trimmed.startsWith('data:image/')) {
+        throw new Error('VALIDATION_ERROR: Cada imagem deve possuir protocolo válido (https://, http:// ou data:image/).');
+      }
+      return trimmed;
+    });
   }
 
   public assertCategoryExists(categoriaId: string): void {

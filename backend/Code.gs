@@ -780,9 +780,23 @@ function handleSaveConfig(newConfigs) {
     }
   }
 
+  var allowedKeys = ['store_name', 'logo_url', 'primary_color', 'secondary_color', 'whatsapp', 'domain', 'currency', 'timezone'];
+
   for (var prop in newConfigs) {
-    if (newConfigs.hasOwnProperty(prop)) {
-      var val = String(newConfigs[prop]);
+    if (newConfigs.hasOwnProperty(prop) && allowedKeys.indexOf(prop) !== -1) {
+      var val = String(newConfigs[prop]).trim();
+      if (prop === 'whatsapp') {
+        var digits = val.replace(/\D/g, '');
+        if (digits.length < 10 || digits.length > 15) {
+          throw new Error('VALIDATION_ERROR: O campo "whatsapp" deve conter entre 10 e 15 dígitos.');
+        }
+        val = digits;
+      } else if (prop === 'primary_color' || prop === 'secondary_color') {
+        if (!/^#([0-9a-fA-F]{3}){1,2}$/.test(val)) {
+          throw new Error('VALIDATION_ERROR: O campo "' + prop + '" deve ser uma cor hexadecimal válida (ex: #10b981).');
+        }
+      }
+
       if (existingKeysMap[prop]) {
         sheet.getRange(existingKeysMap[prop], 2).setValue(val);
       } else {
@@ -840,6 +854,18 @@ function validateImages(imagens) {
   if (!Array.isArray(imagens)) {
     throw new Error('VALIDATION_ERROR: O campo "imagens" deve ser um array de URLs.');
   }
+
+  for (var i = 0; i < imagens.length; i++) {
+    var urlStr = String(imagens[i]).trim();
+    if (
+      urlStr.indexOf('https://') !== 0 &&
+      urlStr.indexOf('http://') !== 0 &&
+      urlStr.indexOf('data:image/') !== 0
+    ) {
+      throw new Error('VALIDATION_ERROR: Cada imagem deve possuir protocolo válido (https://, http:// ou data:image/).');
+    }
+  }
+
   return imagens;
 }
 

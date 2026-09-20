@@ -1,49 +1,117 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getLocalEngine } from '@/backend/engine';
 import { getTenantByHostname, normalizeHostname } from '@/lib/tenantResolver';
+import type { Tenant } from '@/types';
 
-function resolveTenantId(request: NextRequest): string {
-  const headerTenantId = request.headers.get('x-tenant-id');
-  if (headerTenantId && headerTenantId.trim().length > 0) {
-    return headerTenantId.trim();
+/**
+ * Validação rigorosa de segurança para URLs remotas de API.
+ * Previne SSRF (Server-Side Request Forgery) garantindo que chamadas externas
+ * sejam feitas estritamente para o domínio oficial do Google Apps Script.
+ */
+function isValidGasApiUrl(urlStr: string): boolean {
+  try {
+    const parsed = new URL(urlStr);
+    const isValidStructure =
+      parsed.protocol === 'https:' &&
+      parsed.hostname === 'script.google.com' &&
+      parsed.pathname.startsWith('/macros/s/');
+
+    // Em ambiente de teste ou desenvolvimento local, URLs com placeholders não devem realizar chamadas de rede reais
+    const isPlaceholder =
+      urlStr.includes('EXEMPLO') ||
+      urlStr.includes('_ID/') ||
+      urlStr.includes('_ID/exec');
+
+    if (process.env.NODE_ENV === 'test' && isPlaceholder) {
+      return false;
+    }
+
+    return isValidStructure;
+  } catch {
+    return false;
   }
-  const rawHost =
-    request.headers.get('x-forwarded-host') || request.headers.get('host');
-  const tenant = getTenantByHostname(rawHost);
-  if (tenant && tenant.tenantId) {
-    return tenant.tenantId;
-  }
-  return 'loja_exemplo';
 }
 
-function resolveTenantApiUrl(request: NextRequest): string | null {
-  // 1. Tenta obter do header injetado com segurança pelo middleware
-  const headerApiUrl = request.headers.get('x-tenant-api-url');
-  if (headerApiUrl && headerApiUrl.trim().length > 0) {
-    return headerApiUrl.trim();
-  }
-
-  // 2. Se não houver no header, resolve a partir do host da requisição
+/**
+ * Resolve o tenant a partir do hostname canônico da requisição.
+ * NUNCA confia em cabeçalhos arbitrários 'x-tenant-api-url' ou 'x-tenant-id' enviados pelo cliente.
+ */
+function resolveContextTenant(request: NextRequest): {
+  tenant: Tenant | null;
+  tenantId: string;
+  apiUrl: string | null;
+  isAllowed: boolean;
+} {
   const rawHost =
     request.headers.get('x-forwarded-host') || request.headers.get('host');
+  const normalized = normalizeHostname(rawHost);
+
   const tenant = getTenantByHostname(rawHost);
-  if (tenant && tenant.apiUrl && tenant.apiUrl.trim().length > 0) {
-    return tenant.apiUrl.trim();
+
+  if (!tenant) {
+    // Se não for localhost e o domínio for desconhecido, bloqueia
+    if (normalized !== 'localhost' && normalized !== '127.0.0.1') {
+      return {
+        tenant: null,
+        tenantId: '',
+        apiUrl: null,
+        isAllowed: false,
+      };
+    }
+
+    return {
+      tenant: null,
+      tenantId: 'loja_exemplo',
+      apiUrl: process.env['APPS_SCRIPT_URL'] || null,
+      isAllowed: true,
+    };
   }
 
-  // 3. Fallback para variável global de ambiente (se definida)
-  return process.env['APPS_SCRIPT_URL'] || null;
+  let validApiUrl: string | null = null;
+  if (tenant.apiUrl && tenant.apiUrl.trim().length > 0) {
+    if (isValidGasApiUrl(tenant.apiUrl)) {
+      validApiUrl = tenant.apiUrl.trim();
+    }
+  } else if (process.env['APPS_SCRIPT_URL']) {
+    const envUrl = process.env['APPS_SCRIPT_URL'].trim();
+    if (isValidGasApiUrl(envUrl)) {
+      validApiUrl = envUrl;
+    }
+  }
+
+  return {
+    tenant,
+    tenantId: tenant.tenantId,
+    apiUrl: validApiUrl,
+    isAllowed: true,
+  };
 }
 
 export async function GET(request: NextRequest) {
+  const { tenantId, apiUrl, isAllowed } = resolveContextTenant(request);
+
+  if (!isAllowed) {
+    return NextResponse.json(
+      {
+        success: false,
+        data: null,
+        error: {
+          code: 'TENANT_NOT_FOUND',
+          message: 'Loja não cadastrada para o domínio informado.',
+        },
+      },
+      { status: 404 }
+    );
+  }
+
   const searchParams = request.nextUrl.searchParams;
   const action = searchParams.get('action') || 'store';
   const categoryId = searchParams.get('categoryId') || undefined;
 
-  const remoteUrl = resolveTenantApiUrl(request);
-  if (remoteUrl) {
+  // Se houver URL de Web App validada, despacha chamada remota
+  if (apiUrl) {
     try {
-      const url = new URL(remoteUrl);
+      const url = new URL(apiUrl);
       url.searchParams.set('action', action);
       if (categoryId) url.searchParams.set('categoryId', categoryId);
 
@@ -59,7 +127,10 @@ export async function GET(request: NextRequest) {
         {
           success: false,
           data: null,
-          error: { code: 'GATEWAY_ERROR', message: 'Falha na comunicação com a API do tenant: ' + String(err) },
+          error: {
+            code: 'GATEWAY_ERROR',
+            message: 'Falha na comunicação com a API do tenant: ' + String(err),
+          },
         },
         { status: 502 }
       );
@@ -67,18 +138,32 @@ export async function GET(request: NextRequest) {
   }
 
   // Fallback para engine local integrado (desenvolvimento / teste)
-  const tenantId = resolveTenantId(request);
   const localResult = getLocalEngine(tenantId).doGet({ action, categoryId });
   return NextResponse.json(localResult);
 }
 
 export async function POST(request: NextRequest) {
+  const { tenantId, apiUrl, isAllowed } = resolveContextTenant(request);
+
+  if (!isAllowed) {
+    return NextResponse.json(
+      {
+        success: false,
+        data: null,
+        error: {
+          code: 'TENANT_NOT_FOUND',
+          message: 'Loja não cadastrada para o domínio informado.',
+        },
+      },
+      { status: 404 }
+    );
+  }
+
   try {
     const payload = await request.json();
 
-    const remoteUrl = resolveTenantApiUrl(request);
-    if (remoteUrl) {
-      const response = await fetch(remoteUrl, {
+    if (apiUrl) {
+      const response = await fetch(apiUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'text/plain;charset=utf-8',
@@ -91,7 +176,6 @@ export async function POST(request: NextRequest) {
     }
 
     // Fallback para engine local integrado
-    const tenantId = resolveTenantId(request);
     const localResult = getLocalEngine(tenantId).doPost(payload);
     return NextResponse.json(localResult);
   } catch (err) {
@@ -99,7 +183,10 @@ export async function POST(request: NextRequest) {
       {
         success: false,
         data: null,
-        error: { code: 'INVALID_PAYLOAD', message: 'Erro ao processar corpo da requisição: ' + String(err) },
+        error: {
+          code: 'INVALID_PAYLOAD',
+          message: 'Erro ao processar corpo da requisição: ' + String(err),
+        },
       },
       { status: 400 }
     );
