@@ -17,6 +17,9 @@ export interface StoreConfig {
   logo_url: string;
   primary_color: string;
   secondary_color: string;
+  background_color?: string;
+  text_color?: string;
+  banners?: string[];
   whatsapp: string;
   domain: string;
   currency: string;
@@ -196,6 +199,9 @@ export interface SaveConfigInput {
   logo_url?: string;
   primary_color?: string;
   secondary_color?: string;
+  background_color?: string;
+  text_color?: string;
+  banners?: string[];
   whatsapp?: string;
   domain?: string;
   currency?: string;

@@ -135,6 +135,18 @@ export const SaveConfigSchema = z.object({
     .string()
     .regex(/^#([0-9a-fA-F]{3}){1,2}$/, 'Cor secundária deve ser hexadecimal válido (ex: #047857)')
     .optional(),
+  background_color: z
+    .string()
+    .regex(/^#([0-9a-fA-F]{3}){1,2}$/, 'Cor de fundo deve ser hexadecimal válido (ex: #ffffff)')
+    .optional(),
+  text_color: z
+    .string()
+    .regex(/^#([0-9a-fA-F]{3}){1,2}$/, 'Cor do texto deve ser hexadecimal válido (ex: #111827)')
+    .optional(),
+  banners: z
+    .array(z.string().trim())
+    .max(3, 'No máximo 3 banners permitidos')
+    .optional(),
   whatsapp: z
     .string()
     .regex(/^\d{10,15}$/, 'Número do WhatsApp deve conter apenas dígitos com DDI e DDD')

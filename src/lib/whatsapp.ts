@@ -122,6 +122,10 @@ export function formatCartItem(item: CartItem, index?: number): string {
     lines.push(`   ${varStr}`);
   }
 
+  if (item.image && typeof item.image === 'string' && item.image.trim()) {
+    lines.push(`   📸 Foto: ${item.image.trim()}`);
+  }
+
   if (item.promotionalPrice && item.promotionalPrice < item.unitPrice) {
     lines.push(
       `   _Preço un.: ~${formatCurrency(item.unitPrice)}~ por ${formatCurrency(effectivePrice)}_`

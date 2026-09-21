@@ -18,9 +18,11 @@ import {
   Sparkles,
   ShoppingBag,
   MessageCircle,
-  Eye,
   Smartphone,
   Save,
+  Image as ImageIcon,
+  Trash2,
+  Plus,
 } from 'lucide-react';
 
 const COLOR_PRESETS = [
@@ -33,11 +35,27 @@ const COLOR_PRESETS = [
   { name: 'Dark Minimalista', primary: '#0f172a', secondary: '#020617' },
 ];
 
+const BG_PRESETS = [
+  { name: 'Gelo (Padrão)', hex: '#f8fafc' },
+  { name: 'Branco Puro', hex: '#ffffff' },
+  { name: 'Creme Suave', hex: '#faf8f5' },
+  { name: 'Cinza Suave', hex: '#f1f5f9' },
+  { name: 'Dark Mode', hex: '#0f172a' },
+];
+
+const TEXT_PRESETS = [
+  { name: 'Escuro (Padrão)', hex: '#0f172a' },
+  { name: 'Grafite', hex: '#1e293b' },
+  { name: 'Preto Total', hex: '#000000' },
+  { name: 'Claro (p/ Dark)', hex: '#f8fafc' },
+];
+
 export default function AdminConfiguracoesPage() {
   const { token } = useAuth();
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isUploadingLogo, setIsUploadingLogo] = useState(false);
+  const [isUploadingBanner, setIsUploadingBanner] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
@@ -46,6 +64,10 @@ export default function AdminConfiguracoesPage() {
   const [logoUrl, setLogoUrl] = useState('');
   const [primaryColor, setPrimaryColor] = useState('#10b981');
   const [secondaryColor, setSecondaryColor] = useState('#047857');
+  const [backgroundColor, setBackgroundColor] = useState('#f8fafc');
+  const [textColor, setTextColor] = useState('#0f172a');
+  const [banners, setBanners] = useState<string[]>([]);
+  const [newBannerInput, setNewBannerInput] = useState('');
   const [whatsapp, setWhatsapp] = useState('');
   const [domain, setDomain] = useState('');
 
@@ -58,6 +80,9 @@ export default function AdminConfiguracoesPage() {
       setLogoUrl(String(data.logo_url ?? ''));
       setPrimaryColor(String(data.primary_color ?? '#10b981'));
       setSecondaryColor(String(data.secondary_color ?? '#047857'));
+      setBackgroundColor(String(data.background_color ?? '#f8fafc'));
+      setTextColor(String(data.text_color ?? '#0f172a'));
+      setBanners(Array.isArray(data.banners) ? data.banners.slice(0, 3) : []);
       setWhatsapp(String(data.whatsapp ?? ''));
       setDomain(String(data.domain ?? ''));
     } catch (err) {
@@ -88,6 +113,44 @@ export default function AdminConfiguracoesPage() {
     }
   };
 
+  const handleBannerUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (banners.length >= 3) {
+      alert('Limite de 3 banners atingido. Remova um banner antes de adicionar outro.');
+      e.target.value = '';
+      return;
+    }
+
+    setIsUploadingBanner(true);
+    setErrorMessage(null);
+    try {
+      const url = await imageUploadService.upload(file);
+      setBanners((prev) => [...prev, url].slice(0, 3));
+    } catch (err) {
+      setErrorMessage(err instanceof Error ? err.message : 'Erro ao enviar imagem do banner.');
+    } finally {
+      setIsUploadingBanner(false);
+      e.target.value = '';
+    }
+  };
+
+  const handleAddBannerUrl = () => {
+    const trimmed = newBannerInput.trim();
+    if (!trimmed) return;
+    if (banners.length >= 3) {
+      alert('Você já atingiu o limite de 3 banners.');
+      return;
+    }
+    setBanners((prev) => [...prev, trimmed].slice(0, 3));
+    setNewBannerInput('');
+  };
+
+  const handleRemoveBanner = (index: number) => {
+    setBanners((prev) => prev.filter((_, i) => i !== index));
+  };
+
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!token) return;
@@ -107,6 +170,9 @@ export default function AdminConfiguracoesPage() {
           logo_url: String(logoUrl ?? '').trim(),
           primary_color: String(primaryColor ?? '#10b981').trim(),
           secondary_color: String(secondaryColor ?? '#047857').trim(),
+          background_color: String(backgroundColor ?? '#f8fafc').trim(),
+          text_color: String(textColor ?? '#0f172a').trim(),
+          banners: banners.slice(0, 3),
           whatsapp: cleanWhatsapp,
           domain: String(domain ?? '').trim(),
         },
@@ -117,6 +183,9 @@ export default function AdminConfiguracoesPage() {
       setLogoUrl(String(updated.logo_url ?? ''));
       setPrimaryColor(String(updated.primary_color ?? '#10b981'));
       setSecondaryColor(String(updated.secondary_color ?? '#047857'));
+      setBackgroundColor(String(updated.background_color ?? '#f8fafc'));
+      setTextColor(String(updated.text_color ?? '#0f172a'));
+      setBanners(Array.isArray(updated.banners) ? updated.banners.slice(0, 3) : []);
       setWhatsapp(String(updated.whatsapp ?? ''));
       setDomain(String(updated.domain ?? ''));
 
@@ -138,7 +207,7 @@ export default function AdminConfiguracoesPage() {
             Identidade Visual & Configurações
           </h1>
           <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
-            Personalize o nome fantasia, cores da marca, telefone de atendimento e logotipo da sua loja.
+            Personalize o nome da loja, banners de topo, cores de fundo e textos, WhatsApp e logotipo.
           </p>
         </div>
 
@@ -164,9 +233,9 @@ export default function AdminConfiguracoesPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8">
-            {/* Coluna 1: Formulário de Configuração (7 colunas no desktop) */}
+            {/* Coluna 1: Formulário de Configuração (7 colunas) */}
             <div className="lg:col-span-7 bg-white rounded-3xl border border-slate-200/80 p-6 sm:p-8 shadow-xs space-y-6">
-              <form onSubmit={handleSave} className="space-y-5">
+              <form onSubmit={handleSave} className="space-y-6">
                 {/* Nome da Loja */}
                 <div>
                   <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5 flex items-center gap-1.5">
@@ -181,9 +250,6 @@ export default function AdminConfiguracoesPage() {
                     placeholder="Ex: Minha Loja Digital"
                     className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-xs sm:text-sm focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
                   />
-                  <span className="text-[11px] text-slate-400 mt-1 block">
-                    Aparecerá no cabeçalho da vitrine, mensagens do WhatsApp e na barra do navegador.
-                  </span>
                 </div>
 
                 {/* Logotipo */}
@@ -201,7 +267,7 @@ export default function AdminConfiguracoesPage() {
                     />
                     <label className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-xs font-bold text-slate-700 cursor-pointer transition shadow-2xs">
                       <Upload className="w-3.5 h-3.5 text-slate-500" />
-                      <span>{isUploadingLogo ? 'Enviando...' : 'Fazer Upload'}</span>
+                      <span>{isUploadingLogo ? 'Enviando...' : 'Upload Logo'}</span>
                       <input
                         type="file"
                         accept="image/*"
@@ -213,8 +279,229 @@ export default function AdminConfiguracoesPage() {
                   </div>
                 </div>
 
-                {/* WhatsApp de Atendimento */}
-                <div>
+                {/* Banners do Topo (Até 3 Banners) */}
+                <div className="pt-3 border-t border-slate-100 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <span className="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
+                        <ImageIcon className="w-4 h-4 text-emerald-600" />
+                        Banners de Topo do Catálogo ({banners.length}/3)
+                      </span>
+                      <p className="text-[11px] text-slate-400 mt-0.5">
+                        Exibidos em destaque bem no início do aplicativo (rotacionam automaticamente no PC e celular).
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Lista de Banners Atuais */}
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    {banners.map((bannerUrl, idx) => (
+                      <div
+                        key={idx}
+                        className="group relative rounded-xl border border-slate-200 overflow-hidden bg-slate-100 aspect-[21/9] sm:aspect-[16/9]"
+                      >
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={bannerUrl}
+                          alt={`Banner ${idx + 1}`}
+                          className="w-full h-full object-cover"
+                        />
+                        <span className="absolute top-1 left-1 bg-black/60 text-white text-[9px] font-bold px-1.5 py-0.5 rounded">
+                          Banner {idx + 1}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveBanner(idx)}
+                          className="absolute top-1 right-1 p-1 bg-rose-600 text-white rounded-md opacity-90 hover:opacity-100 transition cursor-pointer"
+                          title="Remover banner"
+                          aria-label={`Remover banner ${idx + 1}`}
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    ))}
+
+                    {/* Slot para adicionar novo banner se < 3 */}
+                    {banners.length < 3 && (
+                      <label
+                        className={`flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-slate-200 hover:border-emerald-500 hover:bg-emerald-50/30 aspect-[21/9] sm:aspect-[16/9] cursor-pointer transition ${
+                          isUploadingBanner ? 'opacity-50 cursor-not-allowed' : ''
+                        }`}
+                      >
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={handleBannerUpload}
+                          disabled={isUploadingBanner}
+                          className="sr-only"
+                        />
+                        {isUploadingBanner ? (
+                          <div className="flex flex-col items-center gap-1 text-emerald-600">
+                            <Loader2 className="w-5 h-5 animate-spin" />
+                            <span className="text-[10px] font-bold">Enviando...</span>
+                          </div>
+                        ) : (
+                          <div className="flex flex-col items-center gap-1 text-slate-500">
+                            <Upload className="w-4 h-4 text-slate-400" />
+                            <span className="text-[11px] font-bold">+ Upload Banner</span>
+                            <span className="text-[9px] text-slate-400">Recomendado: 1200x500</span>
+                          </div>
+                        )}
+                      </label>
+                    )}
+                  </div>
+
+                  {/* Adicionar por URL direta */}
+                  {banners.length < 3 && (
+                    <div className="flex gap-2 pt-1">
+                      <input
+                        type="url"
+                        placeholder="Ou cole a URL direta da imagem do banner..."
+                        value={newBannerInput}
+                        onChange={(e) => setNewBannerInput(e.target.value)}
+                        className="flex-1 rounded-xl border border-slate-200 px-3 py-1.5 text-xs focus:border-emerald-500 focus:outline-none"
+                      />
+                      <button
+                        type="button"
+                        onClick={handleAddBannerUrl}
+                        disabled={!newBannerInput.trim()}
+                        className="px-3 py-1.5 text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl transition disabled:opacity-40 cursor-pointer"
+                      >
+                        Adicionar URL
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {/* Personalização de Cores (Fundo, Textos e Marca) */}
+                <div className="pt-3 border-t border-slate-100 space-y-4">
+                  <div>
+                    <span className="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
+                      <Palette className="w-4 h-4 text-emerald-600" />
+                      Cores do Catálogo & Identidade
+                    </span>
+                    <p className="text-[11px] text-slate-400 mt-0.5">
+                      Personalize a cor dos botões, do fundo da página e dos textos do seu catálogo.
+                    </p>
+                  </div>
+
+                  {/* Cor do Fundo & Cor do Texto */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-slate-50/70 p-4 rounded-2xl border border-slate-200/70">
+                    {/* Cor de Fundo */}
+                    <div className="space-y-2">
+                      <label className="block text-xs font-bold text-slate-800">
+                        Cor de Fundo do Catálogo
+                      </label>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="color"
+                          value={backgroundColor}
+                          onChange={(e) => setBackgroundColor(e.target.value)}
+                          className="h-8 w-8 rounded-lg border border-slate-300 p-0.5 cursor-pointer flex-shrink-0"
+                        />
+                        <input
+                          type="text"
+                          value={backgroundColor}
+                          onChange={(e) => setBackgroundColor(e.target.value)}
+                          className="flex-1 rounded-xl border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-mono"
+                        />
+                      </div>
+                      {/* Presets de fundo */}
+                      <div className="flex flex-wrap gap-1.5 pt-1">
+                        {BG_PRESETS.map((p) => (
+                          <button
+                            key={p.name}
+                            type="button"
+                            onClick={() => setBackgroundColor(p.hex)}
+                            className="text-[10px] px-2 py-0.5 rounded-md border border-slate-200 bg-white hover:border-slate-300 text-slate-700 cursor-pointer"
+                          >
+                            {p.name}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Cor do Texto */}
+                    <div className="space-y-2">
+                      <label className="block text-xs font-bold text-slate-800">
+                        Cor dos Textos do Catálogo
+                      </label>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="color"
+                          value={textColor}
+                          onChange={(e) => setTextColor(e.target.value)}
+                          className="h-8 w-8 rounded-lg border border-slate-300 p-0.5 cursor-pointer flex-shrink-0"
+                        />
+                        <input
+                          type="text"
+                          value={textColor}
+                          onChange={(e) => setTextColor(e.target.value)}
+                          className="flex-1 rounded-xl border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-mono"
+                        />
+                      </div>
+                      {/* Presets de texto */}
+                      <div className="flex flex-wrap gap-1.5 pt-1">
+                        {TEXT_PRESETS.map((p) => (
+                          <button
+                            key={p.name}
+                            type="button"
+                            onClick={() => setTextColor(p.hex)}
+                            className="text-[10px] px-2 py-0.5 rounded-md border border-slate-200 bg-white hover:border-slate-300 text-slate-700 cursor-pointer"
+                          >
+                            {p.name}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Cores Primária e Secundária (Botões de Ação) */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                        Cor Primária (Botões e Destaques)
+                      </label>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="color"
+                          value={primaryColor}
+                          onChange={(e) => setPrimaryColor(e.target.value)}
+                          className="h-8 w-8 rounded-lg border border-slate-300 p-0.5 cursor-pointer flex-shrink-0"
+                        />
+                        <input
+                          type="text"
+                          value={primaryColor}
+                          onChange={(e) => setPrimaryColor(e.target.value)}
+                          className="flex-1 rounded-xl border border-slate-200 px-3 py-1.5 text-xs font-mono"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                        Cor Secundária
+                      </label>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="color"
+                          value={secondaryColor}
+                          onChange={(e) => setSecondaryColor(e.target.value)}
+                          className="h-8 w-8 rounded-lg border border-slate-300 p-0.5 cursor-pointer flex-shrink-0"
+                        />
+                        <input
+                          type="text"
+                          value={secondaryColor}
+                          onChange={(e) => setSecondaryColor(e.target.value)}
+                          className="flex-1 rounded-xl border border-slate-200 px-3 py-1.5 text-xs font-mono"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* WhatsApp */}
+                <div className="pt-3 border-t border-slate-100">
                   <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5 flex items-center gap-1.5">
                     <Phone className="w-4 h-4 text-emerald-600" />
                     <span>WhatsApp de Atendimento & Vendas *</span>
@@ -228,91 +515,8 @@ export default function AdminConfiguracoesPage() {
                     className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-xs sm:text-sm focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 font-mono"
                   />
                   <span className="text-[11px] text-slate-400 mt-1 block">
-                    Formato com DDD (ex: 5511999998888). O cliente será direcionado a este número para fechar o pedido.
+                    Formato com DDD (ex: 5511999998888). Os pedidos da sacola com fotos dos produtos serão enviados para este número.
                   </span>
-                </div>
-
-                {/* Paleta de Cores e Temas */}
-                <div className="pt-3 border-t border-slate-100 space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <span className="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
-                        <Palette className="w-4 h-4 text-slate-400" />
-                        Cores da Marca
-                      </span>
-                      <span className="text-[11px] text-slate-400">
-                        Escolha um preset ou digite o código HEX da sua paleta.
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Presets Rápidos */}
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                    {COLOR_PRESETS.map((preset) => (
-                      <button
-                        key={preset.name}
-                        type="button"
-                        onClick={() => {
-                          setPrimaryColor(preset.primary);
-                          setSecondaryColor(preset.secondary);
-                        }}
-                        className={`p-2 rounded-xl border text-left flex items-center gap-2 text-xs font-medium transition cursor-pointer ${
-                          primaryColor.toLowerCase() === preset.primary.toLowerCase()
-                            ? 'border-slate-900 bg-slate-50 font-bold shadow-2xs'
-                            : 'border-slate-200 hover:border-slate-300'
-                        }`}
-                      >
-                        <div
-                          className="h-5 w-5 rounded-full shadow-xs flex-shrink-0"
-                          style={{ backgroundColor: preset.primary }}
-                        />
-                        <span className="truncate text-slate-800">{preset.name}</span>
-                      </button>
-                    ))}
-                  </div>
-
-                  {/* Pickers HEX customizados */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
-                    <div>
-                      <label className="block text-[11px] font-bold text-slate-600 mb-1">
-                        Cor Primária (Botões e Destaques)
-                      </label>
-                      <div className="flex items-center gap-2">
-                        <input
-                          type="color"
-                          value={primaryColor}
-                          onChange={(e) => setPrimaryColor(e.target.value)}
-                          className="h-9 w-9 rounded-lg border border-slate-300 p-0.5 cursor-pointer flex-shrink-0"
-                        />
-                        <input
-                          type="text"
-                          value={primaryColor}
-                          onChange={(e) => setPrimaryColor(e.target.value)}
-                          className="flex-1 rounded-xl border border-slate-200 px-3 py-1.5 text-xs font-mono"
-                        />
-                      </div>
-                    </div>
-
-                    <div>
-                      <label className="block text-[11px] font-bold text-slate-600 mb-1">
-                        Cor Secundária
-                      </label>
-                      <div className="flex items-center gap-2">
-                        <input
-                          type="color"
-                          value={secondaryColor}
-                          onChange={(e) => setSecondaryColor(e.target.value)}
-                          className="h-9 w-9 rounded-lg border border-slate-300 p-0.5 cursor-pointer flex-shrink-0"
-                        />
-                        <input
-                          type="text"
-                          value={secondaryColor}
-                          onChange={(e) => setSecondaryColor(e.target.value)}
-                          className="flex-1 rounded-xl border border-slate-200 px-3 py-1.5 text-xs font-mono"
-                        />
-                      </div>
-                    </div>
-                  </div>
                 </div>
 
                 {/* Domínio Customizado (Opcional) */}
@@ -353,7 +557,7 @@ export default function AdminConfiguracoesPage() {
               </form>
             </div>
 
-            {/* Coluna 2: Preview Interativo em Tempo Real (5 colunas no desktop) */}
+            {/* Coluna 2: Preview Interativo em Tempo Real (5 colunas) */}
             <div className="lg:col-span-5 space-y-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2 text-xs font-bold text-slate-700">
@@ -361,13 +565,19 @@ export default function AdminConfiguracoesPage() {
                   <span>Pré-visualização em Tempo Real</span>
                 </div>
                 <span className="text-[10px] text-slate-400 bg-slate-200/60 px-2 py-0.5 rounded-full font-semibold">
-                  Visual do Catálogo
+                  Visual Mobile do Catálogo
                 </span>
               </div>
 
-              {/* Mockup de Celular com Vitrine Interativa */}
+              {/* Mockup de Celular */}
               <div className="bg-slate-900 p-3.5 rounded-[2.5rem] shadow-2xl border-4 border-slate-800 max-w-sm mx-auto">
-                <div className="bg-slate-50 rounded-[2rem] overflow-hidden flex flex-col min-h-[500px] border border-slate-200">
+                <div
+                  className="rounded-[2rem] overflow-hidden flex flex-col min-h-[520px] border border-slate-200 transition-colors"
+                  style={{
+                    backgroundColor: backgroundColor,
+                    color: textColor,
+                  }}
+                >
                   {/* Notch / Barra Superior */}
                   <div className="bg-slate-900 text-white text-[10px] py-1 px-4 flex items-center justify-between font-bold">
                     <span>9:41</span>
@@ -376,9 +586,9 @@ export default function AdminConfiguracoesPage() {
                   </div>
 
                   {/* Header Simulado da Loja */}
-                  <div className="bg-white p-3.5 border-b border-slate-200 flex items-center justify-between shadow-2xs">
-                    <div className="flex items-center gap-2.5">
-                      <div className="h-9 w-9 rounded-xl bg-slate-100 border border-slate-200 overflow-hidden flex items-center justify-center">
+                  <div className="bg-white/95 backdrop-blur-xs p-3.5 border-b border-slate-200 flex items-center justify-between shadow-2xs">
+                    <div className="flex items-center gap-2">
+                      <div className="h-8 w-8 rounded-xl bg-slate-100 border border-slate-200 overflow-hidden flex items-center justify-center">
                         {logoUrl ? (
                           // eslint-disable-next-line @next/next/no-img-element
                           <img
@@ -402,34 +612,47 @@ export default function AdminConfiguracoesPage() {
                     </div>
 
                     <div
-                      className="h-8 w-8 rounded-xl flex items-center justify-center text-white shadow-xs"
+                      className="h-7 w-7 rounded-lg flex items-center justify-center text-white shadow-xs"
                       style={{ backgroundColor: primaryColor }}
                     >
                       <ShoppingBag className="w-3.5 h-3.5" />
                     </div>
                   </div>
 
-                  {/* Corpo Simulado do Catálogo */}
+                  {/* Corpo Simulado com Banners */}
                   <div className="p-3 space-y-3 flex-1">
-                    {/* Banner Simulado */}
-                    <div
-                      className="p-3 rounded-2xl text-white space-y-1 shadow-sm"
-                      style={{ backgroundColor: primaryColor }}
-                    >
-                      <span className="text-[9px] font-extrabold uppercase tracking-wider opacity-90">
-                        Destaque da Semana
-                      </span>
-                      <h4 className="text-xs font-black leading-tight">
-                        Encontre os melhores produtos aqui!
-                      </h4>
-                    </div>
+                    {/* Banners no Início */}
+                    {banners.length > 0 ? (
+                      <div className="relative rounded-2xl overflow-hidden aspect-[21/9] bg-slate-200 shadow-xs">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={banners[0]}
+                          alt="Banner Preview"
+                          className="w-full h-full object-cover"
+                        />
+                        {banners.length > 1 && (
+                          <div className="absolute bottom-1.5 left-1/2 -translate-x-1/2 flex gap-1 bg-black/40 px-2 py-0.5 rounded-full">
+                            {banners.map((_, i) => (
+                              <div
+                                key={i}
+                                className={`h-1 rounded-full ${i === 0 ? 'w-3 bg-white' : 'w-1 bg-white/50'}`}
+                              />
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="p-2.5 rounded-xl border border-dashed border-slate-300 text-center text-[10px] text-slate-400">
+                        Nenhum banner cadastrado
+                      </div>
+                    )}
 
                     {/* Card de Produto Exemplo */}
-                    <div className="bg-white rounded-2xl p-2.5 border border-slate-200/80 shadow-2xs space-y-2">
-                      <div className="h-28 rounded-xl bg-slate-100 flex items-center justify-center text-slate-400 relative overflow-hidden">
-                        <Store className="w-8 h-8 stroke-1 text-slate-300" />
+                    <div className="bg-white rounded-xl p-2.5 border border-slate-200/80 shadow-2xs space-y-2">
+                      <div className="h-24 rounded-lg bg-slate-100 flex items-center justify-center text-slate-400 relative overflow-hidden">
+                        <Store className="w-6 h-6 stroke-1 text-slate-300" />
                         <span
-                          className="absolute top-2 left-2 text-white text-[9px] font-black px-1.5 py-0.5 rounded-full"
+                          className="absolute top-1.5 left-1.5 text-white text-[8px] font-black px-1.5 py-0.5 rounded-full"
                           style={{ backgroundColor: primaryColor }}
                         >
                           -20%
@@ -437,8 +660,7 @@ export default function AdminConfiguracoesPage() {
                       </div>
 
                       <div className="space-y-0.5">
-                        <span className="text-[10px] text-slate-400">★ 4.9 • Avaliação</span>
-                        <h5 className="text-xs font-bold text-slate-900">
+                        <h5 className="text-[11px] font-bold text-slate-900">
                           Exemplo de Produto
                         </h5>
                         <div className="flex items-center justify-between pt-1">
@@ -446,24 +668,24 @@ export default function AdminConfiguracoesPage() {
                             className="text-xs font-black"
                             style={{ color: primaryColor }}
                           >
-                            R$ 79,90
+                            R$ 89,90
                           </span>
                           <div
-                            className="h-6 w-6 rounded-lg flex items-center justify-center text-white shadow-2xs"
+                            className="h-5 w-5 rounded-md flex items-center justify-center text-white"
                             style={{ backgroundColor: primaryColor }}
                           >
-                            <ShoppingBag className="w-3 h-3" />
+                            <ShoppingBag className="w-2.5 h-2.5" />
                           </div>
                         </div>
                       </div>
                     </div>
 
-                    {/* Botão de Checkout WhatsApp Simulado */}
+                    {/* Botão de WhatsApp */}
                     <div
-                      className="w-full py-2.5 px-3 rounded-xl text-white font-bold text-xs flex items-center justify-center gap-2 shadow-sm"
+                      className="w-full py-2 px-3 rounded-xl text-white font-bold text-[11px] flex items-center justify-center gap-1.5 shadow-xs"
                       style={{ backgroundColor: primaryColor }}
                     >
-                      <MessageCircle className="w-4 h-4 fill-current" />
+                      <MessageCircle className="w-3.5 h-3.5 fill-current" />
                       <span>Comprar pelo WhatsApp</span>
                     </div>
                   </div>

@@ -151,6 +151,7 @@ describe('Módulo 4 — Motor de WhatsApp (src/lib/whatsapp.ts)', () => {
       expect(msg).toContain('*2x Camiseta Algodão Egípcio*');
       expect(msg).toContain('_Tamanho: M | Cor: Preto_');
       expect(msg).toContain('Subtotal: *R$ 179,80*');
+      expect(msg).toContain('📸 Foto: https://cdn.example.com/cam.jpg');
       expect(msg).toContain('💰 *TOTAL DO PEDIDO: R$ 179,80*');
     });
 

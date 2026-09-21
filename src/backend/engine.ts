@@ -33,6 +33,9 @@ export class BackendEngine {
     );
     this.configMap.set('primary_color', initialConfig?.primary_color || '#10b981');
     this.configMap.set('secondary_color', initialConfig?.secondary_color || '#047857');
+    this.configMap.set('background_color', initialConfig?.background_color || '#f8fafc');
+    this.configMap.set('text_color', initialConfig?.text_color || '#0f172a');
+    this.configMap.set('banners', JSON.stringify(initialConfig?.banners || []));
     this.configMap.set('whatsapp', initialConfig?.whatsapp || '5511999999999');
     this.configMap.set('admin_password_hash', defaultPasswordHash);
     this.configMap.set('api_token', defaultApiToken);
@@ -194,6 +197,19 @@ export class BackendEngine {
         (config as any)[key] = val;
       }
     });
+
+    if (typeof (config as any).banners === 'string') {
+      try {
+        config.banners = JSON.parse((config as any).banners);
+      } catch {
+        config.banners = [];
+      }
+    } else if (!Array.isArray(config.banners)) {
+      config.banners = [];
+    }
+
+    if (!config.background_color) config.background_color = '#f8fafc';
+    if (!config.text_color) config.text_color = '#0f172a';
 
     return config as StoreConfig;
   }
@@ -523,6 +539,9 @@ export class BackendEngine {
       'logo_url',
       'primary_color',
       'secondary_color',
+      'background_color',
+      'text_color',
+      'banners',
       'whatsapp',
       'domain',
       'currency',
@@ -531,6 +550,12 @@ export class BackendEngine {
 
     for (const [key, value] of Object.entries(newConfigs)) {
       if (allowedKeys.includes(key) && value !== undefined && value !== null) {
+        if (key === 'banners') {
+          const bannerArr = Array.isArray(value) ? value.slice(0, 3) : [];
+          this.configMap.set('banners', JSON.stringify(bannerArr));
+          continue;
+        }
+
         let strVal = String(value).trim();
         if (key === 'whatsapp') {
           let digits = strVal.replace(/\D/g, '').replace(/^0+/, '');
@@ -541,7 +566,12 @@ export class BackendEngine {
             throw new Error('VALIDATION_ERROR: O campo "whatsapp" deve conter entre 10 e 15 dígitos com DDD (ex: 5511999999999 ou 11999999999).');
           }
           strVal = digits;
-        } else if (key === 'primary_color' || key === 'secondary_color') {
+        } else if (
+          key === 'primary_color' ||
+          key === 'secondary_color' ||
+          key === 'background_color' ||
+          key === 'text_color'
+        ) {
           if (!/^#([0-9a-fA-F]{3}){1,2}$/.test(strVal)) {
             throw new Error(`VALIDATION_ERROR: O campo "${key}" deve ser uma cor hexadecimal válida (ex: #10b981).`);
           }

@@ -782,10 +782,32 @@ function handleSaveConfig(newConfigs) {
     }
   }
 
-  var allowedKeys = ['store_name', 'logo_url', 'primary_color', 'secondary_color', 'whatsapp', 'domain', 'currency', 'timezone'];
+  var allowedKeys = [
+    'store_name',
+    'logo_url',
+    'primary_color',
+    'secondary_color',
+    'background_color',
+    'text_color',
+    'banners',
+    'whatsapp',
+    'domain',
+    'currency',
+    'timezone'
+  ];
 
   for (var prop in newConfigs) {
     if (newConfigs.hasOwnProperty(prop) && allowedKeys.indexOf(prop) !== -1) {
+      if (prop === 'banners') {
+        var bannerVal = Array.isArray(newConfigs[prop]) ? JSON.stringify(newConfigs[prop].slice(0, 3)) : '[]';
+        if (existingKeysMap[prop]) {
+          sheet.getRange(existingKeysMap[prop], 2).setValue(bannerVal);
+        } else {
+          sheet.appendRow([prop, bannerVal]);
+        }
+        continue;
+      }
+
       var val = String(newConfigs[prop]).trim();
       if (prop === 'whatsapp') {
         var digits = val.replace(/\D/g, '').replace(/^0+/, '');
@@ -796,7 +818,12 @@ function handleSaveConfig(newConfigs) {
           throw new Error('VALIDATION_ERROR: O campo "whatsapp" deve conter entre 10 e 15 dígitos com DDD (ex: 5511999999999 ou 11999999999).');
         }
         val = digits;
-      } else if (prop === 'primary_color' || prop === 'secondary_color') {
+      } else if (
+        prop === 'primary_color' ||
+        prop === 'secondary_color' ||
+        prop === 'background_color' ||
+        prop === 'text_color'
+      ) {
         if (!/^#([0-9a-fA-F]{3}){1,2}$/.test(val)) {
           throw new Error('VALIDATION_ERROR: O campo "' + prop + '" deve ser uma cor hexadecimal válida (ex: #10b981).');
         }
