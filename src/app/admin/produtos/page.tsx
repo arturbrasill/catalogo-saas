@@ -21,6 +21,11 @@ import {
   X,
   Check,
   Package,
+  Layers,
+  Sparkles,
+  ToggleLeft,
+  ToggleRight,
+  ExternalLink,
 } from 'lucide-react';
 
 export default function AdminProdutosPage() {
@@ -107,7 +112,7 @@ export default function AdminProdutosPage() {
 
   // Duplicar produto
   const handleDuplicate = (p: Product) => {
-    setEditingProduct(null); // Como novo produto
+    setEditingProduct(null);
     setFormNome(`${p.nome} (Cópia)`);
     setFormCategoriaId(p.categoriaId);
     setFormDescricao(p.descricao);
@@ -131,13 +136,13 @@ export default function AdminProdutosPage() {
 
     setFormError(null);
 
-    // Validações básicas no cliente
+    // Validações no cliente
     if (!formNome.trim() || formNome.trim().length < 2) {
       setFormError('Nome do produto deve ter no mínimo 2 caracteres.');
       return;
     }
     if (!formCategoriaId) {
-      setFormError('Selecione uma categoria.');
+      setFormError('Selecione uma categoria para o produto.');
       return;
     }
     const precoNum = parseFloat(String(formPreco || '').replace(',', '.'));
@@ -237,7 +242,7 @@ export default function AdminProdutosPage() {
   const handleDelete = async (p: Product) => {
     if (!token) return;
     const confirmDelete = window.confirm(
-      `Deseja realmente remover o produto "${p.nome}"? O produto será desativado e arquivado.`
+      `Deseja realmente arquivar o produto "${p.nome}"? Ele será desativado na vitrine.`
     );
     if (!confirmDelete) return;
 
@@ -252,16 +257,13 @@ export default function AdminProdutosPage() {
   // Filtragem
   const filteredProducts = useMemo(() => {
     return products.filter((p) => {
-      // Filtro texto
       const matchesSearch =
         p.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
         p.descricao.toLowerCase().includes(searchTerm.toLowerCase());
 
-      // Filtro categoria
       const matchesCategory =
         selectedCategory === 'ALL' || p.categoriaId === selectedCategory;
 
-      // Filtro status
       const matchesStatus =
         statusFilter === 'ALL'
           ? true
@@ -281,36 +283,47 @@ export default function AdminProdutosPage() {
   return (
     <AdminLayout>
       <div className="space-y-6">
-        {/* Top Header */}
+        {/* Header da Página */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Gerenciar Produtos</h1>
-            <p className="text-sm text-gray-500">
-              Cadastre, edite preços, variações e controle seu estoque.
+            <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+              Gerenciar Produtos
+            </h1>
+            <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
+              Cadastre, edite preços, organize fotos e controle estoques em tempo real.
             </p>
           </div>
           <button
             type="button"
             onClick={handleOpenNew}
-            className="inline-flex items-center gap-1.5 px-4 py-2.5 text-sm font-semibold text-white bg-emerald-600 rounded-lg hover:bg-emerald-700 shadow-sm transition self-start sm:self-auto cursor-pointer"
+            className="inline-flex items-center gap-2 px-4 py-2.5 text-xs font-bold text-white bg-emerald-600 rounded-xl hover:bg-emerald-700 shadow-md hover:shadow-lg active:scale-95 transition-all self-start sm:self-auto cursor-pointer"
           >
-            <Plus className="w-4 h-4" />
-            Novo Produto
+            <Plus className="w-4 h-4 stroke-[2.5]" />
+            <span>Novo Produto</span>
           </button>
         </div>
 
-        {/* Barra de Filtros */}
-        <div className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm flex flex-col md:flex-row gap-3">
+        {/* Barra de Filtros (Estilo LapakBaju) */}
+        <div className="bg-white rounded-2xl border border-slate-200/80 p-3.5 sm:p-4 shadow-xs flex flex-col md:flex-row gap-3">
           {/* Busca */}
           <div className="relative flex-1">
-            <Search className="w-4 h-4 text-gray-400 absolute left-3 top-3" />
+            <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
             <input
               type="text"
-              placeholder="Buscar por nome ou descrição..."
+              placeholder="Buscar por nome ou descrição do produto..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full rounded-lg border border-gray-300 pl-9 pr-4 py-2 text-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+              className="w-full rounded-xl border border-slate-200 bg-slate-50 pl-10 pr-8 py-2 text-xs sm:text-sm text-slate-900 focus:bg-white focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 transition"
             />
+            {searchTerm && (
+              <button
+                type="button"
+                onClick={() => setSearchTerm('')}
+                className="absolute right-3 top-2.5 text-slate-400 hover:text-slate-600"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            )}
           </div>
 
           {/* Filtro Categoria */}
@@ -318,7 +331,7 @@ export default function AdminProdutosPage() {
             <select
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value)}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 bg-white"
+              className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs sm:text-sm font-medium text-slate-800 focus:bg-white focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 cursor-pointer"
             >
               <option value="ALL">Todas as Categorias</option>
               {categories.map((c) => (
@@ -334,7 +347,7 @@ export default function AdminProdutosPage() {
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value as any)}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 bg-white"
+              className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs sm:text-sm font-medium text-slate-800 focus:bg-white focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 cursor-pointer"
             >
               <option value="ALL">Todos os Status</option>
               <option value="ACTIVE">Somente Ativos</option>
@@ -343,28 +356,28 @@ export default function AdminProdutosPage() {
           </div>
         </div>
 
-        {/* Tabela de Produtos / Empty State */}
+        {/* Tabela de Produtos ou Empty State */}
         {isLoading ? (
-          <div className="bg-white rounded-xl border border-gray-200 p-12 text-center shadow-sm">
+          <div className="bg-white rounded-3xl border border-slate-200/80 p-12 text-center shadow-xs">
             <Loader2 className="w-8 h-8 animate-spin text-emerald-600 mx-auto mb-3" />
-            <p className="text-sm text-gray-500">Carregando catálogo de produtos...</p>
+            <p className="text-sm font-medium text-slate-500">Sincronizando produtos da loja...</p>
           </div>
         ) : filteredProducts.length === 0 ? (
-          <div className="bg-white rounded-xl border border-gray-200 p-12 text-center shadow-sm space-y-3">
-            <Package className="w-12 h-12 text-gray-300 mx-auto" />
-            <h3 className="text-base font-semibold text-gray-900">
-              Nenhum produto encontrado
+          <div className="bg-white rounded-3xl border border-slate-200/80 p-12 text-center shadow-xs space-y-3">
+            <Package className="w-12 h-12 text-slate-300 mx-auto stroke-1" />
+            <h3 className="text-base font-bold text-slate-900">
+              Nenhum produto cadastrado ou encontrado
             </h3>
-            <p className="text-sm text-gray-500 max-w-sm mx-auto">
+            <p className="text-xs text-slate-500 max-w-sm mx-auto leading-relaxed">
               {searchTerm || selectedCategory !== 'ALL' || statusFilter !== 'ALL'
-                ? 'Tente ajustar os filtros ou o termo de busca.'
-                : 'Cadastre seu primeiro produto para exibi-lo no catálogo.'}
+                ? 'Tente alterar os termos de busca ou filtros selecionados.'
+                : 'Cadastre seu primeiro produto para começar a receber pedidos no catálogo digital.'}
             </p>
             {!(searchTerm || selectedCategory !== 'ALL' || statusFilter !== 'ALL') && (
               <button
                 type="button"
                 onClick={handleOpenNew}
-                className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 rounded-lg transition"
+                className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-xl transition cursor-pointer"
               >
                 <Plus className="w-4 h-4" />
                 Cadastrar Agora
@@ -372,26 +385,26 @@ export default function AdminProdutosPage() {
             )}
           </div>
         ) : (
-          <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
+          <div className="bg-white rounded-3xl border border-slate-200/80 overflow-hidden shadow-xs">
             <div className="overflow-x-auto">
-              <table className="w-full text-left text-sm text-gray-600">
-                <thead className="bg-gray-50 border-b border-gray-200 text-xs uppercase font-semibold text-gray-700">
+              <table className="w-full text-left text-xs sm:text-sm text-slate-600">
+                <thead className="bg-slate-50 border-b border-slate-200/80 text-[11px] uppercase tracking-wider font-bold text-slate-500">
                   <tr>
-                    <th className="px-4 py-3">Foto / Produto</th>
-                    <th className="px-4 py-3">Categoria</th>
-                    <th className="px-4 py-3">Preço</th>
-                    <th className="px-4 py-3">Estoque</th>
-                    <th className="px-4 py-3">Status</th>
-                    <th className="px-4 py-3 text-right">Ações</th>
+                    <th className="px-5 py-3.5">Produto & Detalhes</th>
+                    <th className="px-4 py-3.5">Categoria</th>
+                    <th className="px-4 py-3.5">Preço</th>
+                    <th className="px-4 py-3.5">Estoque</th>
+                    <th className="px-4 py-3.5">Visibilidade</th>
+                    <th className="px-5 py-3.5 text-right">Ações</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-100">
+                <tbody className="divide-y divide-slate-100">
                   {filteredProducts.map((prod) => (
-                    <tr key={prod.id} className="hover:bg-gray-50/80 transition">
-                      {/* Produto & Thumbnail */}
-                      <td className="px-4 py-3">
-                        <div className="flex items-center gap-3">
-                          <div className="h-12 w-12 rounded-lg bg-gray-100 border border-gray-200 flex-shrink-0 overflow-hidden">
+                    <tr key={prod.id} className="hover:bg-slate-50/70 transition-colors">
+                      {/* Foto e Produto */}
+                      <td className="px-5 py-3.5">
+                        <div className="flex items-center gap-3.5">
+                          <div className="h-12 w-12 rounded-xl bg-slate-100 border border-slate-200/70 flex-shrink-0 overflow-hidden flex items-center justify-center">
                             {prod.imagens && prod.imagens.length > 0 ? (
                               // eslint-disable-next-line @next/next/no-img-element
                               <img
@@ -400,37 +413,46 @@ export default function AdminProdutosPage() {
                                 className="h-full w-full object-cover"
                               />
                             ) : (
-                              <div className="h-full w-full flex items-center justify-center text-gray-300">
-                                <Package className="w-6 h-6" />
-                              </div>
+                              <Package className="w-5 h-5 text-slate-300 stroke-1" />
                             )}
                           </div>
-                          <div>
-                            <span className="font-semibold text-gray-900 block leading-tight">
+                          <div className="min-w-0">
+                            <span className="font-bold text-slate-900 block leading-snug truncate max-w-xs">
                               {prod.nome}
                             </span>
-                            <span className="text-xs text-gray-400">
-                              {prod.variacoes && prod.variacoes.length > 0
-                                ? `${prod.variacoes.length} variação(ões)`
-                                : 'Sem variações'}
-                            </span>
+                            <div className="flex items-center gap-2 mt-0.5">
+                              {prod.variacoes && prod.variacoes.length > 0 ? (
+                                <span className="text-[10px] text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded font-semibold border border-emerald-100">
+                                  {prod.variacoes.length} variação(ões)
+                                </span>
+                              ) : (
+                                <span className="text-[10px] text-slate-400">Padrão</span>
+                              )}
+                              {prod.descricao && (
+                                <span className="text-[11px] text-slate-400 truncate max-w-[140px] hidden sm:inline">
+                                  • {prod.descricao}
+                                </span>
+                              )}
+                            </div>
                           </div>
                         </div>
                       </td>
 
                       {/* Categoria */}
-                      <td className="px-4 py-3 text-xs text-gray-700 font-medium">
-                        {getCategoryName(prod.categoriaId)}
+                      <td className="px-4 py-3.5 text-xs font-semibold text-slate-700">
+                        <span className="bg-slate-100 px-2.5 py-1 rounded-lg border border-slate-200/60">
+                          {getCategoryName(prod.categoriaId)}
+                        </span>
                       </td>
 
                       {/* Preço */}
-                      <td className="px-4 py-3">
+                      <td className="px-4 py-3.5">
                         <div className="leading-tight">
-                          <span className="font-semibold text-gray-900 block">
+                          <span className="font-bold text-slate-900 block">
                             R$ {prod.preco.toFixed(2).replace('.', ',')}
                           </span>
                           {prod.precoPromocional && (
-                            <span className="text-xs text-emerald-600 font-medium">
+                            <span className="text-[11px] font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded inline-block mt-0.5">
                               Promo: R$ {prod.precoPromocional.toFixed(2).replace('.', ',')}
                             </span>
                           )}
@@ -438,69 +460,74 @@ export default function AdminProdutosPage() {
                       </td>
 
                       {/* Estoque */}
-                      <td className="px-4 py-3">
+                      <td className="px-4 py-3.5">
                         {prod.estoque === -1 ? (
-                          <span className="text-xs font-semibold text-blue-700 bg-blue-50 px-2 py-0.5 rounded-full border border-blue-200">
+                          <span className="text-[11px] font-semibold text-sky-700 bg-sky-50 px-2.5 py-1 rounded-full border border-sky-200">
                             Sob encomenda
                           </span>
-                        ) : prod.estoque <= 3 ? (
-                          <span className="text-xs font-semibold text-red-700 bg-red-50 px-2 py-0.5 rounded-full border border-red-200">
-                            {prod.estoque} unid.
+                        ) : prod.estoque <= 3 && prod.estoque > 0 ? (
+                          <span className="text-[11px] font-bold text-amber-700 bg-amber-50 px-2.5 py-1 rounded-full border border-amber-200">
+                            Apenas {prod.estoque} unid.
+                          </span>
+                        ) : prod.estoque === 0 ? (
+                          <span className="text-[11px] font-bold text-rose-700 bg-rose-50 px-2.5 py-1 rounded-full border border-rose-200">
+                            Esgotado
                           </span>
                         ) : (
-                          <span className="text-xs font-semibold text-gray-700">
+                          <span className="text-[11px] font-semibold text-slate-700 bg-slate-100 px-2.5 py-1 rounded-full border border-slate-200/60">
                             {prod.estoque} unid.
                           </span>
                         )}
                       </td>
 
-                      {/* Status Toggle */}
-                      <td className="px-4 py-3">
+                      {/* Visibilidade / Status */}
+                      <td className="px-4 py-3.5">
                         <button
                           type="button"
                           onClick={() => handleToggleStatus(prod)}
-                          className={`inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full border transition cursor-pointer ${
+                          className={`inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full border transition cursor-pointer ${
                             prod.ativo
-                              ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100'
-                              : 'bg-gray-100 text-gray-600 border-gray-300 hover:bg-gray-200'
+                              ? 'bg-emerald-50 text-emerald-800 border-emerald-200 hover:bg-emerald-100'
+                              : 'bg-slate-100 text-slate-500 border-slate-200 hover:bg-slate-200'
                           }`}
+                          title="Clique para alternar visibilidade"
                         >
-                          {prod.ativo ? (
-                            <>
-                              <Eye className="w-3 h-3" /> Ativo
-                            </>
-                          ) : (
-                            <>
-                              <EyeOff className="w-3 h-3" /> Inativo
-                            </>
-                          )}
+                          <span
+                            className={`h-1.5 w-1.5 rounded-full ${
+                              prod.ativo ? 'bg-emerald-500 animate-pulse' : 'bg-slate-400'
+                            }`}
+                          />
+                          <span>{prod.ativo ? 'Ativo na Loja' : 'Oculto'}</span>
                         </button>
                       </td>
 
                       {/* Ações */}
-                      <td className="px-4 py-3 text-right">
-                        <div className="flex items-center justify-end gap-1">
-                          <button
-                            type="button"
-                            onClick={() => handleOpenEdit(prod)}
-                            className="p-1.5 text-gray-500 hover:text-emerald-700 hover:bg-emerald-50 rounded transition"
-                            title="Editar produto"
-                          >
-                            <Edit2 className="w-4 h-4" />
-                          </button>
+                      <td className="px-5 py-3.5 text-right">
+                        <div className="flex items-center justify-end gap-1.5">
                           <button
                             type="button"
                             onClick={() => handleDuplicate(prod)}
-                            className="p-1.5 text-gray-500 hover:text-blue-700 hover:bg-blue-50 rounded transition"
+                            className="p-1.5 text-slate-400 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition cursor-pointer"
                             title="Duplicar produto"
+                            aria-label={`Duplicar ${prod.nome}`}
                           >
                             <Copy className="w-4 h-4" />
                           </button>
                           <button
                             type="button"
+                            onClick={() => handleOpenEdit(prod)}
+                            className="p-1.5 text-slate-400 hover:text-emerald-700 hover:bg-emerald-50 rounded-lg transition cursor-pointer"
+                            title="Editar produto"
+                            aria-label={`Editar ${prod.nome}`}
+                          >
+                            <Edit2 className="w-4 h-4" />
+                          </button>
+                          <button
+                            type="button"
                             onClick={() => handleDelete(prod)}
-                            className="p-1.5 text-gray-500 hover:text-red-700 hover:bg-red-50 rounded transition"
-                            title="Excluir produto (Soft Delete)"
+                            className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition cursor-pointer"
+                            title="Remover produto"
+                            aria-label={`Remover ${prod.nome}`}
                           >
                             <Trash2 className="w-4 h-4" />
                           </button>
@@ -514,56 +541,62 @@ export default function AdminProdutosPage() {
           </div>
         )}
 
-        {/* Modal de Criação / Edição de Produto */}
+        {/* Modal de Criação / Edição do Produto */}
         {isModalOpen && (
-          <div className="fixed inset-0 z-50 overflow-y-auto bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
-            <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-gray-100 p-6 space-y-5">
-              <div className="flex items-center justify-between border-b border-gray-100 pb-3">
-                <h3 className="text-lg font-bold text-gray-900">
-                  {editingProduct ? 'Editar Produto' : 'Novo Produto'}
-                </h3>
+          <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-5 animate-fade-in">
+            <div className="bg-white rounded-3xl max-w-2xl w-full max-h-[92vh] overflow-y-auto shadow-2xl border border-slate-100 flex flex-col relative animate-scale-in">
+              {/* Header do Modal */}
+              <div className="px-6 py-4.5 border-b border-slate-100 flex items-center justify-between sticky top-0 bg-white/95 backdrop-blur-md z-10">
+                <div>
+                  <h3 className="text-base sm:text-lg font-bold text-slate-900">
+                    {editingProduct ? 'Editar Produto' : 'Cadastrar Novo Produto'}
+                  </h3>
+                  <p className="text-xs text-slate-500">
+                    Preencha as informações do produto para exibição no catálogo.
+                  </p>
+                </div>
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="text-gray-400 hover:text-gray-700 p-1 rounded"
+                  className="p-2 text-slate-400 hover:text-slate-800 hover:bg-slate-100 rounded-xl transition cursor-pointer"
                 >
                   <X className="w-5 h-5" />
                 </button>
               </div>
 
-              {formError && (
-                <div className="rounded-lg bg-red-50 border border-red-200 p-3 text-xs text-red-700 flex items-center gap-2">
-                  <AlertCircle className="w-4 h-4 flex-shrink-0" />
-                  <span>{formError}</span>
-                </div>
-              )}
+              {/* Formulário */}
+              <form onSubmit={handleSave} className="p-6 space-y-5">
+                {formError && (
+                  <div className="p-3 bg-rose-50 border border-rose-200 rounded-2xl flex items-center gap-2 text-xs text-rose-800">
+                    <AlertCircle className="w-4 h-4 text-rose-600 flex-shrink-0" />
+                    <span>{formError}</span>
+                  </div>
+                )}
 
-              <form onSubmit={handleSave} className="space-y-4">
-                {/* Nome */}
+                {/* Nome do Produto */}
                 <div>
-                  <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">
                     Nome do Produto *
                   </label>
                   <input
                     type="text"
                     required
+                    placeholder="Ex: Tênis Air Max Sport Confort"
                     value={formNome}
                     onChange={(e) => setFormNome(e.target.value)}
-                    placeholder="Ex: Tênis Esportivo Pro Runner"
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                    className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-xs sm:text-sm focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
                   />
                 </div>
 
                 {/* Categoria */}
                 <div>
-                  <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">
                     Categoria *
                   </label>
                   <select
-                    required
                     value={formCategoriaId}
                     onChange={(e) => setFormCategoriaId(e.target.value)}
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 bg-white"
+                    className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-xs sm:text-sm focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 bg-white cursor-pointer"
                   >
                     <option value="">Selecione uma categoria...</option>
                     {categories.map((c) => (
@@ -574,114 +607,119 @@ export default function AdminProdutosPage() {
                   </select>
                 </div>
 
-                {/* Preços e Estoque */}
+                {/* Grid Preço, Promoção & Estoque */}
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div>
-                    <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">
+                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">
                       Preço Normal (R$) *
                     </label>
                     <input
                       type="text"
                       required
+                      placeholder="0,00"
                       value={formPreco}
                       onChange={(e) => setFormPreco(e.target.value)}
-                      placeholder="89.90"
-                      className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                      className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-xs sm:text-sm focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
                     />
                   </div>
+
                   <div>
-                    <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">
-                      Preço Promo (Opcional)
+                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">
+                      Preço Promo (R$)
                     </label>
                     <input
                       type="text"
+                      placeholder="Opcional"
                       value={formPrecoPromocional}
                       onChange={(e) => setFormPrecoPromocional(e.target.value)}
-                      placeholder="69.90"
-                      className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                      className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-xs sm:text-sm focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
                     />
                   </div>
+
                   <div>
-                    <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">
-                      Estoque (-1 = ilimitado) *
+                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">
+                      Estoque (-1 p/ ilimitado)
                     </label>
                     <input
                       type="number"
-                      required
                       value={formEstoque}
                       onChange={(e) => setFormEstoque(e.target.value)}
-                      className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                      className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-xs sm:text-sm focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
                     />
                   </div>
                 </div>
 
                 {/* Descrição */}
                 <div>
-                  <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">
                     Descrição Detalhada
                   </label>
                   <textarea
                     rows={3}
+                    placeholder="Detalhes, material, medidas, garantia..."
                     value={formDescricao}
                     onChange={(e) => setFormDescricao(e.target.value)}
-                    placeholder="Detalhes, material, medidas ou orientações sobre o produto..."
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                    className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-xs sm:text-sm focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
                   />
                 </div>
 
-                {/* Upload de Imagens */}
-                <ImageUploader
-                  value={formImagens}
-                  onChange={setFormImagens}
-                  disabled={isSubmitting}
-                />
+                {/* Imagens do Produto (ImageUploader) */}
+                <div className="pt-2 border-t border-slate-100">
+                  <ImageUploader
+                    value={formImagens}
+                    onChange={setFormImagens}
+                    disabled={isSubmitting}
+                  />
+                </div>
 
-                {/* Variation Builder */}
-                <VariationBuilder
-                  value={formVariacoes}
-                  onChange={setFormVariacoes}
-                  disabled={isSubmitting}
-                />
+                {/* Variações do Produto (VariationBuilder) */}
+                <div className="pt-2 border-t border-slate-100">
+                  <VariationBuilder
+                    value={formVariacoes}
+                    onChange={setFormVariacoes}
+                    disabled={isSubmitting}
+                  />
+                </div>
 
-                {/* Status Ativo */}
-                <div className="flex items-center gap-2 pt-2">
+                {/* Status Ativo / Inativo */}
+                <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
+                  <div>
+                    <span className="text-xs font-bold text-slate-900 block">
+                      Produto Ativo na Vitrine
+                    </span>
+                    <span className="text-[11px] text-slate-500">
+                      Se desativado, o produto não aparecerá nas buscas dos clientes.
+                    </span>
+                  </div>
                   <input
                     type="checkbox"
-                    id="formAtivo"
                     checked={formAtivo}
                     onChange={(e) => setFormAtivo(e.target.checked)}
-                    className="h-4 w-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500"
+                    className="h-5 w-5 rounded-md text-emerald-600 focus:ring-emerald-500 border-slate-300 cursor-pointer"
                   />
-                  <label htmlFor="formAtivo" className="text-sm font-medium text-gray-800">
-                    Produto Ativo (visível no catálogo público)
-                  </label>
                 </div>
 
-                {/* Ações do Modal */}
-                <div className="flex justify-end gap-2 pt-4 border-t border-gray-100">
+                {/* Botões do Rodapé */}
+                <div className="pt-4 border-t border-slate-100 flex items-center justify-end gap-2.5">
                   <button
                     type="button"
                     onClick={() => setIsModalOpen(false)}
-                    disabled={isSubmitting}
-                    className="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition cursor-pointer"
+                    className="px-4 py-2.5 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-100 transition cursor-pointer"
                   >
                     Cancelar
                   </button>
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg shadow-sm transition disabled:opacity-50 cursor-pointer"
+                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 shadow-md transition disabled:opacity-50 cursor-pointer"
                   >
                     {isSubmitting ? (
                       <>
-                        <Loader2 className="w-4 h-4 animate-spin" />
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
                         Salvando...
                       </>
                     ) : (
-                      <>
-                        <Check className="w-4 h-4" />
-                        Salvar Produto
-                      </>
+                      'Salvar Produto'
                     )}
                   </button>
                 </div>

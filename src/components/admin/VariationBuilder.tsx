@@ -73,15 +73,15 @@ export function VariationBuilder({
   };
 
   return (
-    <div className="space-y-4 rounded-lg border border-gray-200 bg-gray-50/50 p-4">
+    <div className="space-y-4 rounded-2xl border border-slate-200 bg-slate-50/70 p-4 sm:p-5">
       <div className="flex items-center justify-between">
         <div>
-          <h4 className="text-sm font-semibold text-gray-900 flex items-center gap-1.5">
-            <Tag className="w-4 h-4 text-emerald-600" />
-            Variações do Produto
+          <h4 className="text-xs font-bold uppercase tracking-wider text-slate-800 flex items-center gap-1.5">
+            <Tag className="w-3.5 h-3.5 text-emerald-600" />
+            Variações do Produto (Tamanho, Cor, Modelo)
           </h4>
-          <p className="text-xs text-gray-500">
-            Adicione características configuráveis como Tamanho, Cor ou Modelo.
+          <p className="text-[11px] text-slate-400 mt-0.5">
+            Crie atributos que o cliente precisará escolher antes de enviar o pedido.
           </p>
         </div>
       </div>
@@ -91,17 +91,17 @@ export function VariationBuilder({
         {value.map((variation, typeIndex) => (
           <div
             key={typeIndex}
-            className="rounded-md border border-gray-200 bg-white p-3 shadow-sm transition hover:border-gray-300"
+            className="rounded-xl border border-slate-200 bg-white p-3.5 shadow-2xs transition"
           >
             <div className="flex items-center justify-between mb-2">
-              <span className="font-medium text-sm text-gray-800">
+              <span className="font-bold text-xs sm:text-sm text-slate-900">
                 {variation.tipo}
               </span>
               <button
                 type="button"
                 onClick={() => handleRemoveType(typeIndex)}
                 disabled={disabled}
-                className="text-gray-400 hover:text-red-600 p-1 transition rounded"
+                className="text-slate-400 hover:text-rose-600 p-1 transition rounded-lg"
                 title="Remover variação"
               >
                 <Trash2 className="w-4 h-4" />
@@ -109,25 +109,25 @@ export function VariationBuilder({
             </div>
 
             {/* Chips de Opções */}
-            <div className="flex flex-wrap gap-1.5 mb-2">
+            <div className="flex flex-wrap gap-1.5 mb-2.5">
               {variation.opcoes.length === 0 ? (
-                <span className="text-xs text-amber-600 italic">
-                  Nenhuma opção cadastrada. Adicione pelo menos uma abaixo.
+                <span className="text-[11px] text-amber-700 italic">
+                  Nenhuma opção cadastrada. Digite abaixo para adicionar.
                 </span>
               ) : (
                 variation.opcoes.map((opcao, optIndex) => (
                   <span
                     key={optIndex}
-                    className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-medium text-emerald-800 border border-emerald-200"
+                    className="inline-flex items-center gap-1 rounded-lg bg-emerald-50 px-2.5 py-1 text-xs font-bold text-emerald-800 border border-emerald-200 shadow-2xs"
                   >
                     {opcao}
                     <button
                       type="button"
                       onClick={() => handleRemoveOption(typeIndex, optIndex)}
                       disabled={disabled}
-                      className="hover:text-emerald-950 focus:outline-none"
+                      className="hover:text-rose-600 focus:outline-none ml-0.5"
                     >
-                      <X className="w-3 h-3" />
+                      <X className="w-3 h-3 stroke-[3]" />
                     </button>
                   </span>
                 ))
@@ -153,13 +153,13 @@ export function VariationBuilder({
                   }
                 }}
                 disabled={disabled}
-                className="flex-1 rounded-md border border-gray-300 px-2.5 py-1 text-xs focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                className="flex-1 rounded-xl border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs focus:bg-white focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
               />
               <button
                 type="button"
                 onClick={() => handleAddOption(typeIndex)}
                 disabled={disabled}
-                className="inline-flex items-center rounded-md bg-gray-100 px-2.5 py-1 text-xs font-medium text-gray-700 hover:bg-gray-200 transition"
+                className="inline-flex items-center rounded-xl bg-slate-900 px-3 py-1.5 text-xs font-bold text-white hover:bg-slate-800 transition cursor-pointer"
               >
                 <Plus className="w-3.5 h-3.5 mr-1" />
                 Adicionar
@@ -170,7 +170,7 @@ export function VariationBuilder({
       </div>
 
       {/* Input para Criar Novo Tipo de Variação */}
-      <div className="flex gap-2 pt-2 border-t border-gray-200">
+      <div className="flex gap-2 pt-2 border-t border-slate-200">
         <input
           type="text"
           placeholder="Nome da variação (ex: Tamanho, Cor, Voltagem)..."
@@ -183,13 +183,13 @@ export function VariationBuilder({
             }
           }}
           disabled={disabled}
-          className="flex-1 rounded-md border border-gray-300 px-3 py-1.5 text-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 bg-white"
+          className="flex-1 rounded-xl border border-slate-200 px-3.5 py-2 text-xs sm:text-sm focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 bg-white"
         />
         <button
           type="button"
           onClick={handleAddType}
           disabled={disabled || !newTypeName.trim()}
-          className="inline-flex items-center rounded-md bg-emerald-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-50 transition"
+          className="inline-flex items-center rounded-xl bg-emerald-600 px-4 py-2 text-xs sm:text-sm font-bold text-white hover:bg-emerald-700 disabled:opacity-50 transition shadow-sm cursor-pointer"
         >
           <Plus className="w-4 h-4 mr-1" />
           Nova Variação

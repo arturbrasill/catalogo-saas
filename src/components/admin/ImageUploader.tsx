@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Upload, X, Loader2, Image as ImageIcon } from 'lucide-react';
+import { Upload, X, Loader2, Image as ImageIcon, Star } from 'lucide-react';
 import { imageUploadService } from '@/lib/imageUploadService';
 
 interface ImageUploaderProps {
@@ -45,7 +45,7 @@ export function ImageUploader({
       setErrorMessage(err instanceof Error ? err.message : 'Erro ao enviar imagem.');
     } finally {
       setIsUploading(false);
-      e.target.value = ''; // reseta input para permitir reenvio
+      e.target.value = '';
     }
   };
 
@@ -57,16 +57,16 @@ export function ImageUploader({
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <label className="block text-sm font-medium text-gray-700">
-          Imagens do Produto
+        <label className="block text-xs font-bold uppercase tracking-wider text-slate-700">
+          Galeria de Fotos do Produto
         </label>
-        <span className="text-xs text-gray-500">
-          A primeira imagem será usada como capa.
+        <span className="text-[11px] text-slate-400">
+          A 1ª imagem será a capa do card.
         </span>
       </div>
 
       {errorMessage && (
-        <div className="rounded-md bg-red-50 p-2 text-xs text-red-700 border border-red-200">
+        <div className="rounded-xl bg-rose-50 p-3 text-xs text-rose-800 border border-rose-200">
           {errorMessage}
         </div>
       )}
@@ -76,7 +76,7 @@ export function ImageUploader({
         {value.map((url, idx) => (
           <div
             key={idx}
-            className="group relative aspect-square rounded-lg border border-gray-200 overflow-hidden bg-gray-100 shadow-sm"
+            className="group relative aspect-square rounded-2xl border border-slate-200 overflow-hidden bg-slate-100 shadow-2xs hover:shadow-md transition"
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
@@ -85,7 +85,8 @@ export function ImageUploader({
               className="h-full w-full object-cover"
             />
             {idx === 0 && (
-              <span className="absolute top-1.5 left-1.5 bg-emerald-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded shadow">
+              <span className="absolute top-2 left-2 bg-emerald-600/90 backdrop-blur-xs text-white text-[10px] font-extrabold px-2 py-0.5 rounded-md shadow-xs flex items-center gap-1">
+                <Star className="w-3 h-3 fill-current" />
                 Capa
               </span>
             )}
@@ -93,8 +94,9 @@ export function ImageUploader({
               type="button"
               onClick={() => handleRemove(idx)}
               disabled={disabled}
-              className="absolute top-1.5 right-1.5 rounded-full bg-black/60 p-1 text-white opacity-0 group-hover:opacity-100 transition hover:bg-red-600"
+              className="absolute top-2 right-2 rounded-full bg-slate-950/70 backdrop-blur-xs p-1.5 text-white opacity-0 group-hover:opacity-100 transition hover:bg-rose-600 cursor-pointer"
               title="Remover imagem"
+              aria-label="Remover foto"
             >
               <X className="w-3.5 h-3.5" />
             </button>
@@ -103,7 +105,7 @@ export function ImageUploader({
 
         {/* Botão de Upload */}
         <label
-          className={`flex flex-col items-center justify-center aspect-square rounded-lg border-2 border-dashed border-gray-300 hover:border-emerald-500 hover:bg-emerald-50/50 cursor-pointer transition ${
+          className={`flex flex-col items-center justify-center aspect-square rounded-2xl border-2 border-dashed border-slate-300 hover:border-emerald-500 hover:bg-emerald-50/40 cursor-pointer transition ${
             disabled || isUploading ? 'opacity-50 cursor-not-allowed' : ''
           }`}
         >
@@ -118,12 +120,12 @@ export function ImageUploader({
           {isUploading ? (
             <div className="flex flex-col items-center gap-1.5 text-emerald-600">
               <Loader2 className="w-6 h-6 animate-spin" />
-              <span className="text-xs font-medium">Enviando...</span>
+              <span className="text-xs font-semibold">Enviando...</span>
             </div>
           ) : (
-            <div className="flex flex-col items-center gap-1.5 text-gray-500">
-              <Upload className="w-6 h-6" />
-              <span className="text-xs font-medium">Adicionar Foto</span>
+            <div className="flex flex-col items-center gap-1.5 text-slate-500">
+              <Upload className="w-5 h-5 text-slate-400" />
+              <span className="text-xs font-bold">Adicionar Foto</span>
             </div>
           )}
         </label>
