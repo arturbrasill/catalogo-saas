@@ -40,6 +40,7 @@ Construir um SaaS white-label de catálogos digitais multi-tenant para empresas 
 18. Não invente comportamento de APIs. Se uma limitação de plataforma existir, documente e escolha uma solução compatível.
 19. Não afirmar que CORS, middleware, autenticação ou DNS funcionam de determinada forma sem validar tecnicamente no código/documentação disponível.
 20. Antes de finalizar qualquer etapa, execute lint, typecheck e testes aplicáveis.
+21. **Regra Universal de Deploy Automático em Produção (Vercel & Ferramentas)**: Qualquer alteração aprovada deve ser obrigatoriamente validada (testes, typecheck, lint e build) e enviada para o repositório remoto (`git push origin main`), atualizando o link real na Vercel e sincronizando ferramentas conectadas (Google Apps Script, KV, .env.example). Detalhes em `REGRA_UNIVERSAL_DEPLOY.md`.
 
 ## Ordem
 
@@ -62,7 +63,9 @@ Uma etapa só está concluída quando:
 - testes relevantes passam;
 - documentação foi atualizada;
 - não há TODO crítico;
-- integração com etapas anteriores foi verificada.
+- integração com etapas anteriores foi verificada;
+- código foi commitado e enviado para `origin/main` (`git push origin main`), disparando o deploy na Vercel para atualizar o link real;
+- variáveis e ferramentas associadas (Google Drive, Apps Script, KV) foram devidamente sincronizadas.
 
 ## Mudanças destrutivas
 
