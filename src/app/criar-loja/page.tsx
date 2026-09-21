@@ -16,6 +16,7 @@ import {
   ShieldCheck,
   Zap,
   Globe,
+  CreditCard,
 } from 'lucide-react';
 import type { SubscriptionPlan } from '@/types';
 
@@ -42,9 +43,10 @@ export default function CriarLojaPage() {
   const [slug, setSlug] = useState('');
   const [whatsapp, setWhatsapp] = useState('');
   const [ownerEmail, setOwnerEmail] = useState('');
+  const [cpfCnpj, setCpfCnpj] = useState('');
   const [password, setPassword] = useState('');
   const [niche, setNiche] = useState(NICHES[0]);
-  const [plan, setPlan] = useState<SubscriptionPlan>('trial_7d');
+  const [plan, setPlan] = useState<SubscriptionPlan>('trial_30d');
   const [selectedColor, setSelectedColor] = useState(COLOR_PRESETS[0]!);
 
   const [loading, setLoading] = useState(false);
@@ -57,6 +59,7 @@ export default function CriarLojaPage() {
     spreadsheetUrl: string;
     catalogUrl: string;
     adminUrl: string;
+    asaasPaymentUrl?: string | null;
   } | null>(null);
   const [copiedLink, setCopiedLink] = useState<string | null>(null);
 
@@ -126,6 +129,7 @@ export default function CriarLojaPage() {
           slug,
           whatsapp: cleanPhone,
           ownerEmail,
+          cpfCnpj,
           password,
           niche,
           plan,
@@ -140,7 +144,30 @@ export default function CriarLojaPage() {
         throw new Error(json.error || 'Falha ao criar loja.');
       }
 
-      setCreatedData(json.data);
+      let asaasUrl: string | null = null;
+      if (plan === 'monthly') {
+        try {
+          const asaasRes = await fetch('/api/asaas/checkout', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              tenantId: json.data.tenant.tenantId,
+              cpfCnpj,
+            }),
+          });
+          const asaasJson = await asaasRes.json();
+          if (asaasJson.success && asaasJson.data?.invoiceUrl) {
+            asaasUrl = asaasJson.data.invoiceUrl;
+          }
+        } catch {
+          // segue mesmo se checkout falhar
+        }
+      }
+
+      setCreatedData({
+        ...json.data,
+        asaasPaymentUrl: asaasUrl,
+      });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao criar loja.');
     } finally {
@@ -365,48 +392,56 @@ export default function CriarLojaPage() {
 
               {/* Seção 4: Escolha do Plano */}
               <div className="space-y-4 pt-4 border-t border-slate-100">
-                <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
-                  <Zap className="w-4 h-4 text-slate-600" />
-                  4. Plano de Acesso
-                </h3>
+                <div className="flex items-center justify-between">
+                  <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+                    <Zap className="w-4 h-4 text-slate-600" />
+                    4. Escolha seu Plano
+                  </h3>
+                  <span className="text-[10px] text-emerald-600 font-semibold bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                    Cobrança Segura via Asaas
+                  </span>
+                </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  {/* Teste Grátis */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                  {/* Teste 30 Dias Grátis */}
                   <label
                     className={`relative p-4 rounded-xl border cursor-pointer transition-all flex flex-col justify-between ${
-                      plan === 'trial_7d'
-                        ? 'border-emerald-600 bg-emerald-50/50 ring-2 ring-emerald-500/20'
+                      plan === 'trial_30d'
+                        ? 'border-emerald-600 bg-emerald-50/50 ring-2 ring-emerald-500/20 shadow-xs'
                         : 'border-slate-200 hover:border-slate-300 bg-white'
                     }`}
                   >
                     <input
                       type="radio"
                       name="plan"
-                      value="trial_7d"
-                      checked={plan === 'trial_7d'}
-                      onChange={() => setPlan('trial_7d')}
+                      value="trial_30d"
+                      checked={plan === 'trial_30d'}
+                      onChange={() => setPlan('trial_30d')}
                       className="sr-only"
                     />
                     <div>
-                      <div className="flex items-center justify-between mb-1">
-                        <span className="text-xs font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-md">
-                          Recomendado
+                      <div className="flex items-center justify-between mb-1.5">
+                        <span className="text-[10px] font-bold text-blue-700 bg-blue-100 px-2 py-0.5 rounded-md">
+                          Teste Grátis
                         </span>
-                        {plan === 'trial_7d' && <CheckCircle2 className="w-4 h-4 text-emerald-600" />}
+                        {plan === 'trial_30d' && <CheckCircle2 className="w-4 h-4 text-emerald-600" />}
                       </div>
-                      <h4 className="text-sm font-bold text-slate-900 mt-1">Teste 7 Dias</h4>
-                      <p className="text-[11px] text-slate-500 mt-0.5">Sem cartão de crédito</p>
+                      <h4 className="text-sm font-bold text-slate-900">Teste por 30 Dias</h4>
+                      <p className="text-[11px] text-slate-500 mt-1 leading-normal">
+                        Acesso liberado completo por 30 dias. Cancela de forma 100% automática ao final caso não renove.
+                      </p>
                     </div>
-                    <div className="mt-3 pt-2 border-t border-slate-200/60 font-extrabold text-sm text-slate-900">
-                      Grátis
+                    <div className="mt-4 pt-2.5 border-t border-slate-200/60 font-extrabold text-sm text-slate-900 flex items-baseline justify-between">
+                      <span>R$ 0,00</span>
+                      <span className="text-[10px] font-normal text-slate-500">Sem cartão</span>
                     </div>
                   </label>
 
-                  {/* Mensal */}
+                  {/* Plano Mensal R$ 129,90 */}
                   <label
                     className={`relative p-4 rounded-xl border cursor-pointer transition-all flex flex-col justify-between ${
                       plan === 'monthly'
-                        ? 'border-emerald-600 bg-emerald-50/50 ring-2 ring-emerald-500/20'
+                        ? 'border-emerald-600 bg-emerald-50/50 ring-2 ring-emerald-500/20 shadow-xs'
                         : 'border-slate-200 hover:border-slate-300 bg-white'
                     }`}
                   >
@@ -419,49 +454,43 @@ export default function CriarLojaPage() {
                       className="sr-only"
                     />
                     <div>
-                      <div className="flex items-center justify-between mb-1">
-                        <span className="text-xs font-bold text-slate-600">Mensal</span>
+                      <div className="flex items-center justify-between mb-1.5">
+                        <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-md flex items-center gap-1">
+                          <CreditCard className="w-3 h-3" />
+                          Plano Mensal
+                        </span>
                         {plan === 'monthly' && <CheckCircle2 className="w-4 h-4 text-emerald-600" />}
                       </div>
-                      <h4 className="text-sm font-bold text-slate-900 mt-1">Plano Pro</h4>
-                      <p className="text-[11px] text-slate-500 mt-0.5">Pagamento a cada 30 dias</p>
+                      <h4 className="text-sm font-bold text-slate-900">Assinatura Mensal Pro</h4>
+                      <p className="text-[11px] text-slate-500 mt-1 leading-normal">
+                        Cobrança automatizada via Asaas (PIX imediato, Cartão de Crédito ou Boleto bancário).
+                      </p>
                     </div>
-                    <div className="mt-3 pt-2 border-t border-slate-200/60 font-extrabold text-sm text-slate-900">
-                      R$ 49,90 <span className="text-[10px] font-normal text-slate-500">/mês</span>
-                    </div>
-                  </label>
-
-                  {/* Anual */}
-                  <label
-                    className={`relative p-4 rounded-xl border cursor-pointer transition-all flex flex-col justify-between ${
-                      plan === 'annual'
-                        ? 'border-emerald-600 bg-emerald-50/50 ring-2 ring-emerald-500/20'
-                        : 'border-slate-200 hover:border-slate-300 bg-white'
-                    }`}
-                  >
-                    <input
-                      type="radio"
-                      name="plan"
-                      value="annual"
-                      checked={plan === 'annual'}
-                      onChange={() => setPlan('annual')}
-                      className="sr-only"
-                    />
-                    <div>
-                      <div className="flex items-center justify-between mb-1">
-                        <span className="text-[10px] font-bold text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded-md">
-                          2 Meses OFF
-                        </span>
-                        {plan === 'annual' && <CheckCircle2 className="w-4 h-4 text-emerald-600" />}
-                      </div>
-                      <h4 className="text-sm font-bold text-slate-900 mt-1">Plano Anual</h4>
-                      <p className="text-[11px] text-slate-500 mt-0.5">Acesso garantido por 1 ano</p>
-                    </div>
-                    <div className="mt-3 pt-2 border-t border-slate-200/60 font-extrabold text-sm text-slate-900">
-                      R$ 499,00 <span className="text-[10px] font-normal text-slate-500">/ano</span>
+                    <div className="mt-4 pt-2.5 border-t border-slate-200/60 font-extrabold text-sm text-slate-900 flex items-baseline justify-between">
+                      <span>R$ 129,90</span>
+                      <span className="text-[10px] font-normal text-slate-500">/mês</span>
                     </div>
                   </label>
                 </div>
+
+                {/* Campo de CPF/CNPJ caso escolha mensal com Asaas */}
+                {plan === 'monthly' && (
+                  <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-xl space-y-1.5 animate-in fade-in">
+                    <label className="block text-xs font-semibold text-slate-700">
+                      CPF ou CNPJ para emissão da Fatura Asaas
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="000.000.000-00 ou 00.000.000/0000-00"
+                      value={cpfCnpj}
+                      onChange={(e) => setCpfCnpj(e.target.value)}
+                      className="w-full px-3.5 py-2 text-xs sm:text-sm bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 font-mono"
+                    />
+                    <p className="text-[10px] text-slate-400">
+                      Utilizado exclusivamente para gerar o QR Code Pix e fatura segura no Asaas.
+                    </p>
+                  </div>
+                )}
               </div>
 
               {/* Botão de Submissão com Estado de Loading */}
@@ -614,13 +643,50 @@ export default function CriarLojaPage() {
                   </a>
                 </div>
               </div>
+
+              {/* Fatura Asaas (se plano mensal) */}
+              {createdData.asaasPaymentUrl && (
+                <div className="p-3 bg-emerald-50 border border-emerald-300/80 rounded-xl">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-[11px] font-bold text-emerald-800 uppercase tracking-wider flex items-center gap-1">
+                      <CreditCard className="w-3.5 h-3.5 text-emerald-600" />
+                      4. Fatura Asaas — R$ 129,90 (PIX, Cartão ou Boleto)
+                    </span>
+                    <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full">
+                      Aguardando Pagamento
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-600 mb-2">
+                    Efetue o pagamento da sua assinatura para manter sua loja ativa e recorrente.
+                  </p>
+                  <a
+                    href={createdData.asaasPaymentUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center justify-center gap-2 w-full py-2.5 px-4 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-lg shadow-xs transition-colors"
+                  >
+                    <span>Pagar Fatura no Asaas Agora (PIX / Cartão)</span>
+                    <ExternalLink className="w-3.5 h-3.5" />
+                  </a>
+                </div>
+              )}
+
+              {/* Informação sobre o Teste de 30 Dias */}
+              {!createdData.asaasPaymentUrl && (
+                <div className="p-3 bg-blue-50 border border-blue-200 rounded-xl text-xs text-blue-800 flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-blue-600 flex-shrink-0" />
+                  <span>
+                    <strong>Teste Grátis Ativo:</strong> Você tem 30 dias de acesso liberado. O sistema cancela o catálogo de forma 100% automática ao fim dos 30 dias caso você não contrate o plano mensal.
+                  </span>
+                </div>
+              )}
             </div>
 
             {/* Botão de Ação Imediata */}
             <div className="pt-2 flex flex-col sm:flex-row gap-3 justify-center">
               <Link
                 href={createdData.adminUrl}
-                className="w-full sm:w-auto px-6 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm rounded-xl shadow-sm hover:shadow-md transition-all flex items-center justify-center gap-2"
+                className="w-full sm:w-auto px-6 py-3 bg-slate-900 hover:bg-slate-800 text-white font-bold text-sm rounded-xl shadow-sm hover:shadow-md transition-all flex items-center justify-center gap-2"
               >
                 <span>Acessar Painel da Minha Loja</span>
                 <ArrowRight className="w-4 h-4" />

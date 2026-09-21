@@ -151,7 +151,7 @@ export type APIResponse<T> = APIResponseSuccess<T> | APIResponseError;
 // 6. MULTI-TENANCY & SAAS SUBSCRIPTIONS
 // ============================================================
 
-export type SubscriptionPlan = 'trial_7d' | 'monthly' | 'annual' | 'enterprise';
+export type SubscriptionPlan = 'trial_30d' | 'monthly';
 export type SubscriptionStatus = 'active' | 'trial' | 'expired' | 'blocked' | 'cancelled';
 
 export interface Tenant {
@@ -169,6 +169,10 @@ export interface Tenant {
   spreadsheetId?: string;
   spreadsheetUrl?: string;
   notes?: string;
+  // Campos de Integração com Asaas
+  asaasCustomerId?: string;
+  asaasSubscriptionId?: string;
+  asaasPaymentLink?: string;
 }
 
 export type TenantRegistry = Record<string, Tenant>;
@@ -178,6 +182,7 @@ export interface CreateTenantInput {
   slug: string;
   whatsapp: string;
   ownerEmail?: string;
+  cpfCnpj?: string;
   password?: string;
   plan?: SubscriptionPlan;
   primaryColor?: string;
@@ -197,6 +202,42 @@ export interface UpdateSubscriptionInput {
   spreadsheetUrl?: string;
   whatsapp?: string;
   name?: string;
+  asaasCustomerId?: string;
+  asaasSubscriptionId?: string;
+  asaasPaymentLink?: string;
+}
+
+export interface AsaasCustomerInput {
+  name: string;
+  email?: string;
+  phone?: string;
+  mobilePhone?: string;
+  cpfCnpj?: string;
+  externalReference?: string;
+}
+
+export interface AsaasPaymentInput {
+  customer: string;
+  billingType?: 'UNDEFINED' | 'PIX' | 'CREDIT_CARD' | 'BOLETO';
+  value: number;
+  dueDate: string;
+  description: string;
+  externalReference: string;
+}
+
+export interface AsaasWebhookEvent {
+  event: string;
+  payment?: {
+    id: string;
+    customer: string;
+    value: number;
+    netValue?: number;
+    status: string;
+    billingType: string;
+    externalReference?: string;
+    invoiceUrl?: string;
+    dueDate: string;
+  };
 }
 
 export interface SaasMetrics {

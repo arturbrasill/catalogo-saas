@@ -37,9 +37,9 @@ function initializeDefaultTenantDetails() {
     }
 
     if (tenant.tenantId === 'loja_exemplo') {
-      tenant.plan = 'annual';
+      tenant.plan = 'monthly';
       tenant.subscriptionStatus = 'active';
-      tenant.subscriptionExpiresAt = future1Year;
+      tenant.subscriptionExpiresAt = future30Days;
       tenant.spreadsheetUrl = 'https://docs.google.com/spreadsheets/d/1ExemploSpreadsheetID/edit';
       tenant.notes = 'Loja de demonstração oficial';
     } else if (tenant.tenantId === 'moda_style') {
@@ -48,11 +48,11 @@ function initializeDefaultTenantDetails() {
       tenant.subscriptionExpiresAt = future30Days;
       tenant.spreadsheetUrl = 'https://docs.google.com/spreadsheets/d/1ModaStyleSpreadsheetID/edit';
     } else if (tenant.tenantId === 'calcados_express') {
-      tenant.plan = 'trial_7d';
+      tenant.plan = 'trial_30d';
       tenant.subscriptionStatus = 'expired';
       tenant.subscriptionExpiresAt = past5Days;
       tenant.spreadsheetUrl = 'https://docs.google.com/spreadsheets/d/1CalcadosSpreadsheetID/edit';
-      tenant.notes = 'Período de teste finalizado';
+      tenant.notes = 'Período de teste de 30 dias finalizado';
     } else {
       tenant.plan = 'monthly';
       tenant.subscriptionStatus = 'active';
@@ -197,23 +197,11 @@ export async function registerTenant(input: CreateTenantInput): Promise<{
 
   const finalSlug = tenantId.replace(/_/g, '-');
   const now = new Date();
-  const plan: SubscriptionPlan = input.plan || 'trial_7d';
+  const plan: SubscriptionPlan = input.plan || 'trial_30d';
 
-  // Define data de validade inicial baseada no plano escolhido
-  let durationDays = 7;
-  let status: SubscriptionStatus = 'trial';
-
-  if (plan === 'monthly') {
-    durationDays = 30;
-    status = 'active';
-  } else if (plan === 'annual') {
-    durationDays = 365;
-    status = 'active';
-  } else if (plan === 'enterprise') {
-    durationDays = 365 * 2;
-    status = 'active';
-  }
-
+  // 30 dias de teste grátis ou 30 dias da mensalidade
+  const durationDays = 30;
+  const status: SubscriptionStatus = plan === 'trial_30d' ? 'trial' : 'active';
   const expiresAt = new Date(now.getTime() + durationDays * 24 * 60 * 60 * 1000).toISOString();
 
   // Gera identificadores únicos da planilha no Google Sheets
@@ -284,6 +272,9 @@ export function updateTenantSubscription(input: UpdateSubscriptionInput): Tenant
   if (input.spreadsheetUrl !== undefined) tenant.spreadsheetUrl = input.spreadsheetUrl;
   if (input.whatsapp !== undefined) tenant.whatsapp = input.whatsapp.replace(/\D/g, '');
   if (input.name !== undefined) tenant.name = input.name.trim();
+  if (input.asaasCustomerId !== undefined) tenant.asaasCustomerId = input.asaasCustomerId;
+  if (input.asaasSubscriptionId !== undefined) tenant.asaasSubscriptionId = input.asaasSubscriptionId;
+  if (input.asaasPaymentLink !== undefined) tenant.asaasPaymentLink = input.asaasPaymentLink;
 
   // Atualiza referências no registro
   for (const [key, t] of Object.entries(inMemoryRegistry)) {
@@ -317,16 +308,12 @@ export function getSaasMetrics(): SaasMetrics {
 
     if (!status.active) {
       expiredOrBlockedStores++;
-    } else if (tenant.plan === 'trial_7d') {
+    } else if (tenant.plan === 'trial_30d') {
       trialStores++;
     } else {
       activeStores++;
       if (tenant.plan === 'monthly') {
-        estimatedMonthlyRevenue += 49.9;
-      } else if (tenant.plan === 'annual') {
-        estimatedMonthlyRevenue += 41.58; // 499 / 12
-      } else if (tenant.plan === 'enterprise') {
-        estimatedMonthlyRevenue += 199.0;
+        estimatedMonthlyRevenue += 129.9; // Plano mensal oficial R$ 129,90
       }
     }
   }

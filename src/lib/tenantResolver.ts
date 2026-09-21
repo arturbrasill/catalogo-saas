@@ -90,7 +90,7 @@ export function resolveTenant(
       slug: cleanQuery,
       domain: `${cleanQuery}.localhost`,
       name: cleanQuery.replace(/[-_]/g, ' ').toUpperCase(),
-      plan: 'trial_7d',
+      plan: 'trial_30d',
       subscriptionStatus: 'active',
     };
   }

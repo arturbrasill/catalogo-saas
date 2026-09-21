@@ -235,10 +235,34 @@ export default function SaasAdminPage() {
       showFeedback(`Configurações de "${editingStore.name}" atualizadas!`);
       setEditingStore(null);
       loadStores();
-    } catch (err) {
+    } catch {
       showFeedback('Erro ao salvar alterações.', 'error');
     } finally {
       setSavingEdit(false);
+    }
+  };
+
+  // Gera cobrança via Asaas (R$ 129,90) com link de fatura
+  const handleGenerateAsaasPayment = async (store: Tenant) => {
+    try {
+      showFeedback(`Gerando fatura Asaas (R$ 129,90) para "${store.name}"...`);
+      const res = await fetch('/api/asaas/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tenantId: store.tenantId }),
+      });
+
+      const json = await res.json();
+      if (!json.success) throw new Error(json.error);
+
+      showFeedback(`Fatura Asaas gerada com sucesso para "${store.name}"!`);
+      loadStores();
+
+      if (json.data?.invoiceUrl) {
+        window.open(json.data.invoiceUrl, '_blank');
+      }
+    } catch (err) {
+      showFeedback('Falha ao gerar cobrança no Asaas: ' + String(err), 'error');
     }
   };
 
@@ -275,12 +299,12 @@ export default function SaasAdminPage() {
       };
     }
 
-    if (store.subscriptionStatus === 'trial' || store.plan === 'trial_7d') {
+    if (store.subscriptionStatus === 'trial' || store.plan === 'trial_30d') {
       return {
         badgeClass: 'bg-blue-100 text-blue-800 border-blue-200',
-        text: 'Teste (Trial)',
+        text: 'Teste (30d)',
         daysText: `Restam ${diffDays} dia(s)`,
-        isCritical: diffDays <= 2,
+        isCritical: diffDays <= 3,
       };
     }
 
@@ -315,7 +339,7 @@ export default function SaasAdminPage() {
 
       if (statusFilter === 'all') return true;
       if (statusFilter === 'blocked') return store.subscriptionStatus === 'blocked';
-      if (statusFilter === 'trial') return store.plan === 'trial_7d' || store.subscriptionStatus === 'trial';
+      if (statusFilter === 'trial') return store.plan === 'trial_30d' || store.subscriptionStatus === 'trial';
       if (statusFilter === 'expired') {
         if (!store.subscriptionExpiresAt) return false;
         return new Date(store.subscriptionExpiresAt).getTime() <= Date.now();
@@ -601,12 +625,10 @@ export default function SaasAdminPage() {
 
                       {/* Plano */}
                       <td className="py-3.5 px-4">
-                        <span className="font-semibold text-slate-700 block capitalize">
-                          {store.plan === 'trial_7d' && 'Teste 7 Dias'}
-                          {store.plan === 'monthly' && 'Mensal (R$ 49,90)'}
-                          {store.plan === 'annual' && 'Anual (R$ 499,00)'}
-                          {store.plan === 'enterprise' && 'Enterprise'}
-                          {!store.plan && 'Padrão'}
+                        <span className="font-semibold text-slate-700 block">
+                          {store.plan === 'trial_30d' && 'Teste 30 Dias'}
+                          {store.plan === 'monthly' && 'Mensal (R$ 129,90)'}
+                          {!store.plan && 'Teste 30 Dias'}
                         </span>
                       </td>
 
@@ -646,6 +668,17 @@ export default function SaasAdminPage() {
                       {/* Ações */}
                       <td className="py-3.5 px-4 text-right">
                         <div className="flex items-center justify-end gap-1.5">
+                          {/* Cobrança Asaas */}
+                          <button
+                            type="button"
+                            onClick={() => handleGenerateAsaasPayment(store)}
+                            className="px-2 py-1 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg text-xs font-semibold border border-blue-200 transition-colors flex items-center gap-1"
+                            title="Gerar Cobrança Asaas (R$ 129,90)"
+                          >
+                            <CreditCard className="w-3 h-3 text-blue-600" />
+                            <span>Asaas</span>
+                          </button>
+
                           {/* Renovar +30 dias */}
                           <button
                             type="button"
@@ -738,11 +771,10 @@ export default function SaasAdminPage() {
                   <div className="grid grid-cols-2 gap-2 text-xs text-slate-600 bg-slate-50 p-2.5 rounded-xl">
                     <div>
                       <span className="text-[10px] text-slate-400 block">Plano:</span>
-                      <span className="font-semibold capitalize">
-                        {store.plan === 'trial_7d' && 'Teste 7d'}
-                        {store.plan === 'monthly' && 'Mensal'}
-                        {store.plan === 'annual' && 'Anual'}
-                        {!store.plan && 'Padrão'}
+                      <span className="font-semibold">
+                        {store.plan === 'trial_30d' && 'Teste 30d'}
+                        {store.plan === 'monthly' && 'Mensal (R$ 129,90)'}
+                        {!store.plan && 'Teste 30d'}
                       </span>
                     </div>
                     <div>
@@ -767,6 +799,14 @@ export default function SaasAdminPage() {
                   {/* Ações Mobile */}
                   <div className="pt-2 border-t border-slate-100 flex items-center justify-between gap-1">
                     <div className="flex items-center gap-1">
+                      <button
+                        type="button"
+                        onClick={() => handleGenerateAsaasPayment(store)}
+                        className="px-2 py-1 bg-blue-50 text-blue-700 text-xs font-semibold rounded-lg border border-blue-200"
+                        title="Fatura Asaas"
+                      >
+                        Asaas
+                      </button>
                       <button
                         type="button"
                         onClick={() => handleQuickRenew(store, 30)}
@@ -861,10 +901,8 @@ export default function SaasAdminPage() {
                     onChange={(e) => setEditPlan(e.target.value as SubscriptionPlan)}
                     className="w-full px-3 py-2 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500"
                   >
-                    <option value="trial_7d">Teste 7 Dias</option>
-                    <option value="monthly">Mensal (R$ 49,90)</option>
-                    <option value="annual">Anual (R$ 499,00)</option>
-                    <option value="enterprise">Enterprise</option>
+                    <option value="trial_30d">Teste 30 Dias Grátis</option>
+                    <option value="monthly">Mensal (R$ 129,90)</option>
                   </select>
                 </div>
 

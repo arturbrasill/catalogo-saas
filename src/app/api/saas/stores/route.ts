@@ -69,7 +69,7 @@ export async function POST(request: NextRequest) {
       whatsapp: body.whatsapp.replace(/\D/g, ''),
       ownerEmail: body.ownerEmail?.trim(),
       password: body.password || 'admin123',
-      plan: body.plan || 'trial_7d',
+      plan: body.plan || 'trial_30d',
       primaryColor: body.primaryColor || '#10b981',
       secondaryColor: body.secondaryColor || '#047857',
       backgroundColor: body.backgroundColor || '#f8fafc',

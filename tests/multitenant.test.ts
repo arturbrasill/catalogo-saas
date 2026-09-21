@@ -239,7 +239,7 @@ describe('Módulo 5 — Multi-Tenant e Resolução de Domínios (src/lib/tenantR
         slug: 'bella-boutique-teste',
         whatsapp: '11988887777',
         password: 'senhaSegura123',
-        plan: 'trial_7d',
+        plan: 'trial_30d',
         primaryColor: '#e11d48',
         niche: 'Roupas e Moda',
       });
@@ -247,7 +247,7 @@ describe('Módulo 5 — Multi-Tenant e Resolução de Domínios (src/lib/tenantR
       expect(result.tenant).toBeTruthy();
       expect(result.tenant.name).toBe('Bella Boutique');
       expect(result.tenant.slug).toBe('bella-boutique-teste');
-      expect(result.tenant.plan).toBe('trial_7d');
+      expect(result.tenant.plan).toBe('trial_30d');
       expect(result.tenant.subscriptionStatus).toBe('trial');
       expect(result.spreadsheetUrl).toContain('docs.google.com/spreadsheets/d/');
       expect(result.spreadsheetId).toBeTruthy();
@@ -297,6 +297,58 @@ describe('Módulo 5 — Multi-Tenant e Resolução de Domínios (src/lib/tenantR
       expect(typeof metrics.expiredOrBlockedStores).toBe('number');
       expect(typeof metrics.estimatedMonthlyRevenue).toBe('number');
       expect(metrics.estimatedMonthlyRevenue).toBeGreaterThanOrEqual(0);
+    });
+
+    it('deve gerar cobrança Asaas de R$ 129,90 e processar webhook de confirmação', async () => {
+      const { createAsaasPayment, ASAAS_MONTHLY_PRICE } = await import('../src/lib/asaas');
+      const { POST: webhookHandler } = await import('../src/app/api/asaas/webhook/route');
+      const { findTenant } = await import('../src/lib/tenantStore');
+
+      expect(ASAAS_MONTHLY_PRICE).toBe(129.9);
+
+      // 1. Gera cobrança
+      const payment = await createAsaasPayment({
+        customer: 'cus_test_123',
+        value: 129.9,
+        dueDate: '2026-10-30',
+        description: 'Assinatura Mensal Catálogo Digital',
+        externalReference: 'bella_boutique_teste',
+      });
+
+      expect(payment.id).toBeTruthy();
+      expect(payment.invoiceUrl).toBeTruthy();
+
+      // 2. Dispara webhook simulando confirmação de pagamento do Asaas
+      const webhookPayload = {
+        event: 'PAYMENT_CONFIRMED',
+        payment: {
+          id: payment.id,
+          customer: 'cus_test_123',
+          value: 129.9,
+          status: 'CONFIRMED',
+          billingType: 'PIX',
+          externalReference: 'bella_boutique_teste',
+          invoiceUrl: payment.invoiceUrl,
+          dueDate: '2026-10-30',
+        },
+      };
+
+      const req = new NextRequest('http://localhost:3000/api/asaas/webhook', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(webhookPayload),
+      });
+
+      const res = await webhookHandler(req);
+      const json = await res.json();
+
+      expect(res.status).toBe(200);
+      expect(json.success).toBe(true);
+
+      // Verifica se a loja foi ativada como pagante
+      const store = findTenant('bella_boutique_teste');
+      expect(store?.subscriptionStatus).toBe('active');
+      expect(store?.plan).toBe('monthly');
     });
   });
 });
