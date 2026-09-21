@@ -2,14 +2,23 @@ import type { AsaasCustomerInput, AsaasPaymentInput } from '@/types';
 
 export const ASAAS_MONTHLY_PRICE = 129.9;
 
-const ASAAS_API_KEY = process.env['ASAAS_API_KEY'] || '';
-const ASAAS_ENV = process.env['ASAAS_ENVIRONMENT'] || 'sandbox';
-const ASAAS_WEBHOOK_SECRET = process.env['ASAAS_WEBHOOK_SECRET'] || '';
+export function getAsaasApiKey(): string {
+  return process.env['ASAAS_API_KEY'] || '';
+}
 
-const ASAAS_BASE_URL =
-  ASAAS_ENV === 'production'
+export function getAsaasEnv(): string {
+  return process.env['ASAAS_ENVIRONMENT'] || 'sandbox';
+}
+
+export function getAsaasBaseUrl(): string {
+  return getAsaasEnv() === 'production'
     ? 'https://api.asaas.com/v3'
     : 'https://sandbox.asaas.com/api/v3';
+}
+
+export function getAsaasWebhookSecret(): string {
+  return process.env['ASAAS_WEBHOOK_SECRET'] || '';
+}
 
 /**
  * Cria ou localiza um cliente no Asaas a partir dos dados do lojista
@@ -17,8 +26,11 @@ const ASAAS_BASE_URL =
 export async function createOrGetAsaasCustomer(
   input: AsaasCustomerInput
 ): Promise<{ id: string; name: string; error?: string }> {
+  const apiKey = getAsaasApiKey();
+  const baseUrl = getAsaasBaseUrl();
+
   // Se a chave não estiver configurada, gera ID em modo de simulação seguro
-  if (!ASAAS_API_KEY || ASAAS_API_KEY.includes('exemplo')) {
+  if (!apiKey || apiKey.includes('exemplo')) {
     const mockId = 'cus_mock_' + (input.externalReference || Math.random().toString(36).substring(2, 10));
     return { id: mockId, name: input.name };
   }
@@ -34,11 +46,11 @@ export async function createOrGetAsaasCustomer(
       notificationDisabled: false,
     };
 
-    const res = await fetch(`${ASAAS_BASE_URL}/customers`, {
+    const res = await fetch(`${baseUrl}/customers`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        access_token: ASAAS_API_KEY,
+        access_token: apiKey,
       },
       body: JSON.stringify(payload),
     });
@@ -64,20 +76,22 @@ export async function createOrGetAsaasCustomer(
 export async function createAsaasPayment(
   input: AsaasPaymentInput
 ): Promise<{ id: string; invoiceUrl: string; error?: string }> {
+  const apiKey = getAsaasApiKey();
+  const baseUrl = getAsaasBaseUrl();
   const valueToCharge = input.value || ASAAS_MONTHLY_PRICE;
 
-  if (!ASAAS_API_KEY || ASAAS_API_KEY.includes('exemplo')) {
+  if (!apiKey || apiKey.includes('exemplo')) {
     const mockPaymentId = 'pay_mock_' + Math.random().toString(36).substring(2, 12);
     const mockInvoiceUrl = `https://sandbox.asaas.com/i/${mockPaymentId}`;
     return { id: mockPaymentId, invoiceUrl: mockInvoiceUrl };
   }
 
   try {
-    const res = await fetch(`${ASAAS_BASE_URL}/payments`, {
+    const res = await fetch(`${baseUrl}/payments`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        access_token: ASAAS_API_KEY,
+        access_token: apiKey,
       },
       body: JSON.stringify({
         customer: input.customer,
@@ -100,7 +114,7 @@ export async function createAsaasPayment(
 
     return {
       id: data.id,
-      invoiceUrl: data.invoiceUrl || data.bankSlipUrl || `${ASAAS_BASE_URL}/payments/${data.id}`,
+      invoiceUrl: data.invoiceUrl || data.bankSlipUrl || `${baseUrl}/payments/${data.id}`,
     };
   } catch (err) {
     return { id: '', invoiceUrl: '', error: String(err) };
@@ -117,9 +131,11 @@ export async function createAsaasSubscription(input: {
   externalReference: string;
   description?: string;
 }): Promise<{ id: string; invoiceUrl?: string; error?: string }> {
+  const apiKey = getAsaasApiKey();
+  const baseUrl = getAsaasBaseUrl();
   const valueToCharge = input.value || ASAAS_MONTHLY_PRICE;
 
-  if (!ASAAS_API_KEY || ASAAS_API_KEY.includes('exemplo')) {
+  if (!apiKey || apiKey.includes('exemplo')) {
     const mockSubId = 'sub_mock_' + Math.random().toString(36).substring(2, 12);
     return {
       id: mockSubId,
@@ -128,11 +144,11 @@ export async function createAsaasSubscription(input: {
   }
 
   try {
-    const res = await fetch(`${ASAAS_BASE_URL}/subscriptions`, {
+    const res = await fetch(`${baseUrl}/subscriptions`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        access_token: ASAAS_API_KEY,
+        access_token: apiKey,
       },
       body: JSON.stringify({
         customer: input.customerId,
@@ -167,8 +183,9 @@ export async function createAsaasSubscription(input: {
  * Validação de token de segurança do webhook enviado pelo Asaas
  */
 export function verifyAsaasWebhookToken(tokenHeader: string | null): boolean {
-  if (!ASAAS_WEBHOOK_SECRET) {
+  const secret = getAsaasWebhookSecret();
+  if (!secret) {
     return true; // Se o lojista não configurou secret no .env, aceita requisição
   }
-  return tokenHeader === ASAAS_WEBHOOK_SECRET;
+  return tokenHeader === secret;
 }

@@ -219,9 +219,9 @@ export interface AsaasCustomerInput {
 export interface AsaasPaymentInput {
   customer: string;
   billingType?: 'UNDEFINED' | 'PIX' | 'CREDIT_CARD' | 'BOLETO';
-  value: number;
+  value?: number;
   dueDate: string;
-  description: string;
+  description?: string;
   externalReference: string;
 }
 
