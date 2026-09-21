@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getLocalEngine } from '@/backend/engine';
-import { getTenantByHostname, normalizeHostname } from '@/lib/tenantResolver';
+import { getTenantByHostname, normalizeHostname, resolveTenant } from '@/lib/tenantResolver';
 import type { Tenant } from '@/types';
 
 /**
@@ -46,7 +46,19 @@ function resolveContextTenant(request: NextRequest): {
     request.headers.get('x-forwarded-host') || request.headers.get('host');
   const normalized = normalizeHostname(rawHost);
 
-  const tenant = getTenantByHostname(rawHost);
+  // Prioridade canônica para o Host registrado (previne header injection)
+  let tenant = getTenantByHostname(rawHost);
+
+  // Se estiver em ambiente compartilhado (localhost ou vercel.app), permite query param ?tenant= ou cookie
+  const queryTenant =
+    request.nextUrl.searchParams.get('tenant') ||
+    request.cookies.get('app_tenant')?.value;
+  if (queryTenant && (normalized === 'localhost' || normalized === '127.0.0.1' || normalized.endsWith('.vercel.app') || !tenant)) {
+    const resolvedFromQuery = resolveTenant(rawHost, queryTenant);
+    if (resolvedFromQuery) {
+      tenant = resolvedFromQuery;
+    }
+  }
 
   if (!tenant) {
     // Se não for localhost ou vercel.app e o domínio for desconhecido, bloqueia
@@ -95,17 +107,29 @@ function resolveContextTenant(request: NextRequest): {
  * Assegura que o campo whatsapp e outros campos sensíveis retornados da API
  * estejam no formato estrito de string, prevenindo erros de tipo em clients.
  */
-function sanitizeStoreResponse<T>(data: T): T {
+function sanitizeStoreResponse<T>(data: T, tenant?: Tenant | null): T {
   if (data && typeof data === 'object' && 'data' in data) {
     const raw = (data as { data?: Record<string, unknown> }).data;
     if (raw && typeof raw === 'object') {
       if ('whatsapp' in raw && raw['whatsapp'] !== undefined && raw['whatsapp'] !== null) {
         raw['whatsapp'] = String(raw['whatsapp']).trim();
       }
+      if (tenant) {
+        raw['subscription_status'] = tenant.subscriptionStatus || 'active';
+        if (tenant.subscriptionExpiresAt) {
+          raw['subscription_expires_at'] = tenant.subscriptionExpiresAt;
+        }
+      }
       if ('store' in raw && raw['store'] && typeof raw['store'] === 'object') {
         const store = raw['store'] as Record<string, unknown>;
         if (store['whatsapp'] !== undefined && store['whatsapp'] !== null) {
           store['whatsapp'] = String(store['whatsapp']).trim();
+        }
+        if (tenant) {
+          store['subscription_status'] = tenant.subscriptionStatus || 'active';
+          if (tenant.subscriptionExpiresAt) {
+            store['subscription_expires_at'] = tenant.subscriptionExpiresAt;
+          }
         }
       }
     }
@@ -114,7 +138,7 @@ function sanitizeStoreResponse<T>(data: T): T {
 }
 
 export async function GET(request: NextRequest) {
-  const { tenantId, apiUrl, isAllowed } = resolveContextTenant(request);
+  const { tenant, tenantId, apiUrl, isAllowed } = resolveContextTenant(request);
 
   if (!isAllowed) {
     return NextResponse.json(
@@ -147,7 +171,7 @@ export async function GET(request: NextRequest) {
         redirect: 'follow',
       });
       const data = await response.json();
-      return NextResponse.json(sanitizeStoreResponse(data));
+      return NextResponse.json(sanitizeStoreResponse(data, tenant));
     } catch (err) {
       return NextResponse.json(
         {
@@ -165,11 +189,11 @@ export async function GET(request: NextRequest) {
 
   // Fallback para engine local integrado (desenvolvimento / teste)
   const localResult = getLocalEngine(tenantId).doGet({ action, categoryId });
-  return NextResponse.json(sanitizeStoreResponse(localResult));
+  return NextResponse.json(sanitizeStoreResponse(localResult, tenant));
 }
 
 export async function POST(request: NextRequest) {
-  const { tenantId, apiUrl, isAllowed } = resolveContextTenant(request);
+  const { tenant, tenantId, apiUrl, isAllowed } = resolveContextTenant(request);
 
   if (!isAllowed) {
     return NextResponse.json(
@@ -198,12 +222,12 @@ export async function POST(request: NextRequest) {
         redirect: 'follow',
       });
       const data = await response.json();
-      return NextResponse.json(sanitizeStoreResponse(data));
+      return NextResponse.json(sanitizeStoreResponse(data, tenant));
     }
 
     // Fallback para engine local integrado
     const localResult = getLocalEngine(tenantId).doPost(payload);
-    return NextResponse.json(sanitizeStoreResponse(localResult));
+    return NextResponse.json(sanitizeStoreResponse(localResult, tenant));
   } catch (err) {
     return NextResponse.json(
       {

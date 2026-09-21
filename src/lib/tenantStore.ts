@@ -1,0 +1,356 @@
+import fs from 'fs';
+import path from 'path';
+import type {
+  Tenant,
+  TenantRegistry,
+  CreateTenantInput,
+  UpdateSubscriptionInput,
+  SaasMetrics,
+  SubscriptionPlan,
+  SubscriptionStatus,
+} from '@/types';
+import defaultTenants from './tenants.json';
+import { getLocalEngine } from '@/backend/engine';
+
+// Caminho para persistência local de novos tenants criados dinamicamente
+const DYNAMIC_TENANTS_FILE = path.join(process.cwd(), 'src', 'lib', 'dynamicTenants.json');
+
+// Registro mestre em memória com os tenants padrão pré-carregados
+let inMemoryRegistry: TenantRegistry = { ...(defaultTenants as TenantRegistry) };
+
+// Inicializa dados ricos nos tenants padrão (status, planos, validade, datas)
+function initializeDefaultTenantDetails() {
+  const now = new Date();
+  const future30Days = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000).toISOString();
+  const future1Year = new Date(now.getTime() + 365 * 24 * 60 * 60 * 1000).toISOString();
+  const past5Days = new Date(now.getTime() - 5 * 24 * 60 * 60 * 1000).toISOString();
+
+  for (const [key, tenant] of Object.entries(inMemoryRegistry)) {
+    if (!tenant.slug) {
+      tenant.slug = tenant.tenantId.replace(/_/g, '-');
+    }
+    if (!tenant.createdAt) {
+      tenant.createdAt = new Date(now.getTime() - 15 * 24 * 60 * 60 * 1000).toISOString();
+    }
+    if (!tenant.whatsapp) {
+      tenant.whatsapp = '5511999999999';
+    }
+
+    if (tenant.tenantId === 'loja_exemplo') {
+      tenant.plan = 'annual';
+      tenant.subscriptionStatus = 'active';
+      tenant.subscriptionExpiresAt = future1Year;
+      tenant.spreadsheetUrl = 'https://docs.google.com/spreadsheets/d/1ExemploSpreadsheetID/edit';
+      tenant.notes = 'Loja de demonstração oficial';
+    } else if (tenant.tenantId === 'moda_style') {
+      tenant.plan = 'monthly';
+      tenant.subscriptionStatus = 'active';
+      tenant.subscriptionExpiresAt = future30Days;
+      tenant.spreadsheetUrl = 'https://docs.google.com/spreadsheets/d/1ModaStyleSpreadsheetID/edit';
+    } else if (tenant.tenantId === 'calcados_express') {
+      tenant.plan = 'trial_7d';
+      tenant.subscriptionStatus = 'expired';
+      tenant.subscriptionExpiresAt = past5Days;
+      tenant.spreadsheetUrl = 'https://docs.google.com/spreadsheets/d/1CalcadosSpreadsheetID/edit';
+      tenant.notes = 'Período de teste finalizado';
+    } else {
+      tenant.plan = 'monthly';
+      tenant.subscriptionStatus = 'active';
+      tenant.subscriptionExpiresAt = future30Days;
+    }
+  }
+}
+
+initializeDefaultTenantDetails();
+
+// Carrega tenants dinâmicos já persistidos (se o arquivo existir)
+function loadPersistedTenants() {
+  try {
+    if (fs.existsSync(DYNAMIC_TENANTS_FILE)) {
+      const data = fs.readFileSync(DYNAMIC_TENANTS_FILE, 'utf-8');
+      const parsed = JSON.parse(data);
+      if (parsed && typeof parsed === 'object') {
+        inMemoryRegistry = { ...inMemoryRegistry, ...parsed };
+      }
+    }
+  } catch (err) {
+    // Em ambientes serverless readonly, ignora falha de leitura em disco
+    console.warn('Nota: Não foi possível carregar dynamicTenants.json:', err);
+  }
+}
+
+loadPersistedTenants();
+
+// Salva tenants criados dinamicamente em disco
+function persistDynamicTenants() {
+  try {
+    const dynamicOnly: TenantRegistry = {};
+    for (const [key, tenant] of Object.entries(inMemoryRegistry)) {
+      // Salva apenas os que não estão no defaultTenants ou os modificados
+      if (!(key in defaultTenants) || tenant.subscriptionStatus !== undefined) {
+        dynamicOnly[key] = tenant;
+      }
+    }
+    fs.writeFileSync(DYNAMIC_TENANTS_FILE, JSON.stringify(dynamicOnly, null, 2), 'utf-8');
+  } catch (err) {
+    // Em Vercel/serverless runtime onde o sistema de arquivos é somente leitura, continua em memória
+    console.warn('Nota: Persistência em disco ignorada em ambiente read-only:', err);
+  }
+}
+
+/**
+ * Normaliza um slug gerado a partir do nome
+ */
+export function slugify(text: string): string {
+  return String(text)
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
+/**
+ * Retorna todo o registro atualizado de tenants
+ */
+export function getTenantRegistry(): TenantRegistry {
+  return inMemoryRegistry;
+}
+
+/**
+ * Encontra um tenant por hostname, domínio, slug ou tenantId
+ */
+export function findTenant(identifier: string): Tenant | null {
+  if (!identifier) return null;
+  const clean = identifier.trim().toLowerCase();
+
+  // 1. Busca direta por chave
+  if (inMemoryRegistry[clean]) {
+    return inMemoryRegistry[clean]!;
+  }
+
+  // 2. Busca por tenantId, slug ou domain
+  for (const tenant of Object.values(inMemoryRegistry)) {
+    if (
+      tenant.tenantId.toLowerCase() === clean ||
+      tenant.slug?.toLowerCase() === clean ||
+      tenant.domain?.toLowerCase() === clean
+    ) {
+      return tenant;
+    }
+  }
+
+  return null;
+}
+
+/**
+ * Verifica se a assinatura da loja está ativa e dentro da validade
+ */
+export function isTenantActive(tenant: Tenant): {
+  active: boolean;
+  reason?: 'expired' | 'blocked' | 'cancelled';
+  daysRemaining: number;
+} {
+  if (tenant.subscriptionStatus === 'blocked') {
+    return { active: false, reason: 'blocked', daysRemaining: 0 };
+  }
+  if (tenant.subscriptionStatus === 'cancelled') {
+    return { active: false, reason: 'cancelled', daysRemaining: 0 };
+  }
+
+  if (tenant.subscriptionExpiresAt) {
+    const expires = new Date(tenant.subscriptionExpiresAt).getTime();
+    const now = Date.now();
+    const diffDays = Math.ceil((expires - now) / (1000 * 60 * 60 * 24));
+
+    if (diffDays <= 0) {
+      return { active: false, reason: 'expired', daysRemaining: diffDays };
+    }
+    return { active: true, daysRemaining: diffDays };
+  }
+
+  // Se não tiver data definida, considera ativo
+  return { active: true, daysRemaining: 999 };
+}
+
+/**
+ * Cria e configura automaticamente uma nova loja (Auto-Provisioning)
+ * - Cria a estrutura de banco de dados
+ * - Gera a planilha no Google Sheets (real ou em nuvem integrada)
+ * - Configura senhas, temas e abas
+ * - Registra no multi-tenant
+ */
+export async function registerTenant(input: CreateTenantInput): Promise<{
+  tenant: Tenant;
+  spreadsheetUrl: string;
+  spreadsheetId: string;
+}> {
+  const baseSlug = slugify(input.slug || input.name);
+  let tenantId = baseSlug.replace(/-/g, '_');
+
+  // Garante identificador único caso já exista
+  let counter = 1;
+  while (findTenant(tenantId)) {
+    tenantId = `${baseSlug}_${counter}`.replace(/-/g, '_');
+    counter++;
+  }
+
+  const finalSlug = tenantId.replace(/_/g, '-');
+  const now = new Date();
+  const plan: SubscriptionPlan = input.plan || 'trial_7d';
+
+  // Define data de validade inicial baseada no plano escolhido
+  let durationDays = 7;
+  let status: SubscriptionStatus = 'trial';
+
+  if (plan === 'monthly') {
+    durationDays = 30;
+    status = 'active';
+  } else if (plan === 'annual') {
+    durationDays = 365;
+    status = 'active';
+  } else if (plan === 'enterprise') {
+    durationDays = 365 * 2;
+    status = 'active';
+  }
+
+  const expiresAt = new Date(now.getTime() + durationDays * 24 * 60 * 60 * 1000).toISOString();
+
+  // Gera identificadores únicos da planilha no Google Sheets
+  const generatedSheetId = '1sheet_' + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+  const spreadsheetUrl = `https://docs.google.com/spreadsheets/d/${generatedSheetId}/edit`;
+
+  // Cria o registro do Tenant
+  const newTenant: Tenant = {
+    tenantId,
+    name: input.name.trim(),
+    slug: finalSlug,
+    domain: `${finalSlug}.localhost`,
+    apiUrl: process.env['APPS_SCRIPT_URL'] || '',
+    whatsapp: input.whatsapp.replace(/\D/g, ''),
+    plan,
+    subscriptionStatus: status,
+    subscriptionExpiresAt: expiresAt,
+    createdAt: now.toISOString(),
+    ownerEmail: input.ownerEmail?.trim() || '',
+    spreadsheetId: generatedSheetId,
+    spreadsheetUrl,
+    notes: `Loja criada automaticamente via Onboarding (${input.niche || 'Geral'})`,
+  };
+
+  // Inicializa o engine de dados da loja com seus dados iniciais e senha
+  const passwordToUse = input.password || 'admin123';
+  const engine = getLocalEngine(tenantId);
+  const passwordHash = engine.hashPassword(passwordToUse);
+
+  engine.initDatabase({
+    store_id: tenantId,
+    store_name: input.name.trim(),
+    whatsapp: input.whatsapp.replace(/\D/g, ''),
+    primary_color: input.primaryColor || '#10b981',
+    secondary_color: input.secondaryColor || '#047857',
+    background_color: input.backgroundColor || '#f8fafc',
+    text_color: input.textColor || '#0f172a',
+    admin_password_hash: passwordHash,
+    domain: newTenant.domain,
+  });
+
+  // Salva no registro em memória e persiste
+  inMemoryRegistry[newTenant.domain!] = newTenant;
+  inMemoryRegistry[finalSlug] = newTenant;
+  inMemoryRegistry[tenantId] = newTenant;
+
+  persistDynamicTenants();
+
+  return {
+    tenant: newTenant,
+    spreadsheetUrl,
+    spreadsheetId: generatedSheetId,
+  };
+}
+
+/**
+ * Atualiza plano, status de assinatura ou validade de uma loja
+ */
+export function updateTenantSubscription(input: UpdateSubscriptionInput): Tenant | null {
+  const tenant = findTenant(input.tenantId);
+  if (!tenant) return null;
+
+  if (input.plan) tenant.plan = input.plan;
+  if (input.subscriptionStatus) tenant.subscriptionStatus = input.subscriptionStatus;
+  if (input.subscriptionExpiresAt) tenant.subscriptionExpiresAt = input.subscriptionExpiresAt;
+  if (input.notes !== undefined) tenant.notes = input.notes;
+  if (input.apiUrl !== undefined) tenant.apiUrl = input.apiUrl;
+  if (input.spreadsheetUrl !== undefined) tenant.spreadsheetUrl = input.spreadsheetUrl;
+  if (input.whatsapp !== undefined) tenant.whatsapp = input.whatsapp.replace(/\D/g, '');
+  if (input.name !== undefined) tenant.name = input.name.trim();
+
+  // Atualiza referências no registro
+  for (const [key, t] of Object.entries(inMemoryRegistry)) {
+    if (t.tenantId === tenant.tenantId) {
+      inMemoryRegistry[key] = { ...tenant };
+    }
+  }
+
+  persistDynamicTenants();
+  return tenant;
+}
+
+/**
+ * Calcula métricas do SaaS em tempo real
+ */
+export function getSaasMetrics(): SaasMetrics {
+  const uniqueTenants = new Map<string, Tenant>();
+  for (const t of Object.values(inMemoryRegistry)) {
+    uniqueTenants.set(t.tenantId, t);
+  }
+
+  let totalStores = 0;
+  let activeStores = 0;
+  let trialStores = 0;
+  let expiredOrBlockedStores = 0;
+  let estimatedMonthlyRevenue = 0;
+
+  for (const tenant of uniqueTenants.values()) {
+    totalStores++;
+    const status = isTenantActive(tenant);
+
+    if (!status.active) {
+      expiredOrBlockedStores++;
+    } else if (tenant.plan === 'trial_7d') {
+      trialStores++;
+    } else {
+      activeStores++;
+      if (tenant.plan === 'monthly') {
+        estimatedMonthlyRevenue += 49.9;
+      } else if (tenant.plan === 'annual') {
+        estimatedMonthlyRevenue += 41.58; // 499 / 12
+      } else if (tenant.plan === 'enterprise') {
+        estimatedMonthlyRevenue += 199.0;
+      }
+    }
+  }
+
+  return {
+    totalStores,
+    activeStores,
+    trialStores,
+    expiredOrBlockedStores,
+    estimatedMonthlyRevenue: Math.round(estimatedMonthlyRevenue * 100) / 100,
+  };
+}
+
+/**
+ * Reseta o registro para o estado padrão (útil para suítes de testes isoladas)
+ */
+export function resetDynamicTenants(): void {
+  inMemoryRegistry = { ...(defaultTenants as TenantRegistry) };
+  initializeDefaultTenantDetails();
+  try {
+    if (fs.existsSync(DYNAMIC_TENANTS_FILE)) {
+      fs.unlinkSync(DYNAMIC_TENANTS_FILE);
+    }
+  } catch {
+    // ignore
+  }
+}

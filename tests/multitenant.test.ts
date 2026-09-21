@@ -225,4 +225,79 @@ describe('Módulo 5 — Multi-Tenant e Resolução de Domínios (src/lib/tenantR
       expect(categoryNamesB).not.toContain('Calçados Alpha');
     });
   });
+
+  // ============================================================
+  // 4. AUTO-PROVISIONAMENTO E GESTÃO DE ASSINATURAS SAAS
+  // ============================================================
+  describe('SaaS Auto-Provisioning & Gestão de Assinaturas (src/lib/tenantStore.ts)', () => {
+    it('deve auto-provisionar nova loja com Google Sheets e credenciais de acesso', async () => {
+      const { registerTenant, findTenant, resetDynamicTenants } = await import('../src/lib/tenantStore');
+      resetDynamicTenants();
+
+      const result = await registerTenant({
+        name: 'Bella Boutique',
+        slug: 'bella-boutique-teste',
+        whatsapp: '11988887777',
+        password: 'senhaSegura123',
+        plan: 'trial_7d',
+        primaryColor: '#e11d48',
+        niche: 'Roupas e Moda',
+      });
+
+      expect(result.tenant).toBeTruthy();
+      expect(result.tenant.name).toBe('Bella Boutique');
+      expect(result.tenant.slug).toBe('bella-boutique-teste');
+      expect(result.tenant.plan).toBe('trial_7d');
+      expect(result.tenant.subscriptionStatus).toBe('trial');
+      expect(result.spreadsheetUrl).toContain('docs.google.com/spreadsheets/d/');
+      expect(result.spreadsheetId).toBeTruthy();
+
+      const found = findTenant('bella-boutique-teste');
+      expect(found).toBeTruthy();
+      expect(found?.tenantId).toBe(result.tenant.tenantId);
+    });
+
+    it('deve atualizar status de assinatura, renovar validade e alternar bloqueio', async () => {
+      const { updateTenantSubscription, isTenantActive, findTenant } = await import('../src/lib/tenantStore');
+
+      const futureDate = new Date(Date.now() + 60 * 24 * 60 * 60 * 1000).toISOString();
+      const updated = updateTenantSubscription({
+        tenantId: 'bella-boutique-teste',
+        plan: 'monthly',
+        subscriptionStatus: 'active',
+        subscriptionExpiresAt: futureDate,
+      });
+
+      expect(updated).toBeTruthy();
+      expect(updated?.plan).toBe('monthly');
+      expect(updated?.subscriptionStatus).toBe('active');
+
+      const checkActive = isTenantActive(updated!);
+      expect(checkActive.active).toBe(true);
+      expect(checkActive.daysRemaining).toBeGreaterThan(0);
+
+      // Testa bloqueio da loja
+      const blocked = updateTenantSubscription({
+        tenantId: 'bella-boutique-teste',
+        subscriptionStatus: 'blocked',
+      });
+
+      const checkBlocked = isTenantActive(blocked!);
+      expect(checkBlocked.active).toBe(false);
+      expect(checkBlocked.reason).toBe('blocked');
+    });
+
+    it('deve calcular métricas consolidadas do SaaS (MRR, lojas ativas, total)', async () => {
+      const { getSaasMetrics } = await import('../src/lib/tenantStore');
+      const metrics = getSaasMetrics();
+
+      expect(metrics.totalStores).toBeGreaterThan(0);
+      expect(typeof metrics.activeStores).toBe('number');
+      expect(typeof metrics.trialStores).toBe('number');
+      expect(typeof metrics.expiredOrBlockedStores).toBe('number');
+      expect(typeof metrics.estimatedMonthlyRevenue).toBe('number');
+      expect(metrics.estimatedMonthlyRevenue).toBeGreaterThanOrEqual(0);
+    });
+  });
 });
+

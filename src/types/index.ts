@@ -24,6 +24,8 @@ export interface StoreConfig {
   domain: string;
   currency: string;
   timezone: string;
+  subscription_status?: SubscriptionStatus;
+  subscription_expires_at?: string;
 }
 
 /**
@@ -146,17 +148,69 @@ export interface APIResponseError {
 export type APIResponse<T> = APIResponseSuccess<T> | APIResponseError;
 
 // ============================================================
-// 6. MULTI-TENANCY
+// 6. MULTI-TENANCY & SAAS SUBSCRIPTIONS
 // ============================================================
+
+export type SubscriptionPlan = 'trial_7d' | 'monthly' | 'annual' | 'enterprise';
+export type SubscriptionStatus = 'active' | 'trial' | 'expired' | 'blocked' | 'cancelled';
 
 export interface Tenant {
   tenantId: string;
   apiUrl: string;
   name?: string;
   domain?: string;
+  slug?: string;
+  whatsapp?: string;
+  plan?: SubscriptionPlan;
+  subscriptionStatus?: SubscriptionStatus;
+  subscriptionExpiresAt?: string; // ISO string
+  createdAt?: string;
+  ownerEmail?: string;
+  spreadsheetId?: string;
+  spreadsheetUrl?: string;
+  notes?: string;
 }
 
 export type TenantRegistry = Record<string, Tenant>;
+
+export interface CreateTenantInput {
+  name: string;
+  slug: string;
+  whatsapp: string;
+  ownerEmail?: string;
+  password?: string;
+  plan?: SubscriptionPlan;
+  primaryColor?: string;
+  secondaryColor?: string;
+  backgroundColor?: string;
+  textColor?: string;
+  niche?: string;
+}
+
+export interface UpdateSubscriptionInput {
+  tenantId: string;
+  plan?: SubscriptionPlan;
+  subscriptionStatus?: SubscriptionStatus;
+  subscriptionExpiresAt?: string;
+  notes?: string;
+  apiUrl?: string;
+  spreadsheetUrl?: string;
+  whatsapp?: string;
+  name?: string;
+}
+
+export interface SaasMetrics {
+  totalStores: number;
+  activeStores: number;
+  trialStores: number;
+  expiredOrBlockedStores: number;
+  estimatedMonthlyRevenue: number;
+}
+
+export interface MasterLoginResult {
+  authenticated: boolean;
+  token: string;
+}
 
 // ============================================================
 // 7. PAYLOADS DE REQUISIÇÃO (ADMIN / POST)

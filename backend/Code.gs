@@ -121,6 +121,9 @@ function doPost(e) {
       case 'saveConfig':
         result = handleSaveConfig(payload.config);
         break;
+      case 'provisionStore':
+        result = handleProvisionStore(payload.store);
+        break;
       default:
         return createJsonResponse(false, null, 'UNKNOWN_ACTION', 'Ação POST desconhecida: ' + action);
     }
@@ -1072,4 +1075,82 @@ function getOrCreateSheet(ss, sheetName) {
     sheet = ss.insertSheet(sheetName);
   }
   return sheet;
+}
+
+/**
+ * Provisiona uma nova planilha no Google Drive para o lojista com todas as abas,
+ * cabeçalhos e configurações iniciais criadas de forma 100% automática.
+ */
+function handleProvisionStore(storeData) {
+  if (!storeData || !storeData.store_name) {
+    throw new Error('VALIDATION_ERROR: Dados da loja ausentes ou inválidos.');
+  }
+
+  var storeName = String(storeData.store_name).trim();
+  var storeId = String(storeData.store_id || storeData.slug || generateUuid().substring(0, 8)).trim();
+  var initialPassword = String(storeData.password || 'admin123').trim();
+  var passwordHash = hashPassword(initialPassword);
+  var apiToken = 'tok_' + generateUuid().replace(/-/g, '').substring(0, 24);
+
+  // Cria a planilha no Google Drive da conta
+  var newSs = SpreadsheetApp.create('Catálogo Digital — ' + storeName);
+  var ssId = newSs.getId();
+  var ssUrl = newSs.getUrl();
+
+  // 1. Configurar Aba 'config'
+  var configSheet = newSs.getSheetByName('Página1') || newSs.getSheets()[0];
+  configSheet.setName(SHEET_CONFIG);
+  configSheet.appendRow(['chave', 'valor']);
+  configSheet.getRange(1, 1, 1, 2).setFontWeight('bold');
+  configSheet.setFrozenRows(1);
+
+  var defaultConfigs = [
+    ['store_id', storeId],
+    ['store_name', storeName],
+    ['logo_url', storeData.logo_url || ''],
+    ['primary_color', storeData.primary_color || '#10b981'],
+    ['secondary_color', storeData.secondary_color || '#047857'],
+    ['background_color', storeData.background_color || '#f8fafc'],
+    ['text_color', storeData.text_color || '#0f172a'],
+    ['banners', '[]'],
+    ['whatsapp', String(storeData.whatsapp || '5511999999999').replace(/\D/g, '')],
+    ['admin_password_hash', passwordHash],
+    ['api_token', apiToken],
+    ['domain', storeData.domain || (storeId + '.localhost')],
+    ['currency', storeData.currency || 'BRL'],
+    ['timezone', storeData.timezone || 'America/Sao_Paulo']
+  ];
+
+  for (var i = 0; i < defaultConfigs.length; i++) {
+    configSheet.appendRow(defaultConfigs[i]);
+  }
+
+  // 2. Configurar Aba 'categorias'
+  var catSheet = newSs.insertSheet(SHEET_CATEGORIES);
+  catSheet.appendRow(['id', 'nome', 'slug', 'ativo', 'ordem', 'createdAt', 'updatedAt']);
+  catSheet.getRange(1, 1, 1, 7).setFontWeight('bold');
+  catSheet.setFrozenRows(1);
+
+  var catId = 'cat_' + generateUuid().substring(0, 8);
+  var nowIso = new Date().toISOString();
+  catSheet.appendRow([catId, 'Geral', 'geral', true, 1, nowIso, nowIso]);
+
+  // 3. Configurar Aba 'produtos'
+  var prodSheet = newSs.insertSheet(SHEET_PRODUCTS);
+  prodSheet.appendRow([
+    'id', 'categoriaId', 'nome', 'slug', 'descricao', 'preco', 
+    'precoPromocional', 'imagens', 'variacoes', 'estoque', 'ativo', 
+    'createdAt', 'updatedAt', 'deletedAt'
+  ]);
+  prodSheet.getRange(1, 1, 1, 14).setFontWeight('bold');
+  prodSheet.setFrozenRows(1);
+
+  return {
+    success: true,
+    store_id: storeId,
+    store_name: storeName,
+    spreadsheetId: ssId,
+    spreadsheetUrl: ssUrl,
+    api_token: apiToken
+  };
 }

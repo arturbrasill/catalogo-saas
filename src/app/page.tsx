@@ -9,12 +9,14 @@ import { CartDrawer } from '@/components/catalog/CartDrawer';
 import { BannerSlider } from '@/components/catalog/BannerSlider';
 import type { StoreConfig, Category, Product } from '@/types';
 import { formatCurrency } from '@/lib/whatsapp';
+import Link from 'next/link';
 import {
   ShoppingBag,
   Search,
   X,
   Store as StoreIcon,
   AlertCircle,
+  AlertTriangle,
   RefreshCw,
   Package,
 } from 'lucide-react';
@@ -99,6 +101,50 @@ function CatalogContent() {
   };
 
   const hasActiveFilters = Boolean(searchTerm) || selectedCategory !== 'ALL';
+
+  const isSuspended =
+    store?.subscription_status === 'blocked' ||
+    store?.subscription_status === 'expired' ||
+    Boolean(
+      store?.subscription_expires_at &&
+        new Date(store.subscription_expires_at).getTime() < Date.now()
+    );
+
+  if (!isLoading && store && isSuspended) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4 text-center">
+        <div className="max-w-md w-full bg-white rounded-2xl border border-slate-200 p-8 shadow-xs space-y-4">
+          <div className="w-14 h-14 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center mx-auto border border-amber-200/60">
+            <AlertTriangle className="w-7 h-7" />
+          </div>
+          <h2 className="text-xl font-extrabold text-slate-900 tracking-tight">
+            Catálogo Temporariamente Indisponível
+          </h2>
+          <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">
+            A loja <strong>{store.store_name}</strong> está pausada para renovação da assinatura.
+          </p>
+          <div className="pt-2 flex flex-col sm:flex-row gap-2.5 justify-center">
+            <Link
+              href="/admin/login"
+              className="px-4 py-2.5 rounded-xl bg-slate-900 text-white font-semibold text-xs hover:bg-slate-800 transition-colors"
+            >
+              Acessar Painel do Lojista
+            </Link>
+            {store.whatsapp && (
+              <a
+                href={`https://wa.me/${store.whatsapp.replace(/\D/g, '')}`}
+                target="_blank"
+                rel="noreferrer"
+                className="px-4 py-2.5 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200 font-semibold text-xs hover:bg-emerald-100 transition-colors"
+              >
+                Falar com a Loja
+              </a>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div

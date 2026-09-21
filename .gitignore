@@ -18,6 +18,7 @@ coverage/
 *.key
 credentials.json
 token.json
+src/lib/dynamicTenants.json
 
 # Logs
 logs

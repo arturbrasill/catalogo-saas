@@ -1,0 +1,99 @@
+import { NextRequest, NextResponse } from 'next/server';
+import {
+  getTenantRegistry,
+  registerTenant,
+  getSaasMetrics,
+  findTenant,
+} from '@/lib/tenantStore';
+import type { CreateTenantInput } from '@/types';
+
+// Senha mestra do SuperAdmin SaaS para proteger endpoints
+const MASTER_SECRET = process.env['SAAS_MASTER_KEY'] || 'master_saas_antigravity_2026';
+
+function isAuthorized(request: NextRequest): boolean {
+  const token = request.headers.get('x-saas-token') || request.cookies.get('saas_token')?.value;
+  return token === MASTER_SECRET;
+}
+
+export async function GET(request: NextRequest) {
+  // Lista de lojas protegida para o painel SuperAdmin
+  if (!isAuthorized(request)) {
+    return NextResponse.json(
+      { success: false, error: 'Acesso não autorizado ao painel SaaS Master.' },
+      { status: 401 }
+    );
+  }
+
+  const registry = getTenantRegistry();
+  const stores = Object.values(registry);
+  const metrics = getSaasMetrics();
+
+  // Remove dados duplicados por chaves diferentes (mantém um por tenantId)
+  const uniqueStoresMap = new Map();
+  for (const store of stores) {
+    if (!uniqueStoresMap.has(store.tenantId)) {
+      uniqueStoresMap.set(store.tenantId, store);
+    }
+  }
+
+  return NextResponse.json({
+    success: true,
+    data: {
+      stores: Array.from(uniqueStoresMap.values()),
+      metrics,
+    },
+  });
+}
+
+export async function POST(request: NextRequest) {
+  try {
+    const body = (await request.json()) as Partial<CreateTenantInput>;
+
+    if (!body.name || !body.name.trim()) {
+      return NextResponse.json(
+        { success: false, error: 'O nome da loja é obrigatório.' },
+        { status: 400 }
+      );
+    }
+
+    if (!body.whatsapp || !body.whatsapp.replace(/\D/g, '')) {
+      return NextResponse.json(
+        { success: false, error: 'O WhatsApp da loja é obrigatório.' },
+        { status: 400 }
+      );
+    }
+
+    const input: CreateTenantInput = {
+      name: body.name.trim(),
+      slug: body.slug ? body.slug.trim() : body.name.trim(),
+      whatsapp: body.whatsapp.replace(/\D/g, ''),
+      ownerEmail: body.ownerEmail?.trim(),
+      password: body.password || 'admin123',
+      plan: body.plan || 'trial_7d',
+      primaryColor: body.primaryColor || '#10b981',
+      secondaryColor: body.secondaryColor || '#047857',
+      backgroundColor: body.backgroundColor || '#f8fafc',
+      textColor: body.textColor || '#0f172a',
+      niche: body.niche || 'Geral',
+    };
+
+    // Auto-provisiona a loja e sua planilha no Google Sheets
+    const result = await registerTenant(input);
+
+    return NextResponse.json({
+      success: true,
+      data: {
+        tenant: result.tenant,
+        spreadsheetUrl: result.spreadsheetUrl,
+        spreadsheetId: result.spreadsheetId,
+        catalogUrl: `/?tenant=${result.tenant.slug}`,
+        adminUrl: `/admin/login?tenant=${result.tenant.slug}`,
+      },
+    });
+  } catch (error) {
+    return NextResponse.json(
+      { success: false, error: 'Falha ao criar loja: ' + String(error) },
+      { status: 500 }
+    );
+  }
+}
