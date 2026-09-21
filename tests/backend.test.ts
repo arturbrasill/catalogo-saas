@@ -438,6 +438,35 @@ describe('Módulo 1 — Backend Google Sheets + Apps Script (Auditoria & Testes 
       expect(conf.whatsapp).toBe('5511977776666');
     });
 
+    it('POST saveConfig: deve salvar e carregar status de funcionamento (is_open, business_hours) e chave PIX', () => {
+      const res = engine.doPost({
+        action: 'saveConfig',
+        token: adminToken,
+        config: {
+          is_open: false,
+          business_hours: 'Seg a Sáb: 09h às 19h',
+          pix_key: '11988887777',
+          pix_key_type: 'Celular',
+        },
+      });
+
+      expect(res.success).toBe(true);
+      const conf = res.data as StoreConfig;
+      expect(conf.is_open).toBe(false);
+      expect(conf.business_hours).toBe('Seg a Sáb: 09h às 19h');
+      expect(conf.pix_key).toBe('11988887777');
+      expect(conf.pix_key_type).toBe('Celular');
+
+      // Verifica no GET store
+      const storeRes = engine.doGet({ action: 'store' });
+      expect(storeRes.success).toBe(true);
+      const storeData = storeRes.data as StoreConfig;
+      expect(storeData.is_open).toBe(false);
+      expect(storeData.business_hours).toBe('Seg a Sáb: 09h às 19h');
+      expect(storeData.pix_key).toBe('11988887777');
+      expect(storeData.pix_key_type).toBe('Celular');
+    });
+
     it('POST saveConfig: deve BLOQUEAR tentativa de alterar campos protegidos (store_id, api_token, admin_password_hash)', () => {
       // Teste store_id
       const resStoreId = engine.doPost({

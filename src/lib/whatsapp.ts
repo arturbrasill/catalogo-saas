@@ -3,7 +3,7 @@
  * Biblioteca pura em TypeScript — Sem dependência de React.
  */
 
-import type { StoreConfig, CartItem, SelectedVariation, Cart } from '@/types';
+import type { StoreConfig, CartItem, SelectedVariation, Cart, CustomerOrderInfo } from '@/types';
 
 export type WhatsAppStoreInfo = {
   store_name: string;
@@ -177,7 +177,8 @@ export function normalizePhoneNumber(
  */
 export function buildWhatsAppMessage(
   store: WhatsAppStoreInfo,
-  cartInput: Cart | CartItem[]
+  cartInput: Cart | CartItem[],
+  orderInfo?: CustomerOrderInfo
 ): string {
   const items: CartItem[] = Array.isArray(cartInput) ? cartInput : cartInput.items;
 
@@ -193,10 +194,61 @@ export function buildWhatsAppMessage(
     `🛍️ *NOVO PEDIDO — ${storeName.toUpperCase()}*`,
     `Olá! Gostaria de finalizar meu pedido com os itens abaixo:`,
     '',
-    '----------------------------------------',
-    '🛒 *ITENS DA SACOLA:*',
-    '',
   ];
+
+  if (orderInfo && (orderInfo.customerName || orderInfo.deliveryType || orderInfo.paymentMethod)) {
+    messageParts.push('👤 *DADOS DO PEDIDO:*');
+    if (orderInfo.customerName && orderInfo.customerName.trim()) {
+      messageParts.push(`• *Cliente:* ${orderInfo.customerName.trim()}`);
+    }
+    if (orderInfo.phone && orderInfo.phone.trim()) {
+      messageParts.push(`• *Telefone:* ${orderInfo.phone.trim()}`);
+    }
+
+    if (orderInfo.deliveryType === 'delivery') {
+      messageParts.push('• *Tipo:* 🛵 Entrega em Domicílio');
+      if (orderInfo.address) {
+        const addr = orderInfo.address;
+        const addrParts: string[] = [];
+        if (addr.street) {
+          addrParts.push(addr.number ? `${addr.street}, ${addr.number}` : addr.street);
+        }
+        if (addr.neighborhood) addrParts.push(`Bairro: ${addr.neighborhood}`);
+        if (addr.complement) addrParts.push(`(${addr.complement})`);
+        if (addr.city) addrParts.push(addr.city);
+        if (addrParts.length > 0) {
+          messageParts.push(`• *Endereço:* ${addrParts.join(' - ')}`);
+        }
+      }
+    } else if (orderInfo.deliveryType === 'pickup') {
+      messageParts.push('• *Tipo:* 🏬 Retirada no Balcão / Loja');
+    }
+
+    if (orderInfo.paymentMethod) {
+      const paymentLabels: Record<string, string> = {
+        pix: '⚡ PIX',
+        credit_card: '💳 Cartão de Crédito',
+        debit_card: '💳 Cartão de Débito',
+        money: '💵 Dinheiro',
+      };
+      const methodLabel = paymentLabels[orderInfo.paymentMethod] || orderInfo.paymentMethod;
+      let payLine = `• *Pagamento:* ${methodLabel}`;
+      if (orderInfo.paymentMethod === 'money' && orderInfo.changeFor && orderInfo.changeFor.trim()) {
+        payLine += ` (Troco para ${orderInfo.changeFor.trim()})`;
+      }
+      messageParts.push(payLine);
+    }
+
+    if (orderInfo.notes && orderInfo.notes.trim()) {
+      messageParts.push(`• *Observações:* ${orderInfo.notes.trim()}`);
+    }
+
+    messageParts.push('');
+  }
+
+  messageParts.push('----------------------------------------');
+  messageParts.push('🛒 *ITENS DA SACOLA:*');
+  messageParts.push('');
 
   items.forEach((item, idx) => {
     messageParts.push(formatCartItem(item, idx + 1));
@@ -207,7 +259,14 @@ export function buildWhatsAppMessage(
   messageParts.push(`💰 *TOTAL DO PEDIDO: ${formatCurrency(total, store.currency)}*`);
   messageParts.push(`📦 *Quantidade total de itens:* ${totalItemsCount}`);
   messageParts.push('');
-  messageParts.push('Por favor, informe a disponibilidade dos itens e opções para entrega!');
+
+  if (orderInfo?.deliveryType === 'delivery') {
+    messageParts.push('Por favor, confirme a disponibilidade dos itens, taxa de entrega e tempo estimado!');
+  } else if (orderInfo?.deliveryType === 'pickup') {
+    messageParts.push('Por favor, confirme a disponibilidade dos itens e quando posso retirar!');
+  } else {
+    messageParts.push('Por favor, informe a disponibilidade dos itens e opções para entrega!');
+  }
 
   return messageParts.join('\n');
 }
@@ -218,10 +277,11 @@ export function buildWhatsAppMessage(
  */
 export function buildWhatsAppUrl(
   store: WhatsAppStoreInfo,
-  cartInput: Cart | CartItem[]
+  cartInput: Cart | CartItem[],
+  orderInfo?: CustomerOrderInfo
 ): string {
   const cleanPhone = normalizePhoneNumber(store.whatsapp);
-  const message = buildWhatsAppMessage(store, cartInput);
+  const message = buildWhatsAppMessage(store, cartInput, orderInfo);
   const encodedMessage = encodeURIComponent(message);
 
   return `https://wa.me/${cleanPhone}?text=${encodedMessage}`;

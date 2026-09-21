@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import {
   Store,
@@ -62,6 +62,17 @@ export default function CriarLojaPage() {
     asaasPaymentUrl?: string | null;
   } | null>(null);
   const [copiedLink, setCopiedLink] = useState<string | null>(null);
+
+  // Lê plano pré-selecionado da URL (?plan=monthly ou ?plan=yearly)
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const p = params.get('plan');
+      if (p === 'monthly' || p === 'yearly' || p === 'trial_30d') {
+        setPlan(p as SubscriptionPlan);
+      }
+    }
+  }, []);
 
   // Auto-gera slug baseado no nome da loja
   const handleNameChange = (val: string) => {
@@ -145,7 +156,7 @@ export default function CriarLojaPage() {
       }
 
       let asaasUrl: string | null = null;
-      if (plan === 'monthly') {
+      if (plan === 'monthly' || plan === 'yearly') {
         try {
           const asaasRes = await fetch('/api/asaas/checkout', {
             method: 'POST',
@@ -153,6 +164,7 @@ export default function CriarLojaPage() {
             body: JSON.stringify({
               tenantId: json.data.tenant.tenantId,
               cpfCnpj,
+              plan,
             }),
           });
           const asaasJson = await asaasRes.json();
@@ -402,7 +414,7 @@ export default function CriarLojaPage() {
                   </span>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
                   {/* Teste 30 Dias Grátis */}
                   <label
                     className={`relative p-4 rounded-xl border cursor-pointer transition-all flex flex-col justify-between ${
@@ -461,9 +473,9 @@ export default function CriarLojaPage() {
                         </span>
                         {plan === 'monthly' && <CheckCircle2 className="w-4 h-4 text-emerald-600" />}
                       </div>
-                      <h4 className="text-sm font-bold text-slate-900">Assinatura Mensal Pro</h4>
+                      <h4 className="text-sm font-bold text-slate-900">Mensal Flexível</h4>
                       <p className="text-[11px] text-slate-500 mt-1 leading-normal">
-                        Cobrança automatizada via Asaas (PIX imediato, Cartão de Crédito ou Boleto bancário).
+                        Cobrança automatizada via Asaas (PIX imediato, Cartão de Crédito ou Boleto).
                       </p>
                     </div>
                     <div className="mt-4 pt-2.5 border-t border-slate-200/60 font-extrabold text-sm text-slate-900 flex items-baseline justify-between">
@@ -471,10 +483,45 @@ export default function CriarLojaPage() {
                       <span className="text-[10px] font-normal text-slate-500">/mês</span>
                     </div>
                   </label>
+
+                  {/* Plano Anual R$ 99,90 */}
+                  <label
+                    className={`relative p-4 rounded-xl border cursor-pointer transition-all flex flex-col justify-between ${
+                      plan === 'yearly'
+                        ? 'border-emerald-600 bg-emerald-50/50 ring-2 ring-emerald-500/20 shadow-xs'
+                        : 'border-slate-200 hover:border-slate-300 bg-white'
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="plan"
+                      value="yearly"
+                      checked={plan === 'yearly'}
+                      onChange={() => setPlan('yearly')}
+                      className="sr-only"
+                    />
+                    <div>
+                      <div className="flex items-center justify-between mb-1.5">
+                        <span className="text-[10px] font-bold text-amber-800 bg-amber-100 px-2 py-0.5 rounded-md flex items-center gap-1">
+                          <Sparkles className="w-3 h-3 text-amber-600" />
+                          Anual (-23%)
+                        </span>
+                        {plan === 'yearly' && <CheckCircle2 className="w-4 h-4 text-emerald-600" />}
+                      </div>
+                      <h4 className="text-sm font-bold text-slate-900">Anual VIP</h4>
+                      <p className="text-[11px] text-slate-500 mt-1 leading-normal">
+                        R$ 1.198,80/ano com economia de R$ 360,00 e domínio próprio.
+                      </p>
+                    </div>
+                    <div className="mt-4 pt-2.5 border-t border-slate-200/60 font-extrabold text-sm text-slate-900 flex items-baseline justify-between">
+                      <span>R$ 99,90</span>
+                      <span className="text-[10px] font-normal text-slate-500">/mês</span>
+                    </div>
+                  </label>
                 </div>
 
-                {/* Campo de CPF/CNPJ caso escolha mensal com Asaas */}
-                {plan === 'monthly' && (
+                {/* Campo de CPF/CNPJ caso escolha mensal ou anual com Asaas */}
+                {(plan === 'monthly' || plan === 'yearly') && (
                   <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-xl space-y-1.5 animate-in fade-in">
                     <label className="block text-xs font-semibold text-slate-700">
                       CPF ou CNPJ para emissão da Fatura Asaas

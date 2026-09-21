@@ -351,5 +351,96 @@ describe('Módulo 5 — Multi-Tenant e Resolução de Domínios (src/lib/tenantR
       expect(store?.plan).toBe('monthly');
     });
   });
+
+  // ============================================================
+  // 9. PERSISTÊNCIA DURADOURA VIA SERVERLESS KV (UPSTASH / VERCEL KV)
+  // ============================================================
+  describe('9. Persistência Serverless KV (getKvConfig, syncTenantsToRemote, syncTenantsFromRemote)', () => {
+    const originalEnv = { ...process.env };
+
+    beforeEach(() => {
+      process.env = { ...originalEnv };
+    });
+
+    it('deve retornar null se variáveis KV não estiverem configuradas', async () => {
+      delete process.env['KV_REST_API_URL'];
+      delete process.env['KV_REST_API_TOKEN'];
+      delete process.env['UPSTASH_REDIS_REST_URL'];
+      delete process.env['UPSTASH_REDIS_REST_TOKEN'];
+
+      const { getKvConfig, syncTenantsToRemote, syncTenantsFromRemote } = await import(
+        '../src/lib/tenantStore'
+      );
+
+      expect(getKvConfig()).toBeNull();
+      expect(await syncTenantsToRemote()).toBe(false);
+      expect(await syncTenantsFromRemote()).toBe(false);
+    });
+
+    it('deve detectar configuração Vercel KV ou Upstash Redis REST', async () => {
+      process.env['KV_REST_API_URL'] = 'https://clean-test.upstash.io/';
+      process.env['KV_REST_API_TOKEN'] = 'secret_token_123';
+
+      const { getKvConfig } = await import('../src/lib/tenantStore');
+      const kv = getKvConfig();
+
+      expect(kv).toBeTruthy();
+      expect(kv?.url).toBe('https://clean-test.upstash.io');
+      expect(kv?.token).toBe('secret_token_123');
+    });
+
+    it('deve sincronizar com sucesso quando KV remoto responde com sucesso', async () => {
+      process.env['KV_REST_API_URL'] = 'https://clean-test.upstash.io';
+      process.env['KV_REST_API_TOKEN'] = 'secret_token_123';
+
+      const originalFetch = global.fetch;
+      try {
+        // Mock fetch para Upstash / Vercel KV REST
+        const mockFetch = (async (input: RequestInfo | URL) => {
+          const urlStr = input.toString();
+
+          if (urlStr.includes('/set/saas_tenants_registry')) {
+            return new Response(JSON.stringify({ result: 'OK' }), { status: 200 });
+          }
+
+          if (urlStr.includes('/get/saas_tenants_registry')) {
+            const remotePayload = {
+              'remote-store.com.br': {
+                tenantId: 'remote_store',
+                apiUrl: 'https://script.google.com/macros/s/REMOTE/exec',
+                name: 'Loja Remota KV',
+                domain: 'remote-store.com.br',
+                plan: 'monthly',
+                subscriptionStatus: 'active',
+              },
+            };
+            return new Response(JSON.stringify({ result: JSON.stringify(remotePayload) }), {
+              status: 200,
+            });
+          }
+
+          return new Response('Not found', { status: 404 });
+        }) as unknown as typeof fetch;
+
+        global.fetch = mockFetch;
+
+        const { syncTenantsToRemote, syncTenantsFromRemote, findTenant } = await import(
+          '../src/lib/tenantStore'
+        );
+
+        const pushResult = await syncTenantsToRemote();
+        expect(pushResult).toBe(true);
+
+        const pullResult = await syncTenantsFromRemote();
+        expect(pullResult).toBe(true);
+
+        const remoteTenant = findTenant('remote_store');
+        expect(remoteTenant).toBeTruthy();
+        expect(remoteTenant?.name).toBe('Loja Remota KV');
+      } finally {
+        global.fetch = originalFetch;
+      }
+    });
+  });
 });
 

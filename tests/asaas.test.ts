@@ -9,6 +9,7 @@ import {
   createAsaasPayment,
   createAsaasSubscription,
   ASAAS_MONTHLY_PRICE,
+  ASAAS_YEARLY_PRICE,
 } from '../src/lib/asaas';
 import {
   findTenant,
@@ -30,8 +31,9 @@ describe('Integração Asaas — Gateway de Pagamentos e Assinaturas', () => {
   });
 
   describe('Configurações e Variáveis de Ambiente', () => {
-    it('deve identificar o valor do plano mensal fixo de R$ 129,90', () => {
+    it('deve identificar o valor do plano mensal fixo de R$ 129,90 e anual de R$ 1.198,80', () => {
       expect(ASAAS_MONTHLY_PRICE).toBe(129.9);
+      expect(ASAAS_YEARLY_PRICE).toBe(1198.8);
     });
 
     it('deve ler chave de API dinamicamente', () => {
@@ -275,6 +277,58 @@ describe('Integração Asaas — Gateway de Pagamentos e Assinaturas', () => {
 
       const updatedTenant = findTenant(testTenantId);
       expect(updatedTenant?.subscriptionStatus).toBe('cancelled');
+    });
+  });
+
+  describe('Checkout Endpoint (/api/asaas/checkout)', () => {
+    it('deve gerar fatura mensal (R$ 129,90) e anual (R$ 1.198,80) corretamente', async () => {
+      const { POST: handleCheckout } = await import('../src/app/api/asaas/checkout/route');
+
+      // Tenant de teste
+      const checkoutTenantId = 'loja_checkout_test';
+      await registerTenant({
+        slug: checkoutTenantId,
+        name: 'Loja Checkout Teste',
+        plan: 'monthly',
+        ownerEmail: 'checkout@loja.com',
+        whatsapp: '5511988887777',
+      });
+
+      // 1. Checkout Plano Mensal
+      const reqMonthly = new NextRequest('http://localhost:3000/api/asaas/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          tenantId: checkoutTenantId,
+          cpfCnpj: '12345678901',
+          plan: 'monthly',
+        }),
+      });
+
+      const resMonthly = await handleCheckout(reqMonthly);
+      expect(resMonthly.status).toBe(200);
+      const dataMonthly = await resMonthly.json();
+      expect(dataMonthly.success).toBe(true);
+      expect(dataMonthly.data.value).toBe(129.9);
+      expect(dataMonthly.data.invoiceUrl).toContain('https://sandbox.asaas.com/i/');
+
+      // 2. Checkout Plano Anual
+      const reqYearly = new NextRequest('http://localhost:3000/api/asaas/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          tenantId: checkoutTenantId,
+          cpfCnpj: '12345678901',
+          plan: 'yearly',
+        }),
+      });
+
+      const resYearly = await handleCheckout(reqYearly);
+      expect(resYearly.status).toBe(200);
+      const dataYearly = await resYearly.json();
+      expect(dataYearly.success).toBe(true);
+      expect(dataYearly.data.value).toBe(1198.8);
+      expect(dataYearly.data.invoiceUrl).toContain('https://sandbox.asaas.com/i/');
     });
   });
 });

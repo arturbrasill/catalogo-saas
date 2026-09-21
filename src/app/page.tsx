@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { api } from '@/lib/api';
 import { CartProvider, useCart } from '@/lib/cart';
 import { ProductCard } from '@/components/catalog/ProductCard';
@@ -19,9 +19,14 @@ import {
   AlertTriangle,
   RefreshCw,
   Package,
+  Clock,
 } from 'lucide-react';
 
-function CatalogContent() {
+interface CatalogContentProps {
+  onStoreLoaded?: (store: StoreConfig) => void;
+}
+
+function CatalogContent({ onStoreLoaded }: CatalogContentProps) {
   const { openCart, getTotalItems, getSubtotal } = useCart();
   const [store, setStore] = useState<StoreConfig | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -34,13 +39,17 @@ function CatalogContent() {
   const [selectedCategory, setSelectedCategory] = useState<string>('ALL');
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     setIsLoading(true);
     setErrorMessage(null);
     try {
       const initialData = await api.getAll();
       if (initialData.store) {
         initialData.store.whatsapp = String(initialData.store.whatsapp ?? '').trim();
+        if (typeof document !== 'undefined' && initialData.store.store_name) {
+          document.title = `${initialData.store.store_name} | Catálogo Oficial`;
+        }
+        onStoreLoaded?.(initialData.store);
       }
       setStore(initialData.store);
       setCategories(initialData.categories || []);
@@ -54,11 +63,46 @@ function CatalogContent() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [onStoreLoaded]);
 
   useEffect(() => {
     loadData();
-  }, []);
+  }, [loadData]);
+
+  // Deep linking: Abre produto direto caso venha por query param ?p=slug ou ?produto=slug
+  useEffect(() => {
+    if (products.length > 0 && typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const productSlug = params.get('p') || params.get('produto');
+      if (productSlug) {
+        const found = products.find(
+          (p) => p.slug === productSlug || p.id === productSlug
+        );
+        if (found) {
+          setSelectedProduct(found);
+        }
+      }
+    }
+  }, [products]);
+
+  const handleOpenProduct = (p: Product) => {
+    setSelectedProduct(p);
+    if (typeof window !== 'undefined') {
+      const url = new URL(window.location.href);
+      url.searchParams.set('p', p.slug || p.id);
+      window.history.replaceState({}, '', url.toString());
+    }
+  };
+
+  const handleCloseProduct = () => {
+    setSelectedProduct(null);
+    if (typeof window !== 'undefined') {
+      const url = new URL(window.location.href);
+      url.searchParams.delete('p');
+      url.searchParams.delete('produto');
+      window.history.replaceState({}, '', url.toString());
+    }
+  };
 
   // Aplicação dinâmica das cores do tema (primária, secundária, fundo e textos)
   useEffect(() => {
@@ -176,10 +220,25 @@ function CatalogContent() {
                 <h1 className="text-sm sm:text-base font-extrabold text-slate-900 truncate leading-tight">
                   {store?.store_name || 'Catálogo Digital'}
                 </h1>
-                <span className="text-[11px] text-emerald-600 font-semibold flex items-center gap-1 mt-0.5">
-                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                  Loja Online
-                </span>
+                <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                  {store?.is_open === false ? (
+                    <span className="text-[11px] text-rose-600 font-bold flex items-center gap-1">
+                      <span className="h-1.5 w-1.5 rounded-full bg-rose-500" />
+                      Fechado no momento
+                    </span>
+                  ) : (
+                    <span className="text-[11px] text-emerald-600 font-semibold flex items-center gap-1">
+                      <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                      Aberto agora
+                    </span>
+                  )}
+                  {store?.business_hours && (
+                    <span className="text-[11px] text-slate-500 flex items-center gap-1 border-l border-slate-200 pl-2">
+                      <Clock className="w-3 h-3 text-slate-400" />
+                      <span className="truncate max-w-[140px] sm:max-w-none">{store.business_hours}</span>
+                    </span>
+                  )}
+                </div>
               </div>
             </div>
 
@@ -282,6 +341,20 @@ function CatalogContent() {
 
       {/* Conteúdo Principal */}
       <main className="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 py-5 sm:py-6 space-y-5">
+        {/* Aviso de Loja Fechada */}
+        {store?.is_open === false && (
+          <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-amber-900 flex items-start gap-3 shadow-xs">
+            <Clock className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+            <div className="text-xs sm:text-sm">
+              <p className="font-bold text-amber-950">A loja está fechada no momento</p>
+              <p className="text-amber-800 mt-0.5">
+                Você pode montar seu pedido e enviar normalmente! Ele será processado assim que abrirmos
+                {store.business_hours ? ` (${store.business_hours})` : ''}.
+              </p>
+            </div>
+          </div>
+        )}
+
         {/* Espaço para até 3 Banners (bem no início do app) */}
         {!searchTerm && selectedCategory === 'ALL' && store?.banners && store.banners.length > 0 && (
           <section aria-label="Banners da Loja">
@@ -369,7 +442,7 @@ function CatalogContent() {
                         timezone: '',
                       }
                     }
-                    onSelect={(p) => setSelectedProduct(p)}
+                    onSelect={handleOpenProduct}
                   />
                 ))}
               </div>
@@ -382,7 +455,7 @@ function CatalogContent() {
       {store && (
         <ProductModal
           product={selectedProduct}
-          onClose={() => setSelectedProduct(null)}
+          onClose={handleCloseProduct}
           store={store}
         />
       )}
@@ -410,9 +483,26 @@ function CatalogContent() {
 }
 
 export default function CatalogPage() {
+  const [storeId, setStoreId] = useState<string>('default');
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const queryTenant = params.get('tenant');
+      const host = window.location.hostname.replace(/:\d+$/, '').replace(/^www\./, '');
+      setStoreId(queryTenant || host || 'default');
+    }
+  }, []);
+
   return (
-    <CartProvider>
-      <CatalogContent />
+    <CartProvider tenantId={storeId}>
+      <CatalogContent
+        onStoreLoaded={(loadedStore) => {
+          if (loadedStore?.store_id) {
+            setStoreId(loadedStore.store_id);
+          }
+        }}
+      />
     </CartProvider>
   );
 }

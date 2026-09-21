@@ -21,37 +21,52 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 
 const CART_STORAGE_KEY = 'catalogo_saas_cart_items_v1';
 
-export function CartProvider({ children }: { children: React.ReactNode }) {
+export function CartProvider({
+  children,
+  tenantId,
+}: {
+  children: React.ReactNode;
+  tenantId?: string;
+}) {
   const [items, setItems] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
 
-  // Carrega sacola salva no localStorage na inicialização
+  const storageKey = tenantId
+    ? `catalogo_saas_cart_${tenantId.toLowerCase().trim()}`
+    : 'catalogo_saas_cart_items_v1';
+
+  // Carrega sacola salva no localStorage na inicialização e quando o storageKey mudar
   useEffect(() => {
     try {
-      const stored = localStorage.getItem(CART_STORAGE_KEY);
+      const stored = localStorage.getItem(storageKey);
       if (stored) {
         const parsed: CartItem[] = JSON.parse(stored);
         if (Array.isArray(parsed)) {
           setItems(parsed);
+        } else {
+          setItems([]);
         }
+      } else {
+        setItems([]);
       }
     } catch {
       // LocalStorage indisponível ou JSON inválido
+      setItems([]);
     } finally {
       setIsInitialized(true);
     }
-  }, []);
+  }, [storageKey]);
 
   // Salva no localStorage a cada alteração
   useEffect(() => {
     if (!isInitialized) return;
     try {
-      localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(items));
+      localStorage.setItem(storageKey, JSON.stringify(items));
     } catch {
       // Falha ao salvar no LocalStorage
     }
-  }, [items, isInitialized]);
+  }, [items, isInitialized, storageKey]);
 
   const areVariationsEqual = (v1: SelectedVariation, v2: SelectedVariation): boolean => {
     const keys1 = Object.keys(v1);

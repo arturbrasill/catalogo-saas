@@ -269,5 +269,54 @@ describe('Módulo 4 — Motor de WhatsApp (src/lib/whatsapp.ts)', () => {
         /número de whatsapp inválido/i
       );
     });
+
+    // Caso 10: Pedido com Entrega em Domicílio e PIX
+    it('Caso 10: Pedido com Dados do Cliente, Entrega em Domicílio e PIX', () => {
+      const orderInfo = {
+        customerName: 'Artur Brasil',
+        phone: '11999998888',
+        deliveryType: 'delivery' as const,
+        address: {
+          street: 'Av. Paulista',
+          number: '1000',
+          neighborhood: 'Bela Vista',
+          complement: 'Apto 42',
+          city: 'São Paulo',
+        },
+        paymentMethod: 'pix' as const,
+        notes: 'Deixar na portaria com o porteiro.',
+      };
+
+      const msg = buildWhatsAppMessage(mockStore, [sampleItem1], orderInfo);
+      expect(msg).toContain('👤 *DADOS DO PEDIDO:*');
+      expect(msg).toContain('• *Cliente:* Artur Brasil');
+      expect(msg).toContain('• *Telefone:* 11999998888');
+      expect(msg).toContain('• *Tipo:* 🛵 Entrega em Domicílio');
+      expect(msg).toContain('• *Endereço:* Av. Paulista, 1000 - Bairro: Bela Vista - (Apto 42) - São Paulo');
+      expect(msg).toContain('• *Pagamento:* ⚡ PIX');
+      expect(msg).toContain('• *Observações:* Deixar na portaria com o porteiro.');
+      expect(msg).toContain('taxa de entrega e tempo estimado');
+
+      const url = buildWhatsAppUrl(mockStore, [sampleItem1], orderInfo);
+      expect(url).toContain('https://wa.me/5511987654321?text=');
+      expect(decodeURIComponent(url)).toContain('Artur Brasil');
+    });
+
+    // Caso 11: Pedido com Retirada no Balcão e Dinheiro com Troco
+    it('Caso 11: Pedido com Retirada no Balcão e Pagamento em Dinheiro com Troco', () => {
+      const orderInfo = {
+        customerName: 'Mariana Costa',
+        deliveryType: 'pickup' as const,
+        paymentMethod: 'money' as const,
+        changeFor: 'R$ 200,00',
+      };
+
+      const msg = buildWhatsAppMessage(mockStore, [sampleItem1], orderInfo);
+      expect(msg).toContain('• *Cliente:* Mariana Costa');
+      expect(msg).toContain('• *Tipo:* 🏬 Retirada no Balcão / Loja');
+      expect(msg).toContain('• *Pagamento:* 💵 Dinheiro (Troco para R$ 200,00)');
+      expect(msg).toContain('quando posso retirar');
+      expect(msg).not.toContain('• *Endereço:*');
+    });
   });
 });

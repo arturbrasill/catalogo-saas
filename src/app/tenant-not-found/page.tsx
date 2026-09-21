@@ -1,8 +1,9 @@
 'use client';
 
 import React, { Suspense } from 'react';
+import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { AlertOctagon, RefreshCw, HelpCircle } from 'lucide-react';
+import { AlertOctagon, RefreshCw, HelpCircle, Sparkles } from 'lucide-react';
 
 function TenantNotFoundContent() {
   const searchParams = useSearchParams();
@@ -50,15 +51,32 @@ function TenantNotFoundContent() {
       </div>
 
       {/* Botão de Ação */}
-      <div className="pt-2">
+      <div className="pt-2 space-y-2.5">
         <button
           type="button"
           onClick={() => window.location.reload()}
-          className="w-full inline-flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-gray-900 hover:bg-black text-white text-sm font-semibold shadow-sm transition"
+          className="w-full inline-flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-gray-900 hover:bg-black text-white text-sm font-semibold shadow-sm transition cursor-pointer"
         >
           <RefreshCw className="w-4 h-4" />
           Tentar Novamente
         </button>
+
+        <div className="flex items-center gap-2 pt-2">
+          <Link
+            href="/landing"
+            className="flex-1 inline-flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold transition"
+          >
+            <span>Conhecer o SaaS</span>
+          </Link>
+
+          <Link
+            href="/criar-loja"
+            className="flex-1 inline-flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition shadow-xs"
+          >
+            <Sparkles className="w-3.5 h-3.5" />
+            <span>Criar Minha Loja</span>
+          </Link>
+        </div>
       </div>
 
       <div className="text-[11px] text-gray-400">

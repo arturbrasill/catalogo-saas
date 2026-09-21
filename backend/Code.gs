@@ -796,7 +796,11 @@ function handleSaveConfig(newConfigs) {
     'whatsapp',
     'domain',
     'currency',
-    'timezone'
+    'timezone',
+    'pix_key',
+    'pix_key_type',
+    'is_open',
+    'business_hours'
   ];
 
   for (var prop in newConfigs) {

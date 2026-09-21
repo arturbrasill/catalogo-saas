@@ -23,6 +23,9 @@ import {
   Image as ImageIcon,
   Trash2,
   Plus,
+  Clock,
+  QrCode,
+  Power,
 } from 'lucide-react';
 
 const COLOR_PRESETS = [
@@ -70,6 +73,10 @@ export default function AdminConfiguracoesPage() {
   const [newBannerInput, setNewBannerInput] = useState('');
   const [whatsapp, setWhatsapp] = useState('');
   const [domain, setDomain] = useState('');
+  const [isOpen, setIsOpen] = useState(true);
+  const [businessHours, setBusinessHours] = useState('');
+  const [pixKey, setPixKey] = useState('');
+  const [pixKeyType, setPixKeyType] = useState<'cpf' | 'cnpj' | 'email' | 'phone' | 'random'>('cpf');
 
   const loadConfig = async () => {
     setIsLoading(true);
@@ -85,6 +92,10 @@ export default function AdminConfiguracoesPage() {
       setBanners(Array.isArray(data.banners) ? data.banners.slice(0, 3) : []);
       setWhatsapp(String(data.whatsapp ?? ''));
       setDomain(String(data.domain ?? ''));
+      setIsOpen(data.is_open !== undefined ? Boolean(data.is_open) : true);
+      setBusinessHours(String(data.business_hours ?? ''));
+      setPixKey(String(data.pix_key ?? ''));
+      setPixKeyType((data.pix_key_type as any) || 'cpf');
     } catch (err) {
       setErrorMessage(err instanceof Error ? err.message : 'Erro ao carregar configurações.');
     } finally {
@@ -175,6 +186,10 @@ export default function AdminConfiguracoesPage() {
           banners: banners.slice(0, 3),
           whatsapp: cleanWhatsapp,
           domain: String(domain ?? '').trim(),
+          is_open: isOpen,
+          business_hours: businessHours.trim(),
+          pix_key: pixKey.trim(),
+          pix_key_type: pixKeyType,
         },
         token
       );
@@ -188,6 +203,10 @@ export default function AdminConfiguracoesPage() {
       setBanners(Array.isArray(updated.banners) ? updated.banners.slice(0, 3) : []);
       setWhatsapp(String(updated.whatsapp ?? ''));
       setDomain(String(updated.domain ?? ''));
+      setIsOpen(updated.is_open !== undefined ? Boolean(updated.is_open) : true);
+      setBusinessHours(String(updated.business_hours ?? ''));
+      setPixKey(String(updated.pix_key ?? ''));
+      setPixKeyType((updated.pix_key_type as any) || 'cpf');
 
       setSuccessMessage('Configurações da loja e identidade visual atualizadas com sucesso!');
       setTimeout(() => setSuccessMessage(null), 5000);
@@ -532,6 +551,94 @@ export default function AdminConfiguracoesPage() {
                     placeholder="Ex: catalogo.minhaloja.com.br"
                     className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-xs sm:text-sm focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
                   />
+                </div>
+
+                {/* Status de Atendimento (Aberto / Fechado) */}
+                <div className="pt-3 border-t border-slate-100 space-y-2">
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
+                    <Power className="w-4 h-4 text-emerald-600" />
+                    <span>Status de Atendimento da Loja</span>
+                  </label>
+                  <div className="grid grid-cols-2 gap-2.5">
+                    <button
+                      type="button"
+                      onClick={() => setIsOpen(true)}
+                      className={`p-3 rounded-xl border text-xs font-bold flex items-center justify-center gap-2 transition cursor-pointer ${
+                        isOpen
+                          ? 'border-emerald-500 bg-emerald-50 text-emerald-800 shadow-2xs'
+                          : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300'
+                      }`}
+                    >
+                      <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                      <span>🟢 Aberto Agora</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setIsOpen(false)}
+                      className={`p-3 rounded-xl border text-xs font-bold flex items-center justify-center gap-2 transition cursor-pointer ${
+                        !isOpen
+                          ? 'border-rose-400 bg-rose-50 text-rose-800 shadow-2xs'
+                          : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300'
+                      }`}
+                    >
+                      <span className="h-2 w-2 rounded-full bg-rose-500" />
+                      <span>🔴 Fechado no Momento</span>
+                    </button>
+                  </div>
+                  <span className="text-[11px] text-slate-400 block">
+                    {isOpen
+                      ? 'Sua vitrine exibirá a badge "🟢 Aberto Agora" para os clientes.'
+                      : 'Sua vitrine exibirá o aviso "🔴 Fechado no momento". Os clientes ainda poderão enviar pedidos para o próximo expediente.'}
+                  </span>
+                </div>
+
+                {/* Horário de Funcionamento */}
+                <div className="pt-3 border-t border-slate-100">
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5 flex items-center gap-1.5">
+                    <Clock className="w-4 h-4 text-slate-400" />
+                    <span>Horário de Atendimento</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={businessHours}
+                    onChange={(e) => setBusinessHours(e.target.value)}
+                    placeholder="Ex: Seg a Sáb: 09h às 19h • Dom: 09h às 13h"
+                    className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-xs sm:text-sm focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                  />
+                  <span className="text-[11px] text-slate-400 mt-1 block">
+                    Exibido no cabeçalho do catálogo para orientar os clientes sobre o atendimento.
+                  </span>
+                </div>
+
+                {/* Chave PIX da Loja */}
+                <div className="pt-3 border-t border-slate-100 space-y-2">
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
+                    <QrCode className="w-4 h-4 text-emerald-600" />
+                    <span>Chave PIX da Loja (Para Checkout Rápido)</span>
+                  </label>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                    <select
+                      value={pixKeyType}
+                      onChange={(e) => setPixKeyType(e.target.value as any)}
+                      className="rounded-xl border border-slate-200 px-3 py-2 text-xs bg-slate-50 focus:bg-white focus:border-emerald-500 focus:outline-none"
+                    >
+                      <option value="cpf">CPF</option>
+                      <option value="cnpj">CNPJ</option>
+                      <option value="phone">Celular (com DDD)</option>
+                      <option value="email">E-mail</option>
+                      <option value="random">Chave Aleatória</option>
+                    </select>
+                    <input
+                      type="text"
+                      value={pixKey}
+                      onChange={(e) => setPixKey(e.target.value)}
+                      placeholder="Ex: 11999998888 ou pix@sualoja.com"
+                      className="sm:col-span-2 rounded-xl border border-slate-200 px-3.5 py-2 text-xs sm:text-sm focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 font-mono"
+                    />
+                  </div>
+                  <span className="text-[11px] text-slate-400 block">
+                    Ao escolher pagamento via PIX, o cliente terá um botão de &quot;Copiar Chave PIX&quot; facilitando o pagamento imediato.
+                  </span>
                 </div>
 
                 {/* Botão de Salvar */}

@@ -1,6 +1,7 @@
 import type { AsaasCustomerInput, AsaasPaymentInput } from '@/types';
 
 export const ASAAS_MONTHLY_PRICE = 129.9;
+export const ASAAS_YEARLY_PRICE = 1198.8; // R$ 99,90/mês cobrado anualmente
 
 export function getAsaasApiKey(): string {
   return process.env['ASAAS_API_KEY'] || '';

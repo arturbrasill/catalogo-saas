@@ -26,6 +26,10 @@ export interface StoreConfig {
   timezone: string;
   subscription_status?: SubscriptionStatus;
   subscription_expires_at?: string;
+  pix_key?: string;
+  pix_key_type?: 'cpf' | 'cnpj' | 'email' | 'phone' | 'random';
+  is_open?: boolean;
+  business_hours?: string;
 }
 
 /**
@@ -124,6 +128,27 @@ export interface Cart {
   totalItems: number;
 }
 
+export type DeliveryType = 'delivery' | 'pickup';
+export type PaymentMethod = 'pix' | 'credit_card' | 'debit_card' | 'money';
+
+export interface CustomerAddress {
+  street?: string;
+  number?: string;
+  neighborhood?: string;
+  complement?: string;
+  city?: string;
+}
+
+export interface CustomerOrderInfo {
+  customerName?: string;
+  phone?: string;
+  deliveryType?: DeliveryType;
+  address?: CustomerAddress;
+  paymentMethod?: PaymentMethod;
+  changeFor?: string;
+  notes?: string;
+}
+
 // ============================================================
 // 5. RESPOSTA DA API E ERROS
 // ============================================================
@@ -151,7 +176,7 @@ export type APIResponse<T> = APIResponseSuccess<T> | APIResponseError;
 // 6. MULTI-TENANCY & SAAS SUBSCRIPTIONS
 // ============================================================
 
-export type SubscriptionPlan = 'trial_30d' | 'monthly';
+export type SubscriptionPlan = 'trial_30d' | 'monthly' | 'yearly';
 export type SubscriptionStatus = 'active' | 'trial' | 'expired' | 'blocked' | 'cancelled';
 
 export interface Tenant {
@@ -301,6 +326,10 @@ export interface SaveConfigInput {
   domain?: string;
   currency?: string;
   timezone?: string;
+  pix_key?: string;
+  pix_key_type?: 'cpf' | 'cnpj' | 'email' | 'phone' | 'random';
+  is_open?: boolean;
+  business_hours?: string;
 }
 
 export interface CatalogInitialData {

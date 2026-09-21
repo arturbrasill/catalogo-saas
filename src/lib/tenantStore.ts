@@ -63,7 +63,88 @@ function initializeDefaultTenantDetails() {
 
 initializeDefaultTenantDetails();
 
-// Carrega tenants dinâmicos já persistidos (se o arquivo existir)
+// ------------------------------------------------------------
+// CONECTOR DE PERSISTÊNCIA DURADOURA (SERVERLESS KV & LOCAL)
+// ------------------------------------------------------------
+
+export function getKvConfig(): { url: string; token: string } | null {
+  const url = process.env['KV_REST_API_URL'] || process.env['UPSTASH_REDIS_REST_URL'];
+  const token = process.env['KV_REST_API_TOKEN'] || process.env['UPSTASH_REDIS_REST_TOKEN'];
+  if (url && token) {
+    return { url: url.replace(/\/$/, ''), token };
+  }
+  return null;
+}
+
+/**
+ * Sincroniza o registro em memória com o banco KV remoto (Vercel KV / Upstash Redis)
+ */
+export async function syncTenantsFromRemote(): Promise<boolean> {
+  const kv = getKvConfig();
+  if (!kv) return false;
+
+  try {
+    const res = await fetch(`${kv.url}/get/saas_tenants_registry`, {
+      headers: {
+        Authorization: `Bearer ${kv.token}`,
+      },
+    });
+
+    if (!res.ok) return false;
+
+    const data = await res.json();
+    let parsed: any = data.result;
+    if (typeof parsed === 'string') {
+      try {
+        parsed = JSON.parse(parsed);
+      } catch {
+        // ignore
+      }
+    }
+
+    if (parsed && typeof parsed === 'object') {
+      inMemoryRegistry = { ...inMemoryRegistry, ...parsed };
+      return true;
+    }
+    return false;
+  } catch (err) {
+    console.warn('Falha na sincronização com KV:', err);
+    return false;
+  }
+}
+
+/**
+ * Envia o registro de lojas para o banco KV remoto
+ */
+export async function syncTenantsToRemote(): Promise<boolean> {
+  const kv = getKvConfig();
+  if (!kv) return false;
+
+  try {
+    const dynamicOnly: TenantRegistry = {};
+    for (const [key, tenant] of Object.entries(inMemoryRegistry)) {
+      if (!(key in defaultTenants) || tenant.subscriptionStatus !== undefined) {
+        dynamicOnly[key] = tenant;
+      }
+    }
+
+    const res = await fetch(`${kv.url}/set/saas_tenants_registry`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${kv.token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(JSON.stringify(dynamicOnly)),
+    });
+
+    return res.ok;
+  } catch (err) {
+    console.warn('Falha ao persistir no KV:', err);
+    return false;
+  }
+}
+
+// Carrega tenants dinâmicos já persistidos (disco local e nuvem KV)
 function loadPersistedTenants() {
   try {
     if (fs.existsSync(DYNAMIC_TENANTS_FILE)) {
@@ -74,27 +155,35 @@ function loadPersistedTenants() {
       }
     }
   } catch (err) {
-    // Em ambientes serverless readonly, ignora falha de leitura em disco
     console.warn('Nota: Não foi possível carregar dynamicTenants.json:', err);
+  }
+
+  const kv = getKvConfig();
+  if (kv) {
+    syncTenantsFromRemote().catch(() => {});
   }
 }
 
 loadPersistedTenants();
 
-// Salva tenants criados dinamicamente em disco
+// Salva tenants criados dinamicamente em disco e no KV remoto
 function persistDynamicTenants() {
-  try {
-    const dynamicOnly: TenantRegistry = {};
-    for (const [key, tenant] of Object.entries(inMemoryRegistry)) {
-      // Salva apenas os que não estão no defaultTenants ou os modificados
-      if (!(key in defaultTenants) || tenant.subscriptionStatus !== undefined) {
-        dynamicOnly[key] = tenant;
-      }
+  const dynamicOnly: TenantRegistry = {};
+  for (const [key, tenant] of Object.entries(inMemoryRegistry)) {
+    if (!(key in defaultTenants) || tenant.subscriptionStatus !== undefined) {
+      dynamicOnly[key] = tenant;
     }
+  }
+
+  try {
     fs.writeFileSync(DYNAMIC_TENANTS_FILE, JSON.stringify(dynamicOnly, null, 2), 'utf-8');
   } catch (err) {
-    // Em Vercel/serverless runtime onde o sistema de arquivos é somente leitura, continua em memória
     console.warn('Nota: Persistência em disco ignorada em ambiente read-only:', err);
+  }
+
+  const kv = getKvConfig();
+  if (kv) {
+    syncTenantsToRemote().catch(() => {});
   }
 }
 

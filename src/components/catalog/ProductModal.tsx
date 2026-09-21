@@ -15,6 +15,7 @@ import {
   ShieldCheck,
   Truck,
   MessageCircle,
+  Share2,
 } from 'lucide-react';
 
 interface ProductModalProps {
@@ -29,6 +30,7 @@ export function ProductModal({ product, onClose, store }: ProductModalProps) {
   const [selectedVariations, setSelectedVariations] = useState<SelectedVariation>({});
   const [quantity, setQuantity] = useState(1);
   const [validationError, setValidationError] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
 
   // Reseta estados quando o produto muda
   useEffect(() => {
@@ -37,8 +39,44 @@ export function ProductModal({ product, onClose, store }: ProductModalProps) {
       setSelectedVariations({});
       setQuantity(1);
       setValidationError(null);
+      setCopied(false);
     }
   }, [product]);
+
+  const handleShare = async () => {
+    if (!product || typeof window === 'undefined') return;
+    const shareUrl = window.location.href;
+
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: `${product.nome} | ${store.store_name}`,
+          text: `Confira ${product.nome} por ${formatCurrency(effectivePrice, store.currency)} no catálogo da loja ${store.store_name}!`,
+          url: shareUrl,
+        });
+        return;
+      } catch {
+        // usuário cancelou ou fallback para clipboard
+      }
+    }
+
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2500);
+    } catch {
+      // fallback
+    }
+  };
+
+  const handleAskWhatsApp = () => {
+    if (!product) return;
+    const rawPhone = store?.whatsapp ? String(store.whatsapp).replace(/\D/g, '') : '';
+    if (!rawPhone) return;
+    const shareUrl = typeof window !== 'undefined' ? window.location.href : '';
+    const msg = `Olá! Gostaria de tirar uma dúvida sobre o produto *${product.nome}* no catálogo:\n${shareUrl}`;
+    window.open(`https://wa.me/${rawPhone}?text=${encodeURIComponent(msg)}`, '_blank', 'noopener,noreferrer');
+  };
 
   // Fechar com a tecla ESC
   useEffect(() => {
@@ -107,15 +145,33 @@ export function ProductModal({ product, onClose, store }: ProductModalProps) {
         className="bg-white rounded-3xl max-w-2xl w-full max-h-[92vh] overflow-y-auto shadow-2xl border border-slate-100 flex flex-col relative animate-scale-in"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Botão Fechar */}
-        <button
-          type="button"
-          onClick={onClose}
-          className="absolute top-4 right-4 z-20 p-2 rounded-full bg-white/90 backdrop-blur-md hover:bg-white text-slate-600 hover:text-slate-900 shadow-md border border-slate-200/60 transition-all duration-200 cursor-pointer"
-          aria-label="Fechar janela do produto"
-        >
-          <X className="w-5 h-5" />
-        </button>
+        {/* Botões de Ação Topo (Compartilhar e Fechar) */}
+        <div className="absolute top-4 right-4 z-20 flex items-center gap-2">
+          <button
+            type="button"
+            onClick={handleShare}
+            className="p-2 rounded-full bg-white/90 backdrop-blur-md hover:bg-white text-slate-600 hover:text-slate-900 shadow-md border border-slate-200/60 transition-all duration-200 cursor-pointer flex items-center gap-1.5"
+            title="Compartilhar produto"
+            aria-label="Compartilhar produto"
+          >
+            {copied ? (
+              <>
+                <Check className="w-4 h-4 text-emerald-600 stroke-[3]" />
+                <span className="text-[11px] font-bold text-emerald-600 pr-1">Link Copiado!</span>
+              </>
+            ) : (
+              <Share2 className="w-4 h-4" />
+            )}
+          </button>
+          <button
+            type="button"
+            onClick={onClose}
+            className="p-2 rounded-full bg-white/90 backdrop-blur-md hover:bg-white text-slate-600 hover:text-slate-900 shadow-md border border-slate-200/60 transition-all duration-200 cursor-pointer"
+            aria-label="Fechar janela do produto"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2">
           {/* Coluna 1: Galeria de Imagens */}
@@ -344,6 +400,17 @@ export function ProductModal({ product, onClose, store }: ProductModalProps) {
                 <ShoppingBag className="w-4 h-4" />
                 <span>Adicionar à Sacola • {formatCurrency(itemSubtotal, store.currency)}</span>
               </button>
+
+              {store.whatsapp && (
+                <button
+                  type="button"
+                  onClick={handleAskWhatsApp}
+                  className="w-full py-2.5 px-4 rounded-xl font-bold text-xs text-slate-600 bg-slate-50 hover:bg-slate-100 border border-slate-200/80 transition-all flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  <MessageCircle className="w-4 h-4 text-emerald-600" />
+                  <span>Tirar Dúvida no WhatsApp</span>
+                </button>
+              )}
             </div>
           </div>
         </div>

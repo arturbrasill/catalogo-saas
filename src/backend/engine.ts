@@ -211,6 +211,12 @@ export class BackendEngine {
     if (!config.background_color) config.background_color = '#f8fafc';
     if (!config.text_color) config.text_color = '#0f172a';
 
+    if (config.is_open !== undefined) {
+      config.is_open = config.is_open === true || String(config.is_open) === 'true';
+    } else {
+      config.is_open = true;
+    }
+
     return config as StoreConfig;
   }
 
@@ -546,6 +552,10 @@ export class BackendEngine {
       'domain',
       'currency',
       'timezone',
+      'pix_key',
+      'pix_key_type',
+      'is_open',
+      'business_hours',
     ];
 
     for (const [key, value] of Object.entries(newConfigs)) {

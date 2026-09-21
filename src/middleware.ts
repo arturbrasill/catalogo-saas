@@ -17,6 +17,8 @@ export function middleware(request: NextRequest) {
     pathname === '/criar-loja' ||
     pathname === '/saas-admin' ||
     pathname === '/saas-login' ||
+    pathname === '/landing' ||
+    pathname === '/planos' ||
     PUBLIC_FILE.test(pathname)
   ) {
     return NextResponse.next();

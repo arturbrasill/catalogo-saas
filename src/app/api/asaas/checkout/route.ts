@@ -3,12 +3,13 @@ import {
   createOrGetAsaasCustomer,
   createAsaasPayment,
   ASAAS_MONTHLY_PRICE,
+  ASAAS_YEARLY_PRICE,
 } from '@/lib/asaas';
 import { findTenant, updateTenantSubscription } from '@/lib/tenantStore';
 
 export async function POST(request: NextRequest) {
   try {
-    const { tenantId, cpfCnpj } = await request.json();
+    const { tenantId, cpfCnpj, plan } = await request.json();
 
     if (!tenantId) {
       return NextResponse.json(
@@ -46,13 +47,17 @@ export async function POST(request: NextRequest) {
       .toISOString()
       .substring(0, 10);
 
-    // 3. Cria cobrança no Asaas de R$ 129,90
+    const isYearly = plan === 'yearly' || tenant.plan === 'yearly';
+    const chargeValue = isYearly ? ASAAS_YEARLY_PRICE : ASAAS_MONTHLY_PRICE;
+    const planDesc = isYearly ? 'Anual' : 'Mensal';
+
+    // 3. Cria cobrança no Asaas
     const payment = await createAsaasPayment({
       customer: customer.id,
       billingType: 'UNDEFINED', // Permite PIX, Cartão e Boleto na mesma fatura
-      value: ASAAS_MONTHLY_PRICE,
+      value: chargeValue,
       dueDate,
-      description: `Assinatura Mensal Catálogo Digital — Loja ${tenant.name}`,
+      description: `Assinatura ${planDesc} Catálogo Digital — Loja ${tenant.name}`,
       externalReference: tenant.tenantId,
     });
 
@@ -75,7 +80,7 @@ export async function POST(request: NextRequest) {
       data: {
         paymentId: payment.id,
         invoiceUrl: payment.invoiceUrl,
-        value: ASAAS_MONTHLY_PRICE,
+        value: chargeValue,
         dueDate,
       },
     });
