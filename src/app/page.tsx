@@ -8,9 +8,16 @@ import { ProductCard } from '@/components/catalog/ProductCard';
 import { ProductModal } from '@/components/catalog/ProductModal';
 import { CartDrawer } from '@/components/catalog/CartDrawer';
 import { WishlistDrawer } from '@/components/catalog/WishlistDrawer';
+import { FilterDrawer } from '@/components/catalog/FilterDrawer';
+import { CatalogControlBar } from '@/components/catalog/CatalogControlBar';
 import { BannerSlider } from '@/components/catalog/BannerSlider';
 import { TrustBadges } from '@/components/catalog/TrustBadges';
 import type { StoreConfig, Category, Product } from '@/types';
+import {
+  type CatalogFilterState,
+  DEFAULT_FILTERS,
+  filterAndSortProducts,
+} from '@/lib/catalogFilters';
 import { formatCurrency } from '@/lib/whatsapp';
 import Link from 'next/link';
 import {
@@ -40,10 +47,18 @@ function CatalogContent({ onStoreLoaded }: CatalogContentProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  // Filtros
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<string>('ALL');
+  // Filtros & Ordenação Avançados (Fase 2)
+  const [filters, setFilters] = useState<CatalogFilterState>(DEFAULT_FILTERS);
+  const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+
+  const updateFilters = useCallback((newFilters: Partial<CatalogFilterState>) => {
+    setFilters((prev) => ({ ...prev, ...newFilters }));
+  }, []);
+
+  const resetFilters = useCallback(() => {
+    setFilters(DEFAULT_FILTERS);
+  }, []);
 
   const loadData = useCallback(async () => {
     setIsLoading(true);
@@ -110,7 +125,7 @@ function CatalogContent({ onStoreLoaded }: CatalogContentProps) {
     }
   };
 
-  // Aplicação dinâmica das cores do tema (primária, secundária, fundo e textos)
+  // Aplicação dinâmica das cores do tema
   useEffect(() => {
     if (store) {
       if (store.primary_color) {
@@ -128,29 +143,13 @@ function CatalogContent({ onStoreLoaded }: CatalogContentProps) {
     }
   }, [store]);
 
-  // Filtragem de Produtos
+  // Filtragem e Ordenação com suporte à Fase 2
   const filteredProducts = useMemo(() => {
-    return products.filter((p) => {
-      const matchesSearch =
-        p.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        p.descricao.toLowerCase().includes(searchTerm.toLowerCase());
-
-      const matchesCategory =
-        selectedCategory === 'ALL' || p.categoriaId === selectedCategory;
-
-      return matchesSearch && matchesCategory;
-    });
-  }, [products, searchTerm, selectedCategory]);
+    return filterAndSortProducts(products, filters);
+  }, [products, filters]);
 
   const totalItemsCount = getTotalItems();
   const cartSubtotal = getSubtotal();
-
-  const resetAllFilters = () => {
-    setSearchTerm('');
-    setSelectedCategory('ALL');
-  };
-
-  const hasActiveFilters = Boolean(searchTerm) || selectedCategory !== 'ALL';
 
   const isSuspended =
     store?.subscription_status === 'blocked' ||
@@ -209,7 +208,7 @@ function CatalogContent({ onStoreLoaded }: CatalogContentProps) {
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
           <div className="flex items-center gap-2 mx-auto sm:mx-0 text-center sm:text-left">
             <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
-            <span>Compre com segurança e receba no conforto da sua casa ou retire na loja física</span>
+            <span>Compre online e receba em casa com frete seguro ou retire na loja física</span>
           </div>
           {store?.whatsapp && (
             <a
@@ -260,15 +259,15 @@ function CatalogContent({ onStoreLoaded }: CatalogContentProps) {
                 <input
                   type="text"
                   placeholder="Buscar produtos, marcas, referências..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
+                  value={filters.searchTerm}
+                  onChange={(e) => updateFilters({ searchTerm: e.target.value })}
                   className="w-full rounded-2xl border border-slate-200 bg-slate-50 pl-10 pr-9 py-2.5 text-xs sm:text-sm text-slate-900 placeholder-slate-400 focus:bg-white focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200 transition shadow-2xs"
                 />
-                {searchTerm && (
+                {filters.searchTerm && (
                   <button
                     type="button"
-                    onClick={() => setSearchTerm('')}
-                    className="absolute right-3 top-2.5 text-slate-400 hover:text-slate-600 p-0.5"
+                    onClick={() => updateFilters({ searchTerm: '' })}
+                    className="absolute right-3 top-2.5 text-slate-400 hover:text-slate-600 p-0.5 cursor-pointer"
                     aria-label="Limpar busca"
                   >
                     <X className="w-4 h-4" />
@@ -328,15 +327,15 @@ function CatalogContent({ onStoreLoaded }: CatalogContentProps) {
               <input
                 type="text"
                 placeholder="Buscar no catálogo..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                value={filters.searchTerm}
+                onChange={(e) => updateFilters({ searchTerm: e.target.value })}
                 className="w-full rounded-2xl border border-slate-200 bg-slate-50 pl-9 pr-8 py-2 text-xs text-slate-900 placeholder-slate-400 focus:bg-white focus:outline-none focus:ring-1 focus:ring-slate-300 transition"
               />
-              {searchTerm && (
+              {filters.searchTerm && (
                 <button
                   type="button"
-                  onClick={() => setSearchTerm('')}
-                  className="absolute right-2.5 top-2 text-slate-400 hover:text-slate-600 p-0.5"
+                  onClick={() => updateFilters({ searchTerm: '' })}
+                  className="absolute right-2.5 top-2 text-slate-400 hover:text-slate-600 p-0.5 cursor-pointer"
                   aria-label="Limpar busca"
                 >
                   <X className="w-4 h-4" />
@@ -353,14 +352,14 @@ function CatalogContent({ onStoreLoaded }: CatalogContentProps) {
               <div className="flex items-center gap-2 overflow-x-auto py-3 no-scrollbar">
                 <button
                   type="button"
-                  onClick={() => setSelectedCategory('ALL')}
+                  onClick={() => updateFilters({ selectedCategory: 'ALL' })}
                   className={`px-4 py-2 rounded-2xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
-                    selectedCategory === 'ALL'
+                    filters.selectedCategory === 'ALL'
                       ? 'text-white shadow-xs'
                       : 'bg-slate-100/90 text-slate-600 hover:bg-slate-200 hover:text-slate-900'
                   }`}
                   style={
-                    selectedCategory === 'ALL'
+                    filters.selectedCategory === 'ALL'
                       ? { backgroundColor: store?.primary_color || '#10b981' }
                       : undefined
                   }
@@ -368,14 +367,14 @@ function CatalogContent({ onStoreLoaded }: CatalogContentProps) {
                   Todos os Produtos ({products.length})
                 </button>
                 {categories.map((cat) => {
-                  const isSelected = selectedCategory === cat.id;
+                  const isSelected = filters.selectedCategory === cat.id;
                   const catProductCount = products.filter((p) => p.categoriaId === cat.id).length;
 
                   return (
                     <button
                       key={cat.id}
                       type="button"
-                      onClick={() => setSelectedCategory(cat.id)}
+                      onClick={() => updateFilters({ selectedCategory: cat.id })}
                       className={`px-4 py-2 rounded-2xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
                         isSelected
                           ? 'text-white shadow-xs'
@@ -403,12 +402,37 @@ function CatalogContent({ onStoreLoaded }: CatalogContentProps) {
       </header>
 
       {/* Conteúdo Principal */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-8">
+      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-6">
         {/* Espaço para Banners Institucionais / Campanhas */}
-        {!searchTerm && selectedCategory === 'ALL' && store?.banners && store.banners.length > 0 && (
+        {!filters.searchTerm && filters.selectedCategory === 'ALL' && store?.banners && store.banners.length > 0 && (
           <section aria-label="Destaques da Loja" className="overflow-hidden rounded-3xl shadow-sm">
             <BannerSlider banners={store.banners} storeName={store.store_name} />
           </section>
+        )}
+
+        {/* Barra de Controle de Filtros e Ordenação (Fase 2) */}
+        {!isLoading && !errorMessage && products.length > 0 && (
+          <CatalogControlBar
+            filters={filters}
+            onUpdateFilters={updateFilters}
+            onResetFilters={resetFilters}
+            onOpenFilterDrawer={() => setIsFilterDrawerOpen(true)}
+            filteredCount={filteredProducts.length}
+            totalCount={products.length}
+            store={
+              store || {
+                store_id: '',
+                store_name: '',
+                logo_url: '',
+                primary_color: '#10b981',
+                secondary_color: '#047857',
+                whatsapp: '',
+                domain: '',
+                currency: 'BRL',
+                timezone: '',
+              }
+            }
+          />
         )}
 
         {/* Estado de Erro na API */}
@@ -455,23 +479,21 @@ function CatalogContent({ onStoreLoaded }: CatalogContentProps) {
               <div className="bg-white rounded-3xl border border-slate-200/80 p-12 text-center my-6 space-y-3 shadow-2xs">
                 <Package className="w-12 h-12 text-slate-300 mx-auto stroke-1" />
                 <h3 className="text-sm font-bold text-slate-900">
-                  Nenhum produto encontrado
+                  Nenhum produto encontrado com os filtros atuais
                 </h3>
                 <p className="text-xs text-slate-500 max-w-sm mx-auto">
-                  {searchTerm
-                    ? `Não encontramos itens para "${searchTerm}".`
-                    : 'Nenhum produto disponível nesta categoria no momento.'}
+                  {filters.searchTerm
+                    ? `Não encontramos itens correspondentes a "${filters.searchTerm}".`
+                    : 'Tente alterar os filtros aplicados para ver mais produtos.'}
                 </p>
-                {hasActiveFilters && (
-                  <button
-                    type="button"
-                    onClick={resetAllFilters}
-                    className="inline-flex items-center text-xs font-bold px-4 py-2 rounded-xl text-white shadow-xs transition cursor-pointer"
-                    style={{ backgroundColor: store?.primary_color || '#10b981' }}
-                  >
-                    Ver todos os produtos
-                  </button>
-                )}
+                <button
+                  type="button"
+                  onClick={resetFilters}
+                  className="inline-flex items-center text-xs font-bold px-4 py-2 rounded-xl text-white shadow-xs transition cursor-pointer"
+                  style={{ backgroundColor: store?.primary_color || '#10b981' }}
+                >
+                  Limpar todos os filtros
+                </button>
               </div>
             ) : (
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
@@ -500,7 +522,7 @@ function CatalogContent({ onStoreLoaded }: CatalogContentProps) {
           </>
         )}
 
-        {/* 4. Selos de Confiança Universais (Trust Badges) */}
+        {/* Selos de Confiança Universais (Trust Badges) */}
         {!isLoading && <TrustBadges primaryColor={store?.primary_color} />}
       </main>
 
@@ -525,7 +547,21 @@ function CatalogContent({ onStoreLoaded }: CatalogContentProps) {
         />
       )}
 
-      {/* 5. Rodapé Sofisticado */}
+      {/* Drawer de Filtros e Ordenação Avançados (Fase 2) */}
+      {store && (
+        <FilterDrawer
+          isOpen={isFilterDrawerOpen}
+          onClose={() => setIsFilterDrawerOpen(false)}
+          filters={filters}
+          onUpdateFilters={updateFilters}
+          onResetFilters={resetFilters}
+          categories={categories}
+          totalResultsCount={filteredProducts.length}
+          store={store}
+        />
+      )}
+
+      {/* Rodapé Sofisticado */}
       <footer className="border-t border-slate-200/80 bg-white py-10 text-center text-xs text-slate-500 space-y-3">
         <div className="max-w-7xl mx-auto px-4 space-y-2">
           <p className="font-extrabold text-slate-800 text-sm">

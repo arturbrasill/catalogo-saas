@@ -389,5 +389,165 @@ describe('Módulo 3 — Vitrine Pública & Catálogo (tests/catalog.test.ts)', (
       expect(formatInstallments(120, 4, 30)).toBe('ou 4x de R$ 30,00 sem juros');
     });
   });
+
+  // ============================================================
+  // 8. FILTROS AVANÇADOS E ORDENAÇÃO DINÂMICA (Fase 2)
+  // ============================================================
+  describe('Filtros Avançados e Ordenação Dinâmica (src/lib/catalogFilters.ts)', () => {
+    const mockProducts: Product[] = [
+      {
+        id: 'p1',
+        categoriaId: 'cat_roupas',
+        nome: 'Camisa Linho Branca',
+        slug: 'camisa-linho',
+        descricao: 'Camisa elegante de linho puro',
+        preco: 150.0,
+        precoPromocional: 120.0, // 20% OFF
+        imagens: [],
+        variacoes: [],
+        estoque: 10,
+        ativo: true,
+        createdAt: '2026-01-01T10:00:00Z',
+        updatedAt: '2026-01-01T10:00:00Z',
+        deletedAt: null,
+      },
+      {
+        id: 'p2',
+        categoriaId: 'cat_calcados',
+        nome: 'Tênis Running Boost',
+        slug: 'tenis-running',
+        descricao: 'Tênis esportivo com amortecimento',
+        preco: 300.0,
+        precoPromocional: null,
+        imagens: [],
+        variacoes: [],
+        estoque: 5,
+        ativo: true,
+        createdAt: '2026-01-10T10:00:00Z',
+        updatedAt: '2026-01-10T10:00:00Z',
+        deletedAt: null,
+      },
+      {
+        id: 'p3',
+        categoriaId: 'cat_acessorios',
+        nome: 'Boné Streetwear Preto',
+        slug: 'bone-streetwear',
+        descricao: 'Boné com aba curva',
+        preco: 60.0,
+        precoPromocional: 39.9, // ~33% OFF
+        imagens: [],
+        variacoes: [],
+        estoque: 0, // Esgotado
+        ativo: true,
+        createdAt: '2026-01-15T10:00:00Z',
+        updatedAt: '2026-01-15T10:00:00Z',
+        deletedAt: null,
+      },
+    ];
+
+    it('deve filtrar produtos por categoria específica', async () => {
+      const { filterAndSortProducts, DEFAULT_FILTERS } = await import(
+        '../src/lib/catalogFilters'
+      );
+
+      const result = filterAndSortProducts(mockProducts, {
+        ...DEFAULT_FILTERS,
+        selectedCategory: 'cat_calcados',
+      });
+
+      expect(result).toHaveLength(1);
+      expect(result[0]?.id).toBe('p2');
+    });
+
+    it('deve filtrar produtos apenas com estoque quando ativado', async () => {
+      const { filterAndSortProducts, DEFAULT_FILTERS } = await import(
+        '../src/lib/catalogFilters'
+      );
+
+      const result = filterAndSortProducts(mockProducts, {
+        ...DEFAULT_FILTERS,
+        onlyInStock: true,
+      });
+
+      expect(result).toHaveLength(2);
+      expect(result.map((p) => p.id)).not.toContain('p3'); // p3 está esgotado
+    });
+
+    it('deve filtrar produtos em promoção com desconto ativo', async () => {
+      const { filterAndSortProducts, DEFAULT_FILTERS } = await import(
+        '../src/lib/catalogFilters'
+      );
+
+      const result = filterAndSortProducts(mockProducts, {
+        ...DEFAULT_FILTERS,
+        onlyPromotions: true,
+      });
+
+      expect(result).toHaveLength(2);
+      expect(result.map((p) => p.id)).toEqual(['p1', 'p3']);
+    });
+
+    it('deve filtrar por faixa de preço corretamente', async () => {
+      const { filterAndSortProducts, DEFAULT_FILTERS } = await import(
+        '../src/lib/catalogFilters'
+      );
+
+      // Até R$ 50: Boné (R$ 39,90)
+      const under50 = filterAndSortProducts(mockProducts, {
+        ...DEFAULT_FILTERS,
+        priceRange: 'under_50',
+      });
+      expect(under50).toHaveLength(1);
+      expect(under50[0]?.id).toBe('p3');
+
+      // R$ 100 a R$ 250: Camisa Linho (R$ 120,00)
+      const mid = filterAndSortProducts(mockProducts, {
+        ...DEFAULT_FILTERS,
+        priceRange: '100_to_250',
+      });
+      expect(mid).toHaveLength(1);
+      expect(mid[0]?.id).toBe('p1');
+
+      // Acima de R$ 250: Tênis (R$ 300,00)
+      const over250 = filterAndSortProducts(mockProducts, {
+        ...DEFAULT_FILTERS,
+        priceRange: 'over_250',
+      });
+      expect(over250).toHaveLength(1);
+      expect(over250[0]?.id).toBe('p2');
+    });
+
+    it('deve ordenar por menor preço e maior preço', async () => {
+      const { filterAndSortProducts, DEFAULT_FILTERS } = await import(
+        '../src/lib/catalogFilters'
+      );
+
+      const asc = filterAndSortProducts(mockProducts, {
+        ...DEFAULT_FILTERS,
+        sortBy: 'price_asc',
+      });
+      expect(asc.map((p) => p.id)).toEqual(['p3', 'p1', 'p2']); // 39.90, 120.00, 300.00
+
+      const desc = filterAndSortProducts(mockProducts, {
+        ...DEFAULT_FILTERS,
+        sortBy: 'price_desc',
+      });
+      expect(desc.map((p) => p.id)).toEqual(['p2', 'p1', 'p3']); // 300.00, 120.00, 39.90
+    });
+
+    it('deve ordenar por maior desconto (% OFF)', async () => {
+      const { filterAndSortProducts, DEFAULT_FILTERS } = await import(
+        '../src/lib/catalogFilters'
+      );
+
+      const byDiscount = filterAndSortProducts(mockProducts, {
+        ...DEFAULT_FILTERS,
+        sortBy: 'discount',
+      });
+      // p3 tem ~33% de desconto, p1 tem 20%, p2 tem 0%
+      expect(byDiscount.map((p) => p.id)).toEqual(['p3', 'p1', 'p2']);
+    });
+  });
 });
+
 
