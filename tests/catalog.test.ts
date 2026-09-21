@@ -310,4 +310,84 @@ describe('Módulo 3 — Vitrine Pública & Catálogo (tests/catalog.test.ts)', (
       }
     );
   });
+
+  // ============================================================
+  // 7. PREÇOS DINÂMICOS POR VARIAÇÃO E PARCELAMENTO (Módulo Universal)
+  // ============================================================
+  describe('Preços Dinâmicos por Variação e Parcelamento', () => {
+    it('deve extrair variações simples e com delta de preço corretamente', async () => {
+      const { parseVariationOption } = await import('../src/lib/variations');
+
+      const simple = parseVariationOption('P');
+      expect(simple.cleanLabel).toBe('P');
+      expect(simple.priceDelta).toBe(0);
+
+      const withDelta = parseVariationOption('GG (+R$ 10,00)');
+      expect(withDelta.cleanLabel).toBe('GG');
+      expect(withDelta.priceDelta).toBe(10);
+      expect(withDelta.displayBadge).toBe('+ R$ 10,00');
+
+      const withDeltaSimple = parseVariationOption('Tamanho Extra (+ 15.50)');
+      expect(withDeltaSimple.cleanLabel).toBe('Tamanho Extra');
+      expect(withDeltaSimple.priceDelta).toBe(15.5);
+
+      const withFixed = parseVariationOption('128GB: R$ 899,00');
+      expect(withFixed.cleanLabel).toBe('128GB');
+      expect(withFixed.fixedPrice).toBe(899);
+
+      const objVariant = parseVariationOption({ nome: 'XG', precoAdicional: 20 });
+      expect(objVariant.cleanLabel).toBe('XG');
+      expect(objVariant.priceDelta).toBe(20);
+    });
+
+    it('deve calcular o preço efetivo do produto somando acréscimos de variações', async () => {
+      const { calculateEffectiveProductPrice } = await import('../src/lib/variations');
+
+      const variations = [
+        {
+          tipo: 'Tamanho',
+          opcoes: ['P', 'M', 'G', 'GG (+R$ 10,00)'],
+        },
+        {
+          tipo: 'Tecido',
+          opcoes: ['Poliéster', 'Algodão Pima (+R$ 20,00)'],
+        },
+      ];
+
+      // Caso 1: Variação padrão sem acréscimo
+      const calc1 = calculateEffectiveProductPrice(80, 60, { Tamanho: 'P' }, variations);
+      expect(calc1.unitPrice).toBe(80);
+      expect(calc1.promotionalPrice).toBe(60);
+      expect(calc1.effectivePrice).toBe(60);
+      expect(calc1.totalDelta).toBe(0);
+
+      // Caso 2: Variação GG (+10)
+      const calc2 = calculateEffectiveProductPrice(80, 60, { Tamanho: 'GG' }, variations);
+      expect(calc2.unitPrice).toBe(90);
+      expect(calc2.promotionalPrice).toBe(70);
+      expect(calc2.effectivePrice).toBe(70);
+      expect(calc2.totalDelta).toBe(10);
+
+      // Caso 3: Duas variações somadas: GG (+10) + Algodão Pima (+20) = +30
+      const calc3 = calculateEffectiveProductPrice(
+        80,
+        null,
+        { Tamanho: 'GG', Tecido: 'Algodão Pima' },
+        variations
+      );
+      expect(calc3.unitPrice).toBe(110);
+      expect(calc3.effectivePrice).toBe(110);
+      expect(calc3.totalDelta).toBe(30);
+    });
+
+    it('deve formatar sugestão de parcelamento universal sem juros', async () => {
+      const { formatInstallments } = await import('../src/lib/variations');
+
+      expect(formatInstallments(15)).toBeNull(); // menor que parcela mínima
+      expect(formatInstallments(60, 3, 25)).toBe('ou 2x de R$ 30,00 sem juros');
+      expect(formatInstallments(90, 3, 25)).toBe('ou 3x de R$ 30,00 sem juros');
+      expect(formatInstallments(120, 4, 30)).toBe('ou 4x de R$ 30,00 sem juros');
+    });
+  });
 });
+

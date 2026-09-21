@@ -3,10 +3,16 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import type { CartItem, Product, SelectedVariation } from '@/types';
 import { calculateSubtotal, calculateCartTotal } from '@/lib/whatsapp';
+import { calculateEffectiveProductPrice } from '@/lib/variations';
 
 interface CartContextType {
   items: CartItem[];
-  addItem: (product: Product, quantity: number, selectedVariations: SelectedVariation) => void;
+  addItem: (
+    product: Product,
+    quantity: number,
+    selectedVariations: SelectedVariation,
+    customPrice?: { unitPrice: number; promotionalPrice?: number | null }
+  ) => void;
   removeItem: (index: number) => void;
   updateQuantity: (index: number, newQuantity: number) => void;
   clearCart: () => void;
@@ -81,9 +87,27 @@ export function CartProvider({
   const addItem = (
     product: Product,
     quantity: number,
-    selectedVariations: SelectedVariation
+    selectedVariations: SelectedVariation,
+    customPrice?: { unitPrice: number; promotionalPrice?: number | null }
   ) => {
     if (quantity <= 0) return;
+
+    // Calcula preços dinâmicos se não foram passados explicitamente
+    const priceCalculation =
+      customPrice !== undefined
+        ? {
+            unitPrice: customPrice.unitPrice,
+            promotionalPrice: customPrice.promotionalPrice ?? null,
+          }
+        : calculateEffectiveProductPrice(
+            product.preco,
+            product.precoPromocional,
+            selectedVariations,
+            product.variacoes
+          );
+
+    const baseUnitPrice = priceCalculation.unitPrice;
+    const basePromoPrice = priceCalculation.promotionalPrice;
 
     setItems((prevItems) => {
       // Verifica se o item já existe com o mesmo ID e mesmas variações
@@ -93,25 +117,20 @@ export function CartProvider({
           areVariationsEqual(item.variations, selectedVariations)
       );
 
-      const effectivePrice =
-        typeof product.precoPromocional === 'number' &&
-        product.precoPromocional > 0 &&
-        product.precoPromocional < product.preco
-          ? product.precoPromocional
-          : product.preco;
-
       if (existingIndex > -1) {
         const existing = prevItems[existingIndex]!;
         const updatedQuantity = existing.quantity + quantity;
         const updatedSubtotal = calculateSubtotal(
-          product.preco,
+          baseUnitPrice,
           updatedQuantity,
-          product.precoPromocional
+          basePromoPrice
         );
 
         const updatedList = [...prevItems];
         updatedList[existingIndex] = {
           ...existing,
+          unitPrice: baseUnitPrice,
+          promotionalPrice: basePromoPrice,
           quantity: updatedQuantity,
           subtotal: updatedSubtotal,
         };
@@ -119,17 +138,17 @@ export function CartProvider({
       }
 
       const subtotal = calculateSubtotal(
-        product.preco,
+        baseUnitPrice,
         quantity,
-        product.precoPromocional
+        basePromoPrice
       );
 
       const newItem: CartItem = {
         productId: product.id,
         name: product.nome,
         image: product.imagens && product.imagens.length > 0 ? (product.imagens[0] ?? '') : '',
-        unitPrice: product.preco,
-        promotionalPrice: product.precoPromocional,
+        unitPrice: baseUnitPrice,
+        promotionalPrice: basePromoPrice,
         quantity,
         variations: selectedVariations,
         subtotal,
