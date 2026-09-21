@@ -194,6 +194,7 @@ export interface Tenant {
   spreadsheetId?: string;
   spreadsheetUrl?: string;
   notes?: string;
+  niche?: string;
   // Campos de Integração com Asaas
   asaasCustomerId?: string;
   asaasSubscriptionId?: string;

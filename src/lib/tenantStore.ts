@@ -76,41 +76,100 @@ export function getKvConfig(): { url: string; token: string } | null {
   return null;
 }
 
+export function getMasterProvisionerUrl(): string | null {
+  const url = process.env['GOOGLE_MASTER_PROVISIONER_URL'];
+  return url && url.trim() ? url.trim() : null;
+}
+
+let cachedMasterSheetUrl: string | null = null;
+
+export function getCachedMasterSheetUrl(): string | null {
+  return cachedMasterSheetUrl;
+}
+
 /**
- * Sincroniza o registro em memória com o banco KV remoto (Vercel KV / Upstash Redis)
+ * Sincroniza o registro em memória com a nuvem (Planilha Mestre Google Drive e/ou Vercel KV / Upstash)
  */
 export async function syncTenantsFromRemote(): Promise<boolean> {
-  const kv = getKvConfig();
-  if (!kv) return false;
+  let synced = false;
 
-  try {
-    const res = await fetch(`${kv.url}/get/saas_tenants_registry`, {
-      headers: {
-        Authorization: `Bearer ${kv.token}`,
-      },
-    });
-
-    if (!res.ok) return false;
-
-    const data = await res.json();
-    let parsed: any = data.result;
-    if (typeof parsed === 'string') {
-      try {
-        parsed = JSON.parse(parsed);
-      } catch {
-        // ignore
+  // 1. Sincroniza com Google Apps Script Master Provisioner (Planilha Mestre no Google Drive)
+  const provisionerUrl = getMasterProvisionerUrl();
+  if (provisionerUrl) {
+    try {
+      const res = await fetch(`${provisionerUrl}?action=listStores`, {
+        headers: { 'Content-Type': 'application/json' },
+      });
+      if (res.ok) {
+        const json = await res.json();
+        if (json.success && json.masterSheetUrl) {
+          cachedMasterSheetUrl = json.masterSheetUrl;
+        }
+        if (json.success && Array.isArray(json.stores)) {
+          for (const s of json.stores) {
+            if (s.tenantId) {
+              const domain = s.domain || `${s.slug || s.tenantId}.localhost`;
+              const tenantObj: Tenant = {
+                tenantId: s.tenantId,
+                name: s.name || s.storeName,
+                slug: s.slug || s.tenantId.replace(/_/g, '-'),
+                domain,
+                apiUrl: s.apiUrl || '',
+                whatsapp: s.whatsapp || '',
+                ownerEmail: s.ownerEmail || '',
+                niche: s.niche || 'Geral',
+                plan: s.plan || 'trial_30d',
+                subscriptionStatus: s.subscriptionStatus || 'active',
+                subscriptionExpiresAt: s.subscriptionExpiresAt,
+                createdAt: s.createdAt,
+                spreadsheetId: s.spreadsheetId,
+                spreadsheetUrl: s.spreadsheetUrl,
+              };
+              inMemoryRegistry[domain] = tenantObj;
+              if (s.slug) inMemoryRegistry[s.slug] = tenantObj;
+              inMemoryRegistry[s.tenantId] = tenantObj;
+            }
+          }
+          synced = true;
+        }
       }
+    } catch (err) {
+      console.warn('Nota: Não foi possível sincronizar com o Master Provisioner Google:', err);
     }
-
-    if (parsed && typeof parsed === 'object') {
-      inMemoryRegistry = { ...inMemoryRegistry, ...parsed };
-      return true;
-    }
-    return false;
-  } catch (err) {
-    console.warn('Falha na sincronização com KV:', err);
-    return false;
   }
+
+  // 2. Sincroniza com Vercel KV / Upstash Redis
+  const kv = getKvConfig();
+  if (kv) {
+    try {
+      const res = await fetch(`${kv.url}/get/saas_tenants_registry`, {
+        headers: {
+          Authorization: `Bearer ${kv.token}`,
+        },
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        let parsed: any = data.result;
+        if (typeof parsed === 'string') {
+          try {
+            parsed = JSON.parse(parsed);
+          } catch {
+            // ignore
+          }
+        }
+
+        if (parsed && typeof parsed === 'object') {
+          inMemoryRegistry = { ...inMemoryRegistry, ...parsed };
+          synced = true;
+        }
+      }
+    } catch (err) {
+      console.warn('Falha na sincronização com KV:', err);
+    }
+  }
+
+  return synced;
 }
 
 /**
@@ -293,9 +352,43 @@ export async function registerTenant(input: CreateTenantInput): Promise<{
   const status: SubscriptionStatus = plan === 'trial_30d' ? 'trial' : 'active';
   const expiresAt = new Date(now.getTime() + durationDays * 24 * 60 * 60 * 1000).toISOString();
 
-  // Gera identificadores únicos da planilha no Google Sheets
-  const generatedSheetId = '1sheet_' + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-  const spreadsheetUrl = `https://docs.google.com/spreadsheets/d/${generatedSheetId}/edit`;
+  // 1. Tenta auto-provisionar via Google Apps Script Master Provisioner (cria planilha real privada no Google Drive do dono)
+  const provisionerUrl = getMasterProvisionerUrl();
+  let generatedSheetId = '1sheet_' + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+  let spreadsheetUrl = `https://docs.google.com/spreadsheets/d/${generatedSheetId}/edit`;
+
+  if (provisionerUrl) {
+    try {
+      const res = await fetch(provisionerUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'provisionStore',
+          storeName: input.name.trim(),
+          tenantId,
+          slug: finalSlug,
+          whatsapp: input.whatsapp.replace(/\D/g, ''),
+          ownerEmail: input.ownerEmail?.trim() || '',
+          niche: input.niche || 'Geral',
+          primaryColor: input.primaryColor || '#10b981',
+          secondaryColor: input.secondaryColor || '#047857',
+          password: input.password || 'admin123',
+          plan,
+        }),
+      });
+
+      if (res.ok) {
+        const json = await res.json();
+        if (json.success && json.spreadsheetUrl) {
+          spreadsheetUrl = json.spreadsheetUrl;
+          if (json.spreadsheetId) generatedSheetId = json.spreadsheetId;
+          if (json.masterSheetUrl) cachedMasterSheetUrl = json.masterSheetUrl;
+        }
+      }
+    } catch (err) {
+      console.warn('Nota: Provisionador Google inacessível, gerando fallback local:', err);
+    }
+  }
 
   // Cria o registro do Tenant
   const newTenant: Tenant = {
@@ -312,6 +405,7 @@ export async function registerTenant(input: CreateTenantInput): Promise<{
     ownerEmail: input.ownerEmail?.trim() || '',
     spreadsheetId: generatedSheetId,
     spreadsheetUrl,
+    niche: input.niche || 'Geral',
     notes: `Loja criada automaticamente via Onboarding (${input.niche || 'Geral'})`,
   };
 
@@ -403,6 +497,8 @@ export function getSaasMetrics(): SaasMetrics {
       activeStores++;
       if (tenant.plan === 'monthly') {
         estimatedMonthlyRevenue += 129.9; // Plano mensal oficial R$ 129,90
+      } else if (tenant.plan === 'yearly') {
+        estimatedMonthlyRevenue += 99.9; // Plano anual proporcional R$ 99,90/mês
       }
     }
   }

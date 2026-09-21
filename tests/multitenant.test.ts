@@ -442,5 +442,126 @@ describe('Módulo 5 — Multi-Tenant e Resolução de Domínios (src/lib/tenantR
       }
     });
   });
+
+  // ============================================================
+  // 7. PROVISIONADOR MESTRE GOOGLE & PLANILHAS PRIVADAS
+  // ============================================================
+  describe('Google Master Provisioner & Master Sheet Sync', () => {
+    it('deve ler GOOGLE_MASTER_PROVISIONER_URL corretamente', async () => {
+      delete process.env['GOOGLE_MASTER_PROVISIONER_URL'];
+      const { getMasterProvisionerUrl } = await import('../src/lib/tenantStore');
+      expect(getMasterProvisionerUrl()).toBeNull();
+
+      process.env['GOOGLE_MASTER_PROVISIONER_URL'] = 'https://script.google.com/macros/s/MASTER_ABC/exec ';
+      expect(getMasterProvisionerUrl()).toBe('https://script.google.com/macros/s/MASTER_ABC/exec');
+      delete process.env['GOOGLE_MASTER_PROVISIONER_URL'];
+    });
+
+    it('deve sincronizar lojas a partir da Planilha Mestre via Master Provisioner', async () => {
+      process.env['GOOGLE_MASTER_PROVISIONER_URL'] = 'https://script.google.com/macros/s/MASTER_MOCK/exec';
+
+      const originalFetch = global.fetch;
+      try {
+        const mockFetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
+          const urlStr = input.toString();
+          if (urlStr.includes('MASTER_MOCK')) {
+            return new Response(
+              JSON.stringify({
+                success: true,
+                masterSheetUrl: 'https://docs.google.com/spreadsheets/d/MASTER_SHEET_ID/edit',
+                stores: [
+                  {
+                    tenantId: 'pizzaria_cloud',
+                    name: 'Pizzaria Cloud Test',
+                    domain: 'pizzaria.catalogo.app',
+                    slug: 'pizzaria-cloud',
+                    whatsapp: '11999998888',
+                    plan: 'monthly',
+                    subscriptionStatus: 'active',
+                    spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/PIZZA_SHEET_123/edit',
+                  },
+                ],
+              }),
+              { status: 200 }
+            );
+          }
+          return new Response('Not found', { status: 404 });
+        }) as unknown as typeof fetch;
+
+        global.fetch = mockFetch;
+
+        const { syncTenantsFromRemote, findTenant, getCachedMasterSheetUrl } = await import(
+          '../src/lib/tenantStore'
+        );
+
+        const ok = await syncTenantsFromRemote();
+        expect(ok).toBe(true);
+
+        const store = findTenant('pizzaria_cloud');
+        expect(store).toBeTruthy();
+        expect(store?.name).toBe('Pizzaria Cloud Test');
+        expect(store?.plan).toBe('monthly');
+        expect(store?.spreadsheetUrl).toContain('PIZZA_SHEET_123');
+
+        expect(getCachedMasterSheetUrl()).toContain('MASTER_SHEET_ID');
+      } finally {
+        global.fetch = originalFetch;
+        delete process.env['GOOGLE_MASTER_PROVISIONER_URL'];
+      }
+    });
+
+    it('deve auto-provisionar nova loja chamando o Master Provisioner', async () => {
+      process.env['GOOGLE_MASTER_PROVISIONER_URL'] = 'https://script.google.com/macros/s/PROVISION_MOCK/exec';
+
+      const originalFetch = global.fetch;
+      try {
+        let sentBody: any = null;
+        const mockFetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
+          const urlStr = input.toString();
+          if (urlStr.includes('PROVISION_MOCK')) {
+            if (init?.body) {
+              sentBody = JSON.parse(init.body as string);
+            }
+            return new Response(
+              JSON.stringify({
+                success: true,
+                tenantId: sentBody?.tenantId || 'nova_loja',
+                spreadsheetId: 'REAL_PRIVATE_SHEET_999',
+                spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/REAL_PRIVATE_SHEET_999/edit',
+                masterSheetUrl: 'https://docs.google.com/spreadsheets/d/MASTER_CONTROL_777/edit',
+              }),
+              { status: 200 }
+            );
+          }
+          return new Response('Not found', { status: 404 });
+        }) as unknown as typeof fetch;
+
+        global.fetch = mockFetch;
+
+        const { registerTenant } = await import('../src/lib/tenantStore');
+
+        const result = await registerTenant({
+          name: 'Hambúrguer Gourmet Cloud',
+          slug: 'burger-gourmet-cloud',
+          whatsapp: '21988887777',
+          plan: 'yearly',
+          ownerEmail: 'dono@burger.com',
+          niche: 'Hamburgueria',
+        });
+
+        expect(result.spreadsheetId).toBe('REAL_PRIVATE_SHEET_999');
+        expect(result.spreadsheetUrl).toBe('https://docs.google.com/spreadsheets/d/REAL_PRIVATE_SHEET_999/edit');
+        expect(result.tenant.plan).toBe('yearly');
+        expect(result.tenant.niche).toBe('Hamburgueria');
+        expect(sentBody).toBeTruthy();
+        expect(sentBody.action).toBe('provisionStore');
+        expect(sentBody.plan).toBe('yearly');
+      } finally {
+        global.fetch = originalFetch;
+        delete process.env['GOOGLE_MASTER_PROVISIONER_URL'];
+      }
+    });
+  });
 });
+
 

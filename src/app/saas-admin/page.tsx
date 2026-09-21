@@ -39,6 +39,9 @@ export default function SaasAdminPage() {
   // Dados do SaaS
   const [stores, setStores] = useState<Tenant[]>([]);
   const [metrics, setMetrics] = useState<SaasMetrics | null>(null);
+  const [masterSheetUrl, setMasterSheetUrl] = useState<string | null>(null);
+  const [hasGoogleProvisioner, setHasGoogleProvisioner] = useState(false);
+  const [showProvisionerModal, setShowProvisionerModal] = useState(false);
   const [loading, setLoading] = useState(false);
   const [feedbackMsg, setFeedbackMsg] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
 
@@ -64,6 +67,8 @@ export default function SaasAdminPage() {
     localStorage.removeItem('saas_master_token');
     setStores([]);
     setMetrics(null);
+    setMasterSheetUrl(null);
+    setHasGoogleProvisioner(false);
   }, []);
 
   const loadStores = useCallback(async (authToken = token) => {
@@ -88,6 +93,12 @@ export default function SaasAdminPage() {
 
       setStores(json.data.stores);
       setMetrics(json.data.metrics);
+      if (json.data.masterSheetUrl) {
+        setMasterSheetUrl(json.data.masterSheetUrl);
+      }
+      if (typeof json.data.hasGoogleProvisioner === 'boolean') {
+        setHasGoogleProvisioner(json.data.hasGoogleProvisioner);
+      }
     } catch {
       showFeedback('Erro ao sincronizar lojas.', 'error');
     } finally {
@@ -438,19 +449,34 @@ export default function SaasAdminPage() {
             </div>
           </div>
 
-          <div className="flex items-center gap-2 sm:gap-3">
+          <div className="flex items-center gap-2 sm:gap-2.5">
+            {masterSheetUrl && (
+              <a
+                href={masterSheetUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="hidden sm:inline-flex items-center gap-1.5 px-3 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200/80 font-bold text-xs rounded-xl shadow-2xs transition"
+                title="Abrir Planilha Mestre de Controle no Google Sheets"
+              >
+                <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-600" />
+                <span>Planilha Mestre</span>
+                <ExternalLink className="w-3 h-3 text-emerald-500" />
+              </a>
+            )}
+
             <button
               type="button"
               onClick={() => loadStores()}
-              className="p-2 rounded-xl text-slate-600 hover:bg-slate-100 transition-colors"
-              title="Atualizar dados"
+              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 transition cursor-pointer"
+              title="Sincronizar lojas com a nuvem (Google Sheets e KV)"
             >
-              <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin text-emerald-600' : ''}`} />
+              <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin text-emerald-600' : ''}`} />
+              <span className="hidden md:inline">Sincronizar Nuvem</span>
             </button>
 
             <Link
               href="/criar-loja"
-              className="inline-flex items-center gap-1.5 px-3 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs rounded-xl shadow-2xs transition-colors"
+              className="inline-flex items-center gap-1.5 px-3 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs rounded-xl shadow-2xs transition cursor-pointer"
             >
               <Plus className="w-3.5 h-3.5" />
               <span>Nova Loja</span>
@@ -459,8 +485,8 @@ export default function SaasAdminPage() {
             <button
               type="button"
               onClick={handleLogout}
-              className="p-2 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
-              title="Sair"
+              className="p-2 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition cursor-pointer"
+              title="Sair do Painel"
             >
               <LogOut className="w-4 h-4" />
             </button>
@@ -484,6 +510,54 @@ export default function SaasAdminPage() {
 
       {/* Conteúdo Central */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 py-6 sm:py-8 space-y-6">
+        {/* Banner de Status da Automação Google Drive & Planilha Mestre */}
+        {hasGoogleProvisioner ? (
+          <div className="p-3.5 bg-emerald-50/90 border border-emerald-200 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-emerald-950 shadow-2xs">
+            <div className="flex items-center gap-2">
+              <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse flex-shrink-0" />
+              <div>
+                <span className="font-bold">Google Master Provisioner Conectado:</span>
+                <span className="text-emerald-800 ml-1">
+                  Cada nova loja cria automaticamente uma planilha privada no seu Google Drive com acesso exclusivo seu.
+                </span>
+              </div>
+            </div>
+            {masterSheetUrl && (
+              <a
+                href={masterSheetUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="font-bold text-emerald-800 hover:text-emerald-950 inline-flex items-center gap-1.5 bg-white px-3 py-1.5 rounded-xl border border-emerald-200 shadow-2xs whitespace-nowrap self-start sm:self-auto"
+              >
+                <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-600" />
+                <span>Abrir Planilha Mestre no Drive</span>
+                <ExternalLink className="w-3 h-3 text-emerald-500" />
+              </a>
+            )}
+          </div>
+        ) : (
+          <div className="p-4 bg-slate-900 text-slate-100 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3.5 text-xs shadow-md border border-slate-800">
+            <div className="flex items-start sm:items-center gap-3">
+              <div className="h-9 w-9 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center flex-shrink-0">
+                <FileSpreadsheet className="w-5 h-5" />
+              </div>
+              <div>
+                <p className="font-bold text-white text-sm">Criação Automática de Planilhas Privadas no seu Google Drive</p>
+                <p className="text-slate-400 text-[11px] mt-0.5">
+                  Conecte o script <code className="bg-slate-800 px-1.5 py-0.5 rounded font-mono text-emerald-300">backend/MasterProvisioner.gs</code> para que toda loja criada gere uma planilha privada real onde apenas você tem acesso.
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => setShowProvisionerModal(true)}
+              className="px-4 py-2 bg-gradient-to-r from-emerald-500 to-teal-400 hover:brightness-110 text-slate-950 rounded-xl font-black whitespace-nowrap self-start sm:self-auto transition cursor-pointer shadow-sm"
+            >
+              Ver Como Ativar (2 min)
+            </button>
+          </div>
+        )}
+
         {/* Cards de Métricas (KPIs) */}
         {metrics && (
           <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 sm:gap-4">
@@ -628,6 +702,7 @@ export default function SaasAdminPage() {
                         <span className="font-semibold text-slate-700 block">
                           {store.plan === 'trial_30d' && 'Teste 30 Dias'}
                           {store.plan === 'monthly' && 'Mensal (R$ 129,90)'}
+                          {store.plan === 'yearly' && 'Anual (R$ 99,90/mês)'}
                           {!store.plan && 'Teste 30 Dias'}
                         </span>
                       </td>
@@ -774,6 +849,7 @@ export default function SaasAdminPage() {
                       <span className="font-semibold">
                         {store.plan === 'trial_30d' && 'Teste 30d'}
                         {store.plan === 'monthly' && 'Mensal (R$ 129,90)'}
+                        {store.plan === 'yearly' && 'Anual (R$ 99,90)'}
                         {!store.plan && 'Teste 30d'}
                       </span>
                     </div>
@@ -903,6 +979,7 @@ export default function SaasAdminPage() {
                   >
                     <option value="trial_30d">Teste 30 Dias Grátis</option>
                     <option value="monthly">Mensal (R$ 129,90)</option>
+                    <option value="yearly">Anual (R$ 99,90/mês — R$ 1.198,80/ano)</option>
                   </select>
                 </div>
 
@@ -965,6 +1042,104 @@ export default function SaasAdminPage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Instruções do Google Master Provisioner */}
+      {showProvisionerModal && (
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl border border-slate-200 shadow-2xl max-w-xl w-full p-6 sm:p-7 space-y-5 animate-in fade-in zoom-in-95">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <div className="flex items-center gap-2.5">
+                <div className="h-9 w-9 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center font-black">
+                  <FileSpreadsheet className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="font-extrabold text-slate-900 text-base">
+                    Automação de Planilhas Privadas no Google Drive
+                  </h3>
+                  <p className="text-xs text-slate-500">
+                    Criação 100% automática com acesso exclusivo seu
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowProvisionerModal(false)}
+                className="p-1.5 text-slate-400 hover:text-slate-600 rounded-lg cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="space-y-4 text-xs text-slate-600">
+              <p>
+                Para que cada lojista que se cadastrar em <strong className="text-slate-800">/criar-loja</strong> tenha uma planilha Google Sheets real criada automaticamente na <strong>sua conta Google</strong> dentro de uma pasta privada:
+              </p>
+
+              <div className="space-y-3 bg-slate-50 p-4 rounded-2xl border border-slate-200/80">
+                <div className="flex gap-2.5">
+                  <span className="h-5 w-5 rounded-full bg-slate-900 text-white flex items-center justify-center text-[11px] font-bold flex-shrink-0">
+                    1
+                  </span>
+                  <div>
+                    <strong className="text-slate-800 block">Criar Script no Google Apps Script:</strong>
+                    <span>Acesse <a href="https://script.google.com/home" target="_blank" rel="noreferrer" className="text-emerald-600 underline font-bold">script.google.com</a>, clique em <em>Novo Projeto</em> e renomeie para &quot;SaaS Master Provisioner&quot;.</span>
+                  </div>
+                </div>
+
+                <div className="flex gap-2.5">
+                  <span className="h-5 w-5 rounded-full bg-slate-900 text-white flex items-center justify-center text-[11px] font-bold flex-shrink-0">
+                    2
+                  </span>
+                  <div>
+                    <strong className="text-slate-800 block">Copiar o código pronto:</strong>
+                    <span>Substitua o código pelo arquivo <code className="bg-white px-1.5 py-0.5 rounded border font-mono text-emerald-700">backend/MasterProvisioner.gs</code> que já preparamos no projeto.</span>
+                  </div>
+                </div>
+
+                <div className="flex gap-2.5">
+                  <span className="h-5 w-5 rounded-full bg-slate-900 text-white flex items-center justify-center text-[11px] font-bold flex-shrink-0">
+                    3
+                  </span>
+                  <div>
+                    <strong className="text-slate-800 block">Implantar como Web App:</strong>
+                    <span>Clique em <em>Implantar &gt; Nova implantação &gt; App da Web</em>. Em &quot;Executar como&quot; selecione <strong>Eu</strong> e em &quot;Quem pode acessar&quot; selecione <strong>Qualquer pessoa</strong>.</span>
+                  </div>
+                </div>
+
+                <div className="flex gap-2.5">
+                  <span className="h-5 w-5 rounded-full bg-slate-900 text-white flex items-center justify-center text-[11px] font-bold flex-shrink-0">
+                    4
+                  </span>
+                  <div>
+                    <strong className="text-slate-800 block">Configurar URL no Vercel / .env:</strong>
+                    <span>Copie a URL do Web App gerada e cole na variável de ambiente:</span>
+                    <pre className="mt-1.5 p-2 bg-slate-900 text-emerald-400 rounded-lg font-mono text-[11px] overflow-x-auto">
+                      GOOGLE_MASTER_PROVISIONER_URL=https://script.google.com/macros/s/.../exec
+                    </pre>
+                  </div>
+                </div>
+              </div>
+
+              <div className="p-3 bg-emerald-50 rounded-xl border border-emerald-200 text-emerald-900 text-[11px] flex items-center gap-2">
+                <ShieldCheck className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+                <span>
+                  <strong>Privacidade Garantida:</strong> As planilhas das lojas são criadas dentro da pasta <em>&quot;SaaS - Planilhas das Lojas&quot;</em> no seu Google Drive pessoal. Ninguém além de você tem acesso aos arquivos.
+                </span>
+              </div>
+            </div>
+
+            <div className="pt-2 flex justify-end">
+              <button
+                type="button"
+                onClick={() => setShowProvisionerModal(false)}
+                className="px-5 py-2.5 bg-slate-900 hover:bg-black text-white text-xs font-bold rounded-xl transition cursor-pointer"
+              >
+                Entendi, Fechar
+              </button>
+            </div>
           </div>
         </div>
       )}

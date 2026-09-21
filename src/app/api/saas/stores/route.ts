@@ -4,6 +4,9 @@ import {
   registerTenant,
   getSaasMetrics,
   findTenant,
+  syncTenantsFromRemote,
+  getCachedMasterSheetUrl,
+  getMasterProvisionerUrl,
 } from '@/lib/tenantStore';
 import type { CreateTenantInput } from '@/types';
 
@@ -24,9 +27,18 @@ export async function GET(request: NextRequest) {
     );
   }
 
+  // Sincroniza dados da nuvem em tempo real (Google Sheets Master e/ou Vercel KV)
+  try {
+    await syncTenantsFromRemote();
+  } catch (err) {
+    console.warn('Nota: Erro ao sincronizar lojas remotas em GET /api/saas/stores:', err);
+  }
+
   const registry = getTenantRegistry();
   const stores = Object.values(registry);
   const metrics = getSaasMetrics();
+  const masterSheetUrl = getCachedMasterSheetUrl();
+  const hasGoogleProvisioner = Boolean(getMasterProvisionerUrl());
 
   // Remove dados duplicados por chaves diferentes (mantém um por tenantId)
   const uniqueStoresMap = new Map();
@@ -41,6 +53,8 @@ export async function GET(request: NextRequest) {
     data: {
       stores: Array.from(uniqueStoresMap.values()),
       metrics,
+      masterSheetUrl,
+      hasGoogleProvisioner,
     },
   });
 }
