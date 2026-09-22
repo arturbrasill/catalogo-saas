@@ -532,6 +532,8 @@ function CatalogContent({ onStoreLoaded }: CatalogContentProps) {
           product={selectedProduct}
           onClose={handleCloseProduct}
           store={store}
+          allProducts={products}
+          onSelectProduct={handleOpenProduct}
         />
       )}
 
