@@ -190,6 +190,18 @@ export function buildWhatsAppMessage(
   const total = calculateCartTotal(items);
   const totalItemsCount = items.reduce((acc, item) => acc + (item.quantity || 0), 0);
 
+  const appliedCoupon =
+    !Array.isArray(cartInput) && cartInput.appliedCoupon
+      ? cartInput.appliedCoupon
+      : orderInfo?.appliedCoupon;
+
+  const discountAmount =
+    !Array.isArray(cartInput) && typeof cartInput.discountAmount === 'number'
+      ? cartInput.discountAmount
+      : (orderInfo?.discountAmount || 0);
+
+  const finalTotal = Math.max(0, Math.round((total - discountAmount) * 100) / 100);
+
   const messageParts: string[] = [
     `🛍️ *NOVO PEDIDO — ${storeName.toUpperCase()}*`,
     `Olá! Gostaria de finalizar meu pedido com os itens abaixo:`,
@@ -256,7 +268,19 @@ export function buildWhatsAppMessage(
   });
 
   messageParts.push('----------------------------------------');
-  messageParts.push(`💰 *TOTAL DO PEDIDO: ${formatCurrency(total, store.currency)}*`);
+
+  if (appliedCoupon && discountAmount > 0) {
+    const couponDesc =
+      appliedCoupon.tipo === 'percentage'
+        ? `${appliedCoupon.valor}% OFF`
+        : `${formatCurrency(appliedCoupon.valor, store.currency)} OFF`;
+    messageParts.push(`💵 *Subtotal:* ${formatCurrency(total, store.currency)}`);
+    messageParts.push(`🎟️ *Cupom (${appliedCoupon.codigo}):* - ${formatCurrency(discountAmount, store.currency)} (${couponDesc})`);
+    messageParts.push(`💰 *TOTAL DO PEDIDO: ${formatCurrency(finalTotal, store.currency)}*`);
+  } else {
+    messageParts.push(`💰 *TOTAL DO PEDIDO: ${formatCurrency(total, store.currency)}*`);
+  }
+
   messageParts.push(`📦 *Quantidade total de itens:* ${totalItemsCount}`);
   messageParts.push('');
 

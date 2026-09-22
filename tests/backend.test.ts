@@ -605,4 +605,127 @@ describe('Módulo 1 — Backend Google Sheets + Apps Script (Auditoria & Testes 
       ).toThrow();
     });
   });
+
+  // ============================================================
+  // TESTES DO SISTEMA DE CUPONS DE DESCONTO
+  // ============================================================
+  describe('7. Motor de Cupons de Desconto (engine.ts)', () => {
+    it('deve validar cupom percentual com valor mínimo atingido', () => {
+      const res = engine.validateCoupon('BEMVINDO10', 100);
+      expect(res.valid).toBe(true);
+      expect(res.coupon).toBeTruthy();
+      expect(res.coupon?.codigo).toBe('BEMVINDO10');
+      expect(res.discountAmount).toBe(10); // 10% de 100 = 10
+    });
+
+    it('deve recusar cupom percentual se subtotal for menor que valorMinimo', () => {
+      // BEMVINDO10 tem valorMinimo = 50
+      const res = engine.validateCoupon('BEMVINDO10', 40);
+      expect(res.valid).toBe(false);
+      expect(res.discountAmount).toBe(0);
+      expect(res.message).toMatch(/a partir de/i);
+    });
+
+    it('deve validar cupom de valor fixo com valor mínimo atingido', () => {
+      // DESCONTO20 tem valor = 20 e valorMinimo = 100
+      const res = engine.validateCoupon('DESCONTO20', 150);
+      expect(res.valid).toBe(true);
+      expect(res.discountAmount).toBe(20);
+    });
+
+    it('deve rejeitar cupom inexistente', () => {
+      const res = engine.validateCoupon('CUPOM_FANTASMA', 200);
+      expect(res.valid).toBe(false);
+      expect(res.discountAmount).toBe(0);
+      expect(res.message).toMatch(/não encontrado/i);
+    });
+
+    it('deve permitir admin criar novo cupom e rejeitar código duplicado', () => {
+      const createRes = engine.doPost({
+        action: 'createCoupon',
+        token: adminToken,
+        coupon: {
+          codigo: 'VIP30',
+          tipo: 'percentage',
+          valor: 30,
+          valorMinimo: 80,
+          ativo: true,
+          descricao: 'Desconto exclusivo para clientes VIP',
+        },
+      });
+
+      expect(createRes.success).toBe(true);
+      const created = createRes.data as any;
+      expect(created.codigo).toBe('VIP30');
+      expect(created.valor).toBe(30);
+
+      // Tentar criar duplicado
+      const dupRes = engine.doPost({
+        action: 'createCoupon',
+        token: adminToken,
+        coupon: {
+          codigo: 'vip30',
+          tipo: 'percentage',
+          valor: 30,
+        },
+      });
+      expect(dupRes.success).toBe(false);
+      expect(dupRes.error?.message).toMatch(/já existe um cupom/i);
+    });
+
+    it('deve atualizar cupom existente e desativar/ativar', () => {
+      const listRes = engine.doGet({ action: 'coupons' });
+      const coupons = listRes.data as any[];
+      const target = coupons[0];
+
+      const updateRes = engine.doPost({
+        action: 'updateCoupon',
+        token: adminToken,
+        coupon: {
+          id: target.id,
+          ativo: false,
+        },
+      });
+
+      expect(updateRes.success).toBe(true);
+      expect((updateRes.data as any).ativo).toBe(false);
+
+      // Agora a validação pública deve rejeitar o cupom desativado
+      const valRes = engine.validateCoupon(target.codigo, 500);
+      expect(valRes.valid).toBe(false);
+      expect(valRes.message).toMatch(/desativado/i);
+    });
+
+    it('deve excluir cupom e impedir uso posterior', () => {
+      const createRes = engine.doPost({
+        action: 'createCoupon',
+        token: adminToken,
+        coupon: {
+          codigo: 'TEMPORARIO',
+          tipo: 'fixed',
+          valor: 15,
+        },
+      });
+      const tempId = (createRes.data as any).id;
+
+      const delRes = engine.doPost({
+        action: 'deleteCoupon',
+        token: adminToken,
+        id: tempId,
+      });
+      expect(delRes.success).toBe(true);
+
+      const check = engine.validateCoupon('TEMPORARIO', 100);
+      expect(check.valid).toBe(false);
+    });
+
+    it('deve bloquear operações de cupons sem token de autorização', () => {
+      const unauth = engine.doPost({
+        action: 'createCoupon',
+        coupon: { codigo: 'HACK', tipo: 'percentage', valor: 50 },
+      });
+      expect(unauth.success).toBe(false);
+      expect(unauth.error?.message).toMatch(/token/i);
+    });
+  });
 });

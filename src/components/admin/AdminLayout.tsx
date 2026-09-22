@@ -15,6 +15,7 @@ import {
   ChevronRight,
   Shield,
   Sparkles,
+  TicketPercent,
 } from 'lucide-react';
 import { useAuth, ProtectedRoute } from '@/lib/auth';
 
@@ -31,6 +32,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
     { name: 'Dashboard', href: '/admin', icon: LayoutDashboard, badge: null },
     { name: 'Produtos', href: '/admin/produtos', icon: Package, badge: 'Inventário' },
     { name: 'Categorias', href: '/admin/categorias', icon: FolderTree, badge: null },
+    { name: 'Cupons', href: '/admin/cupons', icon: TicketPercent, badge: 'Promoções' },
     { name: 'Configurações', href: '/admin/configuracoes', icon: Settings, badge: 'Tema & WhatsApp' },
   ];
 
@@ -45,6 +47,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
     if (pathname === '/admin') return 'Visão Geral';
     if (pathname.startsWith('/admin/produtos')) return 'Catálogo de Produtos';
     if (pathname.startsWith('/admin/categorias')) return 'Gestão de Categorias';
+    if (pathname.startsWith('/admin/cupons')) return 'Cupons de Desconto';
     if (pathname.startsWith('/admin/configuracoes')) return 'Identidade & Configurações';
     return 'Painel';
   };

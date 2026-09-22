@@ -10,6 +10,10 @@ import type {
   UpdateCategoryInput,
   SaveConfigInput,
   APIResponse,
+  Coupon,
+  CreateCouponInput,
+  UpdateCouponInput,
+  ValidateCouponResult,
 } from '@/types';
 
 export class ApiClient {
@@ -172,6 +176,58 @@ export class ApiClient {
         action: 'saveConfig',
         token,
         config,
+      }),
+    });
+  }
+
+  // ==========================================
+  // CUPONS DE DESCONTO
+  // ==========================================
+
+  public async getCoupons(): Promise<Coupon[]> {
+    return this.request<Coupon[]>(`${this.baseUrl}?action=coupons`);
+  }
+
+  public async validateCoupon(code: string, subtotal: number): Promise<ValidateCouponResult> {
+    return this.request<ValidateCouponResult>(this.baseUrl, {
+      method: 'POST',
+      body: JSON.stringify({
+        action: 'validateCoupon',
+        code,
+        subtotal,
+      }),
+    });
+  }
+
+  public async createCoupon(coupon: CreateCouponInput, token: string): Promise<Coupon> {
+    return this.request<Coupon>(this.baseUrl, {
+      method: 'POST',
+      body: JSON.stringify({
+        action: 'createCoupon',
+        token,
+        coupon,
+      }),
+    });
+  }
+
+  public async updateCoupon(coupon: UpdateCouponInput, token: string): Promise<Coupon> {
+    return this.request<Coupon>(this.baseUrl, {
+      method: 'POST',
+      body: JSON.stringify({
+        action: 'updateCoupon',
+        token,
+        coupon,
+      }),
+    });
+  }
+
+  public async deleteCoupon(id: string, token: string): Promise<{ success: true; id: string }> {
+    return this.request<{ success: true; id: string }>(this.baseUrl, {
+      method: 'POST',
+      body: JSON.stringify({
+        action: 'deleteCoupon',
+        token,
+        id,
       }),
     });
   }

@@ -108,6 +108,46 @@ export interface Product {
 }
 
 // ============================================================
+// 3.1 CUPONS DE DESCONTO (COUPONS)
+// ============================================================
+
+export type CouponType = 'percentage' | 'fixed';
+
+export interface Coupon {
+  id: string;
+  codigo: string;
+  tipo: CouponType;
+  valor: number;
+  valorMinimo?: number;
+  ativo: boolean;
+  validade?: string;
+  descricao?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface CreateCouponInput {
+  codigo: string;
+  tipo: CouponType;
+  valor: number;
+  valorMinimo?: number;
+  ativo?: boolean;
+  validade?: string;
+  descricao?: string;
+}
+
+export interface UpdateCouponInput extends Partial<CreateCouponInput> {
+  id: string;
+}
+
+export interface ValidateCouponResult {
+  valid: boolean;
+  coupon?: Coupon;
+  discountAmount: number;
+  message?: string;
+}
+
+// ============================================================
 // 4. SACOLA DE COMPRAS (CART)
 // ============================================================
 
@@ -126,6 +166,8 @@ export interface Cart {
   items: CartItem[];
   total: number;
   totalItems: number;
+  appliedCoupon?: Coupon | null;
+  discountAmount?: number;
 }
 
 export type DeliveryType = 'delivery' | 'pickup';
@@ -147,6 +189,8 @@ export interface CustomerOrderInfo {
   paymentMethod?: PaymentMethod;
   changeFor?: string;
   notes?: string;
+  appliedCoupon?: Coupon | null;
+  discountAmount?: number;
 }
 
 // ============================================================

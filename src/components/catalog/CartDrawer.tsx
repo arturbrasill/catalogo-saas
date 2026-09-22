@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useCart } from '@/lib/cart';
 import { formatCurrency, formatVariation, buildWhatsAppUrl } from '@/lib/whatsapp';
-import type { StoreConfig, DeliveryType, PaymentMethod, CustomerOrderInfo } from '@/types';
+import type { StoreConfig, PaymentMethod, CustomerOrderInfo } from '@/types';
 import {
   X,
   Trash2,
@@ -17,9 +17,6 @@ import {
   ShieldCheck,
   Tag,
   Check,
-  Bike,
-  Store as StoreIcon,
-  MapPin,
   CreditCard,
   Banknote,
   QrCode,
@@ -44,23 +41,27 @@ export function CartDrawer({ store }: CartDrawerProps) {
     clearCart,
     getSubtotal,
     getTotalItems,
+    appliedCoupon,
+    discountAmount,
+    applyCoupon,
+    removeCoupon,
+    getTotal,
   } = useCart();
 
   const [step, setStep] = useState<'items' | 'checkout'>('items');
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
-  const [couponCode, setCouponCode] = useState('');
-  const [couponApplied, setCouponApplied] = useState(false);
-  const [couponMessage, setCouponMessage] = useState<string | null>(null);
+
+  // Estados de Cupom
+  const [couponInput, setCouponInput] = useState('');
+  const [couponFeedback, setCouponFeedback] = useState<{
+    type: 'success' | 'error';
+    message: string;
+  } | null>(null);
+  const [isApplyingCoupon, setIsApplyingCoupon] = useState(false);
 
   // Dados do formulário de checkout
   const [customerName, setCustomerName] = useState('');
   const [customerPhone, setCustomerPhone] = useState('');
-  const [deliveryType, setDeliveryType] = useState<DeliveryType>('delivery');
-  const [street, setStreet] = useState('');
-  const [number, setNumber] = useState('');
-  const [neighborhood, setNeighborhood] = useState('');
-  const [complement, setComplement] = useState('');
-  const [city, setCity] = useState('');
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('pix');
   const [changeFor, setChangeFor] = useState('');
   const [notes, setNotes] = useState('');
@@ -74,12 +75,6 @@ export function CartDrawer({ store }: CartDrawerProps) {
         const parsed = JSON.parse(saved);
         if (parsed.customerName) setCustomerName(parsed.customerName);
         if (parsed.customerPhone) setCustomerPhone(parsed.customerPhone);
-        if (parsed.deliveryType) setDeliveryType(parsed.deliveryType);
-        if (parsed.street) setStreet(parsed.street);
-        if (parsed.number) setNumber(parsed.number);
-        if (parsed.neighborhood) setNeighborhood(parsed.neighborhood);
-        if (parsed.complement) setComplement(parsed.complement);
-        if (parsed.city) setCity(parsed.city);
         if (parsed.paymentMethod) setPaymentMethod(parsed.paymentMethod);
       }
     } catch {
@@ -118,13 +113,27 @@ export function CartDrawer({ store }: CartDrawerProps) {
   if (!isCartOpen) return null;
 
   const rawSubtotal = getSubtotal();
+  const finalTotal = getTotal();
   const totalItemsCount = getTotalItems();
 
-  const handleApplyCoupon = (e: React.FormEvent) => {
+  const handleApplyCoupon = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!couponCode.trim()) return;
-    setCouponApplied(true);
-    setCouponMessage(`Cupom "${couponCode.trim().toUpperCase()}" anotado para negociação no WhatsApp!`);
+    if (!couponInput.trim()) return;
+    setIsApplyingCoupon(true);
+    setCouponFeedback(null);
+    try {
+      const res = await applyCoupon(couponInput.trim());
+      if (res.success) {
+        setCouponFeedback({ type: 'success', message: res.message });
+        setCouponInput('');
+      } else {
+        setCouponFeedback({ type: 'error', message: res.message });
+      }
+    } catch {
+      setCouponFeedback({ type: 'error', message: 'Erro ao validar cupom.' });
+    } finally {
+      setIsApplyingCoupon(false);
+    }
   };
 
   const handleAdvanceToCheckout = () => {
@@ -143,18 +152,10 @@ export function CartDrawer({ store }: CartDrawerProps) {
       return;
     }
 
-    if (deliveryType === 'delivery') {
-      if (!street.trim()) {
-        setCheckoutError('Por favor, informe o nome da rua/avenida para entrega.');
-        return;
-      }
-      if (!neighborhood.trim()) {
-        setCheckoutError('Por favor, informe o bairro para entrega.');
-        return;
-      }
-    }
-
-    const rawPhone = store?.whatsapp !== undefined && store?.whatsapp !== null ? String(store.whatsapp).trim() : '';
+    const rawPhone =
+      store?.whatsapp !== undefined && store?.whatsapp !== null
+        ? String(store.whatsapp).trim()
+        : '';
     if (!rawPhone) {
       setCheckoutError('Número de WhatsApp ainda não cadastrado para esta loja.');
       return;
@@ -167,12 +168,6 @@ export function CartDrawer({ store }: CartDrawerProps) {
         JSON.stringify({
           customerName: customerName.trim(),
           customerPhone: customerPhone.trim(),
-          deliveryType,
-          street: street.trim(),
-          number: number.trim(),
-          neighborhood: neighborhood.trim(),
-          complement: complement.trim(),
-          city: city.trim(),
           paymentMethod,
         })
       );
@@ -184,20 +179,11 @@ export function CartDrawer({ store }: CartDrawerProps) {
       const orderInfo: CustomerOrderInfo = {
         customerName: customerName.trim(),
         phone: customerPhone.trim() || undefined,
-        deliveryType,
-        address:
-          deliveryType === 'delivery'
-            ? {
-                street: street.trim(),
-                number: number.trim() || 'S/N',
-                neighborhood: neighborhood.trim(),
-                complement: complement.trim() || undefined,
-                city: city.trim() || undefined,
-              }
-            : undefined,
         paymentMethod,
         changeFor: paymentMethod === 'money' && changeFor.trim() ? changeFor.trim() : undefined,
-        notes: notes.trim() || (couponApplied ? `Cupom aplicado: ${couponCode.trim().toUpperCase()}` : undefined),
+        notes: notes.trim() || undefined,
+        appliedCoupon,
+        discountAmount,
       };
 
       const url = buildWhatsAppUrl(
@@ -206,7 +192,13 @@ export function CartDrawer({ store }: CartDrawerProps) {
           whatsapp: rawPhone,
           currency: store.currency,
         },
-        items,
+        {
+          items,
+          total: finalTotal,
+          totalItems: totalItemsCount,
+          appliedCoupon,
+          discountAmount,
+        },
         orderInfo
       );
       window.open(url, '_blank', 'noopener,noreferrer');
@@ -404,34 +396,93 @@ export function CartDrawer({ store }: CartDrawerProps) {
               {/* Rodapé da Etapa 1 */}
               {items.length > 0 && (
                 <div className="p-4 sm:p-5 border-t border-slate-200 bg-white space-y-3.5 shadow-xl">
-                  {/* Cupom */}
-                  <form onSubmit={handleApplyCoupon} className="flex gap-2">
-                    <div className="relative flex-1">
-                      <Tag className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-2.5" />
-                      <input
-                        type="text"
-                        placeholder="Cupom de desconto..."
-                        value={couponCode}
-                        onChange={(e) => setCouponCode(e.target.value)}
-                        className="w-full pl-8 pr-3 py-2 text-xs rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:border-emerald-500 focus:outline-none transition"
-                      />
+                  {/* Bloco de Cupom de Desconto */}
+                  {appliedCoupon ? (
+                    <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center justify-between animate-fade-in">
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <div
+                          className="h-7 w-7 rounded-lg text-white flex items-center justify-center flex-shrink-0"
+                          style={{ backgroundColor: store.primary_color || '#10b981' }}
+                        >
+                          <Tag className="w-3.5 h-3.5" />
+                        </div>
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <span className="text-xs font-black text-emerald-950 uppercase tracking-wider font-mono">
+                              {appliedCoupon.codigo}
+                            </span>
+                            <span className="text-[10px] font-bold bg-emerald-200/80 text-emerald-900 px-1.5 py-0.5 rounded">
+                              {appliedCoupon.tipo === 'percentage'
+                                ? `${appliedCoupon.valor}% OFF`
+                                : `${formatCurrency(appliedCoupon.valor, store.currency)} OFF`}
+                            </span>
+                          </div>
+                          {appliedCoupon.valorMinimo && rawSubtotal < appliedCoupon.valorMinimo ? (
+                            <p className="text-[10px] text-amber-700 font-medium mt-0.5">
+                              Mínimo de {formatCurrency(appliedCoupon.valorMinimo, store.currency)} para ativar desconto.
+                            </p>
+                          ) : (
+                            <p className="text-[10px] text-emerald-700 font-medium">
+                              Desconto de {formatCurrency(discountAmount, store.currency)} aplicado!
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={removeCoupon}
+                        className="text-slate-400 hover:text-rose-600 p-1.5 rounded-lg hover:bg-white transition cursor-pointer flex-shrink-0"
+                        title="Remover cupom"
+                        aria-label="Remover cupom"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
                     </div>
-                    <button
-                      type="submit"
-                      className="px-3 py-2 rounded-xl text-xs font-bold bg-slate-900 text-white hover:bg-slate-800 transition cursor-pointer"
-                    >
-                      Aplicar
-                    </button>
-                  </form>
+                  ) : (
+                    <form onSubmit={handleApplyCoupon} className="space-y-1.5">
+                      <div className="flex gap-2">
+                        <div className="relative flex-1">
+                          <Tag className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-2.5" />
+                          <input
+                            type="text"
+                            placeholder="Código do cupom..."
+                            value={couponInput}
+                            onChange={(e) => {
+                              setCouponInput(e.target.value.toUpperCase());
+                              if (couponFeedback) setCouponFeedback(null);
+                            }}
+                            className="w-full pl-8 pr-3 py-2 text-xs uppercase font-mono rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:border-emerald-500 focus:outline-none transition"
+                          />
+                        </div>
+                        <button
+                          type="submit"
+                          disabled={isApplyingCoupon || !couponInput.trim()}
+                          className="px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-900 text-white hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed transition cursor-pointer flex-shrink-0"
+                        >
+                          {isApplyingCoupon ? 'Validando...' : 'Aplicar'}
+                        </button>
+                      </div>
 
-                  {couponMessage && (
-                    <div className="text-[11px] text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-lg flex items-center gap-1.5">
-                      <Check className="w-3.5 h-3.5 stroke-[3]" />
-                      <span>{couponMessage}</span>
-                    </div>
+                      {couponFeedback && (
+                        <div
+                          className={`text-[11px] px-2.5 py-1.5 rounded-lg flex items-center gap-1.5 animate-fade-in ${
+                            couponFeedback.type === 'success'
+                              ? 'text-emerald-800 bg-emerald-50 border border-emerald-200'
+                              : 'text-rose-800 bg-rose-50 border border-rose-200'
+                          }`}
+                        >
+                          {couponFeedback.type === 'success' ? (
+                            <Check className="w-3.5 h-3.5 stroke-[3] text-emerald-600 flex-shrink-0" />
+                          ) : (
+                            <AlertCircle className="w-3.5 h-3.5 text-rose-600 flex-shrink-0" />
+                          )}
+                          <span>{couponFeedback.message}</span>
+                        </div>
+                      )}
+                    </form>
                   )}
 
-                  {/* Resumo */}
+                  {/* Resumo Financeiro */}
                   <div className="space-y-1.5 pt-1 border-t border-slate-100">
                     <div className="flex items-center justify-between text-xs text-slate-500">
                       <span>Subtotal dos itens</span>
@@ -439,13 +490,24 @@ export function CartDrawer({ store }: CartDrawerProps) {
                         {formatCurrency(rawSubtotal, store.currency)}
                       </span>
                     </div>
+
+                    {appliedCoupon && discountAmount > 0 && (
+                      <div className="flex items-center justify-between text-xs text-emerald-700 font-semibold animate-fade-in">
+                        <span className="flex items-center gap-1">
+                          <Tag className="w-3 h-3" />
+                          Cupom ({appliedCoupon.codigo})
+                        </span>
+                        <span>- {formatCurrency(discountAmount, store.currency)}</span>
+                      </div>
+                    )}
+
                     <div className="flex items-center justify-between text-sm sm:text-base font-extrabold text-slate-900 pt-1 border-t border-slate-100">
                       <span>Total estimado</span>
                       <span
                         className="text-base sm:text-lg font-black"
                         style={{ color: store.primary_color || '#10b981' }}
                       >
-                        {formatCurrency(rawSubtotal, store.currency)}
+                        {formatCurrency(finalTotal, store.currency)}
                       </span>
                     </div>
                   </div>
@@ -457,7 +519,7 @@ export function CartDrawer({ store }: CartDrawerProps) {
                     className="w-full py-3.5 px-4 rounded-2xl font-extrabold text-xs sm:text-sm text-white shadow-lg hover:brightness-95 active:scale-[0.99] transition-all flex items-center justify-center gap-2 cursor-pointer"
                     style={{ backgroundColor: store.primary_color || '#10b981' }}
                   >
-                    <span>Continuar para Entrega & Pagamento</span>
+                    <span>Continuar para Pagamento</span>
                     <ArrowRight className="w-4 h-4" />
                   </button>
 
@@ -480,7 +542,7 @@ export function CartDrawer({ store }: CartDrawerProps) {
           )}
 
           {/* ======================================================== */}
-          {/* ETAPA 2: DADOS DE ENTREGA E FORMA DE PAGAMENTO            */}
+          {/* ETAPA 2: DADOS DE IDENTIFICAÇÃO E PAGAMENTO               */}
           {/* ======================================================== */}
           {step === 'checkout' && (
             <>
@@ -515,98 +577,21 @@ export function CartDrawer({ store }: CartDrawerProps) {
                   />
                 </div>
 
-                {/* 2. Tipo de Entrega */}
-                <div className="space-y-2 pt-1 border-t border-slate-100">
-                  <span className="block text-xs font-bold uppercase tracking-wider text-slate-700">
-                    Como deseja receber o pedido?
-                  </span>
-                  <div className="grid grid-cols-2 gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setDeliveryType('delivery')}
-                      className={`p-3 rounded-xl border text-xs font-bold flex flex-col items-center gap-1.5 transition cursor-pointer ${
-                        deliveryType === 'delivery'
-                          ? 'border-emerald-500 bg-emerald-50/80 text-emerald-800 shadow-2xs'
-                          : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300'
-                      }`}
-                    >
-                      <Bike className="w-4 h-4 text-emerald-600" />
-                      <span>Entrega em Domicílio</span>
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => setDeliveryType('pickup')}
-                      className={`p-3 rounded-xl border text-xs font-bold flex flex-col items-center gap-1.5 transition cursor-pointer ${
-                        deliveryType === 'pickup'
-                          ? 'border-emerald-500 bg-emerald-50/80 text-emerald-800 shadow-2xs'
-                          : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300'
-                      }`}
-                    >
-                      <StoreIcon className="w-4 h-4 text-emerald-600" />
-                      <span>Retirar no Balcão</span>
-                    </button>
+                {/* Aviso amigável sobre Entrega/Retirada negociada via WhatsApp */}
+                <div className="p-3.5 bg-slate-50 border border-slate-200/80 rounded-2xl flex items-start gap-2.5 text-xs text-slate-600">
+                  <MessageCircle className="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <p className="font-bold text-slate-800">Entrega ou Retirada</p>
+                    <p className="text-[11px] text-slate-500 mt-0.5 leading-relaxed">
+                      O endereço, taxa de entrega ou horário de retirada serão combinados diretamente no WhatsApp com a loja.
+                    </p>
                   </div>
                 </div>
 
-                {/* Campos de Endereço (somente se Entrega) */}
-                {deliveryType === 'delivery' && (
-                  <div className="space-y-2.5 p-3.5 rounded-2xl bg-slate-50 border border-slate-200/80 animate-fade-in">
-                    <div className="flex items-center gap-1.5 text-xs font-bold text-slate-800">
-                      <MapPin className="w-3.5 h-3.5 text-emerald-600" />
-                      <span>Endereço de Entrega</span>
-                    </div>
-
-                    <div className="grid grid-cols-3 gap-2">
-                      <div className="col-span-2">
-                        <input
-                          type="text"
-                          required
-                          placeholder="Rua / Avenida *"
-                          value={street}
-                          onChange={(e) => setStreet(e.target.value)}
-                          className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 bg-white focus:border-emerald-500 focus:outline-none transition"
-                        />
-                      </div>
-                      <div>
-                        <input
-                          type="text"
-                          placeholder="Número"
-                          value={number}
-                          onChange={(e) => setNumber(e.target.value)}
-                          className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 bg-white focus:border-emerald-500 focus:outline-none transition"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-2">
-                      <input
-                        type="text"
-                        required
-                        placeholder="Bairro *"
-                        value={neighborhood}
-                        onChange={(e) => setNeighborhood(e.target.value)}
-                        className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 bg-white focus:border-emerald-500 focus:outline-none transition"
-                      />
-                      <input
-                        type="text"
-                        placeholder="Complemento / Apto"
-                        value={complement}
-                        onChange={(e) => setComplement(e.target.value)}
-                        className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 bg-white focus:border-emerald-500 focus:outline-none transition"
-                      />
-                    </div>
-
-                    <p className="text-[10px] text-slate-400">
-                      * Taxa de entrega e tempo estimado são combinados diretamente no WhatsApp do lojista.
-                    </p>
-                  </div>
-                )}
-
-                {/* 3. Forma de Pagamento */}
+                {/* 2. Forma de Pagamento */}
                 <div className="space-y-2 pt-1 border-t border-slate-100">
                   <span className="block text-xs font-bold uppercase tracking-wider text-slate-700">
-                    Forma de Pagamento
+                    Forma de Pagamento Preferida
                   </span>
                   <div className="grid grid-cols-2 gap-2">
                     <button
@@ -725,7 +710,7 @@ export function CartDrawer({ store }: CartDrawerProps) {
                   )}
                 </div>
 
-                {/* 4. Observações Adicionais */}
+                {/* 3. Observações Adicionais */}
                 <div className="space-y-1 pt-1 border-t border-slate-100">
                   <label className="block text-[11px] font-medium text-slate-500 flex items-center gap-1">
                     <FileText className="w-3.5 h-3.5 text-slate-400" />
@@ -733,7 +718,7 @@ export function CartDrawer({ store }: CartDrawerProps) {
                   </label>
                   <textarea
                     rows={2}
-                    placeholder="Ex: Não tocar campainha, ponto de referência, etc."
+                    placeholder="Ex: Ponto de referência, preferência de horário, etc."
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}
                     className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 bg-slate-50/70 focus:bg-white focus:border-emerald-500 focus:outline-none transition"
@@ -751,14 +736,28 @@ export function CartDrawer({ store }: CartDrawerProps) {
                   </div>
                 )}
 
-                <div className="flex items-center justify-between text-sm sm:text-base font-extrabold text-slate-900">
-                  <span>Total a pagar</span>
-                  <span
-                    className="text-lg sm:text-xl font-black"
-                    style={{ color: store.primary_color || '#10b981' }}
-                  >
-                    {formatCurrency(rawSubtotal, store.currency)}
-                  </span>
+                <div className="space-y-1">
+                  {appliedCoupon && discountAmount > 0 && (
+                    <div className="flex items-center justify-between text-xs text-slate-500">
+                      <span>Subtotal</span>
+                      <span>{formatCurrency(rawSubtotal, store.currency)}</span>
+                    </div>
+                  )}
+                  {appliedCoupon && discountAmount > 0 && (
+                    <div className="flex items-center justify-between text-xs text-emerald-700 font-semibold">
+                      <span>Cupom ({appliedCoupon.codigo})</span>
+                      <span>- {formatCurrency(discountAmount, store.currency)}</span>
+                    </div>
+                  )}
+                  <div className="flex items-center justify-between text-sm sm:text-base font-extrabold text-slate-900 pt-1 border-t border-slate-100">
+                    <span>Total a pagar</span>
+                    <span
+                      className="text-lg sm:text-xl font-black"
+                      style={{ color: store.primary_color || '#10b981' }}
+                    >
+                      {formatCurrency(finalTotal, store.currency)}
+                    </span>
+                  </div>
                 </div>
 
                 <button

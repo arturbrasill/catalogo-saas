@@ -318,5 +318,42 @@ describe('Módulo 4 — Motor de WhatsApp (src/lib/whatsapp.ts)', () => {
       expect(msg).toContain('quando posso retirar');
       expect(msg).not.toContain('• *Endereço:*');
     });
+
+    // Caso 12: Pedido com Cupom de Desconto Aplicado
+    it('Caso 12: Pedido com Cupom de Desconto — deve detalhar subtotal, desconto e total final', () => {
+      // sampleItem1 subtotal: 179.80
+      const orderWithCoupon = {
+        customerName: 'Carlos Eduardo',
+        paymentMethod: 'pix' as const,
+        appliedCoupon: {
+          id: 'coup_1',
+          codigo: 'BLACK10',
+          tipo: 'percentage' as const,
+          valor: 10,
+          ativo: true,
+        },
+        discountAmount: 17.98,
+      };
+
+      const msg = buildWhatsAppMessage(mockStore, [sampleItem1], orderWithCoupon);
+      expect(msg).toContain('• *Cliente:* Carlos Eduardo');
+      expect(msg).toContain('💵 *Subtotal:* R$ 179,80');
+      expect(msg).toContain('🎟️ *Cupom (BLACK10):* - R$ 17,98 (10% OFF)');
+      expect(msg).toContain('💰 *TOTAL DO PEDIDO: R$ 161,82*');
+    });
+
+    // Caso 13: Pedido sem definição prévia de frete (combinar entrega no WhatsApp)
+    it('Caso 13: Pedido com entrega a combinar — não exibe tipo ou endereço', () => {
+      const orderACombinar = {
+        customerName: 'Fernanda Lima',
+        paymentMethod: 'pix' as const,
+      };
+
+      const msg = buildWhatsAppMessage(mockStore, [sampleItem1], orderACombinar);
+      expect(msg).toContain('• *Cliente:* Fernanda Lima');
+      expect(msg).not.toContain('• *Tipo:*');
+      expect(msg).not.toContain('• *Endereço:*');
+      expect(msg).toContain('informe a disponibilidade dos itens');
+    });
   });
 });

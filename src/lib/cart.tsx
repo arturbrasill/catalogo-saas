@@ -1,9 +1,10 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import type { CartItem, Product, SelectedVariation } from '@/types';
+import type { CartItem, Product, SelectedVariation, Coupon } from '@/types';
 import { calculateSubtotal, calculateCartTotal } from '@/lib/whatsapp';
 import { calculateEffectiveProductPrice } from '@/lib/variations';
+import { api } from '@/lib/api';
 
 interface CartContextType {
   items: CartItem[];
@@ -18,6 +19,11 @@ interface CartContextType {
   clearCart: () => void;
   getSubtotal: () => number;
   getTotalItems: () => number;
+  appliedCoupon: Coupon | null;
+  discountAmount: number;
+  applyCoupon: (code: string) => Promise<{ success: boolean; message: string }>;
+  removeCoupon: () => void;
+  getTotal: () => number;
   isCartOpen: boolean;
   openCart: () => void;
   closeCart: () => void;
@@ -35,12 +41,14 @@ export function CartProvider({
   tenantId?: string;
 }) {
   const [items, setItems] = useState<CartItem[]>([]);
+  const [appliedCoupon, setAppliedCoupon] = useState<Coupon | null>(null);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
 
   const storageKey = tenantId
     ? `catalogo_saas_cart_${tenantId.toLowerCase().trim()}`
     : 'catalogo_saas_cart_items_v1';
+  const couponStorageKey = `${storageKey}_coupon`;
 
   // Carrega sacola salva no localStorage na inicialização e quando o storageKey mudar
   useEffect(() => {
@@ -56,23 +64,37 @@ export function CartProvider({
       } else {
         setItems([]);
       }
+
+      const storedCoupon = localStorage.getItem(couponStorageKey);
+      if (storedCoupon) {
+        const parsedCoupon: Coupon = JSON.parse(storedCoupon);
+        if (parsedCoupon && parsedCoupon.codigo) {
+          setAppliedCoupon(parsedCoupon);
+        }
+      }
     } catch {
       // LocalStorage indisponível ou JSON inválido
       setItems([]);
+      setAppliedCoupon(null);
     } finally {
       setIsInitialized(true);
     }
-  }, [storageKey]);
+  }, [storageKey, couponStorageKey]);
 
   // Salva no localStorage a cada alteração
   useEffect(() => {
     if (!isInitialized) return;
     try {
       localStorage.setItem(storageKey, JSON.stringify(items));
+      if (appliedCoupon) {
+        localStorage.setItem(couponStorageKey, JSON.stringify(appliedCoupon));
+      } else {
+        localStorage.removeItem(couponStorageKey);
+      }
     } catch {
       // Falha ao salvar no LocalStorage
     }
-  }, [items, isInitialized, storageKey]);
+  }, [items, appliedCoupon, isInitialized, storageKey, couponStorageKey]);
 
   const areVariationsEqual = (v1: SelectedVariation, v2: SelectedVariation): boolean => {
     const keys1 = Object.keys(v1);
@@ -192,10 +214,68 @@ export function CartProvider({
 
   const clearCart = () => {
     setItems([]);
+    setAppliedCoupon(null);
   };
 
   const getSubtotal = (): number => {
     return calculateCartTotal(items);
+  };
+
+  const currentSubtotal = calculateCartTotal(items);
+
+  const discountAmount = React.useMemo(() => {
+    if (!appliedCoupon || items.length === 0) return 0;
+    if (appliedCoupon.valorMinimo && currentSubtotal < appliedCoupon.valorMinimo) {
+      return 0;
+    }
+    let calculated = 0;
+    if (appliedCoupon.tipo === 'percentage') {
+      calculated = (currentSubtotal * appliedCoupon.valor) / 100;
+    } else {
+      calculated = appliedCoupon.valor;
+    }
+    const finalDiscount = Math.min(currentSubtotal, calculated);
+    return Math.round(finalDiscount * 100) / 100;
+  }, [appliedCoupon, currentSubtotal, items.length]);
+
+  const getTotal = (): number => {
+    return Math.max(0, Math.round((currentSubtotal - discountAmount) * 100) / 100);
+  };
+
+  const applyCoupon = async (code: string): Promise<{ success: boolean; message: string }> => {
+    const cleanCode = code.trim().toUpperCase();
+    if (!cleanCode) {
+      return { success: false, message: 'Digite um código de cupom válido.' };
+    }
+    const subtotalNow = calculateCartTotal(items);
+    if (subtotalNow <= 0) {
+      return { success: false, message: 'Adicione produtos à sacola antes de aplicar um cupom.' };
+    }
+
+    try {
+      const res = await api.validateCoupon(cleanCode, subtotalNow);
+      if (res.valid && res.coupon) {
+        setAppliedCoupon(res.coupon);
+        return {
+          success: true,
+          message: res.message || `Cupom ${res.coupon.codigo} aplicado com sucesso!`,
+        };
+      } else {
+        return {
+          success: false,
+          message: res.message || 'Cupom inválido ou valor mínimo não atingido.',
+        };
+      }
+    } catch (err: any) {
+      return {
+        success: false,
+        message: err.message || 'Erro ao validar cupom. Tente novamente.',
+      };
+    }
+  };
+
+  const removeCoupon = () => {
+    setAppliedCoupon(null);
   };
 
   const getTotalItems = (): number => {
@@ -212,6 +292,11 @@ export function CartProvider({
         clearCart,
         getSubtotal,
         getTotalItems,
+        appliedCoupon,
+        discountAmount,
+        applyCoupon,
+        removeCoupon,
+        getTotal,
         isCartOpen,
         openCart: () => setIsCartOpen(true),
         closeCart: () => setIsCartOpen(false),

@@ -8,12 +8,18 @@ import type {
   CreateCategoryInput,
   UpdateCategoryInput,
   StoreConfigInternal,
+  Coupon,
+  CreateCouponInput,
+  UpdateCouponInput,
+  ValidateCouponResult,
 } from '../types';
+import { formatCurrency } from '../lib/whatsapp';
 
 export class BackendEngine {
   private configMap: Map<string, string> = new Map();
   private categories: Category[] = [];
   private products: Product[] = [];
+  private coupons: Coupon[] = [];
 
   constructor(initialConfig?: Partial<StoreConfigInternal>) {
     this.initDatabase(initialConfig);
@@ -57,6 +63,31 @@ export class BackendEngine {
     ];
 
     this.products = [];
+
+    this.coupons = [
+      {
+        id: 'coup_bemvindo10',
+        codigo: 'BEMVINDO10',
+        tipo: 'percentage',
+        valor: 10,
+        valorMinimo: 50,
+        ativo: true,
+        descricao: '10% OFF para compras acima de R$ 50,00',
+        createdAt: now,
+        updatedAt: now,
+      },
+      {
+        id: 'coup_desconto20',
+        codigo: 'DESCONTO20',
+        tipo: 'fixed',
+        valor: 20,
+        valorMinimo: 100,
+        ativo: true,
+        descricao: 'R$ 20,00 de desconto em compras acima de R$ 100,00',
+        createdAt: now,
+        updatedAt: now,
+      },
+    ];
   }
 
   public hashPassword(password: string): string {
@@ -83,6 +114,17 @@ export class BackendEngine {
         case 'catalog':
         case 'getCatalog':
           return { success: true, data: this.getInitialCatalogData(), error: null };
+        case 'coupons':
+          return { success: true, data: this.getAllCoupons(), error: null };
+        case 'validateCoupon':
+          return {
+            success: true,
+            data: this.validateCoupon(
+              params['code'] || '',
+              parseFloat(params['subtotal'] || '0')
+            ),
+            error: null,
+          };
         default:
           return {
             success: false,
@@ -123,6 +165,15 @@ export class BackendEngine {
         return { success: true, data: result, error: null };
       }
 
+      // Validação de cupom é pública (cliente na sacola de compras)
+      if (payload.action === 'validateCoupon') {
+        const result = this.validateCoupon(
+          payload.code,
+          parseFloat(payload.subtotal || 0)
+        );
+        return { success: true, data: result, error: null };
+      }
+
       const authError = this.validateAuthorization(payload.token);
       if (authError) {
         return {
@@ -136,6 +187,18 @@ export class BackendEngine {
       }
 
       switch (payload.action) {
+        case 'createCoupon': {
+          const coupon = this.handleCreateCoupon(payload.coupon);
+          return { success: true, data: coupon, error: null };
+        }
+        case 'updateCoupon': {
+          const updated = this.handleUpdateCoupon(payload.coupon);
+          return { success: true, data: updated, error: null };
+        }
+        case 'deleteCoupon': {
+          const deleted = this.handleDeleteCoupon(payload.id);
+          return { success: true, data: deleted, error: null };
+        }
         case 'createProduct': {
           const product = this.handleCreateProduct(payload.product);
           return { success: true, data: product, error: null };
@@ -645,6 +708,186 @@ export class BackendEngine {
     if (!found.ativo) {
       throw new Error('VALIDATION_ERROR: A categoria informada está inativa: ' + categoriaId);
     }
+  }
+
+  // ============================================================
+  // GESTÃO DE CUPONS DE DESCONTO
+  // ============================================================
+
+  public getAllCoupons(): Coupon[] {
+    return [...this.coupons];
+  }
+
+  public validateCoupon(codigo: string, subtotal: number): ValidateCouponResult {
+    if (!codigo || typeof codigo !== 'string' || codigo.trim().length === 0) {
+      return {
+        valid: false,
+        discountAmount: 0,
+        message: 'Código de cupom não informado.',
+      };
+    }
+
+    const clean = codigo.trim().toUpperCase().replace(/\s+/g, '');
+    const coupon = this.coupons.find((c) => c.codigo.toUpperCase() === clean);
+
+    if (!coupon) {
+      return {
+        valid: false,
+        discountAmount: 0,
+        message: `Cupom "${clean}" não encontrado.`,
+      };
+    }
+
+    if (!coupon.ativo) {
+      return {
+        valid: false,
+        coupon,
+        discountAmount: 0,
+        message: `O cupom "${clean}" está desativado no momento.`,
+      };
+    }
+
+    if (coupon.validade) {
+      const expDate = new Date(coupon.validade).getTime();
+      if (expDate < Date.now()) {
+        return {
+          valid: false,
+          coupon,
+          discountAmount: 0,
+          message: `O cupom "${clean}" expirou em ${new Date(coupon.validade).toLocaleDateString('pt-BR')}.`,
+        };
+      }
+    }
+
+    if (typeof coupon.valorMinimo === 'number' && coupon.valorMinimo > 0) {
+      if (subtotal < coupon.valorMinimo) {
+        return {
+          valid: false,
+          coupon,
+          discountAmount: 0,
+          message: `O cupom "${clean}" é válido apenas para pedidos a partir de ${formatCurrency(coupon.valorMinimo, 'BRL')}.`,
+        };
+      }
+    }
+
+    let discountAmount = 0;
+    if (coupon.tipo === 'percentage') {
+      discountAmount = Math.round((subtotal * (coupon.valor / 100)) * 100) / 100;
+    } else {
+      discountAmount = Math.min(coupon.valor, subtotal);
+    }
+
+    return {
+      valid: true,
+      coupon,
+      discountAmount,
+      message: `Cupom "${clean}" aplicado com sucesso!`,
+    };
+  }
+
+  public handleCreateCoupon(input: CreateCouponInput): Coupon {
+    if (!input || typeof input !== 'object') {
+      throw new Error('VALIDATION_ERROR: Dados do cupom ausentes.');
+    }
+    if (!input.codigo || typeof input.codigo !== 'string' || input.codigo.trim().length === 0) {
+      throw new Error('VALIDATION_ERROR: O código do cupom é obrigatório.');
+    }
+
+    const cleanCode = input.codigo.trim().toUpperCase().replace(/\s+/g, '');
+    if (this.coupons.some((c) => c.codigo.toUpperCase() === cleanCode)) {
+      throw new Error(`CONFLICT: Já existe um cupom com o código "${cleanCode}".`);
+    }
+
+    if (typeof input.valor !== 'number' || input.valor <= 0) {
+      throw new Error('VALIDATION_ERROR: O valor do desconto deve ser maior que zero.');
+    }
+
+    if (input.tipo !== 'percentage' && input.tipo !== 'fixed') {
+      throw new Error('VALIDATION_ERROR: O tipo deve ser "percentage" ou "fixed".');
+    }
+
+    if (input.tipo === 'percentage' && input.valor > 100) {
+      throw new Error('VALIDATION_ERROR: A porcentagem de desconto não pode exceder 100%.');
+    }
+
+    const now = new Date().toISOString();
+    const newCoupon: Coupon = {
+      id: 'coup_' + Math.random().toString(36).substring(2, 9),
+      codigo: cleanCode,
+      tipo: input.tipo,
+      valor: input.valor,
+      valorMinimo: typeof input.valorMinimo === 'number' && input.valorMinimo > 0 ? input.valorMinimo : undefined,
+      ativo: input.ativo !== false,
+      validade: input.validade || undefined,
+      descricao: input.descricao?.trim() || undefined,
+      createdAt: now,
+      updatedAt: now,
+    };
+
+    this.coupons.push(newCoupon);
+    return newCoupon;
+  }
+
+  public handleUpdateCoupon(input: UpdateCouponInput): Coupon {
+    if (!input || !input.id) {
+      throw new Error('VALIDATION_ERROR: O ID do cupom é obrigatório.');
+    }
+
+    const index = this.coupons.findIndex((c) => c.id === input.id);
+    if (index === -1) {
+      throw new Error('NOT_FOUND: Cupom não encontrado: ' + input.id);
+    }
+
+    const existing = this.coupons[index]!;
+    let cleanCode = existing.codigo;
+
+    if (input.codigo) {
+      cleanCode = input.codigo.trim().toUpperCase().replace(/\s+/g, '');
+      const duplicate = this.coupons.find(
+        (c) => c.id !== input.id && c.codigo.toUpperCase() === cleanCode
+      );
+      if (duplicate) {
+        throw new Error(`CONFLICT: Já existe outro cupom com o código "${cleanCode}".`);
+      }
+    }
+
+    if (input.tipo && input.tipo !== 'percentage' && input.tipo !== 'fixed') {
+      throw new Error('VALIDATION_ERROR: O tipo deve ser "percentage" ou "fixed".');
+    }
+
+    if (input.valor !== undefined) {
+      if (typeof input.valor !== 'number' || input.valor <= 0) {
+        throw new Error('VALIDATION_ERROR: O valor do desconto deve ser maior que zero.');
+      }
+      const checkType = input.tipo || existing.tipo;
+      if (checkType === 'percentage' && input.valor > 100) {
+        throw new Error('VALIDATION_ERROR: A porcentagem de desconto não pode exceder 100%.');
+      }
+    }
+
+    const updated: Coupon = {
+      ...existing,
+      codigo: cleanCode,
+      tipo: input.tipo || existing.tipo,
+      valor: typeof input.valor === 'number' ? input.valor : existing.valor,
+      valorMinimo: input.valorMinimo !== undefined ? input.valorMinimo : existing.valorMinimo,
+      ativo: input.ativo !== undefined ? input.ativo : existing.ativo,
+      validade: input.validade !== undefined ? input.validade : existing.validade,
+      descricao: input.descricao !== undefined ? input.descricao : existing.descricao,
+      updatedAt: new Date().toISOString(),
+    };
+
+    this.coupons[index] = updated;
+    return updated;
+  }
+
+  public handleDeleteCoupon(id: string): { success: true; id: string } {
+    const index = this.coupons.findIndex((c) => c.id === id);
+    if (index === -1) {
+      throw new Error('NOT_FOUND: Cupom não encontrado: ' + id);
+    }
+    this.coupons.splice(index, 1);
+    return { success: true, id };
   }
 
   private validateAuthorization(token: any): string | null {
