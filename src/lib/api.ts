@@ -16,6 +16,11 @@ import type {
   ValidateCouponResult,
 } from '@/types';
 
+import {
+  normalizeProduct,
+  normalizeCatalogInitialData,
+} from '@/lib/sheetNormalization';
+
 export class ApiClient {
   private baseUrl: string;
   private defaultHeaders: Record<string, string>;
@@ -82,11 +87,13 @@ export class ApiClient {
     const url = categoryId
       ? `${this.baseUrl}?action=products&categoryId=${encodeURIComponent(categoryId)}`
       : `${this.baseUrl}?action=products`;
-    return this.request<Product[]>(url);
+    const data = await this.request<Product[]>(url);
+    return Array.isArray(data) ? data.map(normalizeProduct) : [];
   }
 
   public async getAll(): Promise<CatalogInitialData> {
-    return this.request<CatalogInitialData>(`${this.baseUrl}?action=all`);
+    const data = await this.request<CatalogInitialData>(`${this.baseUrl}?action=all`);
+    return normalizeCatalogInitialData(data);
   }
 
   // ==========================================
@@ -104,7 +111,7 @@ export class ApiClient {
   }
 
   public async createProduct(product: CreateProductInput, token: string): Promise<Product> {
-    return this.request<Product>(this.baseUrl, {
+    const data = await this.request<Product>(this.baseUrl, {
       method: 'POST',
       body: JSON.stringify({
         action: 'createProduct',
@@ -112,10 +119,11 @@ export class ApiClient {
         product,
       }),
     });
+    return normalizeProduct(data);
   }
 
   public async updateProduct(product: UpdateProductInput, token: string): Promise<Product> {
-    return this.request<Product>(this.baseUrl, {
+    const data = await this.request<Product>(this.baseUrl, {
       method: 'POST',
       body: JSON.stringify({
         action: 'updateProduct',
@@ -123,6 +131,7 @@ export class ApiClient {
         product,
       }),
     });
+    return normalizeProduct(data);
   }
 
   public async deleteProduct(id: string, token: string): Promise<{ id: string; deleted: boolean }> {

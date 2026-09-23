@@ -12,6 +12,7 @@ import { FilterDrawer } from '@/components/catalog/FilterDrawer';
 import { CatalogControlBar } from '@/components/catalog/CatalogControlBar';
 import { BannerSlider } from '@/components/catalog/BannerSlider';
 import { TrustBadges } from '@/components/catalog/TrustBadges';
+import { ProductGridSkeleton, BannerSkeleton } from '@/components/catalog/ProductGridSkeleton';
 import type { StoreConfig, Category, Product } from '@/types';
 import {
   type CatalogFilterState,
@@ -408,10 +409,17 @@ function CatalogContent({ onStoreLoaded }: CatalogContentProps) {
       {/* Conteúdo Principal */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-6">
         {/* Espaço para Banners Institucionais / Campanhas */}
-        {!filters.searchTerm && filters.selectedCategory === 'ALL' && store?.banners && store.banners.length > 0 && (
-          <section aria-label="Destaques da Loja" className="overflow-hidden rounded-3xl shadow-sm">
-            <BannerSlider banners={store.banners} storeName={store.store_name} />
-          </section>
+        {isLoading ? (
+          <BannerSkeleton />
+        ) : (
+          !filters.searchTerm &&
+          filters.selectedCategory === 'ALL' &&
+          store?.banners &&
+          store.banners.length > 0 && (
+            <section aria-label="Destaques da Loja" className="overflow-hidden rounded-3xl shadow-sm">
+              <BannerSlider banners={store.banners} storeName={store.store_name} />
+            </section>
+          )
         )}
 
         {/* Barra de Controle de Filtros e Ordenação (Fase 2) */}
@@ -460,21 +468,8 @@ function CatalogContent({ onStoreLoaded }: CatalogContentProps) {
           </div>
         )}
 
-        {/* Estado de Carregamento (Loading Skeletons) */}
-        {isLoading && (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
-            {[1, 2, 3, 4, 5, 6, 7, 8].map((n) => (
-              <div
-                key={n}
-                className="bg-white rounded-3xl border border-slate-200/70 p-4 space-y-3 animate-pulse shadow-2xs"
-              >
-                <div className="aspect-square bg-slate-200/70 rounded-2xl" />
-                <div className="h-4 bg-slate-200/70 rounded-md w-3/4" />
-                <div className="h-5 bg-slate-200/70 rounded-md w-1/2" />
-              </div>
-            ))}
-          </div>
-        )}
+        {/* Estado de Carregamento (Loading Skeletons Pulsantes) */}
+        {isLoading && <ProductGridSkeleton count={8} />}
 
         {/* Grid de Produtos Universal */}
         {!isLoading && !errorMessage && (

@@ -311,10 +311,13 @@ function getActiveProducts(filterCategoryId) {
       continue;
     }
 
-    var preco = parseFloat(row[5]) || 0;
-    var precoPromocional = row[6] !== '' && row[6] !== null ? parseFloat(row[6]) : null;
-    var imagens = parseJsonSafe(row[7], []);
-    var variacoes = parseJsonSafe(row[8], []);
+    var preco = parsePriceSafe(row[5]);
+    var precoPromocional = parsePriceSafe(row[6]);
+    if (precoPromocional <= 0 || precoPromocional >= preco) {
+      precoPromocional = null;
+    }
+    var imagens = parseImagesSafe(row[7]);
+    var variacoes = parseVariationsSafe(row[8]);
     var estoque = parseInt(row[9], 10);
     if (isNaN(estoque)) estoque = 0;
 
@@ -1049,6 +1052,62 @@ function parseJsonSafe(jsonString, fallbackValue) {
   } catch (e) {
     return fallbackValue;
   }
+}
+
+/**
+ * Converte precos em formatos "R$ 19,90", "19,90", "1.250,50" ou float puro para numero.
+ */
+function parsePriceSafe(raw) {
+  if (raw === null || raw === undefined || raw === '') return 0;
+  if (typeof raw === 'number') return isNaN(raw) || raw < 0 ? 0 : raw;
+  var str = String(raw).trim().replace(/[R$\s]/g, '');
+  if (str.indexOf('.') !== -1 && str.indexOf(',') !== -1) {
+    str = str.replace(/\./g, '').replace(',', '.');
+  } else if (str.indexOf(',') !== -1) {
+    str = str.replace(',', '.');
+  }
+  var parsed = parseFloat(str);
+  return isNaN(parsed) || parsed < 0 ? 0 : parsed;
+}
+
+/**
+ * Normaliza fotos e aplica fallback elegante se o campo estiver vazio.
+ */
+function parseImagesSafe(raw) {
+  var imgs = parseJsonSafe(raw, []);
+  if (!Array.isArray(imgs) || imgs.length === 0) {
+    var str = String(raw || '').trim();
+    if (str) {
+      imgs = str.split(/[\r\n,]+/).map(function(u) { return u.trim(); }).filter(Boolean);
+    }
+  }
+  return imgs.length > 0 ? imgs : ['data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22400%22%20height%3D%22400%22%20viewBox%3D%220%200%20400%20400%22%20fill%3D%22none%22%3E%3Crect%20width%3D%22400%22%20height%3D%22400%22%20fill%3D%22%23F8FAFC%22%2F%3E%3Crect%20x%3D%2220%22%20y%3D%2220%22%20width%3D%22360%22%20height%3D%22360%22%20rx%3D%2232%22%20fill%3D%22%23F1F5F9%22%20stroke%3D%22%23E2E8F0%22%20stroke-width%3D%222%22%20stroke-dasharray%3D%226%206%22%2F%3E%3Ctext%20x%3D%22200%22%20y%3D%22210%22%20text-anchor%3D%22middle%22%20fill%3D%22%2364748B%22%20font-family%3D%22sans-serif%22%20font-size%3D%2214%22%20font-weight%3D%22600%22%3EFoto%20em%20breve%3C%2Ftext%3E%3C%2Fsvg%3E'];
+}
+
+/**
+ * Parse seguro de variacoes suportando JSON ou texto formatado.
+ */
+function parseVariationsSafe(raw) {
+  var vars = parseJsonSafe(raw, []);
+  if (Array.isArray(vars) && vars.length > 0) return vars;
+  var str = String(raw || '').trim();
+  if (!str) return [];
+  var groups = str.split(/[|\n;]+/);
+  var result = [];
+  for (var i = 0; i < groups.length; i++) {
+    var group = groups[i].trim();
+    if (!group) continue;
+    if (group.indexOf(':') !== -1) {
+      var parts = group.split(':');
+      var tipo = parts[0].trim();
+      var opcoes = (parts[1] || '').split(/[,/]+/).map(function(o) { return o.trim(); }).filter(Boolean);
+      if (tipo && opcoes.length > 0) result.push({ tipo: tipo, opcoes: opcoes });
+    } else {
+      var opcoes = group.split(/[,/]+/).map(function(o) { return o.trim(); }).filter(Boolean);
+      if (opcoes.length > 0) result.push({ tipo: 'Opção', opcoes: opcoes });
+    }
+  }
+  return result;
 }
 
 /**

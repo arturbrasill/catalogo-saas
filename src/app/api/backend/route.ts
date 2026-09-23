@@ -103,33 +103,46 @@ function resolveContextTenant(request: NextRequest): {
   };
 }
 
+import { normalizeProduct } from '@/lib/sheetNormalization';
+
 /**
  * Assegura que o campo whatsapp e outros campos sensíveis retornados da API
- * estejam no formato estrito de string, prevenindo erros de tipo em clients.
+ * estejam no formato estrito de string e normaliza dados de produtos do Sheets.
  */
 function sanitizeStoreResponse<T>(data: T, tenant?: Tenant | null): T {
   if (data && typeof data === 'object' && 'data' in data) {
-    const raw = (data as { data?: Record<string, unknown> }).data;
+    const raw = (data as { data?: any }).data;
     if (raw && typeof raw === 'object') {
-      if ('whatsapp' in raw && raw['whatsapp'] !== undefined && raw['whatsapp'] !== null) {
-        raw['whatsapp'] = String(raw['whatsapp']).trim();
-      }
-      if (tenant) {
-        raw['subscription_status'] = tenant.subscriptionStatus || 'active';
-        if (tenant.subscriptionExpiresAt) {
-          raw['subscription_expires_at'] = tenant.subscriptionExpiresAt;
-        }
-      }
-      if ('store' in raw && raw['store'] && typeof raw['store'] === 'object') {
-        const store = raw['store'] as Record<string, unknown>;
-        if (store['whatsapp'] !== undefined && store['whatsapp'] !== null) {
-          store['whatsapp'] = String(store['whatsapp']).trim();
+      if (Array.isArray(raw)) {
+        // Ex: lista de produtos retornada diretamente em data
+        (data as any).data = raw.map(normalizeProduct);
+      } else {
+        if ('whatsapp' in raw && raw['whatsapp'] !== undefined && raw['whatsapp'] !== null) {
+          raw['whatsapp'] = String(raw['whatsapp']).trim();
         }
         if (tenant) {
-          store['subscription_status'] = tenant.subscriptionStatus || 'active';
+          raw['subscription_status'] = tenant.subscriptionStatus || 'active';
           if (tenant.subscriptionExpiresAt) {
-            store['subscription_expires_at'] = tenant.subscriptionExpiresAt;
+            raw['subscription_expires_at'] = tenant.subscriptionExpiresAt;
           }
+        }
+        if ('store' in raw && raw['store'] && typeof raw['store'] === 'object') {
+          const store = raw['store'] as Record<string, unknown>;
+          if (store['whatsapp'] !== undefined && store['whatsapp'] !== null) {
+            store['whatsapp'] = String(store['whatsapp']).trim();
+          }
+          if (tenant) {
+            store['subscription_status'] = tenant.subscriptionStatus || 'active';
+            if (tenant.subscriptionExpiresAt) {
+              store['subscription_expires_at'] = tenant.subscriptionExpiresAt;
+            }
+          }
+        }
+        if ('products' in raw && Array.isArray(raw['products'])) {
+          raw['products'] = raw['products'].map(normalizeProduct);
+        }
+        if ('product' in raw && raw['product'] && typeof raw['product'] === 'object') {
+          raw['product'] = normalizeProduct(raw['product']);
         }
       }
     }

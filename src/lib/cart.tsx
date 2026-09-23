@@ -31,7 +31,30 @@ interface CartContextType {
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
-const CART_STORAGE_KEY = 'catalogo_saas_cart_items_v1';
+export function getCartStorageKey(tenantId?: string): string {
+  if (tenantId && tenantId.trim().length > 0 && tenantId !== 'default') {
+    return `cart_${tenantId.toLowerCase().trim().replace(/[^a-z0-9_-]/g, '_')}`;
+  }
+
+  if (typeof window !== 'undefined') {
+    const params = new URLSearchParams(window.location.search);
+    const queryTenant = params.get('tenant');
+    if (queryTenant) {
+      return `cart_${queryTenant.toLowerCase().trim().replace(/[^a-z0-9_-]/g, '_')}`;
+    }
+    const host = window.location.hostname
+      .replace(/:\d+$/, '')
+      .replace(/^www\./, '')
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9_-]/g, '_');
+    if (host && host !== 'localhost' && host !== '127_0_0_1') {
+      return `cart_${host}`;
+    }
+  }
+
+  return 'cart_default';
+}
 
 export function CartProvider({
   children,
@@ -45,9 +68,7 @@ export function CartProvider({
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
 
-  const storageKey = tenantId
-    ? `catalogo_saas_cart_${tenantId.toLowerCase().trim()}`
-    : 'catalogo_saas_cart_items_v1';
+  const storageKey = getCartStorageKey(tenantId);
   const couponStorageKey = `${storageKey}_coupon`;
 
   // Carrega sacola salva no localStorage na inicialização e quando o storageKey mudar

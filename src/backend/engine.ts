@@ -14,6 +14,12 @@ import type {
   ValidateCouponResult,
 } from '../types';
 import { formatCurrency } from '../lib/whatsapp';
+import {
+  normalizePrice,
+  normalizePromotionalPrice,
+  normalizeImages,
+  normalizeVariations,
+} from '../lib/sheetNormalization';
 
 export class BackendEngine {
   private configMap: Map<string, string> = new Map();
@@ -347,8 +353,8 @@ export class BackendEngine {
     // Integridade referencial
     this.assertCategoryExists(productData.categoriaId.trim());
 
-    const preco = parseFloat(productData.preco);
-    if (isNaN(preco) || preco <= 0) {
+    const preco = normalizePrice(productData.preco);
+    if (preco <= 0) {
       throw new Error('VALIDATION_ERROR: O preço deve ser um número positivo.');
     }
 
@@ -358,13 +364,14 @@ export class BackendEngine {
       productData.precoPromocional !== null &&
       productData.precoPromocional !== ''
     ) {
-      precoPromocional = parseFloat(productData.precoPromocional);
-      if (isNaN(precoPromocional) || precoPromocional <= 0) {
+      const parsedPromo = normalizePrice(productData.precoPromocional);
+      if (parsedPromo <= 0) {
         throw new Error('VALIDATION_ERROR: O preço promocional deve ser maior que zero.');
       }
-      if (precoPromocional >= preco) {
+      if (parsedPromo >= preco) {
         throw new Error('VALIDATION_ERROR: O preço promocional deve ser estritamente menor que o preço original.');
       }
+      precoPromocional = parsedPromo;
     }
 
     // Validação de estoque
@@ -429,8 +436,8 @@ export class BackendEngine {
 
     let updatedPreco = current.preco;
     if (productData.preco !== undefined) {
-      const p = parseFloat(productData.preco);
-      if (isNaN(p) || p <= 0) throw new Error('VALIDATION_ERROR: O preço deve ser um número positivo.');
+      const p = normalizePrice(productData.preco);
+      if (p <= 0) throw new Error('VALIDATION_ERROR: O preço deve ser um número positivo.');
       updatedPreco = p;
     }
 
@@ -439,8 +446,8 @@ export class BackendEngine {
       if (productData.precoPromocional === null || productData.precoPromocional === '') {
         updatedPrecoPromocional = null;
       } else {
-        const pp = parseFloat(productData.precoPromocional);
-        if (isNaN(pp) || pp <= 0) throw new Error('VALIDATION_ERROR: O preço promocional deve ser maior que zero.');
+        const pp = normalizePrice(productData.precoPromocional);
+        if (pp <= 0) throw new Error('VALIDATION_ERROR: O preço promocional deve ser maior que zero.');
         if (pp >= updatedPreco) {
           throw new Error('VALIDATION_ERROR: O preço promocional deve ser estritamente menor que o preço original.');
         }

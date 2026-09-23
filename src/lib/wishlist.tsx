@@ -25,7 +25,8 @@ export function WishlistProvider({
   const [isWishlistOpen, setIsWishlistOpen] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
 
-  const storageKey = `catalogo_saas_wishlist_${tenantId.toLowerCase().trim()}`;
+  const cleanTenant = (tenantId || 'default').toLowerCase().trim().replace(/[^a-z0-9_-]/g, '_');
+  const storageKey = `wishlist_${cleanTenant}`;
 
   // Carrega favoritos do LocalStorage
   useEffect(() => {
