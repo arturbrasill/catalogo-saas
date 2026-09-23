@@ -285,28 +285,69 @@ export function buildWhatsAppMessage(
   messageParts.push('');
 
   if (orderInfo?.deliveryType === 'delivery') {
-    messageParts.push('Por favor, confirme a disponibilidade dos itens, taxa de entrega e tempo estimado!');
+    messageParts.push('Por favor, confirme a disponibilidade dos itens em estoque, taxa de entrega e tempo estimado!');
   } else if (orderInfo?.deliveryType === 'pickup') {
-    messageParts.push('Por favor, confirme a disponibilidade dos itens e quando posso retirar!');
+    messageParts.push('Por favor, confirme a disponibilidade dos itens em estoque e quando posso retirar!');
   } else {
-    messageParts.push('Por favor, informe a disponibilidade dos itens e opções para entrega!');
+    messageParts.push('Por favor, informe a disponibilidade dos itens em estoque e confirme os dados de entrega!');
   }
 
   return messageParts.join('\n');
 }
 
 /**
- * Constrói a URL final estruturada para redirecionamento ao WhatsApp (wa.me).
- * Utiliza obrigatoriamente encodeURIComponent.
+ * Detecta se o ambiente de execução atual é um dispositivo móvel.
+ */
+export function isMobileDevice(): boolean {
+  if (typeof navigator === 'undefined') return false;
+  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+    navigator.userAgent
+  );
+}
+
+export interface WhatsAppUrlOptions {
+  isMobile?: boolean;
+  endpoint?: 'auto' | 'api' | 'web' | 'wame';
+}
+
+/**
+ * Constrói a URL final estruturada para redirecionamento ao WhatsApp com encodeURIComponent.
+ * Suporta redirecionamento condicional:
+ * - api.whatsapp.com/send em dispositivos móveis
+ * - web.whatsapp.com/send em desktops
+ * - wa.me como fallback determinístico neutro
  */
 export function buildWhatsAppUrl(
   store: WhatsAppStoreInfo,
   cartInput: Cart | CartItem[],
-  orderInfo?: CustomerOrderInfo
+  orderInfo?: CustomerOrderInfo,
+  options?: WhatsAppUrlOptions
 ): string {
   const cleanPhone = normalizePhoneNumber(store.whatsapp);
   const message = buildWhatsAppMessage(store, cartInput, orderInfo);
   const encodedMessage = encodeURIComponent(message);
+
+  let targetEndpoint: 'api' | 'web' | 'wame' = 'wame';
+
+  if (options?.endpoint) {
+    targetEndpoint =
+      options.endpoint === 'auto'
+        ? isMobileDevice()
+          ? 'api'
+          : 'web'
+        : options.endpoint;
+  } else if (options?.isMobile !== undefined) {
+    targetEndpoint = options.isMobile ? 'api' : 'web';
+  } else if (typeof window !== 'undefined' && typeof navigator !== 'undefined') {
+    targetEndpoint = isMobileDevice() ? 'api' : 'web';
+  }
+
+  if (targetEndpoint === 'api') {
+    return `https://api.whatsapp.com/send?phone=${cleanPhone}&text=${encodedMessage}`;
+  }
+  if (targetEndpoint === 'web') {
+    return `https://web.whatsapp.com/send?phone=${cleanPhone}&text=${encodedMessage}`;
+  }
 
   return `https://wa.me/${cleanPhone}?text=${encodedMessage}`;
 }
