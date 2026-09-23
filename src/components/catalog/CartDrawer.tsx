@@ -234,8 +234,8 @@ export function CartDrawer({ store }: CartDrawerProps) {
                 </button>
               ) : (
                 <div
-                  className="h-9 w-9 rounded-xl flex items-center justify-center text-white shadow-xs"
-                  style={{ backgroundColor: store.primary_color || '#10b981' }}
+                  className="h-9 w-9 rounded-xl flex items-center justify-center text-brand-contrast bg-brand-primary shadow-xs"
+                  style={{ backgroundColor: store.primary_color }}
                 >
                   <ShoppingBag className="w-4 h-4" />
                 </div>
@@ -263,9 +263,9 @@ export function CartDrawer({ store }: CartDrawerProps) {
 
           {/* Banner Informativo */}
           {items.length > 0 && (
-            <div className="bg-emerald-50/80 border-b border-emerald-100 px-5 py-2 text-xs text-emerald-800 flex items-center gap-2">
-              <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse flex-shrink-0" />
-              <span className="font-medium text-[11px] sm:text-xs">
+            <div className="bg-brand-primary/10 border-b border-brand-primary/20 px-5 py-2 text-xs text-brand-primary flex items-center gap-2">
+              <span className="h-2 w-2 rounded-full bg-brand-primary animate-pulse flex-shrink-0" />
+              <span className="font-medium text-[11px] sm:text-xs text-slate-800">
                 {step === 'items'
                   ? 'Revise seus itens e avance para os dados de entrega!'
                   : 'Seu pedido será enviado formatado direto no WhatsApp!'}
@@ -353,12 +353,12 @@ export function CartDrawer({ store }: CartDrawerProps) {
 
                           <div className="flex items-center justify-between mt-2 pt-1.5 border-t border-slate-100">
                             <div>
-                              <span className="text-[10px] text-slate-400 block">
+                              <span className="text-[10px] text-brand-text-muted block">
                                 {formatCurrency(effectivePrice, store.currency)} un.
                               </span>
                               <span
-                                className="text-xs sm:text-sm font-extrabold"
-                                style={{ color: store.primary_color || '#10b981' }}
+                                className="text-xs sm:text-sm font-extrabold text-brand-primary"
+                                style={{ color: store.primary_color }}
                               >
                                 {formatCurrency(item.subtotal, store.currency)}
                               </span>
@@ -398,20 +398,20 @@ export function CartDrawer({ store }: CartDrawerProps) {
                 <div className="p-4 sm:p-5 border-t border-slate-200 bg-white space-y-3.5 shadow-xl">
                   {/* Bloco de Cupom de Desconto */}
                   {appliedCoupon ? (
-                    <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center justify-between animate-fade-in">
+                    <div className="p-3 bg-brand-primary/10 border border-brand-primary/20 rounded-xl flex items-center justify-between animate-fade-in">
                       <div className="flex items-center gap-2.5 min-w-0">
                         <div
-                          className="h-7 w-7 rounded-lg text-white flex items-center justify-center flex-shrink-0"
-                          style={{ backgroundColor: store.primary_color || '#10b981' }}
+                          className="h-7 w-7 rounded-lg text-brand-contrast bg-brand-primary flex items-center justify-center flex-shrink-0"
+                          style={{ backgroundColor: store.primary_color }}
                         >
                           <Tag className="w-3.5 h-3.5" />
                         </div>
                         <div className="min-w-0">
                           <div className="flex items-center gap-1.5 flex-wrap">
-                            <span className="text-xs font-black text-emerald-950 uppercase tracking-wider font-mono">
+                            <span className="text-xs font-black text-brand-text-main uppercase tracking-wider font-mono">
                               {appliedCoupon.codigo}
                             </span>
-                            <span className="text-[10px] font-bold bg-emerald-200/80 text-emerald-900 px-1.5 py-0.5 rounded">
+                            <span className="text-[10px] font-bold bg-brand-primary/20 text-brand-primary px-1.5 py-0.5 rounded">
                               {appliedCoupon.tipo === 'percentage'
                                 ? `${appliedCoupon.valor}% OFF`
                                 : `${formatCurrency(appliedCoupon.valor, store.currency)} OFF`}
@@ -422,7 +422,7 @@ export function CartDrawer({ store }: CartDrawerProps) {
                               Mínimo de {formatCurrency(appliedCoupon.valorMinimo, store.currency)} para ativar desconto.
                             </p>
                           ) : (
-                            <p className="text-[10px] text-emerald-700 font-medium">
+                            <p className="text-[10px] text-brand-primary font-medium">
                               Desconto de {formatCurrency(discountAmount, store.currency)} aplicado!
                             </p>
                           )}
@@ -504,8 +504,8 @@ export function CartDrawer({ store }: CartDrawerProps) {
                     <div className="flex items-center justify-between text-sm sm:text-base font-extrabold text-slate-900 pt-1 border-t border-slate-100">
                       <span>Total estimado</span>
                       <span
-                        className="text-base sm:text-lg font-black"
-                        style={{ color: store.primary_color || '#10b981' }}
+                        className="text-base sm:text-lg font-black text-brand-primary"
+                        style={{ color: store.primary_color }}
                       >
                         {formatCurrency(finalTotal, store.currency)}
                       </span>
@@ -516,8 +516,8 @@ export function CartDrawer({ store }: CartDrawerProps) {
                   <button
                     type="button"
                     onClick={handleAdvanceToCheckout}
-                    className="w-full py-3.5 px-4 rounded-2xl font-extrabold text-xs sm:text-sm text-white shadow-lg hover:brightness-95 active:scale-[0.99] transition-all flex items-center justify-center gap-2 cursor-pointer"
-                    style={{ backgroundColor: store.primary_color || '#10b981' }}
+                    className="w-full py-3.5 px-4 rounded-2xl font-extrabold text-xs sm:text-sm text-brand-contrast bg-brand-primary hover:bg-brand-primary-hover shadow-lg hover:brightness-95 active:scale-[0.99] transition-all flex items-center justify-center gap-2 cursor-pointer"
+                    style={{ backgroundColor: store.primary_color }}
                   >
                     <span>Continuar para Pagamento</span>
                     <ArrowRight className="w-4 h-4" />
@@ -532,7 +532,7 @@ export function CartDrawer({ store }: CartDrawerProps) {
                       Limpar sacola
                     </button>
                     <span className="flex items-center gap-1 text-slate-500">
-                      <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+                      <ShieldCheck className="w-3.5 h-3.5 text-brand-primary" />
                       Pedido 100% seguro via WhatsApp
                     </span>
                   </div>
@@ -559,7 +559,7 @@ export function CartDrawer({ store }: CartDrawerProps) {
                     placeholder="Ex: João da Silva"
                     value={customerName}
                     onChange={(e) => setCustomerName(e.target.value)}
-                    className="w-full px-3.5 py-2.5 text-xs sm:text-sm rounded-xl border border-slate-200 bg-slate-50/70 focus:bg-white focus:border-emerald-500 focus:outline-none transition"
+                    className="w-full px-3.5 py-2.5 text-xs sm:text-sm rounded-xl border border-slate-200 bg-slate-50/70 focus:bg-white focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 focus:outline-none transition"
                   />
                 </div>
 
@@ -573,7 +573,7 @@ export function CartDrawer({ store }: CartDrawerProps) {
                     placeholder="Ex: (11) 99999-9999"
                     value={customerPhone}
                     onChange={(e) => setCustomerPhone(e.target.value)}
-                    className="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-200 bg-slate-50/70 focus:bg-white focus:border-emerald-500 focus:outline-none transition"
+                    className="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-200 bg-slate-50/70 focus:bg-white focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 focus:outline-none transition"
                   />
                 </div>
 
@@ -599,11 +599,11 @@ export function CartDrawer({ store }: CartDrawerProps) {
                       onClick={() => setPaymentMethod('pix')}
                       className={`p-2.5 rounded-xl border text-xs font-bold flex items-center gap-2 transition cursor-pointer ${
                         paymentMethod === 'pix'
-                          ? 'border-emerald-500 bg-emerald-50 text-emerald-800'
+                          ? 'border-brand-primary bg-brand-primary/10 text-brand-primary shadow-2xs'
                           : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300'
                       }`}
                     >
-                      <QrCode className="w-4 h-4 text-emerald-600" />
+                      <QrCode className="w-4 h-4 text-brand-primary" />
                       <span>PIX</span>
                     </button>
 
@@ -612,11 +612,11 @@ export function CartDrawer({ store }: CartDrawerProps) {
                       onClick={() => setPaymentMethod('credit_card')}
                       className={`p-2.5 rounded-xl border text-xs font-bold flex items-center gap-2 transition cursor-pointer ${
                         paymentMethod === 'credit_card'
-                          ? 'border-emerald-500 bg-emerald-50 text-emerald-800'
+                          ? 'border-brand-primary bg-brand-primary/10 text-brand-primary shadow-2xs'
                           : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300'
                       }`}
                     >
-                      <CreditCard className="w-4 h-4 text-emerald-600" />
+                      <CreditCard className="w-4 h-4 text-brand-primary" />
                       <span>Cartão Crédito</span>
                     </button>
 
@@ -625,11 +625,11 @@ export function CartDrawer({ store }: CartDrawerProps) {
                       onClick={() => setPaymentMethod('debit_card')}
                       className={`p-2.5 rounded-xl border text-xs font-bold flex items-center gap-2 transition cursor-pointer ${
                         paymentMethod === 'debit_card'
-                          ? 'border-emerald-500 bg-emerald-50 text-emerald-800'
+                          ? 'border-brand-primary bg-brand-primary/10 text-brand-primary shadow-2xs'
                           : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300'
                       }`}
                     >
-                      <CreditCard className="w-4 h-4 text-emerald-600" />
+                      <CreditCard className="w-4 h-4 text-brand-primary" />
                       <span>Cartão Débito</span>
                     </button>
 
@@ -638,11 +638,11 @@ export function CartDrawer({ store }: CartDrawerProps) {
                       onClick={() => setPaymentMethod('money')}
                       className={`p-2.5 rounded-xl border text-xs font-bold flex items-center gap-2 transition cursor-pointer ${
                         paymentMethod === 'money'
-                          ? 'border-emerald-500 bg-emerald-50 text-emerald-800'
+                          ? 'border-brand-primary bg-brand-primary/10 text-brand-primary shadow-2xs'
                           : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300'
                       }`}
                     >
-                      <Banknote className="w-4 h-4 text-emerald-600" />
+                      <Banknote className="w-4 h-4 text-brand-primary" />
                       <span>Dinheiro</span>
                     </button>
                   </div>
@@ -654,26 +654,26 @@ export function CartDrawer({ store }: CartDrawerProps) {
                         placeholder="Precisa de troco para quanto? Ex: R$ 100,00"
                         value={changeFor}
                         onChange={(e) => setChangeFor(e.target.value)}
-                        className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:border-emerald-500 focus:outline-none transition"
+                        className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 focus:outline-none transition"
                       />
                     </div>
                   )}
 
                   {paymentMethod === 'pix' && store.pix_key && (
-                    <div className="p-3 bg-emerald-50/80 border border-emerald-200 rounded-xl space-y-2 animate-fade-in text-xs">
+                    <div className="p-3 bg-brand-primary/10 border border-brand-primary/20 rounded-xl space-y-2 animate-fade-in text-xs">
                       <div className="flex items-center justify-between gap-2">
-                        <div className="flex items-center gap-1.5 font-bold text-emerald-950">
-                          <QrCode className="w-4 h-4 text-emerald-600" />
+                        <div className="flex items-center gap-1.5 font-bold text-brand-text-main">
+                          <QrCode className="w-4 h-4 text-brand-primary" />
                           <span>Chave PIX da Loja</span>
                         </div>
                         {store.pix_key_type && (
-                          <span className="text-[10px] font-bold uppercase tracking-wider bg-emerald-200/70 text-emerald-800 px-2 py-0.5 rounded-full">
+                          <span className="text-[10px] font-bold uppercase tracking-wider bg-brand-primary/20 text-brand-primary px-2 py-0.5 rounded-full">
                             {store.pix_key_type}
                           </span>
                         )}
                       </div>
 
-                      <div className="flex items-center gap-2 bg-white border border-emerald-200 rounded-lg p-2">
+                      <div className="flex items-center gap-2 bg-white border border-brand-primary/20 rounded-lg p-2">
                         <span className="font-mono font-medium text-slate-800 truncate flex-1 select-all text-xs">
                           {store.pix_key}
                         </span>
@@ -686,7 +686,8 @@ export function CartDrawer({ store }: CartDrawerProps) {
                               setTimeout(() => setCopiedPix(false), 2500);
                             }
                           }}
-                          className="px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-md text-[11px] font-bold flex items-center gap-1.5 transition cursor-pointer flex-shrink-0"
+                          className="px-2.5 py-1.5 bg-brand-primary hover:bg-brand-primary-hover text-brand-contrast rounded-md text-[11px] font-bold flex items-center gap-1.5 transition cursor-pointer flex-shrink-0"
+                          style={{ backgroundColor: store.primary_color }}
                           title="Copiar Chave PIX"
                         >
                           {copiedPix ? (
@@ -703,7 +704,7 @@ export function CartDrawer({ store }: CartDrawerProps) {
                         </button>
                       </div>
 
-                      <p className="text-[10px] text-emerald-800/80">
+                      <p className="text-[10px] text-slate-500">
                         Transfira no app do seu banco e envie o comprovante diretamente no WhatsApp ao finalizar!
                       </p>
                     </div>
@@ -721,7 +722,7 @@ export function CartDrawer({ store }: CartDrawerProps) {
                     placeholder="Ex: Ponto de referência, preferência de horário, etc."
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}
-                    className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 bg-slate-50/70 focus:bg-white focus:border-emerald-500 focus:outline-none transition"
+                    className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 bg-slate-50/70 focus:bg-white focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 focus:outline-none transition"
                   />
                 </div>
               </div>
@@ -744,7 +745,7 @@ export function CartDrawer({ store }: CartDrawerProps) {
                     </div>
                   )}
                   {appliedCoupon && discountAmount > 0 && (
-                    <div className="flex items-center justify-between text-xs text-emerald-700 font-semibold">
+                    <div className="flex items-center justify-between text-xs text-brand-primary font-semibold">
                       <span>Cupom ({appliedCoupon.codigo})</span>
                       <span>- {formatCurrency(discountAmount, store.currency)}</span>
                     </div>
@@ -752,8 +753,8 @@ export function CartDrawer({ store }: CartDrawerProps) {
                   <div className="flex items-center justify-between text-sm sm:text-base font-extrabold text-slate-900 pt-1 border-t border-slate-100">
                     <span>Total a pagar</span>
                     <span
-                      className="text-lg sm:text-xl font-black"
-                      style={{ color: store.primary_color || '#10b981' }}
+                      className="text-lg sm:text-xl font-black text-brand-primary"
+                      style={{ color: store.primary_color }}
                     >
                       {formatCurrency(finalTotal, store.currency)}
                     </span>

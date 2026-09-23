@@ -31,6 +31,7 @@ import {
   Package,
   Heart,
   MessageCircle,
+  ArrowRight,
 } from 'lucide-react';
 
 interface CatalogContentProps {
@@ -128,18 +129,19 @@ function CatalogContent({ onStoreLoaded }: CatalogContentProps) {
   // Aplicação dinâmica das cores do tema
   useEffect(() => {
     if (store) {
-      if (store.primary_color) {
-        document.documentElement.style.setProperty('--primary-color', store.primary_color);
-      }
-      if (store.secondary_color) {
-        document.documentElement.style.setProperty('--secondary-color', store.secondary_color);
-      }
-      if (store.background_color) {
-        document.documentElement.style.setProperty('--bg-color', store.background_color);
-      }
-      if (store.text_color) {
-        document.documentElement.style.setProperty('--text-color', store.text_color);
-      }
+      const primary = store.primary_color || '#16a34a';
+      const secondary = store.secondary_color || '#15803d';
+      const bg = store.background_color || '#f8fafc';
+      const text = store.text_color || '#0f172a';
+
+      document.documentElement.style.setProperty('--brand-primary', primary);
+      document.documentElement.style.setProperty('--brand-primary-hover', secondary);
+      document.documentElement.style.setProperty('--brand-surface', bg);
+      document.documentElement.style.setProperty('--brand-text-main', text);
+      document.documentElement.style.setProperty('--primary-color', primary);
+      document.documentElement.style.setProperty('--secondary-color', secondary);
+      document.documentElement.style.setProperty('--bg-color', bg);
+      document.documentElement.style.setProperty('--text-color', text);
     }
   }, [store]);
 
@@ -197,10 +199,12 @@ function CatalogContent({ onStoreLoaded }: CatalogContentProps) {
 
   return (
     <div
-      className="min-h-screen flex flex-col transition-colors duration-200"
+      className={`min-h-screen flex flex-col transition-colors duration-200 ${
+        totalItemsCount > 0 ? 'pb-24 sm:pb-0' : ''
+      }`}
       style={{
-        backgroundColor: store?.background_color || 'var(--bg-color, #f8fafc)',
-        color: store?.text_color || 'var(--text-color, #0f172a)',
+        backgroundColor: store?.background_color || 'var(--brand-surface, #f8fafc)',
+        color: store?.text_color || 'var(--brand-text-main, #0f172a)',
       }}
     >
       {/* 1. Topbar Superior de Anúncios / Slogan Universal */}
@@ -298,8 +302,8 @@ function CatalogContent({ onStoreLoaded }: CatalogContentProps) {
               <button
                 type="button"
                 onClick={openCart}
-                className="relative px-3.5 sm:px-5 py-2.5 rounded-2xl text-white shadow-xs hover:brightness-95 active:scale-97 transition-all flex items-center gap-2.5 cursor-pointer flex-shrink-0"
-                style={{ backgroundColor: store?.primary_color || '#10b981' }}
+                className="relative px-3.5 sm:px-5 py-2.5 rounded-2xl text-brand-contrast bg-brand-primary hover:bg-brand-primary-hover shadow-xs hover:brightness-95 active:scale-97 transition-all flex items-center gap-2.5 cursor-pointer flex-shrink-0"
+                style={{ backgroundColor: store?.primary_color }}
                 aria-label="Abrir sacola de compras"
               >
                 <ShoppingBag className="w-4 h-4 sm:w-5 sm:h-5 stroke-[2]" />
@@ -312,7 +316,7 @@ function CatalogContent({ onStoreLoaded }: CatalogContentProps) {
                   </span>
                 </div>
                 {totalItemsCount > 0 && (
-                  <span className="h-5 w-5 rounded-full bg-white text-slate-900 text-[11px] font-black flex items-center justify-center shadow-xs">
+                  <span className="h-5 w-5 rounded-full bg-white text-brand-text-main text-[11px] font-black flex items-center justify-center shadow-xs">
                     {totalItemsCount}
                   </span>
                 )}
@@ -355,12 +359,12 @@ function CatalogContent({ onStoreLoaded }: CatalogContentProps) {
                   onClick={() => updateFilters({ selectedCategory: 'ALL' })}
                   className={`px-4 py-2 rounded-2xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
                     filters.selectedCategory === 'ALL'
-                      ? 'text-white shadow-xs'
+                      ? 'bg-brand-primary text-brand-contrast shadow-xs'
                       : 'bg-slate-100/90 text-slate-600 hover:bg-slate-200 hover:text-slate-900'
                   }`}
                   style={
-                    filters.selectedCategory === 'ALL'
-                      ? { backgroundColor: store?.primary_color || '#10b981' }
+                    filters.selectedCategory === 'ALL' && store?.primary_color
+                      ? { backgroundColor: store.primary_color }
                       : undefined
                   }
                 >
@@ -377,12 +381,12 @@ function CatalogContent({ onStoreLoaded }: CatalogContentProps) {
                       onClick={() => updateFilters({ selectedCategory: cat.id })}
                       className={`px-4 py-2 rounded-2xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
                         isSelected
-                          ? 'text-white shadow-xs'
+                          ? 'bg-brand-primary text-brand-contrast shadow-xs'
                           : 'bg-slate-100/90 text-slate-600 hover:bg-slate-200 hover:text-slate-900'
                       }`}
                       style={
-                        isSelected
-                          ? { backgroundColor: store?.primary_color || '#10b981' }
+                        isSelected && store?.primary_color
+                          ? { backgroundColor: store.primary_color }
                           : undefined
                       }
                     >
@@ -489,8 +493,8 @@ function CatalogContent({ onStoreLoaded }: CatalogContentProps) {
                 <button
                   type="button"
                   onClick={resetFilters}
-                  className="inline-flex items-center text-xs font-bold px-4 py-2 rounded-xl text-white shadow-xs transition cursor-pointer"
-                  style={{ backgroundColor: store?.primary_color || '#10b981' }}
+                  className="inline-flex items-center text-xs font-bold px-4 py-2 rounded-xl text-brand-contrast bg-brand-primary hover:bg-brand-primary-hover shadow-xs transition cursor-pointer"
+                  style={{ backgroundColor: store?.primary_color }}
                 >
                   Limpar todos os filtros
                 </button>
@@ -589,6 +593,46 @@ function CatalogContent({ onStoreLoaded }: CatalogContentProps) {
           </div>
         </div>
       </footer>
+
+      {/* Sacola Flutuante Fixa no Rodapé para Mobile */}
+      {totalItemsCount > 0 && (
+        <aside
+          aria-label="Sacola de compras flutuante"
+          className="fixed bottom-0 inset-x-0 z-40 p-3 sm:hidden animate-slide-up pointer-events-none"
+        >
+          <div className="max-w-md mx-auto pointer-events-auto">
+            <button
+              type="button"
+              onClick={openCart}
+              className="w-full py-3.5 px-4 rounded-2xl text-brand-contrast bg-brand-primary hover:bg-brand-primary-hover shadow-2xl flex items-center justify-between active:scale-98 transition-all cursor-pointer ring-1 ring-black/5"
+              style={{ backgroundColor: store?.primary_color }}
+            >
+              <div className="flex items-center gap-3">
+                <div className="relative h-10 w-10 rounded-xl bg-white/20 flex items-center justify-center">
+                  <ShoppingBag className="w-5 h-5 text-brand-contrast" />
+                  <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-white text-slate-900 text-[11px] font-black flex items-center justify-center shadow-xs">
+                    {totalItemsCount}
+                  </span>
+                </div>
+                <div className="text-left leading-tight">
+                  <span className="text-[11px] font-bold text-brand-contrast/90 block uppercase tracking-wider">
+                    Ver Sacola
+                  </span>
+                  <span className="text-xs text-brand-contrast/95 font-medium">
+                    {totalItemsCount} {totalItemsCount === 1 ? 'item adicionado' : 'itens adicionados'}
+                  </span>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-black text-brand-contrast">
+                  {formatCurrency(cartSubtotal, store?.currency)}
+                </span>
+                <ArrowRight className="w-4 h-4 text-brand-contrast" />
+              </div>
+            </button>
+          </div>
+        </aside>
+      )}
     </div>
   );
 }

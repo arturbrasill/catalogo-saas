@@ -177,16 +177,16 @@ export function FilterDrawer({
                   }
                   className={`p-3 rounded-xl text-xs font-bold border transition-all cursor-pointer flex items-center justify-between ${
                     filters.onlyInStock
-                      ? 'bg-emerald-50 border-emerald-200 text-emerald-700 shadow-2xs'
+                      ? 'bg-brand-primary/10 border-brand-primary/30 text-brand-primary shadow-2xs'
                       : 'bg-white border-slate-200 text-slate-700 hover:border-slate-300'
                   }`}
                 >
                   <div className="flex items-center gap-2">
-                    <PackageCheck className="w-4 h-4 text-emerald-600" />
+                    <PackageCheck className="w-4 h-4 text-brand-primary" />
                     <span>Apenas com Estoque Imediato</span>
                   </div>
                   {filters.onlyInStock && (
-                    <span className="h-4 w-4 rounded-full bg-emerald-600 text-white flex items-center justify-center text-[10px]">
+                    <span className="h-4 w-4 rounded-full bg-brand-primary text-brand-contrast flex items-center justify-center text-[10px]">
                       ✓
                     </span>
                   )}
@@ -282,8 +282,8 @@ export function FilterDrawer({
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 py-3 px-4 rounded-xl text-xs font-black text-white shadow-xs hover:brightness-95 transition cursor-pointer text-center"
-              style={{ backgroundColor: store.primary_color || '#10b981' }}
+              className="flex-1 py-3 px-4 rounded-xl text-xs font-black text-brand-contrast bg-brand-primary hover:bg-brand-primary-hover shadow-xs hover:brightness-95 transition cursor-pointer text-center"
+              style={{ backgroundColor: store.primary_color }}
             >
               Ver {totalResultsCount} {totalResultsCount === 1 ? 'Produto' : 'Produtos'}
             </button>

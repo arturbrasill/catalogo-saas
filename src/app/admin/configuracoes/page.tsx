@@ -209,6 +209,20 @@ export default function AdminConfiguracoesPage() {
       setPixKeyType((updated.pix_key_type as any) || 'cpf');
 
       setSuccessMessage('Configurações da loja e identidade visual atualizadas com sucesso!');
+      if (typeof document !== 'undefined') {
+        const prim = String(updated.primary_color ?? '#16a34a');
+        const sec = String(updated.secondary_color ?? '#15803d');
+        const bg = String(updated.background_color ?? '#f8fafc');
+        const txt = String(updated.text_color ?? '#0f172a');
+        document.documentElement.style.setProperty('--brand-primary', prim);
+        document.documentElement.style.setProperty('--brand-primary-hover', sec);
+        document.documentElement.style.setProperty('--brand-surface', bg);
+        document.documentElement.style.setProperty('--brand-text-main', txt);
+        document.documentElement.style.setProperty('--primary-color', prim);
+        document.documentElement.style.setProperty('--secondary-color', sec);
+        document.documentElement.style.setProperty('--bg-color', bg);
+        document.documentElement.style.setProperty('--text-color', txt);
+      }
       setTimeout(() => setSuccessMessage(null), 5000);
     } catch (err) {
       setErrorMessage(err instanceof Error ? err.message : 'Erro ao salvar configurações.');

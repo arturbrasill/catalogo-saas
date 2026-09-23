@@ -9,23 +9,35 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
+        brand: {
+          primary: 'var(--brand-primary, #16a34a)',
+          'primary-hover': 'var(--brand-primary-hover, #15803d)',
+          contrast: 'var(--brand-contrast, #ffffff)',
+          surface: 'var(--brand-surface, #f8fafc)',
+          card: 'var(--brand-card, #ffffff)',
+          border: 'var(--brand-border, #e2e8f0)',
+          'text-main': 'var(--brand-text-main, #0f172a)',
+          'text-muted': 'var(--brand-text-muted, #64748b)',
+        },
         primary: {
-          DEFAULT: 'var(--primary-color, #10b981)',
+          DEFAULT: 'var(--brand-primary, var(--primary-color, #16a34a))',
+          hover: 'var(--brand-primary-hover, var(--secondary-color, #15803d))',
           50: '#f0fdf4',
           100: '#dcfce7',
-          500: 'var(--primary-color, #10b981)',
-          600: 'var(--secondary-color, #059669)',
-          700: 'var(--secondary-color, #047857)',
+          500: 'var(--brand-primary, var(--primary-color, #16a34a))',
+          600: 'var(--brand-primary-hover, var(--secondary-color, #15803d))',
+          700: 'var(--brand-primary-hover, var(--secondary-color, #15803d))',
         },
-        secondary: 'var(--secondary-color, #047857)',
+        secondary: 'var(--brand-primary-hover, var(--secondary-color, #15803d))',
       },
       boxShadow: {
         soft: '0 2px 15px -3px rgba(0, 0, 0, 0.07), 0 10px 20px -2px rgba(0, 0, 0, 0.04)',
         card: '0 0 0 1px rgba(0, 0, 0, 0.05), 0 1px 3px 0 rgba(0, 0, 0, 0.05)',
         'card-hover': '0 0 0 1px rgba(0, 0, 0, 0.08), 0 12px 28px -4px rgba(0, 0, 0, 0.12)',
-        glow: '0 0 20px -5px var(--primary-color, rgba(16, 185, 129, 0.35))',
+        glow: '0 0 20px -5px var(--brand-primary, rgba(22, 163, 74, 0.35))',
       },
       borderRadius: {
+        card: 'var(--radius-card, 1rem)',
         '2xl': '1rem',
         '3xl': '1.5rem',
       },

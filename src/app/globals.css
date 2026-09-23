@@ -3,10 +3,22 @@
 @tailwind utilities;
 
 :root {
-  --primary-color: #10b981;
-  --secondary-color: #047857;
-  --bg-color: #f8fafc;
-  --text-color: #0f172a;
+  /* Dynamic White-Label Brand Tokens */
+  --brand-primary: #16a34a;
+  --brand-primary-hover: #15803d;
+  --brand-contrast: #ffffff;
+  --brand-surface: #f8fafc;
+  --brand-card: #ffffff;
+  --brand-border: #e2e8f0;
+  --brand-text-main: #0f172a;
+  --brand-text-muted: #64748b;
+  --radius-card: 1rem;
+
+  /* Backward compatibility aliases */
+  --primary-color: var(--brand-primary);
+  --secondary-color: var(--brand-primary-hover);
+  --bg-color: var(--brand-surface);
+  --text-color: var(--brand-text-main);
 }
 
 /* Base resets & typography */

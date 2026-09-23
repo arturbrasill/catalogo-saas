@@ -218,13 +218,16 @@ export function ProductModal({
 
   return (
     <>
-      <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-950/65 backdrop-blur-sm flex items-center justify-center p-3 sm:p-5 animate-fade-in">
+      <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-950/65 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4 animate-fade-in">
         <div
-          className="bg-white rounded-3xl max-w-3xl w-full max-h-[92vh] overflow-y-auto shadow-2xl border border-slate-100 flex flex-col relative animate-scale-in"
+          className="bg-brand-card rounded-t-3xl sm:rounded-3xl max-w-3xl w-full max-h-[92vh] overflow-y-auto shadow-2xl border border-slate-100 flex flex-col relative animate-slide-up sm:animate-scale-in"
           onClick={(e) => e.stopPropagation()}
         >
+          {/* Mobile Bottom-Sheet Drag Handle */}
+          <div className="sm:hidden w-12 h-1.5 bg-slate-300 rounded-full mx-auto my-2.5 flex-shrink-0" />
+
           {/* Botões de Ação Topo (Favoritar, Compartilhar e Fechar) */}
-          <div className="absolute top-4 right-4 z-20 flex items-center gap-2">
+          <div className="absolute top-3 sm:top-4 right-3 sm:right-4 z-20 flex items-center gap-2">
             <button
               type="button"
               onClick={() => toggleFavorite(product.id)}
@@ -393,8 +396,8 @@ export function ProductModal({
                         Apenas {product.estoque} restantes
                       </span>
                     ) : (
-                      <span className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
-                        <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                      <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-brand-primary bg-brand-primary/10 px-2.5 py-1 rounded-full border border-brand-primary/20">
+                        <span className="h-1.5 w-1.5 rounded-full bg-brand-primary animate-pulse" />
                         Em estoque
                       </span>
                     )}
@@ -409,29 +412,29 @@ export function ProductModal({
 
                 {/* Título e Preço Atualizado Dinamicamente */}
                 <div>
-                  <h3 className="text-xl font-black text-slate-900 leading-tight">
+                  <h3 className="text-xl font-black text-brand-text-main leading-tight">
                     {product.nome}
                   </h3>
                   <div className="flex items-baseline gap-3 mt-2 flex-wrap">
                     <span
-                      className="text-2xl sm:text-3xl font-black tracking-tight"
-                      style={{ color: store.primary_color || '#10b981' }}
+                      className="text-2xl sm:text-3xl font-black tracking-tight text-brand-primary"
+                      style={{ color: store.primary_color }}
                     >
                       {formatCurrency(currentEffectivePrice, store.currency)}
                     </span>
                     {currentPromoPrice && (
-                      <span className="text-sm text-slate-400 line-through">
+                      <span className="text-sm text-brand-text-muted line-through">
                         {formatCurrency(currentUnitPrice, store.currency)}
                       </span>
                     )}
                     {savings > 0 && (
-                      <span className="text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
+                      <span className="text-[11px] font-bold text-brand-primary bg-brand-primary/10 px-2 py-0.5 rounded-md border border-brand-primary/20">
                         Economize {formatCurrency(savings, store.currency)}
                       </span>
                     )}
                   </div>
                   {installmentText && (
-                    <p className="text-xs text-slate-500 font-medium mt-1">
+                    <p className="text-xs text-brand-text-muted font-medium mt-1">
                       {installmentText}
                     </p>
                   )}
@@ -445,7 +448,7 @@ export function ProductModal({
                   </div>
                 )}
 
-                {/* Seleção de Variações Universais */}
+                {/* Seleção de Variações com Pílulas Modernas */}
                 {product.variacoes && product.variacoes.length > 0 && (
                   <div className="space-y-4 pt-1">
                     {product.variacoes.map((variation) => {
@@ -459,7 +462,7 @@ export function ProductModal({
                               {variation.tipo}:
                             </label>
                             {selectedVal && (
-                              <span className="text-xs font-bold text-slate-900">
+                              <span className="text-xs font-bold text-brand-primary">
                                 {selectedVal}
                               </span>
                             )}
@@ -477,20 +480,22 @@ export function ProductModal({
                                   onClick={() =>
                                     handleSelectVariation(variation.tipo, parsed.cleanLabel)
                                   }
-                                  className={`px-3.5 py-2 rounded-xl text-xs font-bold border transition-all cursor-pointer flex items-center gap-2 ${
+                                  className={`px-3.5 py-2 rounded-xl text-xs font-bold border transition-all cursor-pointer flex items-center gap-2 active:scale-95 ${
                                     isSelected
-                                      ? 'text-white border-transparent shadow-sm scale-102'
-                                      : 'bg-white text-slate-700 border-slate-200 hover:border-slate-300 hover:bg-slate-50'
+                                      ? 'bg-brand-primary text-brand-contrast border-brand-primary shadow-xs scale-102 ring-2 ring-brand-primary/20'
+                                      : 'bg-slate-50 text-slate-700 border-slate-200 hover:border-slate-300 hover:bg-slate-100/80 shadow-2xs'
                                   }`}
                                   style={
-                                    isSelected
-                                      ? { backgroundColor: store.primary_color || '#10b981' }
+                                    isSelected && store.primary_color
+                                      ? { backgroundColor: store.primary_color }
                                       : undefined
                                   }
                                 >
                                   {isColor && parsed.corHex && (
                                     <span
-                                      className="h-3 w-3 rounded-full border border-black/20 shadow-2xs"
+                                      className={`h-3.5 w-3.5 rounded-full border shadow-2xs ${
+                                        isSelected ? 'border-white ring-1 ring-white/60' : 'border-black/20'
+                                      }`}
                                       style={{ backgroundColor: parsed.corHex }}
                                     />
                                   )}
@@ -502,7 +507,7 @@ export function ProductModal({
                                       className={`text-[10px] font-black px-1.5 py-0.5 rounded-md ${
                                         isSelected
                                           ? 'bg-white/25 text-white'
-                                          : 'bg-emerald-50 text-emerald-700 border border-emerald-200/60'
+                                          : 'bg-brand-primary/10 text-brand-primary border border-brand-primary/20'
                                       }`}
                                     >
                                       {parsed.displayBadge}
@@ -584,23 +589,23 @@ export function ProductModal({
                 </div>
               </div>
 
-              {/* Rodapé: Quantidade e Botão Adicionar à Sacola */}
+              {/* Rodapé: Contador de Quantidade e Botão Adicionar à Sacola */}
               <div className="space-y-3 pt-3 border-t border-slate-100">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-bold text-slate-700">
                     Quantidade:
                   </span>
-                  <div className="flex items-center border border-slate-200 rounded-xl overflow-hidden bg-white shadow-2xs">
+                  <div className="flex items-center border border-slate-200 rounded-xl overflow-hidden bg-slate-50 shadow-2xs">
                     <button
                       type="button"
                       onClick={() => setQuantity((q) => Math.max(1, q - 1))}
                       disabled={quantity <= 1 || isOutOfStock}
-                      className="p-2 text-slate-600 hover:bg-slate-100 disabled:opacity-30 disabled:hover:bg-transparent transition cursor-pointer"
+                      className="p-2 text-slate-600 hover:bg-slate-200/80 active:scale-90 disabled:opacity-30 disabled:hover:bg-transparent transition cursor-pointer"
                       aria-label="Diminuir quantidade"
                     >
                       <Minus className="w-3.5 h-3.5" />
                     </button>
-                    <span className="w-9 text-center text-xs font-bold text-slate-900">
+                    <span className="w-10 text-center text-xs font-black text-brand-text-main select-none">
                       {quantity}
                     </span>
                     <button
@@ -614,7 +619,7 @@ export function ProductModal({
                         isOutOfStock ||
                         (product.estoque !== -1 && quantity >= product.estoque)
                       }
-                      className="p-2 text-slate-600 hover:bg-slate-100 disabled:opacity-30 disabled:hover:bg-transparent transition cursor-pointer"
+                      className="p-2 text-slate-600 hover:bg-slate-200/80 active:scale-90 disabled:opacity-30 disabled:hover:bg-transparent transition cursor-pointer"
                       aria-label="Aumentar quantidade"
                     >
                       <Plus className="w-3.5 h-3.5" />
@@ -627,8 +632,8 @@ export function ProductModal({
                   type="button"
                   onClick={handleAddToCart}
                   disabled={isOutOfStock}
-                  className="w-full py-3.5 px-4 rounded-2xl font-black text-xs sm:text-sm text-white shadow-sm hover:brightness-95 active:scale-98 transition flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                  style={{ backgroundColor: store.primary_color || '#10b981' }}
+                  className="w-full py-3.5 px-4 rounded-2xl font-black text-xs sm:text-sm text-brand-contrast bg-brand-primary hover:bg-brand-primary-hover shadow-md hover:brightness-95 active:scale-98 transition flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                  style={{ backgroundColor: store.primary_color }}
                 >
                   <ShoppingBag className="w-4 h-4" />
                   {isOutOfStock ? (
@@ -687,8 +692,8 @@ export function ProductModal({
                           {rel.nome}
                         </h5>
                         <p
-                          className="text-xs font-black mt-0.5"
-                          style={{ color: store.primary_color || '#10b981' }}
+                          className="text-xs font-black mt-0.5 text-brand-primary"
+                          style={{ color: store.primary_color }}
                         >
                           {formatCurrency(relPrice, store.currency)}
                         </p>

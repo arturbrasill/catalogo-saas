@@ -82,8 +82,8 @@ export function WishlistDrawer({
                 <button
                   type="button"
                   onClick={closeWishlist}
-                  className="mt-2 px-4 py-2 rounded-xl text-xs font-bold text-white shadow-xs hover:brightness-95 transition cursor-pointer"
-                  style={{ backgroundColor: store.primary_color || '#10b981' }}
+                  className="mt-2 px-4 py-2 rounded-xl text-xs font-bold text-brand-contrast bg-brand-primary hover:bg-brand-primary-hover shadow-xs transition cursor-pointer"
+                  style={{ backgroundColor: store.primary_color }}
                 >
                   Explorar Catálogo
                 </button>
@@ -145,7 +145,8 @@ export function WishlistDrawer({
                           onSelectProduct(product);
                           closeWishlist();
                         }}
-                        className="text-[11px] font-bold text-emerald-600 hover:text-emerald-700 mt-1 inline-block cursor-pointer"
+                        className="text-[11px] font-bold text-brand-primary hover:opacity-80 mt-1 inline-block cursor-pointer"
+                        style={{ color: store.primary_color }}
                       >
                         Ver Detalhes →
                       </button>

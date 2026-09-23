@@ -57,7 +57,7 @@ export function ProductCard({
   return (
     <div
       onClick={() => onSelect(product)}
-      className="group relative bg-white rounded-3xl border border-slate-200/80 hover:border-slate-300/80 overflow-hidden shadow-2xs hover:shadow-xl transition-all duration-300 flex flex-col justify-between cursor-pointer"
+      className="group relative bg-brand-card rounded-2xl sm:rounded-3xl border border-brand-border/80 hover:border-slate-300 overflow-hidden shadow-2xs hover:shadow-card-hover transition-all duration-300 flex flex-col justify-between cursor-pointer active:scale-[0.98]"
     >
       {/* Container da Imagem com Aspect Ratio Limpo */}
       <div className="relative aspect-square w-full bg-slate-50 overflow-hidden flex items-center justify-center">
@@ -81,18 +81,18 @@ export function ProductCard({
         <div className="absolute top-2.5 left-2.5 flex flex-col gap-1.5 z-10">
           {hasDiscount && (
             <span
-              className="text-white text-[10px] font-black px-2 py-0.5 rounded-lg shadow-sm tracking-tight"
-              style={{ backgroundColor: store.primary_color || '#10b981' }}
+              className="bg-brand-primary text-brand-contrast text-[10px] font-black px-2 py-0.5 rounded-lg shadow-xs tracking-tight"
+              style={{ backgroundColor: store.primary_color }}
             >
               -{discountPercent}% OFF
             </span>
           )}
           {isOutOfStock ? (
-            <span className="bg-rose-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-lg shadow-sm">
+            <span className="bg-rose-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-lg shadow-xs">
               Esgotado
             </span>
           ) : product.estoque <= 3 && product.estoque > 0 ? (
-            <span className="bg-amber-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-lg shadow-sm">
+            <span className="bg-amber-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-lg shadow-xs">
               Últimas {product.estoque} un
             </span>
           ) : null}
@@ -122,7 +122,7 @@ export function ProductCard({
       </div>
 
       {/* Detalhes do Produto */}
-      <div className="p-3.5 sm:p-4 flex-1 flex flex-col justify-between space-y-2.5">
+      <div className="p-3 sm:p-4 flex-1 flex flex-col justify-between space-y-2.5">
         <div className="space-y-1.5">
           {/* Amostras Rápidas de Cores ou Tamanhos */}
           {colorVariation && (
@@ -140,7 +140,7 @@ export function ProductCard({
                 );
               })}
               {colorVariation.opcoes.length > 5 && (
-                <span className="text-[10px] font-bold text-slate-400">
+                <span className="text-[10px] font-bold text-brand-text-muted">
                   +{colorVariation.opcoes.length - 5}
                 </span>
               )}
@@ -161,7 +161,7 @@ export function ProductCard({
                 );
               })}
               {sizeVariation.opcoes.length > 4 && (
-                <span className="text-[10px] font-bold text-slate-400">
+                <span className="text-[10px] font-bold text-brand-text-muted">
                   +{sizeVariation.opcoes.length - 4}
                 </span>
               )}
@@ -169,27 +169,27 @@ export function ProductCard({
           )}
 
           {/* Nome do Produto */}
-          <h4 className="text-xs sm:text-sm font-bold text-slate-900 line-clamp-2 leading-snug group-hover:text-slate-700 transition-colors">
+          <h4 className="text-xs sm:text-sm font-bold text-brand-text-main line-clamp-2 leading-snug group-hover:text-slate-700 transition-colors">
             {product.nome}
           </h4>
         </div>
 
         {/* Preço, Parcelamento e Ação */}
-        <div className="pt-2.5 border-t border-slate-100 flex items-end justify-between gap-1.5">
+        <div className="pt-2.5 border-t border-brand-border/60 flex items-end justify-between gap-1.5">
           <div className="leading-none min-w-0">
             {hasDiscount && (
-              <span className="text-[10px] sm:text-[11px] text-slate-400 line-through block mb-1 truncate">
+              <span className="text-[10px] sm:text-[11px] text-brand-text-muted line-through block mb-1 truncate">
                 {formatCurrency(product.preco, store.currency)}
               </span>
             )}
             <span
-              className="text-sm sm:text-base font-black block truncate tracking-tight"
-              style={{ color: store.primary_color || '#10b981' }}
+              className="text-sm sm:text-base font-black block truncate tracking-tight text-brand-primary"
+              style={{ color: store.primary_color }}
             >
               {formatCurrency(effectivePrice, store.currency)}
             </span>
             {installmentText && (
-              <span className="text-[10px] text-slate-500 font-medium block mt-1 truncate">
+              <span className="text-[10px] text-brand-text-muted font-medium block mt-1 truncate">
                 {installmentText}
               </span>
             )}
@@ -197,8 +197,8 @@ export function ProductCard({
 
           <button
             type="button"
-            className="h-8 w-8 sm:h-9 sm:w-9 rounded-xl flex items-center justify-center text-white shadow-2xs group-hover:scale-108 active:scale-95 transition-all flex-shrink-0 cursor-pointer"
-            style={{ backgroundColor: store.primary_color || '#10b981' }}
+            className="h-8 w-8 sm:h-9 sm:w-9 rounded-xl flex items-center justify-center text-brand-contrast bg-brand-primary hover:bg-brand-primary-hover shadow-2xs group-hover:scale-105 active:scale-95 transition-all flex-shrink-0 cursor-pointer"
+            style={{ backgroundColor: store.primary_color }}
             aria-label={`Ver detalhes de ${product.nome}`}
           >
             {hasVariations ? <Eye className="w-4 h-4" /> : <ShoppingBag className="w-4 h-4" />}

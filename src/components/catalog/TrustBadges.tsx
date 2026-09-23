@@ -5,7 +5,7 @@ interface TrustBadgesProps {
   primaryColor?: string;
 }
 
-export function TrustBadges({ primaryColor = '#10b981' }: TrustBadgesProps) {
+export function TrustBadges({ primaryColor }: TrustBadgesProps) {
   const badges = [
     {
       icon: Truck,
@@ -43,11 +43,15 @@ export function TrustBadges({ primaryColor = '#10b981' }: TrustBadgesProps) {
               className="flex items-start gap-4 p-2 rounded-2xl hover:bg-slate-50/80 transition-colors"
             >
               <div
-                className="h-11 w-11 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-xs"
-                style={{
-                  backgroundColor: `${primaryColor}15`,
-                  color: primaryColor,
-                }}
+                className="h-11 w-11 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-xs bg-brand-primary/10 text-brand-primary"
+                style={
+                  primaryColor
+                    ? {
+                        backgroundColor: `${primaryColor}15`,
+                        color: primaryColor,
+                      }
+                    : undefined
+                }
               >
                 <Icon className="w-5 h-5 stroke-[2]" />
               </div>

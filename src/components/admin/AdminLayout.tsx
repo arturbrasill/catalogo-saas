@@ -59,15 +59,15 @@ export function AdminLayout({ children }: AdminLayoutProps) {
         <aside className="hidden lg:flex flex-col w-64 bg-slate-950 text-slate-300 border-r border-slate-900 shadow-xl select-none">
           {/* Brand Header */}
           <div className="h-18 flex items-center px-6 border-b border-slate-900/80 gap-3">
-            <div className="h-10 w-10 rounded-xl bg-gradient-to-tr from-emerald-600 to-emerald-400 flex items-center justify-center text-white font-black shadow-lg shadow-emerald-950/50 flex-shrink-0">
+            <div className="h-10 w-10 rounded-xl bg-gradient-to-tr from-brand-primary to-brand-primary-hover flex items-center justify-center text-white font-black shadow-lg shadow-black/40 flex-shrink-0">
               <Store className="w-5 h-5" />
             </div>
             <div className="min-w-0">
               <span className="font-extrabold text-white block leading-tight text-sm tracking-tight truncate">
                 Painel Lojista
               </span>
-              <span className="text-[11px] text-emerald-400 font-semibold flex items-center gap-1 mt-0.5">
-                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              <span className="text-[11px] text-brand-primary font-semibold flex items-center gap-1 mt-0.5">
+                <span className="h-1.5 w-1.5 rounded-full bg-brand-primary animate-pulse" />
                 SaaS Multi-tenant
               </span>
             </div>
@@ -89,14 +89,14 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                       href={item.href}
                       className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all duration-200 group ${
                         active
-                          ? 'bg-emerald-600/15 text-emerald-400 border border-emerald-500/20 shadow-xs'
+                          ? 'bg-brand-primary/15 text-brand-primary border border-brand-primary/20 shadow-xs'
                           : 'text-slate-400 hover:text-white hover:bg-slate-900/80'
                       }`}
                     >
                       <div className="flex items-center gap-3 min-w-0">
                         <Icon
                           className={`w-4 h-4 transition-transform group-hover:scale-110 ${
-                            active ? 'text-emerald-400' : 'text-slate-500 group-hover:text-slate-300'
+                            active ? 'text-brand-primary' : 'text-slate-500 group-hover:text-slate-300'
                           }`}
                         />
                         <span className="truncate">{item.name}</span>
@@ -114,7 +114,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
 
             {/* Banner de Ajuda / Dica */}
             <div className="p-4 rounded-2xl bg-gradient-to-b from-slate-900 to-slate-950 border border-slate-800/80 space-y-2 text-xs">
-              <div className="flex items-center gap-1.5 text-emerald-400 font-bold text-[11px]">
+              <div className="flex items-center gap-1.5 text-brand-primary font-bold text-[11px]">
                 <Sparkles className="w-3.5 h-3.5" />
                 <span>Dica de Conversão</span>
               </div>
@@ -133,7 +133,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
               className="flex items-center justify-between w-full px-3.5 py-2.5 text-xs font-semibold text-slate-300 hover:text-white hover:bg-slate-900 rounded-xl transition border border-slate-800/60"
             >
               <span className="flex items-center gap-2">
-                <ExternalLink className="w-4 h-4 text-emerald-400" />
+                <ExternalLink className="w-4 h-4 text-brand-primary" />
                 Ver Catálogo Público
               </span>
               <ChevronRight className="w-3.5 h-3.5 text-slate-500" />
@@ -142,7 +142,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
             <div className="flex items-center justify-between pt-2 px-1">
               <div className="flex items-center gap-2 min-w-0">
                 <div className="h-8 w-8 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-300 font-bold text-xs">
-                  <Shield className="w-4 h-4 text-emerald-400" />
+                  <Shield className="w-4 h-4 text-brand-primary" />
                 </div>
                 <div className="truncate">
                   <span className="text-xs font-bold text-white block truncate leading-tight">
@@ -227,7 +227,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
               <div className="relative w-72 max-w-[80vw] bg-slate-950 text-slate-300 flex flex-col z-10 shadow-2xl">
                 <div className="h-16 flex items-center justify-between px-5 border-b border-slate-900">
                   <div className="flex items-center gap-2.5">
-                    <div className="h-8 w-8 rounded-lg bg-emerald-600 flex items-center justify-center text-white font-bold">
+                    <div className="h-8 w-8 rounded-lg bg-brand-primary flex items-center justify-center text-white font-bold">
                       <Store className="w-4 h-4" />
                     </div>
                     <span className="font-extrabold text-white text-sm">Painel Lojista</span>
@@ -253,7 +253,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                         onClick={() => setMobileMenuOpen(false)}
                         className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-semibold transition ${
                           active
-                            ? 'bg-emerald-600/20 text-emerald-400 border border-emerald-500/20'
+                            ? 'bg-brand-primary/20 text-brand-primary border border-brand-primary/20'
                             : 'text-slate-400 hover:text-white hover:bg-slate-900'
                         }`}
                       >
