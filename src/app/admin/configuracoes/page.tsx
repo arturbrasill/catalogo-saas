@@ -5,6 +5,7 @@ import { AdminLayout } from '@/components/admin/AdminLayout';
 import { api } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
 import { imageUploadService } from '@/lib/imageUploadService';
+import { maskWhatsApp, normalizeWhatsAppToApi } from '@/lib/masks';
 import type { StoreConfig } from '@/types';
 import {
   Store,
@@ -26,6 +27,9 @@ import {
   Clock,
   QrCode,
   Power,
+  Link as LinkIcon,
+  ArrowUp,
+  ArrowDown,
 } from 'lucide-react';
 
 const COLOR_PRESETS = [
@@ -71,6 +75,7 @@ export default function AdminConfiguracoesPage() {
   const [textColor, setTextColor] = useState('#0f172a');
   const [banners, setBanners] = useState<string[]>([]);
   const [newBannerInput, setNewBannerInput] = useState('');
+  const [showBannerUrlInput, setShowBannerUrlInput] = useState(false);
   const [whatsapp, setWhatsapp] = useState('');
   const [domain, setDomain] = useState('');
   const [isOpen, setIsOpen] = useState(true);
@@ -90,7 +95,8 @@ export default function AdminConfiguracoesPage() {
       setBackgroundColor(String(data.background_color ?? '#f8fafc'));
       setTextColor(String(data.text_color ?? '#0f172a'));
       setBanners(Array.isArray(data.banners) ? data.banners.slice(0, 3) : []);
-      setWhatsapp(String(data.whatsapp ?? ''));
+      // Aplica máscara ao carregar da API
+      setWhatsapp(maskWhatsApp(String(data.whatsapp ?? '')));
       setDomain(String(data.domain ?? ''));
       setIsOpen(data.is_open !== undefined ? Boolean(data.is_open) : true);
       setBusinessHours(String(data.business_hours ?? ''));
@@ -156,10 +162,24 @@ export default function AdminConfiguracoesPage() {
     }
     setBanners((prev) => [...prev, trimmed].slice(0, 3));
     setNewBannerInput('');
+    setShowBannerUrlInput(false);
   };
 
   const handleRemoveBanner = (index: number) => {
     setBanners((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const handleMoveBanner = (index: number, direction: 'up' | 'down') => {
+    const newIndex = direction === 'up' ? index - 1 : index + 1;
+    if (newIndex < 0 || newIndex >= banners.length) return;
+    const updated = [...banners];
+    const temp = updated[index];
+    const target = updated[newIndex];
+    if (temp !== undefined && target !== undefined) {
+      updated[index] = target;
+      updated[newIndex] = temp;
+      setBanners(updated);
+    }
   };
 
   const handleSave = async (e: React.FormEvent) => {
@@ -171,10 +191,8 @@ export default function AdminConfiguracoesPage() {
     setErrorMessage(null);
 
     try {
-      let cleanWhatsapp = String(whatsapp ?? '').replace(/\D/g, '').replace(/^0+/, '');
-      if ((cleanWhatsapp.length === 10 || cleanWhatsapp.length === 11) && !cleanWhatsapp.startsWith('55')) {
-        cleanWhatsapp = '55' + cleanWhatsapp;
-      }
+      const cleanWhatsapp = normalizeWhatsAppToApi(whatsapp);
+
       const updated = await api.saveConfig(
         {
           store_name: String(storeName ?? '').trim(),
@@ -201,27 +219,25 @@ export default function AdminConfiguracoesPage() {
       setBackgroundColor(String(updated.background_color ?? '#f8fafc'));
       setTextColor(String(updated.text_color ?? '#0f172a'));
       setBanners(Array.isArray(updated.banners) ? updated.banners.slice(0, 3) : []);
-      setWhatsapp(String(updated.whatsapp ?? ''));
+      setWhatsapp(maskWhatsApp(String(updated.whatsapp ?? '')));
       setDomain(String(updated.domain ?? ''));
       setIsOpen(updated.is_open !== undefined ? Boolean(updated.is_open) : true);
       setBusinessHours(String(updated.business_hours ?? ''));
       setPixKey(String(updated.pix_key ?? ''));
       setPixKeyType((updated.pix_key_type as any) || 'cpf');
 
-      setSuccessMessage('Configurações da loja e identidade visual atualizadas com sucesso!');
+      setSuccessMessage('Configurações da loja e identidade visual salvas com sucesso!');
+
+      // Atualiza variáveis CSS dinâmicas em tempo real
       if (typeof document !== 'undefined') {
-        const prim = String(updated.primary_color ?? '#16a34a');
-        const sec = String(updated.secondary_color ?? '#15803d');
+        const prim = String(updated.primary_color ?? '#10b981');
+        const sec = String(updated.secondary_color ?? '#047857');
         const bg = String(updated.background_color ?? '#f8fafc');
         const txt = String(updated.text_color ?? '#0f172a');
         document.documentElement.style.setProperty('--brand-primary', prim);
         document.documentElement.style.setProperty('--brand-primary-hover', sec);
         document.documentElement.style.setProperty('--brand-surface', bg);
         document.documentElement.style.setProperty('--brand-text-main', txt);
-        document.documentElement.style.setProperty('--primary-color', prim);
-        document.documentElement.style.setProperty('--secondary-color', sec);
-        document.documentElement.style.setProperty('--bg-color', bg);
-        document.documentElement.style.setProperty('--text-color', txt);
       }
       setTimeout(() => setSuccessMessage(null), 5000);
     } catch (err) {
@@ -240,29 +256,29 @@ export default function AdminConfiguracoesPage() {
             Identidade Visual & Configurações
           </h1>
           <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
-            Personalize o nome da loja, banners de topo, cores de fundo e textos, WhatsApp e logotipo.
+            Personalize cor primária da marca com color picker, WhatsApp mascarado, banners de topo e dados da loja.
           </p>
         </div>
 
         {/* Alertas */}
         {successMessage && (
-          <div className="rounded-2xl bg-emerald-50 border border-emerald-200 p-4 text-xs sm:text-sm text-emerald-800 flex items-center gap-2.5 shadow-xs">
+          <div className="rounded-2xl bg-emerald-50 border border-emerald-200 p-4 text-xs sm:text-sm text-emerald-800 flex items-center gap-2.5 shadow-xs animate-fade-in">
             <Check className="w-5 h-5 text-emerald-600 flex-shrink-0" />
             <span className="font-semibold">{successMessage}</span>
           </div>
         )}
 
         {errorMessage && (
-          <div className="rounded-2xl bg-rose-50 border border-rose-200 p-4 text-xs sm:text-sm text-rose-800 flex items-center gap-2.5 shadow-xs">
+          <div className="rounded-2xl bg-rose-50 border border-rose-200 p-4 text-xs sm:text-sm text-rose-800 flex items-center gap-2.5 shadow-xs animate-shake">
             <AlertCircle className="w-5 h-5 text-rose-600 flex-shrink-0" />
             <span>{errorMessage}</span>
           </div>
         )}
 
         {isLoading ? (
-          <div className="bg-white rounded-3xl border border-slate-200/80 p-12 text-center shadow-xs">
-            <Loader2 className="w-8 h-8 animate-spin text-emerald-600 mx-auto mb-3" />
-            <p className="text-sm font-medium text-slate-500">Carregando configurações da loja...</p>
+          <div className="bg-white rounded-3xl border border-slate-200/80 p-14 text-center shadow-xs">
+            <Loader2 className="w-8 h-8 animate-spin text-slate-900 mx-auto mb-3" />
+            <p className="text-sm font-semibold text-slate-600">Carregando configurações da loja...</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8">
@@ -280,8 +296,8 @@ export default function AdminConfiguracoesPage() {
                     required
                     value={storeName}
                     onChange={(e) => setStoreName(e.target.value)}
-                    placeholder="Ex: Minha Loja Digital"
-                    className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-xs sm:text-sm focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                    placeholder="Ex: Boutique Elegance"
+                    className="w-full rounded-2xl border border-slate-200 px-3.5 py-2.5 text-xs sm:text-sm focus:border-slate-800 focus:outline-none focus:ring-4 focus:ring-slate-900/5"
                   />
                 </div>
 
@@ -296,9 +312,9 @@ export default function AdminConfiguracoesPage() {
                       value={logoUrl}
                       onChange={(e) => setLogoUrl(e.target.value)}
                       placeholder="https://exemplo.com/logo.png"
-                      className="flex-1 w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-xs sm:text-sm focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                      className="flex-1 w-full rounded-2xl border border-slate-200 px-3.5 py-2.5 text-xs sm:text-sm focus:border-slate-800 focus:outline-none focus:ring-4 focus:ring-slate-900/5"
                     />
-                    <label className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-xs font-bold text-slate-700 cursor-pointer transition shadow-2xs">
+                    <label className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-2xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-xs font-bold text-slate-700 cursor-pointer transition shadow-2xs">
                       <Upload className="w-3.5 h-3.5 text-slate-500" />
                       <span>{isUploadingLogo ? 'Enviando...' : 'Upload Logo'}</span>
                       <input
@@ -312,26 +328,65 @@ export default function AdminConfiguracoesPage() {
                   </div>
                 </div>
 
-                {/* Banners do Topo (Até 3 Banners) */}
+                {/* Gerenciamento de Banners de Topo */}
                 <div className="pt-3 border-t border-slate-100 space-y-3">
                   <div className="flex items-center justify-between">
                     <div>
                       <span className="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
                         <ImageIcon className="w-4 h-4 text-emerald-600" />
-                        Banners de Topo do Catálogo ({banners.length}/3)
+                        Banners do Topo do Catálogo ({banners.length}/3)
                       </span>
                       <p className="text-[11px] text-slate-400 mt-0.5">
-                        Exibidos em destaque bem no início do aplicativo (rotacionam automaticamente no PC e celular).
+                        Exibidos no topo com carrossel deslizante e toque tátil. Recomendado: proporção 16:9 ou 21:9.
                       </p>
                     </div>
+                    {banners.length < 3 && (
+                      <button
+                        type="button"
+                        onClick={() => setShowBannerUrlInput(!showBannerUrlInput)}
+                        className="text-[11px] font-semibold text-slate-600 hover:text-slate-900 underline transition cursor-pointer"
+                      >
+                        {showBannerUrlInput ? 'Ocultar URL' : '+ Adicionar por Link'}
+                      </button>
+                    )}
                   </div>
 
-                  {/* Lista de Banners Atuais */}
+                  {/* Adicionar por URL direta */}
+                  {showBannerUrlInput && banners.length < 3 && (
+                    <div className="flex gap-2 p-3 bg-slate-50 rounded-2xl border border-slate-200 animate-fade-in">
+                      <div className="relative flex-1">
+                        <LinkIcon className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-2.5" />
+                        <input
+                          type="url"
+                          placeholder="Cole o link direto da imagem do banner..."
+                          value={newBannerInput}
+                          onChange={(e) => setNewBannerInput(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              e.preventDefault();
+                              handleAddBannerUrl();
+                            }
+                          }}
+                          className="w-full rounded-xl border border-slate-200 bg-white pl-8 pr-3 py-1.5 text-xs text-slate-800 focus:outline-none focus:border-slate-800"
+                        />
+                      </div>
+                      <button
+                        type="button"
+                        onClick={handleAddBannerUrl}
+                        disabled={!newBannerInput.trim()}
+                        className="px-3.5 py-1.5 text-xs font-bold bg-slate-900 hover:bg-slate-800 text-white rounded-xl transition disabled:opacity-40 cursor-pointer"
+                      >
+                        Inserir
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Lista de Banners Atuais com Prévia e Ações */}
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     {banners.map((bannerUrl, idx) => (
                       <div
                         key={idx}
-                        className="group relative rounded-xl border border-slate-200 overflow-hidden bg-slate-100 aspect-[21/9] sm:aspect-[16/9]"
+                        className="group relative rounded-2xl border border-slate-200 overflow-hidden bg-slate-100 aspect-[16/9] shadow-2xs hover:shadow-md transition"
                       >
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
@@ -339,25 +394,49 @@ export default function AdminConfiguracoesPage() {
                           alt={`Banner ${idx + 1}`}
                           className="w-full h-full object-cover"
                         />
-                        <span className="absolute top-1 left-1 bg-black/60 text-white text-[9px] font-bold px-1.5 py-0.5 rounded">
+                        <span className="absolute top-2 left-2 bg-slate-900/80 backdrop-blur-xs text-white text-[10px] font-bold px-2 py-0.5 rounded shadow-xs">
                           Banner {idx + 1}
                         </span>
-                        <button
-                          type="button"
-                          onClick={() => handleRemoveBanner(idx)}
-                          className="absolute top-1 right-1 p-1 bg-rose-600 text-white rounded-md opacity-90 hover:opacity-100 transition cursor-pointer"
-                          title="Remover banner"
-                          aria-label={`Remover banner ${idx + 1}`}
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
+
+                        {/* Botões de Ação no Hover */}
+                        <div className="absolute top-2 right-2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition">
+                          {idx > 0 && (
+                            <button
+                              type="button"
+                              onClick={() => handleMoveBanner(idx, 'up')}
+                              className="p-1 bg-slate-900/80 text-white rounded-md hover:bg-slate-900 transition"
+                              title="Mover para esquerda/anterior"
+                            >
+                              <ArrowUp className="w-3 h-3 -rotate-90" />
+                            </button>
+                          )}
+                          {idx < banners.length - 1 && (
+                            <button
+                              type="button"
+                              onClick={() => handleMoveBanner(idx, 'down')}
+                              className="p-1 bg-slate-900/80 text-white rounded-md hover:bg-slate-900 transition"
+                              title="Mover para direita/próximo"
+                            >
+                              <ArrowDown className="w-3 h-3 -rotate-90" />
+                            </button>
+                          )}
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveBanner(idx)}
+                            className="p-1 bg-rose-600 text-white rounded-md hover:bg-rose-700 transition cursor-pointer"
+                            title="Remover banner"
+                            aria-label={`Remover banner ${idx + 1}`}
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </button>
+                        </div>
                       </div>
                     ))}
 
-                    {/* Slot para adicionar novo banner se < 3 */}
+                    {/* Slot de Upload se < 3 */}
                     {banners.length < 3 && (
                       <label
-                        className={`flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-slate-200 hover:border-emerald-500 hover:bg-emerald-50/30 aspect-[21/9] sm:aspect-[16/9] cursor-pointer transition ${
+                        className={`flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-300 hover:border-slate-800 hover:bg-slate-50 aspect-[16/9] cursor-pointer transition ${
                           isUploadingBanner ? 'opacity-50 cursor-not-allowed' : ''
                         }`}
                       >
@@ -369,187 +448,139 @@ export default function AdminConfiguracoesPage() {
                           className="sr-only"
                         />
                         {isUploadingBanner ? (
-                          <div className="flex flex-col items-center gap-1 text-emerald-600">
+                          <div className="flex flex-col items-center gap-1 text-slate-700">
                             <Loader2 className="w-5 h-5 animate-spin" />
-                            <span className="text-[10px] font-bold">Enviando...</span>
+                            <span className="text-[10px] font-bold">Enviando Banner...</span>
                           </div>
                         ) : (
                           <div className="flex flex-col items-center gap-1 text-slate-500">
                             <Upload className="w-4 h-4 text-slate-400" />
-                            <span className="text-[11px] font-bold">+ Upload Banner</span>
-                            <span className="text-[9px] text-slate-400">Recomendado: 1200x500</span>
+                            <span className="text-xs font-bold">+ Upload Banner</span>
+                            <span className="text-[9px] text-slate-400">Dimensão ideal: 1200x500px</span>
                           </div>
                         )}
                       </label>
                     )}
                   </div>
-
-                  {/* Adicionar por URL direta */}
-                  {banners.length < 3 && (
-                    <div className="flex gap-2 pt-1">
-                      <input
-                        type="url"
-                        placeholder="Ou cole a URL direta da imagem do banner..."
-                        value={newBannerInput}
-                        onChange={(e) => setNewBannerInput(e.target.value)}
-                        className="flex-1 rounded-xl border border-slate-200 px-3 py-1.5 text-xs focus:border-emerald-500 focus:outline-none"
-                      />
-                      <button
-                        type="button"
-                        onClick={handleAddBannerUrl}
-                        disabled={!newBannerInput.trim()}
-                        className="px-3 py-1.5 text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl transition disabled:opacity-40 cursor-pointer"
-                      >
-                        Adicionar URL
-                      </button>
-                    </div>
-                  )}
                 </div>
 
-                {/* Personalização de Cores (Fundo, Textos e Marca) */}
+                {/* Seletor de Cores (Color Picker Primário + Presets da Marca) */}
                 <div className="pt-3 border-t border-slate-100 space-y-4">
                   <div>
                     <span className="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
                       <Palette className="w-4 h-4 text-emerald-600" />
-                      Cores do Catálogo & Identidade
+                      Seletor de Cores da Marca (Color Picker)
                     </span>
                     <p className="text-[11px] text-slate-400 mt-0.5">
-                      Personalize a cor dos botões, do fundo da página e dos textos do seu catálogo.
+                      A cor primária define os botões de compra, destaques e badges da sua loja.
                     </p>
                   </div>
 
-                  {/* Cor do Fundo & Cor do Texto */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-slate-50/70 p-4 rounded-2xl border border-slate-200/70">
-                    {/* Cor de Fundo */}
-                    <div className="space-y-2">
-                      <label className="block text-xs font-bold text-slate-800">
-                        Cor de Fundo do Catálogo
-                      </label>
-                      <div className="flex items-center gap-2">
-                        <input
-                          type="color"
-                          value={backgroundColor}
-                          onChange={(e) => setBackgroundColor(e.target.value)}
-                          className="h-8 w-8 rounded-lg border border-slate-300 p-0.5 cursor-pointer flex-shrink-0"
-                        />
-                        <input
-                          type="text"
-                          value={backgroundColor}
-                          onChange={(e) => setBackgroundColor(e.target.value)}
-                          className="flex-1 rounded-xl border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-mono"
-                        />
-                      </div>
-                      {/* Presets de fundo */}
-                      <div className="flex flex-wrap gap-1.5 pt-1">
-                        {BG_PRESETS.map((p) => (
-                          <button
-                            key={p.name}
-                            type="button"
-                            onClick={() => setBackgroundColor(p.hex)}
-                            className="text-[10px] px-2 py-0.5 rounded-md border border-slate-200 bg-white hover:border-slate-300 text-slate-700 cursor-pointer"
-                          >
-                            {p.name}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Cor do Texto */}
-                    <div className="space-y-2">
-                      <label className="block text-xs font-bold text-slate-800">
-                        Cor dos Textos do Catálogo
-                      </label>
-                      <div className="flex items-center gap-2">
-                        <input
-                          type="color"
-                          value={textColor}
-                          onChange={(e) => setTextColor(e.target.value)}
-                          className="h-8 w-8 rounded-lg border border-slate-300 p-0.5 cursor-pointer flex-shrink-0"
-                        />
-                        <input
-                          type="text"
-                          value={textColor}
-                          onChange={(e) => setTextColor(e.target.value)}
-                          className="flex-1 rounded-xl border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-mono"
-                        />
-                      </div>
-                      {/* Presets de texto */}
-                      <div className="flex flex-wrap gap-1.5 pt-1">
-                        {TEXT_PRESETS.map((p) => (
-                          <button
-                            key={p.name}
-                            type="button"
-                            onClick={() => setTextColor(p.hex)}
-                            className="text-[10px] px-2 py-0.5 rounded-md border border-slate-200 bg-white hover:border-slate-300 text-slate-700 cursor-pointer"
-                          >
-                            {p.name}
-                          </button>
-                        ))}
-                      </div>
+                  {/* Presets Rápidos */}
+                  <div className="space-y-1.5">
+                    <span className="text-[11px] font-semibold text-slate-600">Paletas Recomendadas:</span>
+                    <div className="flex flex-wrap gap-2">
+                      {COLOR_PRESETS.map((preset) => (
+                        <button
+                          key={preset.name}
+                          type="button"
+                          onClick={() => {
+                            setPrimaryColor(preset.primary);
+                            setSecondaryColor(preset.secondary);
+                          }}
+                          className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border text-xs font-semibold transition cursor-pointer ${
+                            primaryColor.toLowerCase() === preset.primary.toLowerCase()
+                              ? 'border-slate-800 bg-slate-900 text-white shadow-2xs'
+                              : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300'
+                          }`}
+                        >
+                          <span
+                            className="w-3.5 h-3.5 rounded-full border border-black/10 flex-shrink-0"
+                            style={{ backgroundColor: preset.primary }}
+                          />
+                          <span>{preset.name}</span>
+                        </button>
+                      ))}
                     </div>
                   </div>
 
-                  {/* Cores Primária e Secundária (Botões de Ação) */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
-                    <div>
-                      <label className="block text-[11px] font-bold text-slate-700 mb-1">
-                        Cor Primária (Botões e Destaques)
+                  {/* Color Picker Personalizado */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                    {/* Cor Primária */}
+                    <div className="bg-slate-50/70 p-3.5 rounded-2xl border border-slate-200/80 space-y-2">
+                      <label className="block text-xs font-bold text-slate-800">
+                        Cor Primária da Marca
                       </label>
-                      <div className="flex items-center gap-2">
-                        <input
-                          type="color"
-                          value={primaryColor}
-                          onChange={(e) => setPrimaryColor(e.target.value)}
-                          className="h-8 w-8 rounded-lg border border-slate-300 p-0.5 cursor-pointer flex-shrink-0"
-                        />
+                      <div className="flex items-center gap-2.5">
+                        <div className="relative">
+                          <input
+                            type="color"
+                            value={primaryColor}
+                            onChange={(e) => setPrimaryColor(e.target.value)}
+                            className="h-10 w-10 rounded-xl border-2 border-white shadow-xs cursor-pointer p-0"
+                            aria-label="Seletor visual de cor primária"
+                          />
+                        </div>
                         <input
                           type="text"
                           value={primaryColor}
                           onChange={(e) => setPrimaryColor(e.target.value)}
-                          className="flex-1 rounded-xl border border-slate-200 px-3 py-1.5 text-xs font-mono"
+                          placeholder="#10b981"
+                          className="flex-1 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-mono font-semibold uppercase text-slate-800 focus:outline-none focus:border-slate-800"
                         />
                       </div>
                     </div>
 
-                    <div>
-                      <label className="block text-[11px] font-bold text-slate-700 mb-1">
-                        Cor Secundária
+                    {/* Cor de Fundo do Catálogo */}
+                    <div className="bg-slate-50/70 p-3.5 rounded-2xl border border-slate-200/80 space-y-2">
+                      <label className="block text-xs font-bold text-slate-800">
+                        Cor de Fundo da Vitrine
                       </label>
-                      <div className="flex items-center gap-2">
-                        <input
-                          type="color"
-                          value={secondaryColor}
-                          onChange={(e) => setSecondaryColor(e.target.value)}
-                          className="h-8 w-8 rounded-lg border border-slate-300 p-0.5 cursor-pointer flex-shrink-0"
-                        />
+                      <div className="flex items-center gap-2.5">
+                        <div className="relative">
+                          <input
+                            type="color"
+                            value={backgroundColor}
+                            onChange={(e) => setBackgroundColor(e.target.value)}
+                            className="h-10 w-10 rounded-xl border-2 border-white shadow-xs cursor-pointer p-0"
+                            aria-label="Seletor visual de cor de fundo"
+                          />
+                        </div>
                         <input
                           type="text"
-                          value={secondaryColor}
-                          onChange={(e) => setSecondaryColor(e.target.value)}
-                          className="flex-1 rounded-xl border border-slate-200 px-3 py-1.5 text-xs font-mono"
+                          value={backgroundColor}
+                          onChange={(e) => setBackgroundColor(e.target.value)}
+                          placeholder="#f8fafc"
+                          className="flex-1 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-mono font-semibold uppercase text-slate-800 focus:outline-none focus:border-slate-800"
                         />
                       </div>
                     </div>
                   </div>
                 </div>
 
-                {/* WhatsApp */}
+                {/* WhatsApp com Máscara (DD) 9XXXX-XXXX */}
                 <div className="pt-3 border-t border-slate-100">
                   <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5 flex items-center gap-1.5">
                     <Phone className="w-4 h-4 text-emerald-600" />
-                    <span>WhatsApp de Atendimento & Vendas *</span>
+                    <span>WhatsApp de Atendimento da Loja *</span>
                   </label>
                   <input
                     type="text"
                     required
                     value={whatsapp}
-                    onChange={(e) => setWhatsapp(e.target.value)}
-                    placeholder="Ex: 5511999998888"
-                    className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-xs sm:text-sm focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 font-mono"
+                    onChange={(e) => setWhatsapp(maskWhatsApp(e.target.value))}
+                    placeholder="(11) 98765-4321"
+                    maxLength={15}
+                    className="w-full rounded-2xl border border-slate-200 px-3.5 py-2.5 text-xs sm:text-sm font-semibold text-slate-900 focus:border-slate-800 focus:outline-none focus:ring-4 focus:ring-slate-900/5 font-mono"
                   />
-                  <span className="text-[11px] text-slate-400 mt-1 block">
-                    Formato com DDD (ex: 5511999998888). Os pedidos da sacola com fotos dos produtos serão enviados para este número.
-                  </span>
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mt-1 text-[11px] text-slate-400">
+                    <span>Digite o DDD e o número com 9 dígitos. Máscara aplicada automaticamente.</span>
+                    {whatsapp && (
+                      <span className="font-mono text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-100 self-start sm:self-auto">
+                        API: +{normalizeWhatsAppToApi(whatsapp)}
+                      </span>
+                    )}
+                  </div>
                 </div>
 
                 {/* Domínio Customizado (Opcional) */}
@@ -563,7 +594,7 @@ export default function AdminConfiguracoesPage() {
                     value={domain}
                     onChange={(e) => setDomain(e.target.value)}
                     placeholder="Ex: catalogo.minhaloja.com.br"
-                    className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-xs sm:text-sm focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                    className="w-full rounded-2xl border border-slate-200 px-3.5 py-2.5 text-xs sm:text-sm focus:border-slate-800 focus:outline-none focus:ring-4 focus:ring-slate-900/5"
                   />
                 </div>
 
@@ -577,7 +608,7 @@ export default function AdminConfiguracoesPage() {
                     <button
                       type="button"
                       onClick={() => setIsOpen(true)}
-                      className={`p-3 rounded-xl border text-xs font-bold flex items-center justify-center gap-2 transition cursor-pointer ${
+                      className={`p-3 rounded-2xl border text-xs font-bold flex items-center justify-center gap-2 transition cursor-pointer ${
                         isOpen
                           ? 'border-emerald-500 bg-emerald-50 text-emerald-800 shadow-2xs'
                           : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300'
@@ -589,7 +620,7 @@ export default function AdminConfiguracoesPage() {
                     <button
                       type="button"
                       onClick={() => setIsOpen(false)}
-                      className={`p-3 rounded-xl border text-xs font-bold flex items-center justify-center gap-2 transition cursor-pointer ${
+                      className={`p-3 rounded-2xl border text-xs font-bold flex items-center justify-center gap-2 transition cursor-pointer ${
                         !isOpen
                           ? 'border-rose-400 bg-rose-50 text-rose-800 shadow-2xs'
                           : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300'
@@ -599,42 +630,34 @@ export default function AdminConfiguracoesPage() {
                       <span>🔴 Fechado no Momento</span>
                     </button>
                   </div>
-                  <span className="text-[11px] text-slate-400 block">
-                    {isOpen
-                      ? 'Sua vitrine exibirá a badge "🟢 Aberto Agora" para os clientes.'
-                      : 'Sua vitrine exibirá o aviso "🔴 Fechado no momento". Os clientes ainda poderão enviar pedidos para o próximo expediente.'}
-                  </span>
                 </div>
 
-                {/* Horário de Funcionamento */}
+                {/* Horário de Atendimento */}
                 <div className="pt-3 border-t border-slate-100">
                   <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5 flex items-center gap-1.5">
                     <Clock className="w-4 h-4 text-slate-400" />
-                    <span>Horário de Atendimento</span>
+                    <span>Horário de Funcionamento</span>
                   </label>
                   <input
                     type="text"
                     value={businessHours}
                     onChange={(e) => setBusinessHours(e.target.value)}
-                    placeholder="Ex: Seg a Sáb: 09h às 19h • Dom: 09h às 13h"
-                    className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-xs sm:text-sm focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                    placeholder="Ex: Seg a Sáb: 09h às 19h • Dom: 09h às 14h"
+                    className="w-full rounded-2xl border border-slate-200 px-3.5 py-2.5 text-xs sm:text-sm focus:border-slate-800 focus:outline-none focus:ring-4 focus:ring-slate-900/5"
                   />
-                  <span className="text-[11px] text-slate-400 mt-1 block">
-                    Exibido no cabeçalho do catálogo para orientar os clientes sobre o atendimento.
-                  </span>
                 </div>
 
                 {/* Chave PIX da Loja */}
                 <div className="pt-3 border-t border-slate-100 space-y-2">
                   <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
                     <QrCode className="w-4 h-4 text-emerald-600" />
-                    <span>Chave PIX da Loja (Para Checkout Rápido)</span>
+                    <span>Chave PIX da Loja (Para Checkout Ágil)</span>
                   </label>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                     <select
                       value={pixKeyType}
                       onChange={(e) => setPixKeyType(e.target.value as any)}
-                      className="rounded-xl border border-slate-200 px-3 py-2 text-xs bg-slate-50 focus:bg-white focus:border-emerald-500 focus:outline-none"
+                      className="rounded-2xl border border-slate-200 px-3.5 py-2.5 text-xs bg-slate-50 focus:bg-white focus:border-slate-800 focus:outline-none"
                     >
                       <option value="cpf">CPF</option>
                       <option value="cnpj">CNPJ</option>
@@ -646,13 +669,10 @@ export default function AdminConfiguracoesPage() {
                       type="text"
                       value={pixKey}
                       onChange={(e) => setPixKey(e.target.value)}
-                      placeholder="Ex: 11999998888 ou pix@sualoja.com"
-                      className="sm:col-span-2 rounded-xl border border-slate-200 px-3.5 py-2 text-xs sm:text-sm focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 font-mono"
+                      placeholder="Ex: 11999998888 ou pix@minhaloja.com"
+                      className="sm:col-span-2 rounded-2xl border border-slate-200 px-3.5 py-2.5 text-xs sm:text-sm focus:border-slate-800 focus:outline-none focus:ring-4 focus:ring-slate-900/5 font-mono"
                     />
                   </div>
-                  <span className="text-[11px] text-slate-400 block">
-                    Ao escolher pagamento via PIX, o cliente terá um botão de &quot;Copiar Chave PIX&quot; facilitando o pagamento imediato.
-                  </span>
                 </div>
 
                 {/* Botão de Salvar */}
@@ -660,17 +680,17 @@ export default function AdminConfiguracoesPage() {
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl text-xs sm:text-sm font-bold text-white bg-emerald-600 hover:bg-emerald-700 shadow-md transition disabled:opacity-50 cursor-pointer"
+                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-2xl text-xs sm:text-sm font-bold text-white bg-slate-900 hover:bg-slate-800 shadow-md transition disabled:opacity-50 cursor-pointer"
                   >
                     {isSubmitting ? (
                       <>
-                        <Loader2 className="w-4 h-4 animate-spin" />
+                        <Loader2 className="w-4 h-4 animate-spin text-slate-300" />
                         <span>Salvando Configurações...</span>
                       </>
                     ) : (
                       <>
                         <Save className="w-4 h-4" />
-                        <span>Salvar Alterações</span>
+                        <span>Salvar Todas as Alterações</span>
                       </>
                     )}
                   </button>
@@ -685,7 +705,7 @@ export default function AdminConfiguracoesPage() {
                   <Smartphone className="w-4 h-4 text-emerald-600" />
                   <span>Pré-visualização em Tempo Real</span>
                 </div>
-                <span className="text-[10px] text-slate-400 bg-slate-200/60 px-2 py-0.5 rounded-full font-semibold">
+                <span className="text-[10px] text-slate-500 bg-slate-100 px-2.5 py-1 rounded-full font-semibold">
                   Visual Mobile do Catálogo
                 </span>
               </div>
@@ -727,7 +747,7 @@ export default function AdminConfiguracoesPage() {
                         </span>
                         <span className="text-[9px] text-emerald-600 font-semibold flex items-center gap-1">
                           <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                          Online
+                          {isOpen ? 'Aberto Agora' : 'Fechado'}
                         </span>
                       </div>
                     </div>
@@ -744,7 +764,7 @@ export default function AdminConfiguracoesPage() {
                   <div className="p-3 space-y-3 flex-1">
                     {/* Banners no Início */}
                     {banners.length > 0 ? (
-                      <div className="relative rounded-2xl overflow-hidden aspect-[21/9] bg-slate-200 shadow-xs">
+                      <div className="relative rounded-2xl overflow-hidden aspect-[16/9] bg-slate-200 shadow-xs">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
                           src={banners[0]}
@@ -763,26 +783,26 @@ export default function AdminConfiguracoesPage() {
                         )}
                       </div>
                     ) : (
-                      <div className="p-2.5 rounded-xl border border-dashed border-slate-300 text-center text-[10px] text-slate-400">
+                      <div className="p-3 rounded-2xl border border-dashed border-slate-300 text-center text-[10px] text-slate-400">
                         Nenhum banner cadastrado
                       </div>
                     )}
 
                     {/* Card de Produto Exemplo */}
-                    <div className="bg-white rounded-xl p-2.5 border border-slate-200/80 shadow-2xs space-y-2">
-                      <div className="h-24 rounded-lg bg-slate-100 flex items-center justify-center text-slate-400 relative overflow-hidden">
+                    <div className="bg-white rounded-2xl p-2.5 border border-slate-200/80 shadow-2xs space-y-2">
+                      <div className="h-24 rounded-xl bg-slate-100 flex items-center justify-center text-slate-400 relative overflow-hidden">
                         <Store className="w-6 h-6 stroke-1 text-slate-300" />
                         <span
                           className="absolute top-1.5 left-1.5 text-white text-[8px] font-black px-1.5 py-0.5 rounded-full"
                           style={{ backgroundColor: primaryColor }}
                         >
-                          -20%
+                          Destaque
                         </span>
                       </div>
 
                       <div className="space-y-0.5">
                         <h5 className="text-[11px] font-bold text-slate-900">
-                          Exemplo de Produto
+                          Produto de Demonstração
                         </h5>
                         <div className="flex items-center justify-between pt-1">
                           <span
@@ -792,10 +812,10 @@ export default function AdminConfiguracoesPage() {
                             R$ 89,90
                           </span>
                           <div
-                            className="h-5 w-5 rounded-md flex items-center justify-center text-white"
+                            className="h-6 w-6 rounded-lg flex items-center justify-center text-white"
                             style={{ backgroundColor: primaryColor }}
                           >
-                            <ShoppingBag className="w-2.5 h-2.5" />
+                            <ShoppingBag className="w-3 h-3" />
                           </div>
                         </div>
                       </div>
@@ -803,11 +823,11 @@ export default function AdminConfiguracoesPage() {
 
                     {/* Botão de WhatsApp */}
                     <div
-                      className="w-full py-2 px-3 rounded-xl text-white font-bold text-[11px] flex items-center justify-center gap-1.5 shadow-xs"
+                      className="w-full py-2.5 px-3 rounded-2xl text-white font-bold text-[11px] flex items-center justify-center gap-1.5 shadow-xs"
                       style={{ backgroundColor: primaryColor }}
                     >
                       <MessageCircle className="w-3.5 h-3.5 fill-current" />
-                      <span>Comprar pelo WhatsApp</span>
+                      <span>{whatsapp ? `Chamar: ${whatsapp}` : 'Comprar pelo WhatsApp'}</span>
                     </div>
                   </div>
                 </div>
