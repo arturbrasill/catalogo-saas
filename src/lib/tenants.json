@@ -11,6 +11,12 @@
     "name": "Minha Loja Digital",
     "domain": "loja-exemplo.com.br"
   },
+  "numclik.vercel.app": {
+    "tenantId": "loja_exemplo",
+    "apiUrl": "https://script.google.com/macros/s/AKfycbxU2ES26LBjR7tTw_NuwXzFZCEklvW1v312n-8NC_gkblaapGEWeI5kKg9bUOR2BriC/exec",
+    "name": "Minha Loja Digital",
+    "domain": "numclik.vercel.app"
+  },
   "moda-style.com.br": {
     "tenantId": "moda_style",
     "apiUrl": "https://script.google.com/macros/s/MODA_STYLE_ID/exec",
