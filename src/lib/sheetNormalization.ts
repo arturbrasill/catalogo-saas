@@ -132,6 +132,39 @@ export function normalizeImages(raw: unknown): string[] {
 }
 
 /**
+ * Divide opções de variação por vírgula ou barra preservando vírgulas dentro de parênteses (ex: "42 (+R$ 15,00)").
+ */
+export function splitVariationOptions(input: string): string[] {
+  const result: string[] = [];
+  let current = '';
+  let inParen = 0;
+
+  for (let i = 0; i < input.length; i++) {
+    const char = input[i];
+    if (char === '(') {
+      inParen++;
+      current += char;
+    } else if (char === ')') {
+      if (inParen > 0) inParen--;
+      current += char;
+    } else if ((char === ',' || char === '/') && inParen === 0) {
+      if (current.trim().length > 0) {
+        result.push(current.trim());
+      }
+      current = '';
+    } else {
+      current += char;
+    }
+  }
+
+  if (current.trim().length > 0) {
+    result.push(current.trim());
+  }
+
+  return result;
+}
+
+/**
  * Parse seguro de variações suportando:
  * - JSON string: [{"tipo":"Tamanho","opcoes":["P","M"]}]
  * - Texto formatado: "Tamanho: P, M, G | Cor: Preto, Branco"
@@ -148,7 +181,7 @@ export function normalizeVariations(raw: unknown): VariationOption[] {
       if (Array.isArray(item.opcoes)) {
         opcoes = item.opcoes.map((o: unknown) => String(o).trim()).filter(Boolean);
       } else if (typeof item.opcoes === 'string') {
-        opcoes = item.opcoes.split(/[,/]+/).map((o: string) => o.trim()).filter(Boolean);
+        opcoes = splitVariationOptions(item.opcoes);
       }
 
       if (tipo && opcoes.length > 0) {
@@ -178,19 +211,17 @@ export function normalizeVariations(raw: unknown): VariationOption[] {
 
     for (const group of groups) {
       if (group.includes(':')) {
-        const [rawTipo, rawOpcoes] = group.split(':', 2);
+        const [rawTipo, ...rest] = group.split(':');
         const tipo = (rawTipo || '').trim();
-        const opcoes = (rawOpcoes || '')
-          .split(/[,/]+/)
-          .map((o) => o.trim())
-          .filter(Boolean);
+        const rawOpcoes = rest.join(':');
+        const opcoes = splitVariationOptions(rawOpcoes);
 
         if (tipo && opcoes.length > 0) {
           parsedVariations.push({ tipo, opcoes });
         }
       } else {
         // Ex: "P, M, G, GG"
-        const opcoes = group.split(/[,/]+/).map((o) => o.trim()).filter(Boolean);
+        const opcoes = splitVariationOptions(group);
         if (opcoes.length > 0) {
           parsedVariations.push({ tipo: 'Opção', opcoes });
         }
