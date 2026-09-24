@@ -8,17 +8,25 @@ const PUBLIC_FILE = /\.(.*)$/;
 export function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
+  const cleanPath = pathname.replace(/\/+$/, '') || '/';
+
   // 1. Ignora assets estáticos, rotas internas do Next.js, rotas do SaaS e tela de erro
   if (
     pathname.startsWith('/_next') ||
     pathname.startsWith('/api') ||
     pathname.startsWith('/static') ||
-    pathname === '/tenant-not-found' ||
-    pathname === '/criar-loja' ||
-    pathname === '/saas-admin' ||
-    pathname === '/saas-login' ||
-    pathname === '/landing' ||
-    pathname === '/planos' ||
+    cleanPath === '/tenant-not-found' ||
+    cleanPath.startsWith('/tenant-not-found/') ||
+    cleanPath === '/criar-loja' ||
+    cleanPath.startsWith('/criar-loja/') ||
+    cleanPath === '/saas-admin' ||
+    cleanPath.startsWith('/saas-admin/') ||
+    cleanPath === '/saas-login' ||
+    cleanPath.startsWith('/saas-login/') ||
+    cleanPath === '/landing' ||
+    cleanPath.startsWith('/landing/') ||
+    cleanPath === '/planos' ||
+    cleanPath.startsWith('/planos/') ||
     PUBLIC_FILE.test(pathname)
   ) {
     return NextResponse.next();
