@@ -101,7 +101,9 @@ export async function syncTenantsFromRemote(): Promise<boolean> {
   // 1. Sincroniza com Supabase (Banco de Dados Oficial do SaaS)
   try {
     const supabaseTenants = await fetchAllTenantsFromSupabase();
-    if (supabaseTenants && supabaseTenants.length > 0) {
+    if (supabaseTenants !== null) {
+      // Quando Supabase está ativo, ele é a fonte exclusiva da verdade para as lojas cadastradas
+      const newRegistry: TenantRegistry = {};
       for (const t of supabaseTenants) {
         if (t.tenantId) {
           const domain = t.domain || `${t.slug || t.tenantId}.localhost`;
@@ -111,7 +113,7 @@ export async function syncTenantsFromRemote(): Promise<boolean> {
             slug: t.slug || t.tenantId.replace(/_/g, '-'),
             domain,
             apiUrl: t.apiUrl || '',
-            whatsapp: t.whatsapp || '',
+            whatsapp: String(t.whatsapp || ''),
             ownerEmail: t.ownerEmail || '',
             niche: t.niche || 'Geral',
             plan: t.plan || 'trial_30d',
@@ -123,20 +125,21 @@ export async function syncTenantsFromRemote(): Promise<boolean> {
             asaasSubscriptionId: t.asaasSubscriptionId,
             asaasPaymentLink: t.asaasPaymentLink,
           };
-          inMemoryRegistry[domain] = tenantObj;
-          if (t.slug) inMemoryRegistry[t.slug] = tenantObj;
-          inMemoryRegistry[t.tenantId] = tenantObj;
+          newRegistry[domain] = tenantObj;
+          if (t.slug) newRegistry[t.slug] = tenantObj;
+          newRegistry[t.tenantId] = tenantObj;
         }
       }
+      inMemoryRegistry = newRegistry;
       synced = true;
     }
   } catch (err) {
     console.warn('Nota: Não foi possível sincronizar com o Supabase:', err);
   }
 
-  // 2. Sincroniza com Google Apps Script Master Provisioner (Fallback)
+  // 2. Sincroniza com Google Apps Script Master Provisioner (Fallback somente se Supabase não estiver configurado)
   const provisionerUrl = getMasterProvisionerUrl();
-  if (provisionerUrl) {
+  if (!synced && provisionerUrl) {
     try {
       const res = await fetch(`${provisionerUrl}?action=listStores`, {
         headers: { 'Content-Type': 'application/json' },
