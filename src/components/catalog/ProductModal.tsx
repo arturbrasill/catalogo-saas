@@ -10,6 +10,7 @@ import {
   parseVariationOption,
   isColorVariation,
   formatInstallments,
+  hasVariationPricing,
 } from '@/lib/variations';
 import {
   X,
@@ -403,9 +404,12 @@ export function ProductModal({
                     )}
                   </div>
 
-                  {priceCalc.hasPriceAdjustment && (
-                    <span className="text-[11px] font-bold text-slate-500 bg-slate-100 px-2.5 py-0.5 rounded-full">
-                      Preço varia por opção
+                  {hasVariationPricing(product.variacoes, product.preco, store.currency) && (
+                    <span className="text-[11px] font-bold text-emerald-800 bg-emerald-50 border border-emerald-200/80 px-2.5 py-0.5 rounded-full flex items-center gap-1 shadow-2xs">
+                      <Sparkles className="w-3 h-3 text-emerald-600" />
+                      {priceCalc.hasPriceAdjustment
+                        ? 'Preço atualizado para a opção selecionada'
+                        : 'Preço varia conforme o tamanho/opção'}
                     </span>
                   )}
                 </div>
@@ -417,7 +421,7 @@ export function ProductModal({
                   </h3>
                   <div className="flex items-baseline gap-3 mt-2 flex-wrap">
                     <span
-                      className="text-2xl sm:text-3xl font-black tracking-tight text-brand-primary"
+                      className="text-2xl sm:text-3xl font-black tracking-tight text-brand-primary transition-all duration-200"
                       style={{ color: store.primary_color }}
                     >
                       {formatCurrency(currentEffectivePrice, store.currency)}
@@ -425,6 +429,11 @@ export function ProductModal({
                     {currentPromoPrice && (
                       <span className="text-sm text-brand-text-muted line-through">
                         {formatCurrency(currentUnitPrice, store.currency)}
+                      </span>
+                    )}
+                    {priceCalc.totalDelta > 0 && (
+                      <span className="text-[11px] font-bold text-emerald-800 bg-emerald-100/90 px-2 py-0.5 rounded-md border border-emerald-300">
+                        + {formatCurrency(priceCalc.totalDelta, store.currency)} (opção)
                       </span>
                     )}
                     {savings > 0 && (

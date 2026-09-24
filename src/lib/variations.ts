@@ -1,5 +1,6 @@
 import type { VariationOption, SelectedVariation } from '@/types';
 import { formatCurrency } from '@/lib/whatsapp';
+export { formatCurrency } from '@/lib/whatsapp';
 
 export interface VariationValueObject {
   nome: string;
@@ -178,6 +179,48 @@ export function parseVariationOption(
 }
 
 /**
+ * Constrói a string formatada de uma opção de variação com seu acréscimo ou preço fixo
+ */
+export function buildVariationOptionString(
+  label: string,
+  priceAdjustmentType: 'none' | 'delta' | 'fixed',
+  amount?: number
+): string {
+  const clean = label.trim();
+  if (!clean) return '';
+  if (priceAdjustmentType === 'delta' && typeof amount === 'number' && amount > 0) {
+    const formattedAmount = amount.toFixed(2).replace('.', ',');
+    return `${clean} (+R$ ${formattedAmount})`;
+  }
+  if (priceAdjustmentType === 'fixed' && typeof amount === 'number' && amount > 0) {
+    const formattedAmount = amount.toFixed(2).replace('.', ',');
+    return `${clean}: R$ ${formattedAmount}`;
+  }
+  return clean;
+}
+
+/**
+ * Verifica se um conjunto de variações possui alguma opção com preço diferenciado
+ */
+export function hasVariationPricing(
+  productVariations?: VariationOption[],
+  basePrice?: number,
+  currency = 'BRL'
+): boolean {
+  if (!productVariations || productVariations.length === 0) return false;
+  return productVariations.some((v) =>
+    v.opcoes.some((opt) => {
+      const parsed = parseVariationOption(opt as any, currency);
+      return (
+        parsed.priceDelta > 0 ||
+        (typeof parsed.fixedPrice === 'number' &&
+          (basePrice === undefined || parsed.fixedPrice !== basePrice))
+      );
+    })
+  );
+}
+
+/**
  * Calcula o preço unitário e promocional efetivo baseado nas variações selecionadas
  */
 export function calculateEffectiveProductPrice(
@@ -222,7 +265,10 @@ export function calculateEffectiveProductPrice(
   }
 
   // Preço unitário ajustado
-  let unitPrice = typeof fixedOverride === 'number' ? fixedOverride : basePrice + totalDelta;
+  let unitPrice =
+    typeof fixedOverride === 'number'
+      ? fixedOverride + totalDelta
+      : basePrice + totalDelta;
   if (unitPrice < 0) unitPrice = 0;
 
   // Preço promocional ajustado caso exista
@@ -232,8 +278,14 @@ export function calculateEffectiveProductPrice(
     basePromotionalPrice > 0 &&
     basePromotionalPrice < basePrice
   ) {
-    promotionalPrice = basePromotionalPrice + totalDelta;
-    if (promotionalPrice >= unitPrice) {
+    if (typeof fixedOverride === 'number') {
+      const discount = basePrice - basePromotionalPrice;
+      promotionalPrice = unitPrice - discount;
+    } else {
+      promotionalPrice = basePromotionalPrice + totalDelta;
+    }
+
+    if (promotionalPrice <= 0 || promotionalPrice >= unitPrice) {
       promotionalPrice = null;
     }
   }

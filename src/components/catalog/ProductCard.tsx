@@ -9,6 +9,7 @@ import {
   isColorVariation,
   getColorHex,
   parseVariationOption,
+  hasVariationPricing,
 } from '@/lib/variations';
 import { ShoppingBag, Eye, Package, Heart } from 'lucide-react';
 
@@ -43,6 +44,7 @@ export function ProductCard({
   const firstImage = product.imagens && product.imagens.length > 0 ? product.imagens[0] : null;
   const secondImage = product.imagens && product.imagens.length > 1 ? product.imagens[1] : null;
   const hasVariations = product.variacoes && product.variacoes.length > 0;
+  const hasPriceVariations = hasVariationPricing(product.variacoes, product.preco, store.currency);
   const favorite = isFavorite(product.id);
   const installmentText = formatInstallments(effectivePrice, 3, 25, store.currency);
 
@@ -194,6 +196,11 @@ export function ProductCard({
             {hasDiscount && (
               <span className="text-[10px] sm:text-[11px] text-brand-text-muted line-through block mb-1 truncate">
                 {formatCurrency(product.preco, store.currency)}
+              </span>
+            )}
+            {hasPriceVariations && (
+              <span className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider block mb-0.5">
+                A partir de
               </span>
             )}
             <span

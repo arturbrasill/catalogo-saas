@@ -8,6 +8,7 @@ import { api } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
 import { maskCurrency, unmaskCurrency } from '@/lib/masks';
 import type { Product, Category, VariationOption } from '@/types';
+import { hasVariationPricing } from '@/lib/variations';
 import {
   Plus,
   Search,
@@ -488,13 +489,18 @@ export default function AdminProdutosPage() {
                             <span className="font-bold text-slate-900 block leading-snug truncate max-w-xs">
                               {prod.nome}
                             </span>
-                            <div className="flex items-center gap-2 mt-0.5">
+                            <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
                               {prod.variacoes && prod.variacoes.length > 0 ? (
                                 <span className="text-[10px] text-slate-700 bg-slate-100 px-2 py-0.5 rounded-md font-semibold border border-slate-200/60">
                                   {prod.variacoes.length} {prod.variacoes.length === 1 ? 'variação' : 'variações'}
                                 </span>
                               ) : (
                                 <span className="text-[10px] text-slate-400">Padrão</span>
+                              )}
+                              {hasVariationPricing(prod.variacoes, prod.preco) && (
+                                <span className="text-[10px] font-bold text-emerald-800 bg-emerald-50 px-1.5 py-0.5 rounded-md border border-emerald-200 shadow-2xs">
+                                  Preço variável
+                                </span>
                               )}
                               {prod.descricao && (
                                 <span className="text-[11px] text-slate-400 truncate max-w-[150px] hidden sm:inline">
@@ -516,6 +522,11 @@ export default function AdminProdutosPage() {
                       {/* Preço */}
                       <td className="px-4 py-3.5">
                         <div className="leading-tight">
+                          {hasVariationPricing(prod.variacoes, prod.preco) && (
+                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-0.5">
+                              A partir de
+                            </span>
+                          )}
                           <span className="font-bold text-slate-900 block">
                             R$ {prod.preco.toFixed(2).replace('.', ',')}
                           </span>

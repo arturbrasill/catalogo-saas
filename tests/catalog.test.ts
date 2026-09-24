@@ -388,6 +388,32 @@ describe('Módulo 3 — Vitrine Pública & Catálogo (tests/catalog.test.ts)', (
       expect(formatInstallments(90, 3, 25)).toBe('ou 3x de R$ 30,00 sem juros');
       expect(formatInstallments(120, 4, 30)).toBe('ou 4x de R$ 30,00 sem juros');
     });
+
+    it('deve construir strings formatadas de variações com buildVariationOptionString e detectar preço com hasVariationPricing', async () => {
+      const { buildVariationOptionString, hasVariationPricing, parseVariationOption } = await import('../src/lib/variations');
+
+      // Teste buildVariationOptionString
+      expect(buildVariationOptionString('P', 'none')).toBe('P');
+      expect(buildVariationOptionString('G', 'delta', 10)).toBe('G (+R$ 10,00)');
+      expect(buildVariationOptionString('GG', 'delta', 15.5)).toBe('GG (+R$ 15,50)');
+      expect(buildVariationOptionString('128GB', 'fixed', 899)).toBe('128GB: R$ 899,00');
+
+      // Teste parseVariationOption com a string gerada
+      const parsedG = parseVariationOption(buildVariationOptionString('G', 'delta', 10));
+      expect(parsedG.cleanLabel).toBe('G');
+      expect(parsedG.priceDelta).toBe(10);
+      expect(parsedG.displayBadge).toBe('+ R$ 10,00');
+
+      // Teste hasVariationPricing
+      const normalVars = [{ tipo: 'Tamanho', opcoes: ['P', 'M', 'G'] }];
+      expect(hasVariationPricing(normalVars, 50)).toBe(false);
+
+      const priceVars = [{ tipo: 'Tamanho', opcoes: ['P', 'M', 'G (+R$ 10,00)'] }];
+      expect(hasVariationPricing(priceVars, 50)).toBe(true);
+
+      const fixedVars = [{ tipo: 'Capacidade', opcoes: ['64GB', '128GB: R$ 899,00'] }];
+      expect(hasVariationPricing(fixedVars, 500)).toBe(true);
+    });
   });
 
   // ============================================================
