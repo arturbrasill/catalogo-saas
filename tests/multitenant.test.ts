@@ -561,6 +561,22 @@ describe('Módulo 5 — Multi-Tenant e Resolução de Domínios (src/lib/tenantR
         delete process.env['GOOGLE_MASTER_PROVISIONER_URL'];
       }
     });
+
+    it('deve excluir uma loja completamente do registro através de deleteTenant()', async () => {
+      const { registerTenant, deleteTenant, findTenant } = await import('../src/lib/tenantStore');
+
+      const created = await registerTenant({
+        name: 'Loja Para Deletar Teste',
+        slug: 'loja-para-deletar-teste',
+        whatsapp: '11999998888',
+      });
+
+      expect(findTenant(created.tenant.tenantId)).toBeTruthy();
+
+      const deleted = await deleteTenant(created.tenant.tenantId);
+      expect(deleted).toBe(true);
+      expect(findTenant(created.tenant.tenantId)).toBeNull();
+    });
   });
 });
 

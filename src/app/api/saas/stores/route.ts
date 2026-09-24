@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import {
   getTenantRegistry,
   registerTenant,
+  deleteTenant,
   getSaasMetrics,
   findTenant,
   syncTenantsFromRemote,
@@ -107,6 +108,48 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     return NextResponse.json(
       { success: false, error: 'Falha ao criar loja: ' + String(error) },
+      { status: 500 }
+    );
+  }
+}
+
+export async function DELETE(request: NextRequest) {
+  if (!isAuthorized(request)) {
+    return NextResponse.json(
+      { success: false, error: 'Acesso não autorizado ao painel SaaS Master.' },
+      { status: 401 }
+    );
+  }
+
+  try {
+    const searchParams = request.nextUrl.searchParams;
+    let tenantId = searchParams.get('tenantId');
+
+    if (!tenantId) {
+      try {
+        const body = await request.json();
+        tenantId = body?.tenantId;
+      } catch {
+        // body opcional se passado via query string
+      }
+    }
+
+    if (!tenantId || !tenantId.trim()) {
+      return NextResponse.json(
+        { success: false, error: 'O identificador da loja (tenantId) é obrigatório.' },
+        { status: 400 }
+      );
+    }
+
+    await deleteTenant(tenantId.trim());
+
+    return NextResponse.json({
+      success: true,
+      data: { tenantId: tenantId.trim(), deleted: true },
+    });
+  } catch (error) {
+    return NextResponse.json(
+      { success: false, error: 'Falha ao excluir loja: ' + String(error) },
       { status: 500 }
     );
   }

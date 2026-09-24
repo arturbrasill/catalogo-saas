@@ -259,6 +259,37 @@ export async function updateTenantInSupabase(input: UpdateSubscriptionInput): Pr
   }
 }
 
+export async function deleteTenantFromSupabase(tenantId: string): Promise<boolean> {
+  const supabase = getSupabaseClient();
+  if (!supabase) return false;
+
+  try {
+    // 1. Remove dependências vinculadas à loja no banco
+    await Promise.allSettled([
+      supabase.from('coupons').delete().eq('tenant_id', tenantId),
+      supabase.from('products').delete().eq('tenant_id', tenantId),
+      supabase.from('categories').delete().eq('tenant_id', tenantId),
+      supabase.from('store_configs').delete().eq('tenant_id', tenantId),
+    ]);
+
+    // 2. Remove o registro mestre do tenant
+    const { error } = await supabase
+      .from('tenants')
+      .delete()
+      .eq('tenant_id', tenantId);
+
+    if (error) {
+      console.warn('Erro ao deletar tenant no Supabase:', error.message);
+      return false;
+    }
+
+    return true;
+  } catch (err) {
+    console.warn('Erro em deleteTenantFromSupabase:', err);
+    return false;
+  }
+}
+
 // ============================================================
 // CONFIGURAÇÕES DA LOJA (STORE CONFIG)
 // ============================================================

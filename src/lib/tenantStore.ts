@@ -15,6 +15,7 @@ import {
   fetchAllTenantsFromSupabase,
   insertTenantIntoSupabase,
   updateTenantInSupabase,
+  deleteTenantFromSupabase,
 } from '@/lib/supabase';
 
 // Caminho para persistência local de novos tenants criados dinamicamente
@@ -530,6 +531,34 @@ export function updateTenantSubscription(input: UpdateSubscriptionInput): Tenant
   }
 
   return tenant;
+}
+
+/**
+ * Remove uma loja completamente (banco de dados Supabase e registro em memória)
+ */
+export async function deleteTenant(tenantId: string): Promise<boolean> {
+  // Remove do registro em memória
+  const keysToRemove: string[] = [];
+  for (const [key, t] of Object.entries(inMemoryRegistry)) {
+    if (t.tenantId === tenantId) {
+      keysToRemove.push(key);
+    }
+  }
+
+  for (const key of keysToRemove) {
+    delete inMemoryRegistry[key];
+  }
+
+  persistDynamicTenants();
+
+  // Remove do Supabase
+  try {
+    await deleteTenantFromSupabase(tenantId);
+  } catch (err) {
+    console.warn('Nota: Erro ao remover tenant do Supabase:', err);
+  }
+
+  return true;
 }
 
 /**
