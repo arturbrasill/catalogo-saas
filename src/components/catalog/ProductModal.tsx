@@ -175,7 +175,7 @@ export function ProductModal({
 
   const handleAskWhatsApp = () => {
     if (!product || !store.whatsapp) return;
-    const phone = store.whatsapp.replace(/\D/g, '');
+    const phone = String(store.whatsapp).replace(/\D/g, '');
     const currentUrl = typeof window !== 'undefined' ? window.location.href : '';
     const message = `Olá ${store.store_name}! Gostaria de tirar uma dúvida sobre o produto *${product.nome}* (${formatCurrency(currentEffectivePrice, store.currency)}):\n${currentUrl}`;
     window.open(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`, '_blank', 'noreferrer,noopener');

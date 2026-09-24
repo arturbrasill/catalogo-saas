@@ -373,6 +373,132 @@ export async function POST(request: NextRequest) {
             sanitizeStoreResponse({ success: true, data: { success: true, id: payload.id }, error: null }, tenant)
           );
         }
+      } else if (payload.action === 'validateCoupon') {
+        const coupons = await fetchCouponsFromSupabase(tenantId);
+        if (coupons) {
+          const rawCode = String(payload.code || payload.codigo || '').trim();
+          const subtotal = Number(payload.subtotal || 0);
+
+          if (!rawCode) {
+            return NextResponse.json(
+              sanitizeStoreResponse(
+                {
+                  success: true,
+                  data: {
+                    valid: false,
+                    discountAmount: 0,
+                    message: 'Código de cupom não informado.',
+                  },
+                  error: null,
+                },
+                tenant
+              )
+            );
+          }
+
+          const clean = rawCode.toUpperCase().replace(/\s+/g, '');
+          const coupon = coupons.find((c) => c.codigo.toUpperCase() === clean);
+
+          if (!coupon) {
+            return NextResponse.json(
+              sanitizeStoreResponse(
+                {
+                  success: true,
+                  data: {
+                    valid: false,
+                    discountAmount: 0,
+                    message: `Cupom "${clean}" não encontrado.`,
+                  },
+                  error: null,
+                },
+                tenant
+              )
+            );
+          }
+
+          if (!coupon.ativo) {
+            return NextResponse.json(
+              sanitizeStoreResponse(
+                {
+                  success: true,
+                  data: {
+                    valid: false,
+                    coupon,
+                    discountAmount: 0,
+                    message: `O cupom "${clean}" está desativado no momento.`,
+                  },
+                  error: null,
+                },
+                tenant
+              )
+            );
+          }
+
+          if (coupon.validade) {
+            const expDate = new Date(coupon.validade).getTime();
+            if (expDate < Date.now()) {
+              return NextResponse.json(
+                sanitizeStoreResponse(
+                  {
+                    success: true,
+                    data: {
+                      valid: false,
+                      coupon,
+                      discountAmount: 0,
+                      message: `O cupom "${clean}" expirou em ${new Date(coupon.validade).toLocaleDateString('pt-BR')}.`,
+                    },
+                    error: null,
+                  },
+                  tenant
+                )
+              );
+            }
+          }
+
+          if (typeof coupon.valorMinimo === 'number' && coupon.valorMinimo > 0) {
+            if (subtotal < coupon.valorMinimo) {
+              const formattedMin = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(coupon.valorMinimo);
+              return NextResponse.json(
+                sanitizeStoreResponse(
+                  {
+                    success: true,
+                    data: {
+                      valid: false,
+                      coupon,
+                      discountAmount: 0,
+                      message: `O cupom "${clean}" é válido apenas para pedidos a partir de ${formattedMin}.`,
+                    },
+                    error: null,
+                  },
+                  tenant
+                )
+              );
+            }
+          }
+
+          let discountAmount = 0;
+          if (coupon.tipo === 'percentage') {
+            discountAmount = Math.round((subtotal * (coupon.valor / 100)) * 100) / 100;
+          } else {
+            discountAmount = Math.min(coupon.valor, subtotal);
+          }
+
+          return NextResponse.json(
+            sanitizeStoreResponse(
+              {
+                success: true,
+                data: {
+                  valid: true,
+                  coupon,
+                  discountAmount,
+                  message: `Cupom "${clean}" aplicado com sucesso!`,
+                },
+                error: null,
+              },
+              tenant
+            )
+          );
+        }
       }
     } catch (err) {
       console.warn('Nota: Fallback Supabase em POST /api/backend:', err);

@@ -197,7 +197,7 @@ export default function SaasAdminPage() {
   const openEditModal = (store: Tenant) => {
     setEditingStore(store);
     setEditName(store.name || '');
-    setEditWhatsapp(store.whatsapp || '');
+    setEditWhatsapp(store.whatsapp ? String(store.whatsapp) : '');
     setEditOwnerEmail(store.ownerEmail || '');
     setEditPlan(store.plan || 'monthly');
     setEditStatus(store.subscriptionStatus || 'active');
@@ -229,7 +229,7 @@ export default function SaasAdminPage() {
         body: JSON.stringify({
           tenantId: editingStore.tenantId,
           name: editName.trim(),
-          whatsapp: editWhatsapp.replace(/\D/g, ''),
+          whatsapp: String(editWhatsapp || '').replace(/\D/g, ''),
           ownerEmail: editOwnerEmail.trim(),
           plan: editPlan,
           subscriptionStatus: editStatus,
@@ -341,7 +341,7 @@ export default function SaasAdminPage() {
         !searchTerm.trim() ||
         store.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         store.slug?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        store.whatsapp?.includes(searchTerm.replace(/\D/g, '')) ||
+        String(store.whatsapp || '').includes(searchTerm.replace(/\D/g, '')) ||
         store.ownerEmail?.toLowerCase().includes(searchTerm.toLowerCase());
 
       if (!matchesSearch) return false;
@@ -624,7 +624,7 @@ export default function SaasAdminPage() {
                 {filteredStores.map((store) => {
                   const statusInfo = getStoreStatusDetails(store);
                   const isBlocked = store.subscriptionStatus === 'blocked';
-                  const waNumber = store.whatsapp?.replace(/\D/g, '') || '';
+                  const waNumber = String(store.whatsapp || '').replace(/\D/g, '');
                   const waBillingMsg = encodeURIComponent(
                     `Olá ${store.name}! Notamos que a assinatura do seu catálogo digital está próxima do vencimento ou pendente. Gostaria de renovar para manter sua loja ativa online?`
                   );
@@ -650,7 +650,7 @@ export default function SaasAdminPage() {
                             title="Conversar no WhatsApp"
                           >
                             <MessageCircle className="w-3.5 h-3.5 text-emerald-500" />
-                            <span>{store.whatsapp}</span>
+                            <span>{String(store.whatsapp || '')}</span>
                           </a>
                         ) : (
                           <span className="text-slate-400 text-xs">—</span>
@@ -771,7 +771,7 @@ export default function SaasAdminPage() {
             {filteredStores.map((store) => {
               const statusInfo = getStoreStatusDetails(store);
               const isBlocked = store.subscriptionStatus === 'blocked';
-              const waNumber = store.whatsapp?.replace(/\D/g, '') || '';
+              const waNumber = String(store.whatsapp || '').replace(/\D/g, '');
               const waBillingMsg = encodeURIComponent(
                 `Olá ${store.name}! Sua assinatura do catálogo digital está pendente de renovação.`
               );

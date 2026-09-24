@@ -185,7 +185,7 @@ function CatalogContent({ onStoreLoaded }: CatalogContentProps) {
             </Link>
             {store.whatsapp && (
               <a
-                href={`https://wa.me/${store.whatsapp.replace(/\D/g, '')}`}
+                href={`https://wa.me/${String(store.whatsapp).replace(/\D/g, '')}`}
                 target="_blank"
                 rel="noreferrer"
                 className="px-4 py-2.5 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200 font-semibold text-xs hover:bg-emerald-100 transition-colors"
@@ -220,7 +220,7 @@ function CatalogContent({ onStoreLoaded }: CatalogContentProps) {
             <div className="flex items-center gap-3">
               {store?.whatsapp && (
                 <a
-                  href={`https://wa.me/${store.whatsapp.replace(/\D/g, '')}`}
+                  href={`https://wa.me/${String(store.whatsapp).replace(/\D/g, '')}`}
                   target="_blank"
                   rel="noreferrer"
                   className="hidden md:flex items-center gap-1.5 text-[11px] font-bold text-slate-300 hover:text-white transition-colors"

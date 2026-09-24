@@ -70,7 +70,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (!body.whatsapp || !body.whatsapp.replace(/\D/g, '')) {
+    if (!body.whatsapp || !String(body.whatsapp).replace(/\D/g, '')) {
       return NextResponse.json(
         { success: false, error: 'O WhatsApp da loja é obrigatório.' },
         { status: 400 }
@@ -80,7 +80,7 @@ export async function POST(request: NextRequest) {
     const input: CreateTenantInput = {
       name: body.name.trim(),
       slug: body.slug ? body.slug.trim() : body.name.trim(),
-      whatsapp: body.whatsapp.replace(/\D/g, ''),
+      whatsapp: String(body.whatsapp).replace(/\D/g, ''),
       ownerEmail: body.ownerEmail?.trim(),
       password: body.password || 'admin123',
       plan: body.plan || 'trial_30d',

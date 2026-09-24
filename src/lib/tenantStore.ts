@@ -408,7 +408,7 @@ export async function registerTenant(input: CreateTenantInput): Promise<{
           storeName: input.name.trim(),
           tenantId,
           slug: finalSlug,
-          whatsapp: input.whatsapp.replace(/\D/g, ''),
+          whatsapp: String(input.whatsapp || '').replace(/\D/g, ''),
           ownerEmail: input.ownerEmail?.trim() || '',
           niche: input.niche || 'Geral',
           primaryColor: input.primaryColor || '#10b981',
@@ -438,7 +438,7 @@ export async function registerTenant(input: CreateTenantInput): Promise<{
     slug: finalSlug,
     domain: `${finalSlug}.localhost`,
     apiUrl: process.env['APPS_SCRIPT_URL'] || '',
-    whatsapp: input.whatsapp.replace(/\D/g, ''),
+    whatsapp: String(input.whatsapp || '').replace(/\D/g, ''),
     plan,
     subscriptionStatus: status,
     subscriptionExpiresAt: expiresAt,
@@ -458,7 +458,7 @@ export async function registerTenant(input: CreateTenantInput): Promise<{
   engine.initDatabase({
     store_id: tenantId,
     store_name: input.name.trim(),
-    whatsapp: input.whatsapp.replace(/\D/g, ''),
+    whatsapp: String(input.whatsapp || '').replace(/\D/g, ''),
     primary_color: input.primaryColor || '#10b981',
     secondary_color: input.secondaryColor || '#047857',
     background_color: input.backgroundColor || '#f8fafc',
@@ -501,7 +501,7 @@ export function updateTenantSubscription(input: UpdateSubscriptionInput): Tenant
   if (input.notes !== undefined) tenant.notes = input.notes;
   if (input.apiUrl !== undefined) tenant.apiUrl = input.apiUrl;
   if (input.spreadsheetUrl !== undefined) tenant.spreadsheetUrl = input.spreadsheetUrl;
-  if (input.whatsapp !== undefined) tenant.whatsapp = input.whatsapp.replace(/\D/g, '');
+  if (input.whatsapp !== undefined) tenant.whatsapp = String(input.whatsapp || '').replace(/\D/g, '');
   if (input.name !== undefined) tenant.name = input.name.trim();
   if (input.ownerEmail !== undefined) tenant.ownerEmail = input.ownerEmail.trim();
   if (input.asaasCustomerId !== undefined) tenant.asaasCustomerId = input.asaasCustomerId;

@@ -76,7 +76,7 @@ export async function fetchAllTenantsFromSupabase(): Promise<Tenant[] | null> {
       name: row.name,
       slug: row.slug,
       domain: row.domain,
-      whatsapp: row.whatsapp,
+      whatsapp: row.whatsapp ? String(row.whatsapp) : '',
       ownerEmail: row.owner_email,
       plan: row.plan,
       subscriptionStatus: row.subscription_status,
@@ -115,7 +115,7 @@ export async function fetchTenantFromSupabase(identifier: string): Promise<Tenan
       name: data.name,
       slug: data.slug,
       domain: data.domain,
-      whatsapp: data.whatsapp,
+      whatsapp: data.whatsapp ? String(data.whatsapp) : '',
       ownerEmail: data.owner_email,
       plan: data.plan,
       subscriptionStatus: data.subscription_status,
@@ -140,7 +140,7 @@ export async function insertTenantIntoSupabase(input: CreateTenantInput, tenantI
   try {
     const now = new Date();
     const expiresAt = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000).toISOString();
-    const cleanPhone = input.whatsapp.replace(/\D/g, '');
+    const cleanPhone = String(input.whatsapp || '').replace(/\D/g, '');
     const cleanDomain = `${slug}.localhost`;
 
     // 1. Insere o Tenant
@@ -224,7 +224,7 @@ export async function updateTenantInSupabase(input: UpdateSubscriptionInput): Pr
     if (input.asaasPaymentLink !== undefined) updatePayload['asaas_payment_link'] = input.asaasPaymentLink;
 
     if (input.whatsapp) {
-      const cleanPhone = input.whatsapp.replace(/\D/g, '');
+      const cleanPhone = String(input.whatsapp).replace(/\D/g, '');
       updatePayload['whatsapp'] = cleanPhone;
       // Atualiza também em store_configs
       await supabase
@@ -285,7 +285,7 @@ export async function fetchStoreConfigFromSupabase(tenantId: string): Promise<St
       background_color: data.background_color,
       text_color: data.text_color,
       banners: Array.isArray(data.banners) ? data.banners : [],
-      whatsapp: data.whatsapp,
+      whatsapp: data.whatsapp ? String(data.whatsapp) : '',
       domain: data.domain,
       currency: data.currency,
       timezone: data.timezone,
@@ -367,7 +367,7 @@ export async function saveStoreConfigInSupabase(tenantId: string, config: SaveCo
       background_color: data.background_color,
       text_color: data.text_color,
       banners: Array.isArray(data.banners) ? data.banners : [],
-      whatsapp: data.whatsapp,
+      whatsapp: data.whatsapp ? String(data.whatsapp) : '',
       domain: data.domain,
       currency: data.currency,
       timezone: data.timezone,
