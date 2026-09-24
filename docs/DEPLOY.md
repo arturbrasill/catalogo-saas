@@ -35,7 +35,7 @@ A Vercel é o ambiente recomendado devido ao suporte nativo ao Next.js App Route
 
    | Nome da Variável | Tipo | Exemplo de Valor | Descrição |
    | :--- | :--- | :--- | :--- |
-   | `NEXT_PUBLIC_APP_URL` | Pública | `https://numclick.vercel.app` | Domínio canônico da aplicação |
+   | `NEXT_PUBLIC_APP_URL` | Pública | `https://saasnumclick.vercel.app` | Domínio canônico da aplicação |
    | `NEXT_PUBLIC_DEFAULT_TENANT` | Pública | `loja_exemplo` | Tenant padrão para fallback |
    | `NEXT_PUBLIC_IMAGE_UPLOAD_PROVIDER` | Pública | `cloudinary` | Provedor de upload externo |
    | `NEXT_PUBLIC_IMAGE_UPLOAD_CLOUD_NAME` | Pública | `seu-cloud-name` | Nome da conta no Cloudinary |
@@ -47,7 +47,7 @@ A Vercel é o ambiente recomendado devido ao suporte nativo ao Next.js App Route
 
 4. **Deploy Inicial**:
    - Clique em **Deploy**. O processo dura menos de 2 minutos.
-   - Ao concluir, você receberá a URL de produção (ex.: `numclick.vercel.app`).
+   - Ao concluir, você receberá a URL de produção (ex.: `saasnumclick.vercel.app`).
 
 ### 2.2 Configuração de Domínios Customizados na Vercel
 

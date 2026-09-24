@@ -33,6 +33,12 @@ describe('Módulo 5 — Multi-Tenant e Resolução de Domínios (src/lib/tenantR
       name: 'Loja A Local',
       domain: 'loja-a.localhost',
     },
+    'saasnumclick.vercel.app': {
+      tenantId: 'loja_exemplo',
+      apiUrl: 'https://script.google.com/macros/s/LOJA_EXEMPLO/exec',
+      name: 'Loja Exemplo Produção',
+      domain: 'saasnumclick.vercel.app',
+    },
     localhost: {
       tenantId: 'loja_exemplo',
       apiUrl: '',
@@ -94,6 +100,13 @@ describe('Módulo 5 — Multi-Tenant e Resolução de Domínios (src/lib/tenantR
       expect(subTenantA).toBeTruthy();
       expect(subTenantA?.tenantId).toBe('loja_a');
       expect(subTenantA?.apiUrl).toContain('LOJA_A');
+    });
+
+    it('deve resolver domínio canônico saasnumclick.vercel.app em produção', () => {
+      const prodTenant = getTenantByHostname('saasnumclick.vercel.app', mockRegistry);
+      expect(prodTenant).toBeTruthy();
+      expect(prodTenant?.tenantId).toBe('loja_exemplo');
+      expect(prodTenant?.domain).toBe('saasnumclick.vercel.app');
     });
 
     it('deve retornar null para domínios desconhecidos ou não cadastrados', () => {
