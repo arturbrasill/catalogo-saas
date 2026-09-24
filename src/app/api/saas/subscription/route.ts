@@ -56,6 +56,7 @@ export async function POST(request: NextRequest) {
       spreadsheetUrl: body.spreadsheetUrl,
       whatsapp: body.whatsapp,
       name: body.name,
+      ownerEmail: body.ownerEmail,
     };
 
     const updated = updateTenantSubscription(input);

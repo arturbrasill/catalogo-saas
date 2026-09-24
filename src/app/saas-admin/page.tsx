@@ -51,6 +51,9 @@ export default function SaasAdminPage() {
 
   // Modal de Edição de Loja / Assinatura
   const [editingStore, setEditingStore] = useState<Tenant | null>(null);
+  const [editName, setEditName] = useState('');
+  const [editWhatsapp, setEditWhatsapp] = useState('');
+  const [editOwnerEmail, setEditOwnerEmail] = useState('');
   const [editPlan, setEditPlan] = useState<SubscriptionPlan>('monthly');
   const [editStatus, setEditStatus] = useState<SubscriptionStatus>('active');
   const [editExpiry, setEditExpiry] = useState('');
@@ -204,6 +207,9 @@ export default function SaasAdminPage() {
   // Abre Modal de Edição
   const openEditModal = (store: Tenant) => {
     setEditingStore(store);
+    setEditName(store.name || '');
+    setEditWhatsapp(store.whatsapp || '');
+    setEditOwnerEmail(store.ownerEmail || '');
     setEditPlan(store.plan || 'monthly');
     setEditStatus(store.subscriptionStatus || 'active');
     setEditExpiry(
@@ -233,6 +239,9 @@ export default function SaasAdminPage() {
         },
         body: JSON.stringify({
           tenantId: editingStore.tenantId,
+          name: editName.trim(),
+          whatsapp: editWhatsapp.replace(/\D/g, ''),
+          ownerEmail: editOwnerEmail.trim(),
           plan: editPlan,
           subscriptionStatus: editStatus,
           subscriptionExpiresAt: expiryIso,
@@ -243,7 +252,7 @@ export default function SaasAdminPage() {
       const json = await res.json();
       if (!json.success) throw new Error(json.error);
 
-      showFeedback(`Configurações de "${editingStore.name}" atualizadas!`);
+      showFeedback(`Configurações de "${editName || editingStore.name}" atualizadas com sucesso!`);
       setEditingStore(null);
       loadStores();
     } catch {
@@ -967,6 +976,49 @@ export default function SaasAdminPage() {
             </div>
 
             <form onSubmit={handleSaveModal} className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">
+                    Nome da Loja
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={editName}
+                    onChange={(e) => setEditName(e.target.value)}
+                    className="w-full px-3 py-2 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    placeholder="Ex: Minha Loja Digital"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">
+                    WhatsApp de Atendimento (com DDD)
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={editWhatsapp}
+                    onChange={(e) => setEditWhatsapp(e.target.value)}
+                    className="w-full px-3 py-2 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 font-mono"
+                    placeholder="Ex: 5511999999999"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                  E-mail do Proprietário / Lojista (Opcional)
+                </label>
+                <input
+                  type="email"
+                  value={editOwnerEmail}
+                  onChange={(e) => setEditOwnerEmail(e.target.value)}
+                  className="w-full px-3 py-2 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  placeholder="Ex: contato@lojista.com"
+                />
+              </div>
+
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 mb-1">

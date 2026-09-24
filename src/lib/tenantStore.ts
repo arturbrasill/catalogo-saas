@@ -11,6 +11,11 @@ import type {
 } from '@/types';
 import defaultTenants from './tenants.json';
 import { getLocalEngine } from '@/backend/engine';
+import {
+  fetchAllTenantsFromSupabase,
+  insertTenantIntoSupabase,
+  updateTenantInSupabase,
+} from '@/lib/supabase';
 
 // Caminho para persistência local de novos tenants criados dinamicamente
 const DYNAMIC_TENANTS_FILE = path.join(process.cwd(), 'src', 'lib', 'dynamicTenants.json');
@@ -93,7 +98,43 @@ export function getCachedMasterSheetUrl(): string | null {
 export async function syncTenantsFromRemote(): Promise<boolean> {
   let synced = false;
 
-  // 1. Sincroniza com Google Apps Script Master Provisioner (Planilha Mestre no Google Drive)
+  // 1. Sincroniza com Supabase (Banco de Dados Oficial do SaaS)
+  try {
+    const supabaseTenants = await fetchAllTenantsFromSupabase();
+    if (supabaseTenants && supabaseTenants.length > 0) {
+      for (const t of supabaseTenants) {
+        if (t.tenantId) {
+          const domain = t.domain || `${t.slug || t.tenantId}.localhost`;
+          const tenantObj: Tenant = {
+            tenantId: t.tenantId,
+            name: t.name,
+            slug: t.slug || t.tenantId.replace(/_/g, '-'),
+            domain,
+            apiUrl: t.apiUrl || '',
+            whatsapp: t.whatsapp || '',
+            ownerEmail: t.ownerEmail || '',
+            niche: t.niche || 'Geral',
+            plan: t.plan || 'trial_30d',
+            subscriptionStatus: t.subscriptionStatus || 'active',
+            subscriptionExpiresAt: t.subscriptionExpiresAt,
+            createdAt: t.createdAt,
+            notes: t.notes,
+            asaasCustomerId: t.asaasCustomerId,
+            asaasSubscriptionId: t.asaasSubscriptionId,
+            asaasPaymentLink: t.asaasPaymentLink,
+          };
+          inMemoryRegistry[domain] = tenantObj;
+          if (t.slug) inMemoryRegistry[t.slug] = tenantObj;
+          inMemoryRegistry[t.tenantId] = tenantObj;
+        }
+      }
+      synced = true;
+    }
+  } catch (err) {
+    console.warn('Nota: Não foi possível sincronizar com o Supabase:', err);
+  }
+
+  // 2. Sincroniza com Google Apps Script Master Provisioner (Fallback)
   const provisionerUrl = getMasterProvisionerUrl();
   if (provisionerUrl) {
     try {
@@ -433,6 +474,13 @@ export async function registerTenant(input: CreateTenantInput): Promise<{
 
   persistDynamicTenants();
 
+  // Persiste no Supabase (Banco de Dados Oficial)
+  try {
+    await insertTenantIntoSupabase(input, tenantId, finalSlug);
+  } catch (err) {
+    console.warn('Nota: Falha ao inserir tenant no Supabase:', err);
+  }
+
   return {
     tenant: newTenant,
     spreadsheetUrl,
@@ -455,6 +503,7 @@ export function updateTenantSubscription(input: UpdateSubscriptionInput): Tenant
   if (input.spreadsheetUrl !== undefined) tenant.spreadsheetUrl = input.spreadsheetUrl;
   if (input.whatsapp !== undefined) tenant.whatsapp = input.whatsapp.replace(/\D/g, '');
   if (input.name !== undefined) tenant.name = input.name.trim();
+  if (input.ownerEmail !== undefined) tenant.ownerEmail = input.ownerEmail.trim();
   if (input.asaasCustomerId !== undefined) tenant.asaasCustomerId = input.asaasCustomerId;
   if (input.asaasSubscriptionId !== undefined) tenant.asaasSubscriptionId = input.asaasSubscriptionId;
   if (input.asaasPaymentLink !== undefined) tenant.asaasPaymentLink = input.asaasPaymentLink;
@@ -467,6 +516,16 @@ export function updateTenantSubscription(input: UpdateSubscriptionInput): Tenant
   }
 
   persistDynamicTenants();
+
+  // Sincroniza atualização no Supabase
+  try {
+    updateTenantInSupabase(input).catch((err) => {
+      console.warn('Nota: Falha ao atualizar tenant no Supabase:', err);
+    });
+  } catch (err) {
+    console.warn('Nota: Erro ao despachar update para Supabase:', err);
+  }
+
   return tenant;
 }
 

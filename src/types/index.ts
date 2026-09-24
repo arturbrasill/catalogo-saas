@@ -272,6 +272,7 @@ export interface UpdateSubscriptionInput {
   spreadsheetUrl?: string;
   whatsapp?: string;
   name?: string;
+  ownerEmail?: string;
   asaasCustomerId?: string;
   asaasSubscriptionId?: string;
   asaasPaymentLink?: string;

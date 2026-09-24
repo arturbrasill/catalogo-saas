@@ -2,6 +2,24 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getLocalEngine } from '@/backend/engine';
 import { getTenantByHostname, normalizeHostname, resolveTenant } from '@/lib/tenantResolver';
 import type { Tenant } from '@/types';
+import {
+  fetchStoreConfigFromSupabase,
+  fetchCategoriesFromSupabase,
+  fetchProductsFromSupabase,
+  fetchCouponsFromSupabase,
+  authenticateMerchantSupabase,
+  saveStoreConfigInSupabase,
+  createProductInSupabase,
+  updateProductInSupabase,
+  deleteProductInSupabase,
+  createCategoryInSupabase,
+  updateCategoryInSupabase,
+  deleteCategoryInSupabase,
+  createCouponInSupabase,
+  updateCouponInSupabase,
+  deleteCouponInSupabase,
+} from '@/lib/supabase';
+import { updateTenantSubscription } from '@/lib/tenantStore';
 
 /**
  * Validação rigorosa de segurança para URLs remotas de API.
@@ -171,7 +189,56 @@ export async function GET(request: NextRequest) {
   const action = searchParams.get('action') || 'store';
   const categoryId = searchParams.get('categoryId') || undefined;
 
-  // Se houver URL de Web App validada, despacha chamada remota
+  // 1. Tenta carregar dados em tempo real do Supabase (Banco de Dados Oficial)
+  try {
+    if (action === 'store') {
+      const config = await fetchStoreConfigFromSupabase(tenantId);
+      if (config) {
+        return NextResponse.json(sanitizeStoreResponse({ success: true, data: config, error: null }, tenant));
+      }
+    } else if (action === 'categories') {
+      const cats = await fetchCategoriesFromSupabase(tenantId);
+      if (cats) {
+        return NextResponse.json(sanitizeStoreResponse({ success: true, data: cats, error: null }, tenant));
+      }
+    } else if (action === 'products') {
+      const prods = await fetchProductsFromSupabase(tenantId, categoryId);
+      if (prods) {
+        return NextResponse.json(sanitizeStoreResponse({ success: true, data: prods, error: null }, tenant));
+      }
+    } else if (action === 'all' || action === 'catalog' || action === 'getCatalog') {
+      const [config, cats, prods] = await Promise.all([
+        fetchStoreConfigFromSupabase(tenantId),
+        fetchCategoriesFromSupabase(tenantId),
+        fetchProductsFromSupabase(tenantId),
+      ]);
+      if (config && cats && prods) {
+        return NextResponse.json(
+          sanitizeStoreResponse(
+            {
+              success: true,
+              data: {
+                store: config,
+                categories: cats,
+                products: prods,
+              },
+              error: null,
+            },
+            tenant
+          )
+        );
+      }
+    } else if (action === 'coupons') {
+      const coupons = await fetchCouponsFromSupabase(tenantId);
+      if (coupons) {
+        return NextResponse.json(sanitizeStoreResponse({ success: true, data: coupons, error: null }, tenant));
+      }
+    }
+  } catch (err) {
+    console.warn('Nota: Fallback Supabase em GET /api/backend:', err);
+  }
+
+  // 2. Se houver URL de Web App validada, despacha chamada remota
   if (apiUrl) {
     try {
       const url = new URL(apiUrl);
@@ -200,7 +267,7 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  // Fallback para engine local integrado (desenvolvimento / teste)
+  // 3. Fallback para engine local integrado (desenvolvimento / teste)
   const localResult = getLocalEngine(tenantId).doGet({ action, categoryId });
   return NextResponse.json(sanitizeStoreResponse(localResult, tenant));
 }
@@ -225,6 +292,93 @@ export async function POST(request: NextRequest) {
   try {
     const payload = await request.json();
 
+    // SINCRONIZAÇÃO AUTOMÁTICA UNIVERSAL:
+    // Sempre que o lojista salvar configurações (como o WhatsApp de atendimento ou Nome da Loja),
+    // atualizamos imediatamente o registro da loja no SaaS Master Panel para refletir na hora!
+    if (payload.action === 'saveConfig' && payload.config) {
+      try {
+        updateTenantSubscription({
+          tenantId,
+          whatsapp: payload.config.whatsapp,
+          name: payload.config.store_name,
+        });
+      } catch (err) {
+        console.warn('Erro ao sincronizar tenantStore com saveConfig:', err);
+      }
+    }
+
+    // 1. Tenta operações no Supabase (Banco de Dados Oficial)
+    try {
+      if (payload.action === 'login') {
+        const loginRes = await authenticateMerchantSupabase(tenantId, payload.password);
+        if (loginRes) {
+          return NextResponse.json(sanitizeStoreResponse({ success: true, data: loginRes, error: null }, tenant));
+        }
+      } else if (payload.action === 'saveConfig') {
+        const saved = await saveStoreConfigInSupabase(tenantId, payload.config);
+        if (saved) {
+          try {
+            getLocalEngine(tenantId).handleSaveConfig(payload.config);
+          } catch {}
+          return NextResponse.json(sanitizeStoreResponse({ success: true, data: saved, error: null }, tenant));
+        }
+      } else if (payload.action === 'createProduct') {
+        const prod = await createProductInSupabase(tenantId, payload.product);
+        if (prod) {
+          return NextResponse.json(sanitizeStoreResponse({ success: true, data: prod, error: null }, tenant));
+        }
+      } else if (payload.action === 'updateProduct') {
+        const prod = await updateProductInSupabase(tenantId, payload.product);
+        if (prod) {
+          return NextResponse.json(sanitizeStoreResponse({ success: true, data: prod, error: null }, tenant));
+        }
+      } else if (payload.action === 'deleteProduct') {
+        const deleted = await deleteProductInSupabase(tenantId, payload.id);
+        if (deleted) {
+          return NextResponse.json(
+            sanitizeStoreResponse({ success: true, data: { id: payload.id, deleted: true }, error: null }, tenant)
+          );
+        }
+      } else if (payload.action === 'createCategory') {
+        const cat = await createCategoryInSupabase(tenantId, payload.category);
+        if (cat) {
+          return NextResponse.json(sanitizeStoreResponse({ success: true, data: cat, error: null }, tenant));
+        }
+      } else if (payload.action === 'updateCategory') {
+        const cat = await updateCategoryInSupabase(tenantId, payload.category);
+        if (cat) {
+          return NextResponse.json(sanitizeStoreResponse({ success: true, data: cat, error: null }, tenant));
+        }
+      } else if (payload.action === 'deleteCategory') {
+        const deleted = await deleteCategoryInSupabase(tenantId, payload.id);
+        if (deleted) {
+          return NextResponse.json(
+            sanitizeStoreResponse({ success: true, data: { id: payload.id, deleted: true }, error: null }, tenant)
+          );
+        }
+      } else if (payload.action === 'createCoupon') {
+        const coup = await createCouponInSupabase(tenantId, payload.coupon);
+        if (coup) {
+          return NextResponse.json(sanitizeStoreResponse({ success: true, data: coup, error: null }, tenant));
+        }
+      } else if (payload.action === 'updateCoupon') {
+        const coup = await updateCouponInSupabase(tenantId, payload.coupon);
+        if (coup) {
+          return NextResponse.json(sanitizeStoreResponse({ success: true, data: coup, error: null }, tenant));
+        }
+      } else if (payload.action === 'deleteCoupon') {
+        const deleted = await deleteCouponInSupabase(tenantId, payload.id);
+        if (deleted) {
+          return NextResponse.json(
+            sanitizeStoreResponse({ success: true, data: { success: true, id: payload.id }, error: null }, tenant)
+          );
+        }
+      }
+    } catch (err) {
+      console.warn('Nota: Fallback Supabase em POST /api/backend:', err);
+    }
+
+    // 2. Se houver apiUrl externa
     if (apiUrl) {
       const response = await fetch(apiUrl, {
         method: 'POST',
@@ -238,7 +392,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(sanitizeStoreResponse(data, tenant));
     }
 
-    // Fallback para engine local integrado
+    // 3. Fallback para engine local integrado
     const localResult = getLocalEngine(tenantId).doPost(payload);
     return NextResponse.json(sanitizeStoreResponse(localResult, tenant));
   } catch (err) {
