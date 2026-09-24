@@ -41,6 +41,7 @@ export function ProductCard({
     : 0;
 
   const firstImage = product.imagens && product.imagens.length > 0 ? product.imagens[0] : null;
+  const secondImage = product.imagens && product.imagens.length > 1 ? product.imagens[1] : null;
   const hasVariations = product.variacoes && product.variacoes.length > 0;
   const favorite = isFavorite(product.id);
   const installmentText = formatInstallments(effectivePrice, 3, 25, store.currency);
@@ -57,19 +58,32 @@ export function ProductCard({
   return (
     <div
       onClick={() => onSelect(product)}
-      className="group relative bg-brand-card rounded-2xl sm:rounded-3xl border border-brand-border/80 hover:border-slate-300 overflow-hidden shadow-2xs hover:shadow-card-hover transition-all duration-300 flex flex-col justify-between cursor-pointer active:scale-[0.98]"
+      className="group relative bg-brand-card rounded-2xl sm:rounded-3xl border border-brand-border/80 hover:border-slate-300 overflow-hidden shadow-2xs hover:shadow-card-hover transition-all duration-300 flex flex-col justify-between cursor-pointer active:scale-[0.99]"
     >
-      {/* Container da Imagem com Aspect Ratio Limpo */}
+      {/* Container da Imagem com Aspect Ratio Limpo e Hover Suave */}
       <div className="relative aspect-square w-full bg-slate-50 overflow-hidden flex items-center justify-center">
         {firstImage && !imageError ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={firstImage}
-            alt={product.nome}
-            loading="lazy"
-            onError={() => setImageError(true)}
-            className="h-full w-full object-cover group-hover:scale-106 transition-transform duration-500 ease-out"
-          />
+          <>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={firstImage}
+              alt={product.nome}
+              loading="lazy"
+              onError={() => setImageError(true)}
+              className={`h-full w-full object-cover transition-all duration-500 ease-out group-hover:scale-105 ${
+                secondImage ? 'group-hover:opacity-0' : ''
+              }`}
+            />
+            {secondImage && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={secondImage}
+                alt={`${product.nome} - prévia`}
+                loading="lazy"
+                className="absolute inset-0 h-full w-full object-cover transition-all duration-500 ease-out opacity-0 group-hover:opacity-100 group-hover:scale-105"
+              />
+            )}
+          </>
         ) : (
           <div className="h-full w-full flex flex-col items-center justify-center bg-slate-50 text-slate-300">
             <Package className="w-8 h-8 stroke-1 text-slate-300" />
@@ -81,18 +95,18 @@ export function ProductCard({
         <div className="absolute top-2.5 left-2.5 flex flex-col gap-1.5 z-10">
           {hasDiscount && (
             <span
-              className="bg-brand-primary text-brand-contrast text-[10px] font-black px-2 py-0.5 rounded-lg shadow-xs tracking-tight"
+              className="bg-brand-primary text-brand-contrast text-[10px] font-black px-2.5 py-0.5 rounded-full shadow-xs tracking-tight uppercase"
               style={{ backgroundColor: store.primary_color }}
             >
               -{discountPercent}% OFF
             </span>
           )}
           {isOutOfStock ? (
-            <span className="bg-rose-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-lg shadow-xs">
+            <span className="bg-rose-500/95 backdrop-blur-xs text-white text-[10px] font-bold px-2.5 py-0.5 rounded-full shadow-xs uppercase">
               Esgotado
             </span>
           ) : product.estoque <= 3 && product.estoque > 0 ? (
-            <span className="bg-amber-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-lg shadow-xs">
+            <span className="bg-amber-500/95 backdrop-blur-xs text-white text-[10px] font-bold px-2.5 py-0.5 rounded-full shadow-xs uppercase">
               Últimas {product.estoque} un
             </span>
           ) : null}
@@ -197,11 +211,11 @@ export function ProductCard({
 
           <button
             type="button"
-            className="h-8 w-8 sm:h-9 sm:w-9 rounded-xl flex items-center justify-center text-brand-contrast bg-brand-primary hover:bg-brand-primary-hover shadow-2xs group-hover:scale-105 active:scale-95 transition-all flex-shrink-0 cursor-pointer"
+            className="h-10 w-10 sm:h-10 sm:w-10 rounded-2xl flex items-center justify-center text-brand-contrast bg-brand-primary hover:bg-brand-primary-hover shadow-xs group-hover:scale-105 active:scale-95 transition-all flex-shrink-0 cursor-pointer"
             style={{ backgroundColor: store.primary_color }}
             aria-label={`Ver detalhes de ${product.nome}`}
           >
-            {hasVariations ? <Eye className="w-4 h-4" /> : <ShoppingBag className="w-4 h-4" />}
+            {hasVariations ? <Eye className="w-4 h-4 sm:w-4.5 sm:h-4.5" /> : <ShoppingBag className="w-4 h-4 sm:w-4.5 sm:h-4.5" />}
           </button>
         </div>
       </div>

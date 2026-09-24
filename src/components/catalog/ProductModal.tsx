@@ -589,8 +589,8 @@ export function ProductModal({
                 </div>
               </div>
 
-              {/* Rodapé: Contador de Quantidade e Botão Adicionar à Sacola */}
-              <div className="space-y-3 pt-3 border-t border-slate-100">
+              {/* Rodapé: Contador de Quantidade e Botão Adicionar à Sacola (Fixo no Mobile) */}
+              <div className="space-y-3 pt-3 border-t border-slate-100 sticky bottom-0 bg-white/95 backdrop-blur-md -mx-5 -mb-5 p-4 sm:p-0 sm:static sm:bg-transparent sm:mx-0 sm:mb-0 z-10 shadow-lg sm:shadow-none">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-bold text-slate-700">
                     Quantidade:

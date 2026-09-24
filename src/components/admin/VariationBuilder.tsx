@@ -23,16 +23,18 @@ export function VariationBuilder({
   disabled = false,
 }: VariationBuilderProps) {
   const [newTypeName, setNewTypeName] = useState('');
+  const [typeError, setTypeError] = useState<string | null>(null);
   const [optionInputs, setOptionInputs] = useState<Record<number, string>>({});
 
   const handleAddType = (nameToAdd?: string) => {
+    setTypeError(null);
     const rawName = nameToAdd || newTypeName;
     const trimmed = rawName.trim();
     if (!trimmed) return;
 
     // Evita tipos duplicados
     if (value.some((v) => v.tipo.toLowerCase() === trimmed.toLowerCase())) {
-      alert(`A variação "${trimmed}" já existe neste produto.`);
+      setTypeError(`A variação "${trimmed}" já existe neste produto.`);
       return;
     }
 
@@ -211,6 +213,18 @@ export function VariationBuilder({
 
       {/* Input para Criar Novo Tipo de Variação + Sugestões Rápidas */}
       <div className="space-y-2 pt-2 border-t border-slate-200/80">
+        {typeError && (
+          <div className="text-xs text-rose-700 bg-rose-50 border border-rose-200 p-2.5 rounded-xl flex items-center justify-between animate-fade-in">
+            <span>{typeError}</span>
+            <button
+              type="button"
+              onClick={() => setTypeError(null)}
+              className="text-rose-400 hover:text-rose-700 p-0.5"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        )}
         <div className="flex gap-2">
           <input
             type="text"

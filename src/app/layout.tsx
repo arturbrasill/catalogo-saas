@@ -1,8 +1,16 @@
 import type { Metadata } from 'next';
+import { Plus_Jakarta_Sans } from 'next/font/google';
 import './globals.css';
 
 import { headers } from 'next/headers';
 import { findTenant } from '@/lib/tenantStore';
+
+const plusJakartaSans = Plus_Jakarta_Sans({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-sans',
+  weight: ['400', '500', '600', '700', '800'],
+});
 
 export async function generateMetadata(): Promise<Metadata> {
   const headersList = headers();
@@ -38,8 +46,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="pt-BR">
-      <body className="antialiased min-h-screen bg-gray-50">{children}</body>
+    <html lang="pt-BR" className={plusJakartaSans.variable}>
+      <body className="antialiased min-h-screen bg-slate-50 font-sans selection:bg-brand-primary selection:text-white">
+        {children}
+      </body>
     </html>
   );
 }

@@ -40,10 +40,10 @@ export function TrustBadges({ primaryColor }: TrustBadgesProps) {
           return (
             <div
               key={idx}
-              className="flex items-start gap-4 p-2 rounded-2xl hover:bg-slate-50/80 transition-colors"
+              className="flex items-start gap-3.5 p-4 rounded-2xl bg-slate-50/60 border border-slate-100 hover:bg-white hover:border-slate-200/80 hover:shadow-card-hover transition-all duration-200 group"
             >
               <div
-                className="h-11 w-11 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-xs bg-brand-primary/10 text-brand-primary"
+                className="h-10 w-10 sm:h-11 sm:w-11 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-2xs bg-brand-primary/10 text-brand-primary group-hover:scale-105 transition-transform"
                 style={
                   primaryColor
                     ? {

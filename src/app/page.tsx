@@ -48,6 +48,7 @@ function CatalogContent({ onStoreLoaded }: CatalogContentProps) {
   const [products, setProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [showAnnouncement, setShowAnnouncement] = useState(true);
 
   // Filtros & Ordenação Avançados (Fase 2)
   const [filters, setFilters] = useState<CatalogFilterState>(DEFAULT_FILTERS);
@@ -208,32 +209,45 @@ function CatalogContent({ onStoreLoaded }: CatalogContentProps) {
         color: store?.text_color || 'var(--brand-text-main, #0f172a)',
       }}
     >
-      {/* 1. Topbar Superior de Anúncios / Slogan Universal */}
-      <aside aria-label="Aviso da Loja" className="bg-slate-950 text-white text-[11px] font-medium py-2 px-4 border-b border-slate-800">
-        <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
-          <div className="flex items-center gap-2 mx-auto sm:mx-0 text-center sm:text-left">
-            <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
-            <span>Compre online e receba em casa com frete seguro ou retire na loja física</span>
+      {/* 1. Topbar Superior de Anúncios / Slogan Universal (Dismissível) */}
+      {showAnnouncement && (
+        <aside aria-label="Aviso da Loja" className="bg-slate-950 text-white text-[11px] font-medium py-2 px-4 border-b border-slate-800 transition-all">
+          <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
+            <div className="flex items-center gap-2 mx-auto sm:mx-0 text-center sm:text-left">
+              <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              <span>Compre online e receba em casa com frete seguro ou retire na loja física</span>
+            </div>
+            <div className="flex items-center gap-3">
+              {store?.whatsapp && (
+                <a
+                  href={`https://wa.me/${store.whatsapp.replace(/\D/g, '')}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="hidden md:flex items-center gap-1.5 text-[11px] font-bold text-slate-300 hover:text-white transition-colors"
+                >
+                  <MessageCircle className="w-3.5 h-3.5 text-emerald-400" />
+                  <span>Atendimento via WhatsApp</span>
+                </a>
+              )}
+              <button
+                type="button"
+                onClick={() => setShowAnnouncement(false)}
+                className="text-slate-400 hover:text-white p-0.5 transition cursor-pointer"
+                title="Fechar aviso"
+                aria-label="Fechar aviso"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            </div>
           </div>
-          {store?.whatsapp && (
-            <a
-              href={`https://wa.me/${store.whatsapp.replace(/\D/g, '')}`}
-              target="_blank"
-              rel="noreferrer"
-              className="hidden md:flex items-center gap-1.5 text-[11px] font-bold text-slate-300 hover:text-white transition-colors"
-            >
-              <MessageCircle className="w-3.5 h-3.5 text-emerald-400" />
-              <span>Atendimento via WhatsApp</span>
-            </a>
-          )}
-        </div>
-      </aside>
+        </aside>
+      )}
 
       {/* 2. Header Universal Sofisticado (Navbar) */}
       <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-slate-200/70 shadow-2xs">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="h-16 sm:h-20 flex items-center justify-between gap-3 sm:gap-6">
-            {/* Logo e Nome da Marca */}
+            {/* Logo e Nome da Marca com Selo de Status da Loja */}
             <div className="flex items-center gap-3 min-w-0 flex-shrink-0">
               <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-2xl bg-slate-50 border border-slate-200 overflow-hidden flex-shrink-0 flex items-center justify-center shadow-xs">
                 {store?.logo_url ? (
@@ -251,9 +265,16 @@ function CatalogContent({ onStoreLoaded }: CatalogContentProps) {
                 <h1 className="text-sm sm:text-base md:text-lg font-black text-slate-900 tracking-tight truncate leading-tight">
                   {store?.store_name || 'Catálogo Digital'}
                 </h1>
-                <p className="text-[11px] text-slate-500 truncate hidden sm:block">
-                  Catálogo Oficial • Produtos Originais
-                </p>
+                <div className="flex items-center gap-2 mt-0.5">
+                  <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.2 rounded-full border border-emerald-200/80">
+                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                    Aberto Agora
+                  </span>
+                  <span className="text-[11px] text-slate-400 hidden sm:inline">•</span>
+                  <p className="text-[11px] text-slate-500 truncate hidden sm:block">
+                    Catálogo Oficial • Pedidos WhatsApp
+                  </p>
+                </div>
               </div>
             </div>
 

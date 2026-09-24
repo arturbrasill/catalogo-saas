@@ -24,6 +24,7 @@ import {
   ArrowUpDown,
   Tag,
   Eye,
+  AlertTriangle,
 } from 'lucide-react';
 
 export default function AdminProdutosPage() {
@@ -44,6 +45,10 @@ export default function AdminProdutosPage() {
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
+
+  // Modal de Confirmação de Exclusão (Soft Delete)
+  const [deleteTarget, setDeleteTarget] = useState<Product | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // Campos do Formulário com Máscara de Moeda
   const [formNome, setFormNome] = useState('');
@@ -246,25 +251,24 @@ export default function AdminProdutosPage() {
       setProducts((prev) =>
         prev.map((item) => (item.id === p.id ? { ...item, ativo: !nextStatus } : item))
       );
-      alert(err instanceof Error ? err.message : 'Erro ao alterar status do produto.');
+      setErrorMessage(err instanceof Error ? err.message : 'Erro ao alterar status do produto.');
     } finally {
       setTogglingId(null);
     }
   };
 
-  // Soft Delete
-  const handleDelete = async (p: Product) => {
-    if (!token) return;
-    const confirmDelete = window.confirm(
-      `Deseja realmente arquivar o produto "${p.nome}"? Ele será desativado na vitrine.`
-    );
-    if (!confirmDelete) return;
-
+  // Soft Delete via Modal Customizado
+  const confirmDeleteProduct = async () => {
+    if (!token || !deleteTarget) return;
+    setIsDeleting(true);
     try {
-      await api.deleteProduct(p.id, token);
-      setProducts((prev) => prev.filter((item) => item.id !== p.id));
+      await api.deleteProduct(deleteTarget.id, token);
+      setProducts((prev) => prev.filter((item) => item.id !== deleteTarget.id));
+      setDeleteTarget(null);
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Erro ao remover produto.');
+      setErrorMessage(err instanceof Error ? err.message : 'Erro ao arquivar produto.');
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -598,10 +602,10 @@ export default function AdminProdutosPage() {
                           </button>
                           <button
                             type="button"
-                            onClick={() => handleDelete(prod)}
+                            onClick={() => setDeleteTarget(prod)}
                             className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition cursor-pointer"
-                            title="Remover produto"
-                            aria-label={`Remover ${prod.nome}`}
+                            title="Arquivar produto"
+                            aria-label={`Arquivar ${prod.nome}`}
                           >
                             <Trash2 className="w-4 h-4" />
                           </button>
@@ -813,6 +817,43 @@ export default function AdminProdutosPage() {
                   </button>
                 </div>
               </form>
+            </div>
+          </div>
+        )}
+
+        {/* Modal de Confirmação de Exclusão */}
+        {deleteTarget && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs animate-fade-in">
+            <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6 space-y-4 border border-slate-200 animate-scale-in">
+              <div className="h-12 w-12 rounded-2xl bg-rose-100 text-rose-600 flex items-center justify-center mx-auto">
+                <AlertTriangle className="w-6 h-6" />
+              </div>
+              <div className="text-center">
+                <h3 className="text-base font-bold text-slate-900">Arquivar Produto</h3>
+                <p className="text-xs text-slate-500 mt-1">
+                  Tem certeza que deseja arquivar <strong className="text-slate-800">{deleteTarget.nome}</strong>? Ele deixará de ser exibido na vitrine da loja.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2 pt-2">
+                <button
+                  type="button"
+                  disabled={isDeleting}
+                  onClick={() => setDeleteTarget(null)}
+                  className="w-full py-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-700 hover:bg-slate-50 transition cursor-pointer"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="button"
+                  disabled={isDeleting}
+                  onClick={confirmDeleteProduct}
+                  className="w-full py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer"
+                >
+                  {isDeleting && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+                  <span>Arquivar</span>
+                </button>
+              </div>
             </div>
           </div>
         )}

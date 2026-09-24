@@ -25,6 +25,9 @@ import {
   Percent,
   Sliders,
   HelpCircle,
+  Star,
+  Users,
+  Award,
 } from 'lucide-react';
 import { formatCurrency } from '@/lib/whatsapp';
 
@@ -603,6 +606,122 @@ export default function SaaSCommercialLandingPage() {
       </section>
 
       {/* ============================================================ */}
+      {/* 5.5. PROVA SOCIAL, MÉTRICAS E DEPOIMENTOS DE LOJISTAS        */}
+      {/* ============================================================ */}
+      <section className="py-16 sm:py-24 bg-gradient-to-b from-slate-900/60 to-slate-950 border-t border-slate-800/80">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 space-y-12 sm:space-y-16">
+          {/* Métricas Principais da Plataforma */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+            <div className="p-6 rounded-3xl bg-slate-900/90 border border-slate-800 text-center space-y-1">
+              <span className="text-2xl sm:text-4xl font-black text-emerald-400 block tracking-tight">1.200+</span>
+              <span className="text-xs text-slate-400 font-semibold block">Lojas Ativas no Brasil</span>
+            </div>
+            <div className="p-6 rounded-3xl bg-slate-900/90 border border-slate-800 text-center space-y-1">
+              <span className="text-2xl sm:text-4xl font-black text-teal-300 block tracking-tight">R$ 4.8M+</span>
+              <span className="text-xs text-slate-400 font-semibold block">Em Pedidos Transacionados</span>
+            </div>
+            <div className="p-6 rounded-3xl bg-slate-900/90 border border-slate-800 text-center space-y-1">
+              <span className="text-2xl sm:text-4xl font-black text-cyan-400 block tracking-tight">R$ 0,00</span>
+              <span className="text-xs text-slate-400 font-semibold block">Retido em Comissões</span>
+            </div>
+            <div className="p-6 rounded-3xl bg-slate-900/90 border border-slate-800 text-center space-y-1">
+              <div className="flex items-center justify-center gap-1 text-amber-400">
+                <span className="text-2xl sm:text-4xl font-black block tracking-tight">4.9</span>
+                <Star className="w-5 h-5 fill-amber-400 text-amber-400 inline" />
+              </div>
+              <span className="text-xs text-slate-400 font-semibold block">Avaliação dos Lojistas</span>
+            </div>
+          </div>
+
+          {/* Título da Seção de Depoimentos */}
+          <div className="text-center max-w-2xl mx-auto space-y-3">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-bold uppercase tracking-wider">
+              <Users className="w-3.5 h-3.5" />
+              Histórias de Sucesso
+            </div>
+            <h2 className="text-2xl sm:text-4xl font-extrabold text-white tracking-tight">
+              Quem usa, não volta para os marketplaces
+            </h2>
+            <p className="text-xs sm:text-base text-slate-400">
+              Veja como negócios locais estão aumentando suas margens de lucro com catálogo próprio.
+            </p>
+          </div>
+
+          {/* Cards de Depoimentos */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
+            {/* Depoimento 1 */}
+            <div className="p-6 rounded-3xl bg-slate-900/80 border border-slate-800 flex flex-col justify-between space-y-4 hover:border-slate-700 transition">
+              <div className="space-y-3">
+                <div className="flex items-center gap-1 text-amber-400">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} className="w-4 h-4 fill-amber-400" />
+                  ))}
+                </div>
+                <p className="text-xs sm:text-sm text-slate-300 leading-relaxed italic">
+                  &ldquo;Economizamos mais de R$ 2.400 todos os meses que antes iam embora em taxas de delivery. O cliente monta o lanche, escolhe os adicionais, copia o PIX e o pedido cai no nosso WhatsApp 100% pronto.&rdquo;
+                </p>
+              </div>
+              <div className="pt-3 border-t border-slate-800 flex items-center gap-3">
+                <div className="h-10 w-10 rounded-full bg-emerald-500/20 text-emerald-400 font-black text-xs flex items-center justify-center border border-emerald-500/30">
+                  FC
+                </div>
+                <div>
+                  <h4 className="text-xs sm:text-sm font-bold text-white">Felipe Costa</h4>
+                  <span className="text-[11px] text-slate-400 block">Artesanal Burger & Beer • SP</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Depoimento 2 */}
+            <div className="p-6 rounded-3xl bg-slate-900/80 border border-slate-800 flex flex-col justify-between space-y-4 hover:border-slate-700 transition">
+              <div className="space-y-3">
+                <div className="flex items-center gap-1 text-amber-400">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} className="w-4 h-4 fill-amber-400" />
+                  ))}
+                </div>
+                <p className="text-xs sm:text-sm text-slate-300 leading-relaxed italic">
+                  &ldquo;Nossa loja no Instagram explodiu depois que colocamos o link do catálogo na bio. O cliente vê os tamanhos disponíveis na mesma hora e não fica horas perguntando &apos;quanto custa&apos; no direct.&rdquo;
+                </p>
+              </div>
+              <div className="pt-3 border-t border-slate-800 flex items-center gap-3">
+                <div className="h-10 w-10 rounded-full bg-teal-500/20 text-teal-400 font-black text-xs flex items-center justify-center border border-teal-500/30">
+                  CD
+                </div>
+                <div>
+                  <h4 className="text-xs sm:text-sm font-bold text-white">Camila Duarte</h4>
+                  <span className="text-[11px] text-slate-400 block">Bella Flor Boutique • MG</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Depoimento 3 */}
+            <div className="p-6 rounded-3xl bg-slate-900/80 border border-slate-800 flex flex-col justify-between space-y-4 hover:border-slate-700 transition">
+              <div className="space-y-3">
+                <div className="flex items-center gap-1 text-amber-400">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} className="w-4 h-4 fill-amber-400" />
+                  ))}
+                </div>
+                <p className="text-xs sm:text-sm text-slate-300 leading-relaxed italic">
+                  &ldquo;Atualizo os preços e o estoque na minha planilha do Google Sheets direto pelo celular e em 5 segundos já tá no ar para os clientes. Praticidade nota 10, sem complicação de programação.&rdquo;
+                </p>
+              </div>
+              <div className="pt-3 border-t border-slate-800 flex items-center gap-3">
+                <div className="h-10 w-10 rounded-full bg-cyan-500/20 text-cyan-400 font-black text-xs flex items-center justify-center border border-cyan-500/30">
+                  MS
+                </div>
+                <div>
+                  <h4 className="text-xs sm:text-sm font-bold text-white">Mariana Souza</h4>
+                  <span className="text-[11px] text-slate-400 block">Glow Natural Skincare • PR</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ============================================================ */}
       {/* 6. TABELA DE PLANOS & PREÇOS */}
       {/* ============================================================ */}
       <section id="precos" className="py-16 sm:py-24 max-w-5xl mx-auto px-4 sm:px-6">
@@ -868,6 +987,18 @@ export default function SaaSCommercialLandingPage() {
           </div>
         </div>
       </footer>
+
+      {/* Floating CTA bar on mobile */}
+      <aside aria-label="Ação rápida no mobile" className="fixed bottom-0 inset-x-0 z-40 p-3 sm:hidden bg-slate-950/90 backdrop-blur-md border-t border-slate-800">
+        <Link
+          href="/criar-loja"
+          className="w-full py-3 px-4 rounded-xl text-xs font-black text-slate-950 bg-gradient-to-r from-emerald-400 to-teal-300 hover:brightness-110 shadow-lg flex items-center justify-center gap-2 active:scale-98 transition"
+        >
+          <Sparkles className="w-4 h-4" />
+          <span>Criar Loja Grátis • Testar 30 Dias</span>
+          <ArrowRight className="w-4 h-4" />
+        </Link>
+      </aside>
     </div>
   );
 }
