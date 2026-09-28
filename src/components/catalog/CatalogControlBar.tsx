@@ -10,6 +10,9 @@ import {
   Tag,
   PackageCheck,
   ChevronDown,
+  LayoutGrid,
+  List as ListIcon,
+  BookOpen,
 } from 'lucide-react';
 
 interface CatalogControlBarProps {
@@ -20,6 +23,8 @@ interface CatalogControlBarProps {
   filteredCount: number;
   totalCount: number;
   store: StoreConfig;
+  layoutMode?: 'grid' | 'list' | 'editorial';
+  onChangeLayoutMode?: (mode: 'grid' | 'list' | 'editorial') => void;
 }
 
 export function CatalogControlBar({
@@ -30,6 +35,8 @@ export function CatalogControlBar({
   filteredCount,
   totalCount,
   store,
+  layoutMode = 'grid',
+  onChangeLayoutMode,
 }: CatalogControlBarProps) {
   const activeFiltersCount =
     (filters.selectedCategory !== 'ALL' ? 1 : 0) +
@@ -114,6 +121,51 @@ export function CatalogControlBar({
             </select>
             <ChevronDown className="w-3.5 h-3.5 text-slate-400 absolute right-2.5 pointer-events-none" />
           </div>
+
+          {/* Seletor Rápido de Layout (Grade / Lista / Editorial) */}
+          {onChangeLayoutMode && (
+            <div className="flex items-center bg-slate-100 p-0.5 rounded-xl border border-slate-200/80">
+              <button
+                type="button"
+                onClick={() => onChangeLayoutMode('grid')}
+                className={`p-1.5 rounded-lg transition-all cursor-pointer ${
+                  layoutMode === 'grid'
+                    ? 'bg-white text-slate-900 shadow-2xs'
+                    : 'text-slate-400 hover:text-slate-700'
+                }`}
+                title="Modo Grade (2/4 colunas)"
+                aria-label="Alternar para visualização em grade"
+              >
+                <LayoutGrid className="w-3.5 h-3.5" />
+              </button>
+              <button
+                type="button"
+                onClick={() => onChangeLayoutMode('list')}
+                className={`p-1.5 rounded-lg transition-all cursor-pointer ${
+                  layoutMode === 'list'
+                    ? 'bg-white text-slate-900 shadow-2xs'
+                    : 'text-slate-400 hover:text-slate-700'
+                }`}
+                title="Modo Lista Horizontal"
+                aria-label="Alternar para visualização em lista"
+              >
+                <ListIcon className="w-3.5 h-3.5" />
+              </button>
+              <button
+                type="button"
+                onClick={() => onChangeLayoutMode('editorial')}
+                className={`p-1.5 rounded-lg transition-all cursor-pointer ${
+                  layoutMode === 'editorial'
+                    ? 'bg-white text-slate-900 shadow-2xs'
+                    : 'text-slate-400 hover:text-slate-700'
+                }`}
+                title="Modo Editorial (1 coluna ampla)"
+                aria-label="Alternar para visualização editorial"
+              >
+                <BookOpen className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          )}
 
           {/* Botão de Filtros Avançados */}
           <button

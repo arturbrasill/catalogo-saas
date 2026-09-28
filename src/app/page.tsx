@@ -5,6 +5,7 @@ import { api } from '@/lib/api';
 import { CartProvider, useCart } from '@/lib/cart';
 import { WishlistProvider, useWishlist } from '@/lib/wishlist';
 import { ProductCard } from '@/components/catalog/ProductCard';
+import { ProductList } from '@/components/catalog/ProductList';
 import { ProductModal } from '@/components/catalog/ProductModal';
 import { CartDrawer } from '@/components/catalog/CartDrawer';
 import { WishlistDrawer } from '@/components/catalog/WishlistDrawer';
@@ -15,7 +16,7 @@ import { TrustBadges } from '@/components/catalog/TrustBadges';
 import { ProductGridSkeleton, BannerSkeleton } from '@/components/catalog/ProductGridSkeleton';
 import { TopAnnouncementBar } from '@/components/catalog/TopAnnouncementBar';
 import { applyThemeToDocument } from '@/lib/themePresets';
-import type { StoreConfig, Category, Product } from '@/types';
+import type { StoreConfig, Category, Product, CatalogLayoutMode } from '@/types';
 import {
   type CatalogFilterState,
   DEFAULT_FILTERS,
@@ -51,6 +52,7 @@ function CatalogContent({ onStoreLoaded }: CatalogContentProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [showAnnouncement, setShowAnnouncement] = useState(true);
+  const [layoutMode, setLayoutMode] = useState<CatalogLayoutMode>('grid');
 
   // Filtros & Ordenação Avançados (Fase 2)
   const [filters, setFilters] = useState<CatalogFilterState>(DEFAULT_FILTERS);
@@ -74,6 +76,9 @@ function CatalogContent({ onStoreLoaded }: CatalogContentProps) {
         initialData.store.whatsapp = String(initialData.store.whatsapp ?? '').trim();
         if (typeof document !== 'undefined' && initialData.store.store_name) {
           document.title = `${initialData.store.store_name} | Catálogo Oficial`;
+        }
+        if (initialData.store.catalog_layout) {
+          setLayoutMode(initialData.store.catalog_layout);
         }
         onStoreLoaded?.(initialData.store);
       }
@@ -411,6 +416,8 @@ function CatalogContent({ onStoreLoaded }: CatalogContentProps) {
             onOpenFilterDrawer={() => setIsFilterDrawerOpen(true)}
             filteredCount={filteredProducts.length}
             totalCount={products.length}
+            layoutMode={layoutMode}
+            onChangeLayoutMode={setLayoutMode}
             store={
               store || {
                 store_id: '',
@@ -448,57 +455,19 @@ function CatalogContent({ onStoreLoaded }: CatalogContentProps) {
           </div>
         )}
 
-        {/* Estado de Carregamento (Loading Skeletons Pulsantes) */}
-        {isLoading && <ProductGridSkeleton count={8} />}
+        {/* Estado de Carregamento (Loading Skeletons com Shimmer Refinado) */}
+        {isLoading && <ProductGridSkeleton count={8} layoutMode={layoutMode} />}
 
-        {/* Grid de Produtos Universal */}
-        {!isLoading && !errorMessage && (
-          <>
-            {filteredProducts.length === 0 ? (
-              <div className="bg-white rounded-3xl border border-slate-200/80 p-12 text-center my-6 space-y-3 shadow-2xs">
-                <Package className="w-12 h-12 text-slate-300 mx-auto stroke-1" />
-                <h3 className="text-sm font-bold text-slate-900">
-                  Nenhum produto encontrado com os filtros atuais
-                </h3>
-                <p className="text-xs text-slate-500 max-w-sm mx-auto">
-                  {filters.searchTerm
-                    ? `Não encontramos itens correspondentes a "${filters.searchTerm}".`
-                    : 'Tente alterar os filtros aplicados para ver mais produtos.'}
-                </p>
-                <button
-                  type="button"
-                  onClick={resetFilters}
-                  className="inline-flex items-center text-xs font-bold px-4 py-2 rounded-xl text-brand-contrast bg-brand-primary hover:bg-brand-primary-hover shadow-xs transition cursor-pointer"
-                  style={{ backgroundColor: store?.primary_color }}
-                >
-                  Limpar todos os filtros
-                </button>
-              </div>
-            ) : (
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
-                {filteredProducts.map((prod) => (
-                  <ProductCard
-                    key={prod.id}
-                    product={prod}
-                    store={
-                      store || {
-                        store_id: '',
-                        store_name: '',
-                        logo_url: '',
-                        primary_color: '#10b981',
-                        secondary_color: '#047857',
-                        whatsapp: '',
-                        domain: '',
-                        currency: 'BRL',
-                        timezone: '',
-                      }
-                    }
-                    onSelect={handleOpenProduct}
-                  />
-                ))}
-              </div>
-            )}
-          </>
+        {/* Lista/Grade de Produtos Configurável (Grid / List / Editorial) */}
+        {!isLoading && !errorMessage && store && (
+          <ProductList
+            products={filteredProducts}
+            store={store}
+            layoutMode={layoutMode}
+            onSelectProduct={handleOpenProduct}
+            onResetFilters={resetFilters}
+            emptySearchTerm={filters.searchTerm}
+          />
         )}
 
         {/* Selos de Confiança Universais (Trust Badges) */}

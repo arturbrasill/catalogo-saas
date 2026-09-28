@@ -59,6 +59,7 @@ export default function AdminProdutosPage() {
   const [formPrecoPromocional, setFormPrecoPromocional] = useState('');
   const [formEstoque, setFormEstoque] = useState('10');
   const [formAtivo, setFormAtivo] = useState(true);
+  const [formBadge, setFormBadge] = useState('');
   const [formImagens, setFormImagens] = useState<string[]>([]);
   const [formVariacoes, setFormVariacoes] = useState<VariationOption[]>([]);
 
@@ -93,6 +94,7 @@ export default function AdminProdutosPage() {
     setFormPrecoPromocional('');
     setFormEstoque('10');
     setFormAtivo(true);
+    setFormBadge('');
     setFormImagens([]);
     setFormVariacoes([]);
     setFormError(null);
@@ -109,6 +111,7 @@ export default function AdminProdutosPage() {
     setFormPrecoPromocional(p.precoPromocional ? maskCurrency(p.precoPromocional) : '');
     setFormEstoque(String(p.estoque));
     setFormAtivo(p.ativo);
+    setFormBadge(p.badge || '');
     setFormImagens(p.imagens || []);
     setFormVariacoes(p.variacoes || []);
     setFormError(null);
@@ -125,6 +128,7 @@ export default function AdminProdutosPage() {
     setFormPrecoPromocional(p.precoPromocional ? maskCurrency(p.precoPromocional) : '');
     setFormEstoque(String(p.estoque));
     setFormAtivo(true);
+    setFormBadge(p.badge || '');
     setFormImagens(p.imagens || []);
     setFormVariacoes(p.variacoes || []);
     setFormError(null);
@@ -190,6 +194,7 @@ export default function AdminProdutosPage() {
             precoPromocional: precoPromoNum,
             estoque: estoqueNum,
             ativo: formAtivo,
+            badge: formBadge.trim() ? formBadge.trim() : null,
             imagens: formImagens,
             variacoes: formVariacoes,
           },
@@ -210,6 +215,7 @@ export default function AdminProdutosPage() {
             precoPromocional: precoPromoNum,
             estoque: estoqueNum,
             ativo: formAtivo,
+            badge: formBadge.trim() ? formBadge.trim() : null,
             imagens: formImagens,
             variacoes: formVariacoes,
           },
@@ -486,9 +492,16 @@ export default function AdminProdutosPage() {
                             )}
                           </div>
                           <div className="min-w-0">
-                            <span className="font-bold text-slate-900 block leading-snug truncate max-w-xs">
-                              {prod.nome}
-                            </span>
+                            <div className="flex items-center gap-2">
+                              <span className="font-bold text-slate-900 block leading-snug truncate max-w-xs">
+                                {prod.nome}
+                              </span>
+                              {prod.badge && (
+                                <span className="text-[9px] font-black uppercase text-amber-800 bg-amber-100 border border-amber-300 px-1.5 py-0.2 rounded-md flex-shrink-0">
+                                  {prod.badge}
+                                </span>
+                              )}
+                            </div>
                             <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
                               {prod.variacoes && prod.variacoes.length > 0 ? (
                                 <span className="text-[10px] text-slate-700 bg-slate-100 px-2 py-0.5 rounded-md font-semibold border border-slate-200/60">
@@ -736,6 +749,50 @@ export default function AdminProdutosPage() {
                       onChange={(e) => setFormEstoque(e.target.value)}
                       className="w-full rounded-2xl border border-slate-200 px-3.5 py-2.5 text-xs sm:text-sm focus:border-slate-800 focus:outline-none focus:ring-4 focus:ring-slate-900/5"
                     />
+                  </div>
+                </div>
+
+                {/* Selo Promocional / Badge no Card da Foto */}
+                <div>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-700">
+                      Selo Promocional / Badge na Foto
+                    </label>
+                    <span className="text-[10px] text-slate-400">Opcional</span>
+                  </div>
+                  <input
+                    type="text"
+                    placeholder="Ex: Mais Vendido, Promoção, Novo, Destaque..."
+                    value={formBadge}
+                    maxLength={30}
+                    onChange={(e) => setFormBadge(e.target.value)}
+                    className="w-full rounded-2xl border border-slate-200 px-3.5 py-2.5 text-xs sm:text-sm focus:border-slate-800 focus:outline-none focus:ring-4 focus:ring-slate-900/5"
+                  />
+                  <div className="flex items-center gap-1.5 mt-2 flex-wrap">
+                    <span className="text-[10px] font-semibold text-slate-400">Sugestões:</span>
+                    {['Mais Vendido', 'Promoção', 'Novo', 'Destaque', 'Exclusivo'].map((sug) => (
+                      <button
+                        key={sug}
+                        type="button"
+                        onClick={() => setFormBadge(sug)}
+                        className={`px-2 py-0.5 rounded-full text-[10px] font-bold border transition cursor-pointer ${
+                          formBadge === sug
+                            ? 'bg-slate-900 text-white border-transparent'
+                            : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'
+                        }`}
+                      >
+                        {sug}
+                      </button>
+                    ))}
+                    {formBadge && (
+                      <button
+                        type="button"
+                        onClick={() => setFormBadge('')}
+                        className="text-[10px] font-semibold text-rose-500 hover:underline ml-1 cursor-pointer"
+                      >
+                        Limpar
+                      </button>
+                    )}
                   </div>
                 </div>
 

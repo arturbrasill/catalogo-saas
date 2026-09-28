@@ -803,7 +803,13 @@ function handleSaveConfig(newConfigs) {
     'pix_key',
     'pix_key_type',
     'is_open',
-    'business_hours'
+    'business_hours',
+    'theme_preset',
+    'catalog_layout',
+    'announcement_enabled',
+    'announcement_text',
+    'announcement_bg_color',
+    'announcement_text_color'
   ];
 
   for (var prop in newConfigs) {

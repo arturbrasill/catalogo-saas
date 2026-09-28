@@ -7,7 +7,7 @@ import { useAuth } from '@/lib/auth';
 import { imageUploadService } from '@/lib/imageUploadService';
 import { maskWhatsApp, normalizeWhatsAppToApi } from '@/lib/masks';
 import { THEME_PRESET_LIST, applyThemeToDocument } from '@/lib/themePresets';
-import type { StoreConfig, ThemePreset } from '@/types';
+import type { StoreConfig, ThemePreset, CatalogLayoutMode } from '@/types';
 import {
   Store,
   Palette,
@@ -34,6 +34,9 @@ import {
   Megaphone,
   Layers,
   Type,
+  LayoutGrid,
+  List as ListIcon,
+  BookOpen,
 } from 'lucide-react';
 
 const COLOR_PRESETS = [
@@ -104,6 +107,7 @@ export default function AdminConfiguracoesPage() {
   const [pixKey, setPixKey] = useState('');
   const [pixKeyType, setPixKeyType] = useState<'cpf' | 'cnpj' | 'email' | 'phone' | 'random'>('cpf');
   const [themePreset, setThemePreset] = useState<ThemePreset>('modern');
+  const [catalogLayout, setCatalogLayout] = useState<CatalogLayoutMode>('grid');
   const [announcementEnabled, setAnnouncementEnabled] = useState(true);
   const [announcementText, setAnnouncementText] = useState(
     'Compre online e receba em casa com frete seguro ou retire na loja física'
@@ -131,6 +135,7 @@ export default function AdminConfiguracoesPage() {
       setPixKey(String(data.pix_key ?? ''));
       setPixKeyType((data.pix_key_type as any) || 'cpf');
       setThemePreset((data.theme_preset as ThemePreset) || 'modern');
+      setCatalogLayout((data.catalog_layout as CatalogLayoutMode) || 'grid');
       setAnnouncementEnabled(
         data.announcement_enabled !== undefined ? Boolean(data.announcement_enabled) : true
       );
@@ -249,6 +254,7 @@ export default function AdminConfiguracoesPage() {
           pix_key: pixKey.trim(),
           pix_key_type: pixKeyType,
           theme_preset: themePreset,
+          catalog_layout: catalogLayout,
           announcement_enabled: announcementEnabled,
           announcement_text: announcementText.trim(),
           announcement_bg_color: announcementBgColor.trim(),
@@ -271,6 +277,7 @@ export default function AdminConfiguracoesPage() {
       setPixKey(String(updated.pix_key ?? ''));
       setPixKeyType((updated.pix_key_type as any) || 'cpf');
       setThemePreset((updated.theme_preset as ThemePreset) || 'modern');
+      setCatalogLayout((updated.catalog_layout as CatalogLayoutMode) || 'grid');
       setAnnouncementEnabled(
         updated.announcement_enabled !== undefined ? Boolean(updated.announcement_enabled) : true
       );
@@ -684,6 +691,171 @@ export default function AdminConfiguracoesPage() {
                         </button>
                       );
                     })}
+                  </div>
+                </div>
+
+                {/* Seletor de Modo de Exibição dos Produtos (Layout da Vitrine) */}
+                <div className="pt-4 border-t border-slate-100 space-y-3">
+                  <div>
+                    <span className="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
+                      <LayoutGrid className="w-4 h-4 text-emerald-600" />
+                      Modo de Exibição dos Produtos (Layout da Vitrine)
+                    </span>
+                    <p className="text-[11px] text-slate-400 mt-0.5">
+                      Defina como os cartões de produtos serão apresentados para os seus clientes por padrão.
+                    </p>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    {/* Modo Grid */}
+                    <button
+                      type="button"
+                      onClick={() => setCatalogLayout('grid')}
+                      className={`relative p-3.5 rounded-2xl border text-left transition-all cursor-pointer flex flex-col justify-between ${
+                        catalogLayout === 'grid'
+                          ? 'border-slate-900 bg-slate-900 text-white shadow-md ring-2 ring-slate-900/10'
+                          : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50'
+                      }`}
+                    >
+                      <div>
+                        <div className="flex items-center justify-between gap-1 mb-1.5">
+                          <span
+                            className={`text-xs font-black tracking-tight ${
+                              catalogLayout === 'grid' ? 'text-white' : 'text-slate-900'
+                            }`}
+                          >
+                            Grade Dupla
+                          </span>
+                          <span
+                            className={`text-[9px] font-bold px-2 py-0.5 rounded-full ${
+                              catalogLayout === 'grid'
+                                ? 'bg-white/20 text-white'
+                                : 'bg-slate-100 text-slate-600'
+                            }`}
+                          >
+                            2 / 4 Colunas
+                          </span>
+                        </div>
+                        <p
+                          className={`text-[11px] leading-relaxed mb-2 ${
+                            catalogLayout === 'grid' ? 'text-slate-300' : 'text-slate-500'
+                          }`}
+                        >
+                          2 colunas no celular e 4 colunas no computador. Ideal para moda, roupas, calçados e vitrines visuais.
+                        </p>
+                      </div>
+
+                      <div className="pt-2 border-t border-white/10 flex items-center justify-between text-[10px]">
+                        <span className={catalogLayout === 'grid' ? 'text-slate-300' : 'text-slate-400'}>
+                          Ideal: <strong className={catalogLayout === 'grid' ? 'text-white' : 'text-slate-800'}>Moda & Roupas</strong>
+                        </span>
+                        {catalogLayout === 'grid' && (
+                          <span className="flex items-center justify-center h-4 w-4 rounded-full bg-emerald-500 text-white">
+                            <Check className="w-2.5 h-2.5 stroke-[3]" />
+                          </span>
+                        )}
+                      </div>
+                    </button>
+
+                    {/* Modo List */}
+                    <button
+                      type="button"
+                      onClick={() => setCatalogLayout('list')}
+                      className={`relative p-3.5 rounded-2xl border text-left transition-all cursor-pointer flex flex-col justify-between ${
+                        catalogLayout === 'list'
+                          ? 'border-slate-900 bg-slate-900 text-white shadow-md ring-2 ring-slate-900/10'
+                          : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50'
+                      }`}
+                    >
+                      <div>
+                        <div className="flex items-center justify-between gap-1 mb-1.5">
+                          <span
+                            className={`text-xs font-black tracking-tight ${
+                              catalogLayout === 'list' ? 'text-white' : 'text-slate-900'
+                            }`}
+                          >
+                            Lista Compacta
+                          </span>
+                          <span
+                            className={`text-[9px] font-bold px-2 py-0.5 rounded-full ${
+                              catalogLayout === 'list'
+                                ? 'bg-white/20 text-white'
+                                : 'bg-slate-100 text-slate-600'
+                            }`}
+                          >
+                            Horizontal
+                          </span>
+                        </div>
+                        <p
+                          className={`text-[11px] leading-relaxed mb-2 ${
+                            catalogLayout === 'list' ? 'text-slate-300' : 'text-slate-500'
+                          }`}
+                        >
+                          Card horizontal com imagem à esquerda, nome, descrição, preço e botão &apos;+&apos; à direita. Ideal para alimentação e cardápios densos.
+                        </p>
+                      </div>
+
+                      <div className="pt-2 border-t border-white/10 flex items-center justify-between text-[10px]">
+                        <span className={catalogLayout === 'list' ? 'text-slate-300' : 'text-slate-400'}>
+                          Ideal: <strong className={catalogLayout === 'list' ? 'text-white' : 'text-slate-800'}>Alimentação & Delivery</strong>
+                        </span>
+                        {catalogLayout === 'list' && (
+                          <span className="flex items-center justify-center h-4 w-4 rounded-full bg-emerald-500 text-white">
+                            <Check className="w-2.5 h-2.5 stroke-[3]" />
+                          </span>
+                        )}
+                      </div>
+                    </button>
+
+                    {/* Modo Editorial */}
+                    <button
+                      type="button"
+                      onClick={() => setCatalogLayout('editorial')}
+                      className={`relative p-3.5 rounded-2xl border text-left transition-all cursor-pointer flex flex-col justify-between ${
+                        catalogLayout === 'editorial'
+                          ? 'border-slate-900 bg-slate-900 text-white shadow-md ring-2 ring-slate-900/10'
+                          : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50'
+                      }`}
+                    >
+                      <div>
+                        <div className="flex items-center justify-between gap-1 mb-1.5">
+                          <span
+                            className={`text-xs font-black tracking-tight ${
+                              catalogLayout === 'editorial' ? 'text-white' : 'text-slate-900'
+                            }`}
+                          >
+                            Editorial Amplo
+                          </span>
+                          <span
+                            className={`text-[9px] font-bold px-2 py-0.5 rounded-full ${
+                              catalogLayout === 'editorial'
+                                ? 'bg-white/20 text-white'
+                                : 'bg-slate-100 text-slate-600'
+                            }`}
+                          >
+                            1 Coluna
+                          </span>
+                        </div>
+                        <p
+                          className={`text-[11px] leading-relaxed mb-2 ${
+                            catalogLayout === 'editorial' ? 'text-slate-300' : 'text-slate-500'
+                          }`}
+                        >
+                          1 coluna com imagem grande e espaçamento generoso. Ideal para joalherias, peças exclusivas e coleções de alto padrão.
+                        </p>
+                      </div>
+
+                      <div className="pt-2 border-t border-white/10 flex items-center justify-between text-[10px]">
+                        <span className={catalogLayout === 'editorial' ? 'text-slate-300' : 'text-slate-400'}>
+                          Ideal: <strong className={catalogLayout === 'editorial' ? 'text-white' : 'text-slate-800'}>Luxo & Exclusivo</strong>
+                        </span>
+                        {catalogLayout === 'editorial' && (
+                          <span className="flex items-center justify-center h-4 w-4 rounded-full bg-emerald-500 text-white">
+                            <Check className="w-2.5 h-2.5 stroke-[3]" />
+                          </span>
+                        )}
+                      </div>
+                    </button>
                   </div>
                 </div>
 
@@ -1137,72 +1309,194 @@ export default function AdminConfiguracoesPage() {
                       </div>
                     )}
 
-                    {/* Card de Produto Exemplo com o Preset Aplicado */}
-                    <div
-                      className={`bg-white p-2.5 border border-slate-200/80 space-y-2 transition-all ${
-                        themePreset === 'editorial'
-                          ? 'rounded-xs shadow-none border-slate-300'
-                          : themePreset === 'bold'
-                          ? 'rounded-3xl shadow-[3px_3px_0px_0px_rgba(15,23,42,0.12)] border-slate-900/20'
-                          : 'rounded-2xl shadow-2xs'
-                      }`}
-                    >
+                    {/* Card de Produto Exemplo com o Preset de Tema e o Layout Aplicado */}
+                    {catalogLayout === 'list' ? (
+                      /* Layout List no Mockup */
                       <div
-                        className={`h-24 bg-slate-100 flex items-center justify-center text-slate-400 relative overflow-hidden ${
+                        className={`bg-white p-2 border border-slate-200/80 flex items-stretch gap-2.5 transition-all ${
                           themePreset === 'editorial'
-                            ? 'rounded-xs'
+                            ? 'rounded-xs shadow-none border-slate-300'
                             : themePreset === 'bold'
-                            ? 'rounded-2xl'
-                            : 'rounded-xl'
+                            ? 'rounded-2xl shadow-[2px_2px_0px_0px_rgba(15,23,42,0.12)] border-slate-900/20'
+                            : 'rounded-xl shadow-2xs'
                         }`}
                       >
-                        <Store className="w-6 h-6 stroke-1 text-slate-300" />
-                        <span
-                          className={`absolute top-1.5 left-1.5 text-white text-[8px] font-black px-1.5 py-0.5 ${
+                        <div
+                          className={`w-16 h-16 bg-slate-100 flex items-center justify-center text-slate-400 relative overflow-hidden flex-shrink-0 ${
                             themePreset === 'editorial'
                               ? 'rounded-xs'
-                              : 'rounded-full'
-                          }`}
-                          style={{ backgroundColor: primaryColor }}
-                        >
-                          Destaque
-                        </span>
-                      </div>
-
-                      <div className="space-y-0.5">
-                        <h5
-                          className={`text-[11px] leading-tight ${
-                            themePreset === 'editorial'
-                              ? 'font-serif font-bold text-slate-900'
                               : themePreset === 'bold'
-                              ? 'font-mono font-black text-slate-900'
-                              : 'font-sans font-bold text-slate-900'
+                              ? 'rounded-xl'
+                              : 'rounded-lg'
                           }`}
                         >
-                          Vestido Midi Seda Floral
-                        </h5>
-                        <div className="flex items-center justify-between pt-1">
+                          <Store className="w-5 h-5 stroke-1 text-slate-300" />
                           <span
-                            className="text-xs font-black"
-                            style={{ color: primaryColor }}
-                          >
-                            R$ 189,90
-                          </span>
-                          <div
-                            className={`h-6 w-6 flex items-center justify-center text-white ${
-                              themePreset === 'editorial'
-                                ? 'rounded-xs'
-                                : themePreset === 'bold'
-                                ? 'rounded-full'
-                                : 'rounded-lg'
-                            }`}
+                            className="absolute top-1 left-1 text-white text-[7px] font-black px-1 py-0.2 rounded-full uppercase"
                             style={{ backgroundColor: primaryColor }}
                           >
-                            <ShoppingBag className="w-3 h-3" />
+                            Top
+                          </span>
+                        </div>
+                        <div className="flex-1 min-w-0 flex flex-col justify-between py-0.5">
+                          <div>
+                            <h5
+                              className={`text-[10px] leading-tight truncate ${
+                                themePreset === 'editorial'
+                                  ? 'font-serif font-bold text-slate-900'
+                                  : themePreset === 'bold'
+                                  ? 'font-mono font-black text-slate-900'
+                                  : 'font-sans font-bold text-slate-900'
+                              }`}
+                            >
+                              Combo Burguer Artesanal
+                            </h5>
+                            <p className="text-[8px] text-slate-400 line-clamp-1 mt-0.5">
+                              Blend 180g, queijo cheddar, bacon crocante
+                            </p>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <span className="text-[11px] font-black" style={{ color: primaryColor }}>
+                              R$ 38,90
+                            </span>
+                            <div
+                              className={`h-5 w-5 flex items-center justify-center text-white ${
+                                themePreset === 'editorial'
+                                  ? 'rounded-xs'
+                                  : themePreset === 'bold'
+                                  ? 'rounded-full'
+                                  : 'rounded-md'
+                              }`}
+                              style={{ backgroundColor: primaryColor }}
+                            >
+                              <Plus className="w-3 h-3 stroke-[3]" />
+                            </div>
                           </div>
                         </div>
                       </div>
-                    </div>
+                    ) : catalogLayout === 'editorial' ? (
+                      /* Layout Editorial no Mockup */
+                      <div
+                        className={`bg-white border border-slate-200/80 overflow-hidden transition-all ${
+                          themePreset === 'editorial'
+                            ? 'rounded-xs shadow-none border-slate-300'
+                            : themePreset === 'bold'
+                            ? 'rounded-3xl shadow-[3px_3px_0px_0px_rgba(15,23,42,0.12)] border-slate-900/20'
+                            : 'rounded-2xl shadow-2xs'
+                        }`}
+                      >
+                        <div className="h-28 bg-slate-100 flex items-center justify-center text-slate-400 relative overflow-hidden">
+                          <Store className="w-8 h-8 stroke-1 text-slate-300" />
+                          <span
+                            className={`absolute top-2 left-2 text-white text-[8px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider`}
+                            style={{ backgroundColor: primaryColor }}
+                          >
+                            Exclusivo
+                          </span>
+                        </div>
+                        <div className="p-2.5 space-y-1.5">
+                          <h5
+                            className={`text-xs leading-tight ${
+                              themePreset === 'editorial'
+                                ? 'font-serif font-black text-slate-900'
+                                : themePreset === 'bold'
+                                ? 'font-mono font-black text-slate-900'
+                                : 'font-sans font-black text-slate-900'
+                            }`}
+                          >
+                            Anel Solitário Diamante Nobre
+                          </h5>
+                          <p className="text-[9px] text-slate-500 line-clamp-2 leading-relaxed">
+                            Ouro branco 18k com acabamento polido à mão e certificado.
+                          </p>
+                          <div className="flex items-center justify-between pt-1 border-t border-slate-100">
+                            <span className="text-xs font-black" style={{ color: primaryColor }}>
+                              R$ 1.890,00
+                            </span>
+                            <div
+                              className={`px-2 py-1 text-[9px] font-bold text-white flex items-center gap-1 ${
+                                themePreset === 'editorial'
+                                  ? 'rounded-xs'
+                                  : themePreset === 'bold'
+                                  ? 'rounded-full'
+                                  : 'rounded-lg'
+                              }`}
+                              style={{ backgroundColor: primaryColor }}
+                            >
+                              <span>Ver</span>
+                              <ShoppingBag className="w-2.5 h-2.5" />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      /* Layout Grid no Mockup (Padrão) */
+                      <div
+                        className={`bg-white p-2.5 border border-slate-200/80 space-y-2 transition-all ${
+                          themePreset === 'editorial'
+                            ? 'rounded-xs shadow-none border-slate-300'
+                            : themePreset === 'bold'
+                            ? 'rounded-3xl shadow-[3px_3px_0px_0px_rgba(15,23,42,0.12)] border-slate-900/20'
+                            : 'rounded-2xl shadow-2xs'
+                        }`}
+                      >
+                        <div
+                          className={`h-24 bg-slate-100 flex items-center justify-center text-slate-400 relative overflow-hidden ${
+                            themePreset === 'editorial'
+                              ? 'rounded-xs'
+                              : themePreset === 'bold'
+                              ? 'rounded-2xl'
+                              : 'rounded-xl'
+                          }`}
+                        >
+                          <Store className="w-6 h-6 stroke-1 text-slate-300" />
+                          <span
+                            className={`absolute top-1.5 left-1.5 text-white text-[8px] font-black px-1.5 py-0.5 ${
+                              themePreset === 'editorial'
+                                ? 'rounded-xs'
+                                : 'rounded-full'
+                            }`}
+                            style={{ backgroundColor: primaryColor }}
+                          >
+                            Mais Vendido
+                          </span>
+                        </div>
+
+                        <div className="space-y-0.5">
+                          <h5
+                            className={`text-[11px] leading-tight ${
+                              themePreset === 'editorial'
+                                ? 'font-serif font-bold text-slate-900'
+                                : themePreset === 'bold'
+                                ? 'font-mono font-black text-slate-900'
+                                : 'font-sans font-bold text-slate-900'
+                            }`}
+                          >
+                            Vestido Midi Seda Floral
+                          </h5>
+                          <div className="flex items-center justify-between pt-1">
+                            <span
+                              className="text-xs font-black"
+                              style={{ color: primaryColor }}
+                            >
+                              R$ 189,90
+                            </span>
+                            <div
+                              className={`h-6 w-6 flex items-center justify-center text-white ${
+                                themePreset === 'editorial'
+                                  ? 'rounded-xs'
+                                  : themePreset === 'bold'
+                                  ? 'rounded-full'
+                                  : 'rounded-lg'
+                              }`}
+                              style={{ backgroundColor: primaryColor }}
+                            >
+                              <ShoppingBag className="w-3 h-3" />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
 
                     {/* Botão de WhatsApp com o Estilo do Preset */}
                     <div

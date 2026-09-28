@@ -65,6 +65,7 @@ export const CreateProductSchema = z
       .int('O estoque deve ser um número inteiro')
       .min(-1, 'Estoque deve ser um número inteiro maior ou igual a -1'),
     ativo: z.boolean().default(true),
+    badge: z.string().trim().max(40, 'O selo promocional deve ter no máximo 40 caracteres').nullable().optional(),
   })
   .refine(
     (data) => {
@@ -107,6 +108,7 @@ export const UpdateProductSchema = z
       .min(-1, 'Estoque deve ser um número inteiro maior ou igual a -1')
       .optional(),
     ativo: z.boolean().optional(),
+    badge: z.string().trim().max(40, 'O selo promocional deve ter no máximo 40 caracteres').nullable().optional(),
   })
   .refine(
     (data) => {
@@ -159,6 +161,7 @@ export const SaveConfigSchema = z.object({
   pix_key: z.string().trim().optional(),
   pix_key_type: z.enum(['cpf', 'cnpj', 'email', 'phone', 'random']).optional(),
   theme_preset: z.enum(['modern', 'editorial', 'bold']).optional(),
+  catalog_layout: z.enum(['grid', 'list', 'editorial']).optional(),
   announcement_enabled: z.boolean().optional(),
   announcement_text: z.string().trim().max(300, 'Texto do anúncio deve ter no máximo 300 caracteres').optional(),
   announcement_bg_color: z

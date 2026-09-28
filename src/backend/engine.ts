@@ -55,6 +55,7 @@ export class BackendEngine {
     this.configMap.set('currency', initialConfig?.currency || 'BRL');
     this.configMap.set('timezone', initialConfig?.timezone || 'America/Sao_Paulo');
     this.configMap.set('theme_preset', initialConfig?.theme_preset || 'modern');
+    this.configMap.set('catalog_layout', initialConfig?.catalog_layout || 'grid');
     this.configMap.set('announcement_enabled', String(initialConfig?.announcement_enabled ?? true));
     this.configMap.set('announcement_text', initialConfig?.announcement_text || 'Compre online e receba em casa com frete seguro ou retire na loja física');
     this.configMap.set('announcement_bg_color', initialConfig?.announcement_bg_color || '#0f172a');
@@ -295,6 +296,10 @@ export class BackendEngine {
       config.theme_preset = 'modern';
     }
 
+    if (config.catalog_layout !== 'list' && config.catalog_layout !== 'editorial') {
+      config.catalog_layout = 'grid';
+    }
+
     if (config.announcement_enabled !== undefined) {
       config.announcement_enabled =
         config.announcement_enabled === true || String(config.announcement_enabled) === 'true';
@@ -428,6 +433,7 @@ export class BackendEngine {
       variacoes: validatedVariations,
       estoque: estoqueNum,
       ativo: productData.ativo !== false,
+      badge: productData.badge ? String(productData.badge).trim() : null,
       createdAt: nowIso,
       updatedAt: nowIso,
       deletedAt: null,
@@ -509,6 +515,7 @@ export class BackendEngine {
       variacoes: updatedVariacoes,
       estoque: updatedEstoque,
       ativo: productData.ativo !== undefined ? Boolean(productData.ativo) : current.ativo,
+      badge: productData.badge !== undefined ? (productData.badge ? String(productData.badge).trim() : null) : (current.badge ?? null),
       updatedAt: nowIso,
     };
 
@@ -650,6 +657,7 @@ export class BackendEngine {
       'is_open',
       'business_hours',
       'theme_preset',
+      'catalog_layout',
       'announcement_enabled',
       'announcement_text',
       'announcement_bg_color',
@@ -688,6 +696,10 @@ export class BackendEngine {
         } else if (key === 'theme_preset') {
           if (!['modern', 'editorial', 'bold'].includes(strVal)) {
             throw new Error('VALIDATION_ERROR: O campo "theme_preset" deve ser "modern", "editorial" ou "bold".');
+          }
+        } else if (key === 'catalog_layout') {
+          if (!['grid', 'list', 'editorial'].includes(strVal)) {
+            throw new Error('VALIDATION_ERROR: O campo "catalog_layout" deve ser "grid", "list" ou "editorial".');
           }
         } else if (key === 'announcement_enabled') {
           strVal = String(value === true || strVal === 'true');

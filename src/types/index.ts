@@ -8,6 +8,7 @@
 // ============================================================
 
 export type ThemePreset = 'modern' | 'editorial' | 'bold';
+export type CatalogLayoutMode = 'grid' | 'list' | 'editorial';
 
 /**
  * Configurações públicas da loja acessíveis ao catálogo e visitantes.
@@ -38,6 +39,8 @@ export interface StoreConfig {
   announcement_text?: string;
   announcement_bg_color?: string;
   announcement_text_color?: string;
+  // Layout da Vitrine
+  catalog_layout?: CatalogLayoutMode;
 }
 
 /**
@@ -110,6 +113,7 @@ export interface Product {
   variacoes: VariationOption[];
   estoque: number;
   ativo: boolean;
+  badge?: string | null;
   createdAt: string;
   updatedAt: string;
   deletedAt: string | null;
@@ -257,6 +261,7 @@ export interface Tenant {
   background_color?: string;
   text_color?: string;
   theme_preset?: ThemePreset;
+  catalog_layout?: CatalogLayoutMode;
   announcement_enabled?: boolean;
   announcement_text?: string;
   announcement_bg_color?: string;
@@ -368,6 +373,7 @@ export interface CreateProductInput {
   variacoes?: VariationOption[];
   estoque: number;
   ativo?: boolean;
+  badge?: string | null;
 }
 
 export interface UpdateProductInput extends Partial<CreateProductInput> {
@@ -395,6 +401,7 @@ export interface SaveConfigInput {
   is_open?: boolean;
   business_hours?: string;
   theme_preset?: ThemePreset;
+  catalog_layout?: CatalogLayoutMode;
   announcement_enabled?: boolean;
   announcement_text?: string;
   announcement_bg_color?: string;

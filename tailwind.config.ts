@@ -56,6 +56,7 @@ const config: Config = {
         'fade-in': 'fadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1)',
         'slide-up': 'slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
         'scale-in': 'scaleIn 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
+        shimmer: 'shimmer 2s infinite linear',
       },
       keyframes: {
         fadeIn: {
@@ -69,6 +70,10 @@ const config: Config = {
         scaleIn: {
           '0%': { transform: 'scale(0.96)', opacity: '0' },
           '100%': { transform: 'scale(1)', opacity: '1' },
+        },
+        shimmer: {
+          '0%': { transform: 'translateX(-100%)' },
+          '100%': { transform: 'translateX(100%)' },
         },
       },
     },
