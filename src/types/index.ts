@@ -7,6 +7,8 @@
 // 1. CONFIGURAÇÃO DA LOJA (STORE)
 // ============================================================
 
+export type ThemePreset = 'modern' | 'editorial' | 'bold';
+
 /**
  * Configurações públicas da loja acessíveis ao catálogo e visitantes.
  * NUNCA contém segredos como hashes de senha ou tokens.
@@ -30,6 +32,12 @@ export interface StoreConfig {
   pix_key_type?: 'cpf' | 'cnpj' | 'email' | 'phone' | 'random';
   is_open?: boolean;
   business_hours?: string;
+  // Dynamic Theme Presets & Announcement Bar
+  theme_preset?: ThemePreset;
+  announcement_enabled?: boolean;
+  announcement_text?: string;
+  announcement_bg_color?: string;
+  announcement_text_color?: string;
 }
 
 /**
@@ -243,6 +251,16 @@ export interface Tenant {
   asaasCustomerId?: string;
   asaasSubscriptionId?: string;
   asaasPaymentLink?: string;
+  // Campos visuais de tema e anúncio
+  primary_color?: string;
+  secondary_color?: string;
+  background_color?: string;
+  text_color?: string;
+  theme_preset?: ThemePreset;
+  announcement_enabled?: boolean;
+  announcement_text?: string;
+  announcement_bg_color?: string;
+  announcement_text_color?: string;
 }
 
 export type TenantRegistry = Record<string, Tenant>;
@@ -376,6 +394,11 @@ export interface SaveConfigInput {
   pix_key_type?: 'cpf' | 'cnpj' | 'email' | 'phone' | 'random';
   is_open?: boolean;
   business_hours?: string;
+  theme_preset?: ThemePreset;
+  announcement_enabled?: boolean;
+  announcement_text?: string;
+  announcement_bg_color?: string;
+  announcement_text_color?: string;
 }
 
 export interface CatalogInitialData {

@@ -54,6 +54,11 @@ export class BackendEngine {
     this.configMap.set('domain', initialConfig?.domain || 'loja-exemplo.com.br');
     this.configMap.set('currency', initialConfig?.currency || 'BRL');
     this.configMap.set('timezone', initialConfig?.timezone || 'America/Sao_Paulo');
+    this.configMap.set('theme_preset', initialConfig?.theme_preset || 'modern');
+    this.configMap.set('announcement_enabled', String(initialConfig?.announcement_enabled ?? true));
+    this.configMap.set('announcement_text', initialConfig?.announcement_text || 'Compre online e receba em casa com frete seguro ou retire na loja física');
+    this.configMap.set('announcement_bg_color', initialConfig?.announcement_bg_color || '#0f172a');
+    this.configMap.set('announcement_text_color', initialConfig?.announcement_text_color || '#ffffff');
 
     const now = new Date().toISOString();
     this.categories = [
@@ -285,6 +290,24 @@ export class BackendEngine {
     } else {
       config.is_open = true;
     }
+
+    if (config.theme_preset !== 'editorial' && config.theme_preset !== 'bold') {
+      config.theme_preset = 'modern';
+    }
+
+    if (config.announcement_enabled !== undefined) {
+      config.announcement_enabled =
+        config.announcement_enabled === true || String(config.announcement_enabled) === 'true';
+    } else {
+      config.announcement_enabled = true;
+    }
+
+    if (!config.announcement_text) {
+      config.announcement_text =
+        'Compre online e receba em casa com frete seguro ou retire na loja física';
+    }
+    if (!config.announcement_bg_color) config.announcement_bg_color = '#0f172a';
+    if (!config.announcement_text_color) config.announcement_text_color = '#ffffff';
 
     return config as StoreConfig;
   }
@@ -626,6 +649,11 @@ export class BackendEngine {
       'pix_key_type',
       'is_open',
       'business_hours',
+      'theme_preset',
+      'announcement_enabled',
+      'announcement_text',
+      'announcement_bg_color',
+      'announcement_text_color',
     ];
 
     for (const [key, value] of Object.entries(newConfigs)) {
@@ -650,11 +678,19 @@ export class BackendEngine {
           key === 'primary_color' ||
           key === 'secondary_color' ||
           key === 'background_color' ||
-          key === 'text_color'
+          key === 'text_color' ||
+          key === 'announcement_bg_color' ||
+          key === 'announcement_text_color'
         ) {
           if (!/^#([0-9a-fA-F]{3}){1,2}$/.test(strVal)) {
             throw new Error(`VALIDATION_ERROR: O campo "${key}" deve ser uma cor hexadecimal válida (ex: #10b981).`);
           }
+        } else if (key === 'theme_preset') {
+          if (!['modern', 'editorial', 'bold'].includes(strVal)) {
+            throw new Error('VALIDATION_ERROR: O campo "theme_preset" deve ser "modern", "editorial" ou "bold".');
+          }
+        } else if (key === 'announcement_enabled') {
+          strVal = String(value === true || strVal === 'true');
         }
         this.configMap.set(key, strVal);
       }

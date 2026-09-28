@@ -10,6 +10,8 @@ const config: Config = {
     extend: {
       fontFamily: {
         sans: ['var(--font-sans)', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+        heading: ['var(--font-heading)', 'var(--font-sans)', 'serif'],
+        display: ['var(--font-space-grotesk)', 'var(--font-sans)', 'sans-serif'],
       },
       colors: {
         brand: {
@@ -21,6 +23,10 @@ const config: Config = {
           border: 'var(--brand-border, #e2e8f0)',
           'text-main': 'var(--brand-text-main, #0f172a)',
           'text-muted': 'var(--brand-text-muted, #64748b)',
+        },
+        announcement: {
+          bg: 'var(--announcement-bg, #0f172a)',
+          text: 'var(--announcement-text, #ffffff)',
         },
         primary: {
           DEFAULT: 'var(--brand-primary, var(--primary-color, #16a34a))',
@@ -35,14 +41,16 @@ const config: Config = {
       },
       boxShadow: {
         soft: '0 2px 15px -3px rgba(0, 0, 0, 0.07), 0 10px 20px -2px rgba(0, 0, 0, 0.04)',
-        card: '0 0 0 1px rgba(0, 0, 0, 0.05), 0 1px 3px 0 rgba(0, 0, 0, 0.05)',
-        'card-hover': '0 0 0 1px rgba(0, 0, 0, 0.08), 0 12px 28px -4px rgba(0, 0, 0, 0.12)',
+        card: 'var(--shadow-card, 0 0 0 1px rgba(0, 0, 0, 0.05), 0 1px 3px 0 rgba(0, 0, 0, 0.05))',
+        'card-hover': 'var(--shadow-card-hover, 0 0 0 1px rgba(0, 0, 0, 0.08), 0 12px 28px -4px rgba(0, 0, 0, 0.12))',
         glow: '0 0 20px -5px var(--brand-primary, rgba(22, 163, 74, 0.35))',
       },
       borderRadius: {
         card: 'var(--radius-card, 1rem)',
-        '2xl': '1rem',
-        '3xl': '1.5rem',
+        btn: 'var(--radius-btn, 0.875rem)',
+        badge: 'var(--radius-badge, 9999px)',
+        '2xl': 'var(--radius-card, 1rem)',
+        '3xl': 'calc(var(--radius-card, 1rem) * 1.5)',
       },
       animation: {
         'fade-in': 'fadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1)',

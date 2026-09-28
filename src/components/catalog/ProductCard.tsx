@@ -60,7 +60,7 @@ export function ProductCard({
   return (
     <div
       onClick={() => onSelect(product)}
-      className="group relative bg-brand-card rounded-2xl sm:rounded-3xl border border-brand-border/80 hover:border-slate-300 overflow-hidden shadow-2xs hover:shadow-card-hover transition-all duration-300 flex flex-col justify-between cursor-pointer active:scale-[0.99]"
+      className="group relative bg-brand-card rounded-card border border-brand-border/80 hover:border-slate-300 overflow-hidden shadow-card hover:shadow-card-hover transition-all duration-300 flex flex-col justify-between cursor-pointer active:scale-[0.99]"
     >
       {/* Container da Imagem com Aspect Ratio Limpo e Hover Suave */}
       <div className="relative aspect-square w-full bg-slate-50 overflow-hidden flex items-center justify-center">
@@ -185,7 +185,7 @@ export function ProductCard({
           )}
 
           {/* Nome do Produto */}
-          <h4 className="text-xs sm:text-sm font-bold text-brand-text-main line-clamp-2 leading-snug group-hover:text-slate-700 transition-colors">
+          <h4 className="text-xs sm:text-sm font-bold font-heading text-brand-text-main line-clamp-2 leading-snug group-hover:text-slate-700 transition-colors">
             {product.nome}
           </h4>
         </div>
@@ -218,7 +218,7 @@ export function ProductCard({
 
           <button
             type="button"
-            className="h-10 w-10 sm:h-10 sm:w-10 rounded-2xl flex items-center justify-center text-brand-contrast bg-brand-primary hover:bg-brand-primary-hover shadow-xs group-hover:scale-105 active:scale-95 transition-all flex-shrink-0 cursor-pointer"
+            className="h-10 w-10 sm:h-10 sm:w-10 rounded-btn flex items-center justify-center text-brand-contrast bg-brand-primary hover:bg-brand-primary-hover shadow-xs group-hover:scale-105 active:scale-95 transition-all flex-shrink-0 cursor-pointer"
             style={{ backgroundColor: store.primary_color }}
             aria-label={`Ver detalhes de ${product.nome}`}
           >

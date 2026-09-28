@@ -12,13 +12,64 @@
   --brand-border: #e2e8f0;
   --brand-text-main: #0f172a;
   --brand-text-muted: #64748b;
+
+  /* Radius Tokens */
   --radius-card: 1rem;
+  --radius-btn: 0.875rem;
+  --radius-badge: 9999px;
+
+  /* Typography Tokens */
+  --font-heading: var(--font-plus-jakarta), var(--font-inter), -apple-system, sans-serif;
+  --font-sans: var(--font-plus-jakarta), var(--font-inter), -apple-system, sans-serif;
+  --letter-spacing-heading: -0.025em;
+
+  /* Shadow Tokens */
+  --shadow-card: 0 2px 15px -3px rgba(0, 0, 0, 0.05), 0 10px 20px -2px rgba(0, 0, 0, 0.03);
+  --shadow-card-hover: 0 12px 28px -4px rgba(0, 0, 0, 0.1);
+
+  /* Top Announcement Bar Tokens */
+  --announcement-bg: #0f172a;
+  --announcement-text: #ffffff;
 
   /* Backward compatibility aliases */
   --primary-color: var(--brand-primary);
   --secondary-color: var(--brand-primary-hover);
   --bg-color: var(--brand-surface);
   --text-color: var(--brand-text-main);
+}
+
+/* Theme Presets via data-theme */
+[data-theme='modern'] {
+  --radius-card: 1rem;
+  --radius-btn: 0.875rem;
+  --radius-badge: 9999px;
+  --shadow-card: 0 2px 15px -3px rgba(0, 0, 0, 0.05), 0 10px 20px -2px rgba(0, 0, 0, 0.03);
+  --shadow-card-hover: 0 12px 28px -4px rgba(0, 0, 0, 0.1);
+  --font-heading: var(--font-plus-jakarta), var(--font-inter), -apple-system, sans-serif;
+  --font-sans: var(--font-plus-jakarta), var(--font-inter), -apple-system, sans-serif;
+  --letter-spacing-heading: -0.025em;
+}
+
+[data-theme='editorial'] {
+  --radius-card: 0.25rem;
+  --radius-btn: 0.25rem;
+  --radius-badge: 0.25rem;
+  --shadow-card: 0 1px 3px 0 rgba(0, 0, 0, 0.04);
+  --shadow-card-hover: 0 6px 16px -2px rgba(0, 0, 0, 0.08);
+  --font-heading: var(--font-playfair), Georgia, "Times New Roman", serif;
+  --font-sans: var(--font-inter), -apple-system, sans-serif;
+  --letter-spacing-heading: -0.01em;
+}
+
+[data-theme='bold'] {
+  --radius-card: 1.25rem;
+  --radius-btn: 9999px;
+  --radius-badge: 9999px;
+  --shadow-card: 0 4px 0 0 rgba(15, 23, 42, 0.08), 0 2px 8px 0 rgba(0, 0, 0, 0.04);
+  --shadow-card-hover: 0 6px 0 0 rgba(15, 23, 42, 0.12), 0 8px 16px 0 rgba(0, 0, 0, 0.08);
+  --font-heading: var(--font-space-grotesk), -apple-system, sans-serif;
+  --font-sans: var(--font-space-grotesk), -apple-system, sans-serif;
+  --letter-spacing-heading: -0.035em;
 }
 
 /* Base resets & typography */
@@ -33,6 +84,11 @@ body {
   font-family: var(--font-sans), -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   background-color: var(--bg-color, #f8fafc);
   color: var(--text-color, #0f172a);
+}
+
+.font-heading {
+  font-family: var(--font-heading), var(--font-sans), serif;
+  letter-spacing: var(--letter-spacing-heading, -0.02em);
 }
 
 /* Custom minimal scrollbar */

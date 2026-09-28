@@ -13,6 +13,8 @@ import { CatalogControlBar } from '@/components/catalog/CatalogControlBar';
 import { BannerSlider } from '@/components/catalog/BannerSlider';
 import { TrustBadges } from '@/components/catalog/TrustBadges';
 import { ProductGridSkeleton, BannerSkeleton } from '@/components/catalog/ProductGridSkeleton';
+import { TopAnnouncementBar } from '@/components/catalog/TopAnnouncementBar';
+import { applyThemeToDocument } from '@/lib/themePresets';
 import type { StoreConfig, Category, Product } from '@/types';
 import {
   type CatalogFilterState,
@@ -128,22 +130,10 @@ function CatalogContent({ onStoreLoaded }: CatalogContentProps) {
     }
   };
 
-  // Aplicação dinâmica das cores do tema
+  // Aplicação dinâmica dos tokens de tema e cores
   useEffect(() => {
     if (store) {
-      const primary = store.primary_color || '#16a34a';
-      const secondary = store.secondary_color || '#15803d';
-      const bg = store.background_color || '#f8fafc';
-      const text = store.text_color || '#0f172a';
-
-      document.documentElement.style.setProperty('--brand-primary', primary);
-      document.documentElement.style.setProperty('--brand-primary-hover', secondary);
-      document.documentElement.style.setProperty('--brand-surface', bg);
-      document.documentElement.style.setProperty('--brand-text-main', text);
-      document.documentElement.style.setProperty('--primary-color', primary);
-      document.documentElement.style.setProperty('--secondary-color', secondary);
-      document.documentElement.style.setProperty('--bg-color', bg);
-      document.documentElement.style.setProperty('--text-color', text);
+      applyThemeToDocument(store);
     }
   }, [store]);
 
@@ -170,7 +160,7 @@ function CatalogContent({ onStoreLoaded }: CatalogContentProps) {
           <div className="w-14 h-14 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center mx-auto border border-amber-200/60">
             <AlertTriangle className="w-7 h-7" />
           </div>
-          <h2 className="text-xl font-extrabold text-slate-900 tracking-tight">
+          <h2 className="text-xl font-extrabold font-heading text-slate-900 tracking-tight">
             Catálogo Temporariamente Indisponível
           </h2>
           <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">
@@ -179,7 +169,7 @@ function CatalogContent({ onStoreLoaded }: CatalogContentProps) {
           <div className="pt-2 flex flex-col sm:flex-row gap-2.5 justify-center">
             <Link
               href="/admin/login"
-              className="px-4 py-2.5 rounded-xl bg-slate-900 text-white font-semibold text-xs hover:bg-slate-800 transition-colors"
+              className="px-4 py-2.5 rounded-btn bg-slate-900 text-white font-semibold text-xs hover:bg-slate-800 transition-colors"
             >
               Acessar Painel do Lojista
             </Link>
@@ -188,7 +178,7 @@ function CatalogContent({ onStoreLoaded }: CatalogContentProps) {
                 href={`https://wa.me/${String(store.whatsapp).replace(/\D/g, '')}`}
                 target="_blank"
                 rel="noreferrer"
-                className="px-4 py-2.5 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200 font-semibold text-xs hover:bg-emerald-100 transition-colors"
+                className="px-4 py-2.5 rounded-btn bg-emerald-50 text-emerald-700 border border-emerald-200 font-semibold text-xs hover:bg-emerald-100 transition-colors"
               >
                 Falar com a Loja
               </a>
@@ -209,39 +199,8 @@ function CatalogContent({ onStoreLoaded }: CatalogContentProps) {
         color: store?.text_color || 'var(--brand-text-main, #0f172a)',
       }}
     >
-      {/* 1. Topbar Superior de Anúncios / Slogan Universal (Dismissível) */}
-      {showAnnouncement && (
-        <aside aria-label="Aviso da Loja" className="bg-slate-950 text-white text-[11px] font-medium py-2 px-4 border-b border-slate-800 transition-all">
-          <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
-            <div className="flex items-center gap-2 mx-auto sm:mx-0 text-center sm:text-left">
-              <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
-              <span>Compre online e receba em casa com frete seguro ou retire na loja física</span>
-            </div>
-            <div className="flex items-center gap-3">
-              {store?.whatsapp && (
-                <a
-                  href={`https://wa.me/${String(store.whatsapp).replace(/\D/g, '')}`}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="hidden md:flex items-center gap-1.5 text-[11px] font-bold text-slate-300 hover:text-white transition-colors"
-                >
-                  <MessageCircle className="w-3.5 h-3.5 text-emerald-400" />
-                  <span>Atendimento via WhatsApp</span>
-                </a>
-              )}
-              <button
-                type="button"
-                onClick={() => setShowAnnouncement(false)}
-                className="text-slate-400 hover:text-white p-0.5 transition cursor-pointer"
-                title="Fechar aviso"
-                aria-label="Fechar aviso"
-              >
-                <X className="w-3.5 h-3.5" />
-              </button>
-            </div>
-          </div>
-        </aside>
-      )}
+      {/* 1. Topbar Superior de Anúncios / Slogan Universal (Editável pelo lojista) */}
+      <TopAnnouncementBar store={store} />
 
       {/* 2. Header Universal Sofisticado (Navbar) */}
       <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-slate-200/70 shadow-2xs">
@@ -249,7 +208,7 @@ function CatalogContent({ onStoreLoaded }: CatalogContentProps) {
           <div className="h-16 sm:h-20 flex items-center justify-between gap-3 sm:gap-6">
             {/* Logo e Nome da Marca com Selo de Status da Loja */}
             <div className="flex items-center gap-3 min-w-0 flex-shrink-0">
-              <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-2xl bg-slate-50 border border-slate-200 overflow-hidden flex-shrink-0 flex items-center justify-center shadow-xs">
+              <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-card bg-slate-50 border border-slate-200 overflow-hidden flex-shrink-0 flex items-center justify-center shadow-xs">
                 {store?.logo_url ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
@@ -262,7 +221,7 @@ function CatalogContent({ onStoreLoaded }: CatalogContentProps) {
                 )}
               </div>
               <div className="min-w-0">
-                <h1 className="text-sm sm:text-base md:text-lg font-black text-slate-900 tracking-tight truncate leading-tight">
+                <h1 className="text-sm sm:text-base md:text-lg font-black font-heading text-slate-900 tracking-tight truncate leading-tight">
                   {store?.store_name || 'Catálogo Digital'}
                 </h1>
                 <div className="flex items-center gap-2 mt-0.5">
@@ -287,7 +246,7 @@ function CatalogContent({ onStoreLoaded }: CatalogContentProps) {
                   placeholder="Buscar produtos, marcas, referências..."
                   value={filters.searchTerm}
                   onChange={(e) => updateFilters({ searchTerm: e.target.value })}
-                  className="w-full rounded-2xl border border-slate-200 bg-slate-50 pl-10 pr-9 py-2.5 text-xs sm:text-sm text-slate-900 placeholder-slate-400 focus:bg-white focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200 transition shadow-2xs"
+                  className="w-full rounded-btn border border-slate-200 bg-slate-50 pl-10 pr-9 py-2.5 text-xs sm:text-sm text-slate-900 placeholder-slate-400 focus:bg-white focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200 transition shadow-2xs"
                 />
                 {filters.searchTerm && (
                   <button
@@ -308,7 +267,7 @@ function CatalogContent({ onStoreLoaded }: CatalogContentProps) {
               <button
                 type="button"
                 onClick={openWishlist}
-                className="relative h-10 w-10 sm:h-11 sm:w-11 rounded-2xl border border-slate-200/80 bg-white hover:bg-slate-50 text-slate-600 hover:text-rose-500 transition-all flex items-center justify-center cursor-pointer shadow-2xs"
+                className="relative h-10 w-10 sm:h-11 sm:w-11 rounded-btn border border-slate-200/80 bg-white hover:bg-slate-50 text-slate-600 hover:text-rose-500 transition-all flex items-center justify-center cursor-pointer shadow-2xs"
                 title="Ver meus favoritos"
                 aria-label="Ver meus favoritos"
               >
@@ -324,7 +283,7 @@ function CatalogContent({ onStoreLoaded }: CatalogContentProps) {
               <button
                 type="button"
                 onClick={openCart}
-                className="relative px-3.5 sm:px-5 py-2.5 rounded-2xl text-brand-contrast bg-brand-primary hover:bg-brand-primary-hover shadow-xs hover:brightness-95 active:scale-97 transition-all flex items-center gap-2.5 cursor-pointer flex-shrink-0"
+                className="relative px-3.5 sm:px-5 py-2.5 rounded-btn text-brand-contrast bg-brand-primary hover:bg-brand-primary-hover shadow-xs hover:brightness-95 active:scale-97 transition-all flex items-center gap-2.5 cursor-pointer flex-shrink-0"
                 style={{ backgroundColor: store?.primary_color }}
                 aria-label="Abrir sacola de compras"
               >
@@ -355,7 +314,7 @@ function CatalogContent({ onStoreLoaded }: CatalogContentProps) {
                 placeholder="Buscar no catálogo..."
                 value={filters.searchTerm}
                 onChange={(e) => updateFilters({ searchTerm: e.target.value })}
-                className="w-full rounded-2xl border border-slate-200 bg-slate-50 pl-9 pr-8 py-2 text-xs text-slate-900 placeholder-slate-400 focus:bg-white focus:outline-none focus:ring-1 focus:ring-slate-300 transition"
+                className="w-full rounded-btn border border-slate-200 bg-slate-50 pl-9 pr-8 py-2 text-xs text-slate-900 placeholder-slate-400 focus:bg-white focus:outline-none focus:ring-1 focus:ring-slate-300 transition"
               />
               {filters.searchTerm && (
                 <button
@@ -379,7 +338,7 @@ function CatalogContent({ onStoreLoaded }: CatalogContentProps) {
                 <button
                   type="button"
                   onClick={() => updateFilters({ selectedCategory: 'ALL' })}
-                  className={`px-4 py-2 rounded-2xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
+                  className={`px-4 py-2 rounded-btn text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
                     filters.selectedCategory === 'ALL'
                       ? 'bg-brand-primary text-brand-contrast shadow-xs'
                       : 'bg-slate-100/90 text-slate-600 hover:bg-slate-200 hover:text-slate-900'
@@ -401,7 +360,7 @@ function CatalogContent({ onStoreLoaded }: CatalogContentProps) {
                       key={cat.id}
                       type="button"
                       onClick={() => updateFilters({ selectedCategory: cat.id })}
-                      className={`px-4 py-2 rounded-2xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
+                      className={`px-4 py-2 rounded-btn text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
                         isSelected
                           ? 'bg-brand-primary text-brand-contrast shadow-xs'
                           : 'bg-slate-100/90 text-slate-600 hover:bg-slate-200 hover:text-slate-900'
@@ -437,7 +396,7 @@ function CatalogContent({ onStoreLoaded }: CatalogContentProps) {
           filters.selectedCategory === 'ALL' &&
           store?.banners &&
           store.banners.length > 0 && (
-            <section aria-label="Destaques da Loja" className="overflow-hidden rounded-3xl shadow-sm">
+            <section aria-label="Destaques da Loja" className="overflow-hidden rounded-card shadow-sm">
               <BannerSlider banners={store.banners} storeName={store.store_name} />
             </section>
           )

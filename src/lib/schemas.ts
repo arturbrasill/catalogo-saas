@@ -154,6 +154,21 @@ export const SaveConfigSchema = z.object({
   domain: z.string().trim().min(3).optional(),
   currency: z.string().trim().length(3).optional(),
   timezone: z.string().trim().min(3).optional(),
+  is_open: z.boolean().optional(),
+  business_hours: z.string().trim().optional(),
+  pix_key: z.string().trim().optional(),
+  pix_key_type: z.enum(['cpf', 'cnpj', 'email', 'phone', 'random']).optional(),
+  theme_preset: z.enum(['modern', 'editorial', 'bold']).optional(),
+  announcement_enabled: z.boolean().optional(),
+  announcement_text: z.string().trim().max(300, 'Texto do anúncio deve ter no máximo 300 caracteres').optional(),
+  announcement_bg_color: z
+    .string()
+    .regex(/^#([0-9a-fA-F]{3}){1,2}$/, 'Cor de fundo do anúncio deve ser hexadecimal válido')
+    .optional(),
+  announcement_text_color: z
+    .string()
+    .regex(/^#([0-9a-fA-F]{3}){1,2}$/, 'Cor do texto do anúncio deve ser hexadecimal válido')
+    .optional(),
 });
 
 /**
