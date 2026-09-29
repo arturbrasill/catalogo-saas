@@ -201,7 +201,11 @@ export function CartDrawer({ store }: CartDrawerProps) {
         },
         orderInfo
       );
-      window.open(url, '_blank', 'noopener,noreferrer');
+      // Roteamento resiliente: abre o WhatsApp com fallback caso bloqueador de popup impeça nova aba
+      const newTab = window.open(url, '_blank', 'noopener,noreferrer');
+      if (!newTab || newTab.closed || typeof newTab.closed === 'undefined') {
+        window.location.href = url;
+      }
     } catch (err) {
       setCheckoutError(
         err instanceof Error ? err.message : 'Erro ao gerar pedido no WhatsApp.'

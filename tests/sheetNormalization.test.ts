@@ -3,6 +3,7 @@ import {
   normalizePrice,
   normalizePromotionalPrice,
   normalizeImages,
+  extractProductImages,
   normalizeVariations,
   normalizeProduct,
   DEFAULT_PRODUCT_IMAGE_FALLBACK,
@@ -59,7 +60,7 @@ describe('Sheet Normalization QA & Resilience', () => {
     });
   });
 
-  describe('normalizeImages', () => {
+  describe('normalizeImages & extractProductImages', () => {
     it('deve retornar fallback elegante se o campo de foto vier em branco ou nulo', () => {
       const emptyResult = normalizeImages('');
       expect(emptyResult.length).toBe(1);
@@ -85,6 +86,24 @@ describe('Sheet Normalization QA & Resilience', () => {
       expect(normalizeImages(text)).toEqual([
         'https://exemplo.com/1.jpg',
         'https://exemplo.com/2.jpg',
+      ]);
+    });
+
+    it('deve suportar URLs separadas por virgula dentro de elementos de array', () => {
+      const mixed = ['https://exemplo.com/1.jpg, https://exemplo.com/2.jpg', 'https://exemplo.com/3.jpg'];
+      expect(normalizeImages(mixed)).toEqual([
+        'https://exemplo.com/1.jpg',
+        'https://exemplo.com/2.jpg',
+        'https://exemplo.com/3.jpg',
+      ]);
+    });
+
+    it('extractProductImages deve retornar array vazio sem fallback quando vazio', () => {
+      expect(extractProductImages('')).toEqual([]);
+      expect(extractProductImages(null)).toEqual([]);
+      expect(extractProductImages('https://exemplo.com/a.jpg, https://exemplo.com/b.jpg')).toEqual([
+        'https://exemplo.com/a.jpg',
+        'https://exemplo.com/b.jpg',
       ]);
     });
   });

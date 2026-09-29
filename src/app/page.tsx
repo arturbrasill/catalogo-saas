@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState, useMemo, useCallback } from 'react';
+import React, { useEffect, useState, useMemo, useCallback, useRef } from 'react';
 import { api } from '@/lib/api';
 import { CartProvider, useCart } from '@/lib/cart';
 import { WishlistProvider, useWishlist } from '@/lib/wishlist';
@@ -150,6 +150,24 @@ function CatalogContent({ onStoreLoaded }: CatalogContentProps) {
   const totalItemsCount = getTotalItems();
   const cartSubtotal = getSubtotal();
 
+  // Pulso animado nos badges da sacola ao adicionar novo item
+  const [hasNewItemPulse, setHasNewItemPulse] = useState(false);
+  const prevItemsCountRef = useRef(totalItemsCount);
+
+  useEffect(() => {
+    let timer: NodeJS.Timeout | undefined;
+    if (totalItemsCount > prevItemsCountRef.current) {
+      setHasNewItemPulse(true);
+      timer = setTimeout(() => {
+        setHasNewItemPulse(false);
+      }, 1500);
+    }
+    prevItemsCountRef.current = totalItemsCount;
+    return () => {
+      if (timer) clearTimeout(timer);
+    };
+  }, [totalItemsCount]);
+
   const isSuspended =
     store?.subscription_status === 'blocked' ||
     store?.subscription_status === 'expired' ||
@@ -197,7 +215,7 @@ function CatalogContent({ onStoreLoaded }: CatalogContentProps) {
   return (
     <div
       className={`min-h-screen flex flex-col transition-colors duration-200 ${
-        totalItemsCount > 0 ? 'pb-24 sm:pb-0' : ''
+        totalItemsCount > 0 ? 'pb-28 sm:pb-32' : ''
       }`}
       style={{
         backgroundColor: store?.background_color || 'var(--brand-surface, #f8fafc)',
@@ -302,7 +320,11 @@ function CatalogContent({ onStoreLoaded }: CatalogContentProps) {
                   </span>
                 </div>
                 {totalItemsCount > 0 && (
-                  <span className="h-5 w-5 rounded-full bg-white text-brand-text-main text-[11px] font-black flex items-center justify-center shadow-xs">
+                  <span
+                    className={`h-5 min-w-[20px] px-1 rounded-full bg-white text-brand-text-main text-[11px] font-black flex items-center justify-center shadow-xs transition-transform duration-300 ${
+                      hasNewItemPulse ? 'scale-125 ring-2 ring-emerald-400 animate-pulse' : 'scale-100'
+                    }`}
+                  >
                     {totalItemsCount}
                   </span>
                 )}
@@ -538,40 +560,71 @@ function CatalogContent({ onStoreLoaded }: CatalogContentProps) {
         </div>
       </footer>
 
-      {/* Sacola Flutuante Fixa no Rodapé para Mobile */}
+      {/* Sacola Flutuante Moderna (Floating Glassmorphism com Backdrop-Blur e Sombra Marcante) */}
       {totalItemsCount > 0 && (
         <aside
           aria-label="Sacola de compras flutuante"
-          className="fixed bottom-0 inset-x-0 z-40 p-3 sm:hidden animate-slide-up pointer-events-none"
+          className="fixed bottom-4 sm:bottom-6 inset-x-0 z-40 px-3 sm:px-4 pointer-events-none flex justify-center animate-slide-up"
         >
-          <div className="max-w-md mx-auto pointer-events-auto">
+          <div className="max-w-md sm:max-w-lg w-full pointer-events-auto">
             <button
               type="button"
               onClick={openCart}
-              className="w-full py-3.5 px-4 rounded-2xl text-brand-contrast bg-brand-primary hover:bg-brand-primary-hover shadow-2xl flex items-center justify-between active:scale-98 transition-all cursor-pointer ring-1 ring-black/5"
-              style={{ backgroundColor: store?.primary_color }}
+              className="w-full group p-2.5 sm:p-3 rounded-2xl sm:rounded-full bg-slate-950/85 hover:bg-slate-900/95 text-white backdrop-blur-xl border border-white/20 shadow-[0_16px_40px_-6px_rgba(15,23,42,0.45),0_0_20px_rgba(255,255,255,0.08)] flex items-center justify-between active:scale-[0.98] transition-all duration-200 cursor-pointer"
             >
-              <div className="flex items-center gap-3">
-                <div className="relative h-10 w-10 rounded-xl bg-white/20 flex items-center justify-center">
-                  <ShoppingBag className="w-5 h-5 text-brand-contrast" />
-                  <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-white text-slate-900 text-[11px] font-black flex items-center justify-center shadow-xs">
+              {/* Esquerda: Ícone com Badge de Pulso Animado */}
+              <div className="flex items-center gap-3 pl-1 sm:pl-2">
+                <div
+                  className="relative h-11 w-11 rounded-xl sm:rounded-full flex items-center justify-center text-white shadow-inner flex-shrink-0 transition-transform duration-200 group-hover:scale-105"
+                  style={{ backgroundColor: store?.primary_color || '#10b981' }}
+                >
+                  <ShoppingBag className="w-5 h-5 stroke-[2]" />
+                  {/* Badge com pulso animado */}
+                  <span
+                    className={`absolute -top-1 -right-1 h-5 min-w-[20px] px-1 rounded-full text-[10px] font-black flex items-center justify-center shadow-md transition-all duration-300 ${
+                      hasNewItemPulse
+                        ? 'scale-125 bg-emerald-400 text-slate-950 ring-4 ring-emerald-400/40 animate-pulse'
+                        : 'scale-100 bg-white text-slate-900'
+                    }`}
+                  >
                     {totalItemsCount}
                   </span>
+                  {hasNewItemPulse && (
+                    <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-emerald-400 opacity-75 animate-ping pointer-events-none" />
+                  )}
                 </div>
+
                 <div className="text-left leading-tight">
-                  <span className="text-[11px] font-bold text-brand-contrast/90 block uppercase tracking-wider">
-                    Ver Sacola
-                  </span>
-                  <span className="text-xs text-brand-contrast/95 font-medium">
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-xs sm:text-sm font-black tracking-tight text-white block">
+                      Ver Sacola
+                    </span>
+                    <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                  </div>
+                  <span className="text-[11px] sm:text-xs text-slate-300 font-medium">
                     {totalItemsCount} {totalItemsCount === 1 ? 'item adicionado' : 'itens adicionados'}
                   </span>
                 </div>
               </div>
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-black text-brand-contrast">
-                  {formatCurrency(cartSubtotal, store?.currency)}
-                </span>
-                <ArrowRight className="w-4 h-4 text-brand-contrast" />
+
+              {/* Direita: Subtotal e Botão de Ação */}
+              <div className="flex items-center gap-2 sm:gap-3 pr-1">
+                <div className="text-right">
+                  <span className="text-[10px] text-slate-400 uppercase tracking-wider block font-bold leading-none">
+                    Total
+                  </span>
+                  <span className="text-xs sm:text-sm font-black text-white mt-0.5 block">
+                    {formatCurrency(cartSubtotal, store?.currency)}
+                  </span>
+                </div>
+
+                <div
+                  className="h-9 px-3.5 sm:px-4 rounded-xl sm:rounded-full text-brand-contrast font-bold text-xs flex items-center gap-1.5 shadow-sm group-hover:brightness-110 active:scale-95 transition-all"
+                  style={{ backgroundColor: store?.primary_color || '#10b981' }}
+                >
+                  <span className="hidden xs:inline">Avançar</span>
+                  <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
+                </div>
               </div>
             </button>
           </div>

@@ -1,9 +1,10 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import type { Product, StoreConfig, CatalogLayoutMode } from '@/types';
 import { formatCurrency } from '@/lib/whatsapp';
 import { useWishlist } from '@/lib/wishlist';
+import { extractProductImages } from '@/lib/sheetNormalization';
 import {
   formatInstallments,
   isColorVariation,
@@ -93,8 +94,9 @@ export function ProductCard({
     ? Math.round(((product.preco - product.precoPromocional!) / product.preco) * 100)
     : 0;
 
-  const firstImage = product.imagens && product.imagens.length > 0 ? product.imagens[0] : null;
-  const secondImage = product.imagens && product.imagens.length > 1 ? product.imagens[1] : null;
+  const productImages = useMemo(() => extractProductImages(product.imagens), [product.imagens]);
+  const firstImage = productImages.length > 0 ? productImages[0] : null;
+  const secondImage = productImages.length > 1 ? productImages[1] : null;
   const hasVariations = product.variacoes && product.variacoes.length > 0;
   const hasPriceVariations = hasVariationPricing(product.variacoes, product.preco, store.currency);
   const favorite = isFavorite(product.id);

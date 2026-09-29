@@ -84,44 +84,58 @@ export function normalizePromotionalPrice(
 }
 
 /**
- * Sanitiza e normaliza imagens com fallback seguro para foto padrão se estiver vazia.
+ * Extrai e sanitiza URLs de imagens sem forçar fallback, suportando arrays,
+ * strings únicas ou múltiplas URLs separadas por vírgula ou quebra de linha.
  */
-export function normalizeImages(raw: unknown): string[] {
+export function extractProductImages(raw: unknown): string[] {
   const images: string[] = [];
 
-  if (Array.isArray(raw)) {
-    for (const item of raw) {
-      if (typeof item === 'string' && item.trim().length > 0) {
-        images.push(item.trim());
-      }
-    }
-  } else if (typeof raw === 'string') {
-    const trimmed = raw.trim();
+  const processString = (str: string) => {
+    const trimmed = str.trim();
+    if (!trimmed) return;
+
     if (trimmed.startsWith('[') && trimmed.endsWith(']')) {
       try {
         const parsed = JSON.parse(trimmed);
         if (Array.isArray(parsed)) {
           for (const item of parsed) {
-            if (typeof item === 'string' && item.trim().length > 0) {
-              images.push(item.trim());
-            }
+            if (typeof item === 'string') processString(item);
           }
+          return;
         }
       } catch {
-        // Fallback para divisão por texto caso o JSON falhe
+        // segue para divisão de texto
       }
     }
 
-    if (images.length === 0 && trimmed.length > 0) {
-      // Divide por quebra de linha ou vírgula caso o usuário cole múltiplas URLs na planilha
-      const splitted = trimmed.split(/[\r\n,]+/).map((u) => u.trim()).filter((u) => u.length > 0);
-      for (const url of splitted) {
-        if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:image/')) {
-          images.push(url);
-        }
+    const splitted = trimmed.split(/[\r\n,]+/).map((u) => u.trim()).filter((u) => u.length > 0);
+    for (const url of splitted) {
+      if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:image/') || url.startsWith('/')) {
+        images.push(url);
+      } else if (url.length > 0) {
+        images.push(url);
       }
     }
+  };
+
+  if (Array.isArray(raw)) {
+    for (const item of raw) {
+      if (typeof item === 'string') {
+        processString(item);
+      }
+    }
+  } else if (typeof raw === 'string') {
+    processString(raw);
   }
+
+  return images;
+}
+
+/**
+ * Sanitiza e normaliza imagens com fallback seguro para foto padrão se estiver vazia.
+ */
+export function normalizeImages(raw: unknown): string[] {
+  const images = extractProductImages(raw);
 
   // Fallback com imagem elegante padrão se não houver foto válida
   if (images.length === 0) {

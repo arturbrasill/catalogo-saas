@@ -5,6 +5,7 @@ import type { Product, StoreConfig, SelectedVariation } from '@/types';
 import { useCart } from '@/lib/cart';
 import { useWishlist } from '@/lib/wishlist';
 import { formatCurrency, calculateSubtotal } from '@/lib/whatsapp';
+import { extractProductImages } from '@/lib/sheetNormalization';
 import {
   calculateEffectiveProductPrice,
   parseVariationOption,
@@ -70,7 +71,12 @@ export function ProductModal({
     }
   }, [product]);
 
-  // Fechar com a tecla ESC
+  const images = useMemo(() => {
+    if (!product) return [];
+    return extractProductImages(product.imagens);
+  }, [product]);
+
+  // Fechar com a tecla ESC e navegar com setas do teclado
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
@@ -79,11 +85,15 @@ export function ProductModal({
         } else {
           onClose();
         }
+      } else if (e.key === 'ArrowRight' && images.length > 1) {
+        setSelectedImageIndex((prev) => (prev + 1) % images.length);
+      } else if (e.key === 'ArrowLeft' && images.length > 1) {
+        setSelectedImageIndex((prev) => (prev - 1 + images.length) % images.length);
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [onClose, isZoomOpen]);
+  }, [onClose, isZoomOpen, images.length]);
 
   // Produtos Relacionados (Cross-Selling: mesma categoria ou catálogo)
   const relatedProducts = useMemo(() => {
@@ -106,7 +116,6 @@ export function ProductModal({
 
   if (!product) return null;
 
-  const images = product.imagens && product.imagens.length > 0 ? product.imagens : [];
   const currentImage = images[selectedImageIndex] || null;
   const isOutOfStock = product.estoque === 0;
   const favorite = isFavorite(product.id);
@@ -341,26 +350,51 @@ export function ProductModal({
 
                 {/* Carrossel de Miniaturas */}
                 {images.length > 1 && (
-                  <div className="flex gap-2 overflow-x-auto pb-1 no-scrollbar">
-                    {images.map((imgUrl, idx) => (
-                      <button
-                        key={idx}
-                        type="button"
-                        onClick={() => setSelectedImageIndex(idx)}
-                        className={`h-14 w-14 rounded-xl border-2 overflow-hidden flex-shrink-0 transition-all cursor-pointer ${
-                          selectedImageIndex === idx
-                            ? 'border-slate-900 ring-2 ring-slate-900/10 scale-102 shadow-xs'
-                            : 'border-transparent opacity-70 hover:opacity-100'
-                        }`}
-                      >
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img
-                          src={imgUrl}
-                          alt={`Miniatura ${idx + 1}`}
-                          className="h-full w-full object-cover"
-                        />
-                      </button>
-                    ))}
+                  <div className="space-y-1.5 pt-1">
+                    <div className="flex items-center justify-between text-[11px] text-slate-500 font-medium px-0.5">
+                      <span className="font-bold uppercase tracking-wider text-slate-600">
+                        Galeria de Fotos ({images.length})
+                      </span>
+                      <span>
+                        Foto {selectedImageIndex + 1} de {images.length}
+                      </span>
+                    </div>
+                    <div className="flex gap-2 overflow-x-auto pb-1.5 pt-0.5 no-scrollbar items-center">
+                      {images.map((imgUrl, idx) => {
+                        const isSelected = selectedImageIndex === idx;
+                        return (
+                          <button
+                            key={idx}
+                            type="button"
+                            onClick={() => setSelectedImageIndex(idx)}
+                            className={`group relative h-15 w-15 sm:h-16 sm:w-16 rounded-xl border-2 overflow-hidden flex-shrink-0 transition-all duration-200 cursor-pointer ${
+                              isSelected
+                                ? 'border-slate-900 ring-2 ring-slate-900/20 scale-105 shadow-sm'
+                                : 'border-slate-200/90 opacity-60 hover:opacity-100 hover:border-slate-400 hover:scale-102'
+                            }`}
+                            style={
+                              isSelected && store.primary_color
+                                ? { borderColor: store.primary_color }
+                                : undefined
+                            }
+                            aria-label={`Visualizar foto ${idx + 1}`}
+                          >
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                              src={imgUrl}
+                              alt={`Miniatura ${idx + 1}`}
+                              className="h-full w-full object-cover transition-transform duration-200 group-hover:scale-105"
+                            />
+                            {isSelected && (
+                              <span
+                                className="absolute bottom-0 inset-x-0 h-1 bg-slate-900"
+                                style={store.primary_color ? { backgroundColor: store.primary_color } : undefined}
+                              />
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
                 )}
               </div>
@@ -457,7 +491,7 @@ export function ProductModal({
                   </div>
                 )}
 
-                {/* Seleção de Variações com Pílulas Modernas */}
+                {/* Seleção de Variações com Pílulas Modernas e Feedback Visual Impecável */}
                 {product.variacoes && product.variacoes.length > 0 && (
                   <div className="space-y-4 pt-1">
                     {product.variacoes.map((variation) => {
@@ -470,14 +504,23 @@ export function ProductModal({
                             <label className="block text-xs font-black uppercase tracking-wider text-slate-700">
                               {variation.tipo}:
                             </label>
-                            {selectedVal && (
-                              <span className="text-xs font-bold text-brand-primary">
-                                {selectedVal}
+                            {selectedVal ? (
+                              <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-800 bg-emerald-50 border border-emerald-200/80 px-2 py-0.5 rounded-full shadow-2xs">
+                                <Check className="w-3 h-3 stroke-[3] text-emerald-600" />
+                                <span>{selectedVal}</span>
+                              </span>
+                            ) : (
+                              <span className="text-[11px] text-slate-400 font-medium">
+                                Selecione uma opção
                               </span>
                             )}
                           </div>
 
-                          <div className="flex flex-wrap gap-2">
+                          <div
+                            className="flex flex-wrap gap-2"
+                            role="radiogroup"
+                            aria-label={variation.tipo}
+                          >
                             {variation.opcoes.map((opcao, optIdx) => {
                               const parsed = parseVariationOption(opcao as any, store.currency);
                               const isSelected = selectedVal === parsed.cleanLabel;
@@ -486,44 +529,57 @@ export function ProductModal({
                                 <button
                                   key={optIdx}
                                   type="button"
+                                  role="radio"
+                                  aria-checked={isSelected}
+                                  aria-label={`${variation.tipo}: ${parsed.cleanLabel}`}
                                   onClick={() =>
                                     handleSelectVariation(variation.tipo, parsed.cleanLabel)
                                   }
-                                  className={`px-3.5 py-2 rounded-xl text-xs font-bold border transition-all cursor-pointer flex items-center gap-2 active:scale-95 ${
+                                  className={`group/btn relative px-3.5 sm:px-4 py-2.5 rounded-xl text-xs font-bold border transition-all duration-200 cursor-pointer flex items-center gap-2 active:scale-95 shadow-2xs ${
                                     isSelected
-                                      ? 'bg-brand-primary text-brand-contrast border-brand-primary shadow-xs scale-102 ring-2 ring-brand-primary/20'
-                                      : 'bg-slate-50 text-slate-700 border-slate-200 hover:border-slate-300 hover:bg-slate-100/80 shadow-2xs'
+                                      ? 'text-white border-transparent shadow-md scale-102 ring-2 ring-offset-1'
+                                      : 'bg-white text-slate-700 border-slate-200/90 hover:border-slate-300 hover:bg-slate-50/80 hover:shadow-xs'
                                   }`}
                                   style={
-                                    isSelected && store.primary_color
-                                      ? { backgroundColor: store.primary_color }
+                                    isSelected
+                                      ? {
+                                          backgroundColor: store.primary_color || '#0f172a',
+                                          borderColor: store.primary_color || '#0f172a',
+                                          boxShadow: `0 4px 14px 0 ${store.primary_color ? `${store.primary_color}40` : 'rgba(15,23,42,0.2)'}`,
+                                        }
                                       : undefined
                                   }
                                 >
                                   {isColor && parsed.corHex && (
                                     <span
-                                      className={`h-3.5 w-3.5 rounded-full border shadow-2xs ${
-                                        isSelected ? 'border-white ring-1 ring-white/60' : 'border-black/20'
+                                      className={`h-4 w-4 rounded-full border shadow-2xs transition-transform duration-200 ${
+                                        isSelected
+                                          ? 'border-2 border-white ring-2 ring-white/80 scale-110'
+                                          : 'border-black/20 group-hover/btn:scale-105'
                                       }`}
                                       style={{ backgroundColor: parsed.corHex }}
                                     />
                                   )}
 
-                                  <span>{parsed.cleanLabel}</span>
+                                  <span className="tracking-tight">{parsed.cleanLabel}</span>
 
                                   {parsed.displayBadge && (
                                     <span
-                                      className={`text-[10px] font-black px-1.5 py-0.5 rounded-md ${
+                                      className={`text-[10px] font-black px-1.5 py-0.5 rounded-md transition-colors ${
                                         isSelected
-                                          ? 'bg-white/25 text-white'
-                                          : 'bg-brand-primary/10 text-brand-primary border border-brand-primary/20'
+                                          ? 'bg-white/25 text-white border border-white/20'
+                                          : 'bg-emerald-50 text-emerald-800 border border-emerald-200'
                                       }`}
                                     >
                                       {parsed.displayBadge}
                                     </span>
                                   )}
 
-                                  {isSelected && <Check className="w-3.5 h-3.5 stroke-[3] ml-0.5" />}
+                                  {isSelected && (
+                                    <span className="flex items-center justify-center h-4 w-4 rounded-full bg-white/20 ml-0.5 animate-scale-in">
+                                      <Check className="w-3 h-3 stroke-[3] text-white" />
+                                    </span>
+                                  )}
                                 </button>
                               );
                             })}
@@ -716,27 +772,100 @@ export function ProductModal({
         </div>
       </div>
 
-      {/* Lightbox / Zoom em Tela Cheia */}
+      {/* Lightbox / Zoom em Tela Cheia com Navegação de Galeria */}
       {isZoomOpen && currentImage && (
         <div
-          className="fixed inset-0 z-60 bg-slate-950/90 backdrop-blur-md flex items-center justify-center p-4 animate-fade-in"
+          className="fixed inset-0 z-60 bg-slate-950/95 backdrop-blur-md flex flex-col items-center justify-between p-4 sm:p-6 animate-fade-in"
           onClick={() => setIsZoomOpen(false)}
         >
-          <button
-            type="button"
-            onClick={() => setIsZoomOpen(false)}
-            className="absolute top-5 right-5 p-3 rounded-full bg-white/20 text-white hover:bg-white/40 transition cursor-pointer"
-            aria-label="Fechar zoom"
-          >
-            <X className="w-6 h-6" />
-          </button>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={currentImage}
-            alt={product.nome}
-            className="max-h-[90vh] max-w-[90vw] object-contain rounded-2xl shadow-2xl animate-scale-in"
-            onClick={(e) => e.stopPropagation()}
-          />
+          {/* Topo do Lightbox: Título, Contador e Fechar */}
+          <div className="w-full max-w-5xl flex items-center justify-between text-white z-10">
+            <div className="flex items-center gap-3">
+              <span className="text-sm font-bold truncate max-w-xs sm:max-w-md">
+                {product.nome}
+              </span>
+              {images.length > 1 && (
+                <span className="text-xs text-white/70 bg-white/10 px-2.5 py-1 rounded-full backdrop-blur-md">
+                  {selectedImageIndex + 1} / {images.length}
+                </span>
+              )}
+            </div>
+            <button
+              type="button"
+              onClick={() => setIsZoomOpen(false)}
+              className="p-2.5 rounded-full bg-white/10 hover:bg-white/20 text-white transition cursor-pointer"
+              aria-label="Fechar zoom"
+            >
+              <X className="w-6 h-6" />
+            </button>
+          </div>
+
+          {/* Imagem em Zoom com Controles de Navegação */}
+          <div className="relative flex-1 flex items-center justify-center w-full my-auto overflow-hidden">
+            {images.length > 1 && (
+              <>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handlePrevImage();
+                  }}
+                  className="absolute left-2 sm:left-6 z-20 h-11 w-11 rounded-full bg-black/50 hover:bg-black/80 text-white backdrop-blur-md flex items-center justify-center transition cursor-pointer"
+                  aria-label="Foto anterior"
+                >
+                  <ChevronLeft className="w-6 h-6" />
+                </button>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleNextImage();
+                  }}
+                  className="absolute right-2 sm:right-6 z-20 h-11 w-11 rounded-full bg-black/50 hover:bg-black/80 text-white backdrop-blur-md flex items-center justify-center transition cursor-pointer"
+                  aria-label="Próxima foto"
+                >
+                  <ChevronRight className="w-6 h-6" />
+                </button>
+              </>
+            )}
+
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={currentImage}
+              alt={product.nome}
+              className="max-h-[75vh] max-w-[90vw] object-contain rounded-2xl shadow-2xl animate-scale-in"
+              onClick={(e) => e.stopPropagation()}
+            />
+          </div>
+
+          {/* Rodapé do Lightbox: Miniaturas Rápidas */}
+          {images.length > 1 && (
+            <div
+              className="w-full max-w-xl flex items-center justify-center gap-2 overflow-x-auto py-2 no-scrollbar z-10"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {images.map((imgUrl, idx) => (
+                <button
+                  key={idx}
+                  type="button"
+                  onClick={() => setSelectedImageIndex(idx)}
+                  className={`h-12 w-12 sm:h-14 sm:w-14 rounded-xl border-2 overflow-hidden flex-shrink-0 transition-all cursor-pointer ${
+                    selectedImageIndex === idx
+                      ? 'border-white scale-110 shadow-lg'
+                      : 'border-white/30 opacity-60 hover:opacity-100'
+                  }`}
+                  aria-label={`Miniatura ${idx + 1}`}
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={imgUrl}
+                    alt={`Miniatura ${idx + 1}`}
+                    className="h-full w-full object-cover"
+                  />
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       )}
     </>

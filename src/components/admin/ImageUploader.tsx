@@ -55,18 +55,26 @@ export function ImageUploader({
     const trimmed = urlInput.trim();
     if (!trimmed) return;
 
-    if (!trimmed.startsWith('http://') && !trimmed.startsWith('https://') && !trimmed.startsWith('data:image/')) {
-      setErrorMessage('Por favor, informe uma URL válida iniciando com https://');
-      return;
+    const urls = trimmed.split(/[\r\n,]+/).map((u) => u.trim()).filter((u) => u.length > 0);
+    const validUrls: string[] = [];
+
+    for (const u of urls) {
+      if (!u.startsWith('http://') && !u.startsWith('https://') && !u.startsWith('data:image/')) {
+        setErrorMessage('Por favor, informe URLs válidas iniciando com https://');
+        return;
+      }
+      if (!value.includes(u) && !validUrls.includes(u)) {
+        validUrls.push(u);
+      }
     }
 
-    if (value.includes(trimmed)) {
-      setErrorMessage('Esta imagem já foi adicionada.');
+    if (validUrls.length === 0) {
+      setErrorMessage('As imagens informadas já foram adicionadas.');
       return;
     }
 
     setErrorMessage(null);
-    onChange([...value, trimmed]);
+    onChange([...value, ...validUrls]);
     setUrlInput('');
     setShowUrlInput(false);
   };
