@@ -9,8 +9,6 @@ import {
   CheckCircle2,
   Check,
   Zap,
-  TrendingUp,
-  ShieldCheck,
   Clock,
   QrCode,
   Smartphone,
@@ -21,65 +19,95 @@ import {
   MessageCircle,
   FileSpreadsheet,
   Palette,
-  ExternalLink,
   Percent,
   Sliders,
   HelpCircle,
   Star,
   Users,
-  Award,
+  ShieldCheck,
+  Truck,
+  Copy,
+  ExternalLink,
 } from 'lucide-react';
 import { formatCurrency } from '@/lib/whatsapp';
 
-// Mock de nichos para demonstração interativa
-const DEMO_NICHES = [
+// Mock de nichos para demonstração interativa na vitrine do smartphone
+interface NicheData {
+  id: string;
+  tabLabel: string;
+  storeName: string;
+  storeCategory: string;
+  badge: string;
+  productName: string;
+  productDescription: string;
+  price: number;
+  oldPrice: number;
+  deliveryFee: number;
+  image: string;
+  options: string;
+  deliveryTime: string;
+}
+
+const DEMO_NICHES: NicheData[] = [
   {
     id: 'food',
-    name: 'Burgers & Delivery',
+    tabLabel: 'Burgers & Delivery',
     storeName: 'Artesanal Burger & Beer',
-    category: 'Hambúrgueres Artesanais',
+    storeCategory: 'Hamburgueria & Porções',
+    badge: 'Mais Pedido',
     productName: 'Double Smash Bacon Especial',
+    productDescription: '2 carnes smash 110g, queijo cheddar inglês, bacon crocante e molho da casa no pão brioche.',
     price: 38.9,
     oldPrice: 44.9,
+    deliveryFee: 6.0,
     image: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=600&auto=format&fit=crop&q=80',
-    options: 'Ponto da carne, Queijo cheddar, Molho da casa',
-    deliveryTime: '30-45 min',
+    options: 'Ponto: Ao ponto • Molho da Casa',
+    deliveryTime: '30-40 min',
   },
   {
     id: 'fashion',
-    name: 'Moda & Roupas',
+    tabLabel: 'Moda & Roupas',
     storeName: 'Bella Flor Boutique',
-    category: 'Vestidos & Coleção Verão',
+    storeCategory: 'Vestuário Feminino',
+    badge: 'Lançamento',
     productName: 'Vestido Midi Floral Elegance',
+    productDescription: 'Tecido leve premium com caimento fluido, amarração na cintura e estampa botânica exclusiva.',
     price: 189.9,
     oldPrice: 229.9,
+    deliveryFee: 15.0,
     image: 'https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?w=600&auto=format&fit=crop&q=80',
-    options: 'Tamanhos P, M, G | Cores: Terracota, Verde Oliva',
+    options: 'Tamanho: M • Cor: Terracota',
     deliveryTime: 'Envio Rápido / Retirada',
   },
   {
     id: 'beauty',
-    name: 'Cosméticos & Skincare',
-    storeName: 'Glow Natural Beauty',
-    category: 'Cuidados com a Pele',
+    tabLabel: 'Cosméticos & Skincare',
+    storeName: 'Glow Natural Skincare',
+    storeCategory: 'Cosméticos Naturais',
+    badge: 'Vegano',
     productName: 'Sérum Facial Vitamina C 15%',
+    productDescription: 'Fórmula antioxidante pura com ácido hialurônico de triplo peso molecular e toque seco.',
     price: 89.9,
     oldPrice: 119.9,
+    deliveryFee: 10.0,
     image: 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=600&auto=format&fit=crop&q=80',
-    options: 'Frasco 30ml | Vegano & Cruelty-free',
+    options: 'Frasco: 30ml • Toque Seco',
     deliveryTime: 'Pronta Entrega',
   },
   {
     id: 'shoes',
-    name: 'Calçados & Tênis',
-    storeName: 'Passo Firme Calçados',
-    category: 'Tênis Urbanos',
+    tabLabel: 'Calçados & Tênis',
+    storeName: 'Passo Firme Sneaker Store',
+    storeCategory: 'Calçados Urbanos',
+    badge: 'Destaque',
     productName: 'Sneaker Streetwear Couro Branco',
+    productDescription: 'Acabamento em couro legítimo macio, solado vulcanizado e palmilha anti-impacto ultra conforto.',
     price: 249.9,
     oldPrice: 299.9,
+    deliveryFee: 0.0,
     image: 'https://images.unsplash.com/photo-1549298916-b41d501d3772?w=600&auto=format&fit=crop&q=80',
-    options: 'Numeração 38 ao 43',
-    deliveryTime: 'Retirada na Loja / Frete',
+    options: 'Numeração: 41 • Cor: Branco/Gelo',
+    deliveryTime: 'Frete Grátis na Semana',
   },
 ];
 
@@ -118,301 +146,159 @@ const FAQ_ITEMS = [
 ];
 
 export default function SaaSCommercialLandingPage() {
-  // Estado da calculadora de economia
+  const [selectedNiche, setSelectedNiche] = useState<NicheData>(DEMO_NICHES[0]!);
   const [monthlyRevenue, setMonthlyRevenue] = useState<number>(15000);
   const [marketplaceFee, setMarketplaceFee] = useState<number>(18);
-  const [selectedNiche, setSelectedNiche] = useState(DEMO_NICHES[0]!);
   const [openFaq, setOpenFaq] = useState<number | null>(0);
+  const [copiedPix, setCopiedPix] = useState(false);
 
-  // Cálculos da calculadora
+  // Cálculos da calculadora de economia
   const monthlyFeeAmount = (monthlyRevenue * marketplaceFee) / 100;
   const yearlyMarketplaceLoss = monthlyFeeAmount * 12;
-  const saasYearlyCost = 129.9 * 12; // Plano Mensal de R$ 129,90/mês
+  const saasYearlyCost = 129.9 * 12; // R$ 129,90/mês
   const yearlySavings = Math.max(0, yearlyMarketplaceLoss - saasYearlyCost);
 
+  const handleCopyPix = () => {
+    setCopiedPix(true);
+    setTimeout(() => setCopiedPix(false), 2000);
+  };
+
+  const commercialWhatsappUrl = `https://wa.me/5511999999999?text=${encodeURIComponent(
+    'Olá! Quero criar o catálogo digital da minha loja e começar meu teste grátis.'
+  )}`;
+
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 selection:bg-emerald-500 selection:text-white font-sans">
+    <div className="min-h-screen bg-white text-slate-900 selection:bg-emerald-500 selection:text-white font-sans antialiased">
       {/* ============================================================ */}
-      {/* 1. BARRA SUPERIOR / HEADER FIXO */}
+      {/* 1. NAVBAR MINIMALISTA & ELEGANTE (Linear / Raycast Style)   */}
       {/* ============================================================ */}
-      <header className="sticky top-0 z-50 bg-slate-950/85 backdrop-blur-md border-b border-slate-800/80">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 sm:h-20 flex items-center justify-between gap-4">
-          {/* Logo & Marca */}
+      <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-200/80 transition-all">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 sm:h-18 flex items-center justify-between gap-4">
+          {/* Logo Minimalista */}
           <Link href="/landing" className="flex items-center gap-2.5 group">
-            <div className="h-10 w-10 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-400 flex items-center justify-center shadow-lg shadow-emerald-500/20 group-hover:scale-105 transition-transform">
-              <ShoppingBag className="w-5 h-5 text-white" />
+            <div className="h-9 w-9 rounded-xl bg-slate-900 flex items-center justify-center text-white shadow-xs group-hover:bg-slate-800 transition-colors">
+              <ShoppingBag className="w-4 h-4 text-emerald-400 stroke-[2.2]" />
             </div>
-            <div>
-              <div className="flex items-center gap-1.5">
-                <span className="text-base sm:text-lg font-black tracking-tight text-white">
-                  Catálogo<span className="text-emerald-400">Zap</span>
-                </span>
-                <span className="text-[10px] font-black uppercase tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-1.5 py-0.5 rounded-md hidden sm:inline-block">
-                  SaaS Oficial
-                </span>
-              </div>
-              <span className="text-[11px] text-slate-400 block -mt-0.5">
-                Vendas no WhatsApp Sem Taxas
+            <div className="flex items-center gap-1.5">
+              <span className="text-base font-extrabold tracking-tight text-slate-900">
+                Catálogo<span className="text-emerald-600">Zap</span>
+              </span>
+              <span className="text-[10px] font-semibold tracking-wide bg-slate-100 text-slate-600 border border-slate-200/70 px-1.5 py-0.5 rounded-md hidden sm:inline-block">
+                SaaS
               </span>
             </div>
           </Link>
 
           {/* Navegação Desktop */}
-          <nav className="hidden lg:flex items-center gap-6 text-xs font-semibold text-slate-300">
-            <a href="#diferenciais" className="hover:text-emerald-400 transition">
-              Diferenciais
+          <nav className="hidden md:flex items-center gap-6 text-xs font-medium text-slate-600">
+            <a href="#preview" className="hover:text-slate-900 transition-colors">
+              Demonstração
             </a>
-            <a href="#calculadora" className="hover:text-emerald-400 transition">
-              Calculadora de Economia
+            <a href="#diferenciais" className="hover:text-slate-900 transition-colors">
+              Recursos
             </a>
-            <a href="#demonstracao" className="hover:text-emerald-400 transition">
-              Demonstração ao Vivo
+            <a href="#calculadora" className="hover:text-slate-900 transition-colors">
+              Calculadora
             </a>
-            <a href="#precos" className="hover:text-emerald-400 transition">
-              Planos & Preços
+            <a href="#precos" className="hover:text-slate-900 transition-colors">
+              Planos
             </a>
-            <a href="#faq" className="hover:text-emerald-400 transition">
+            <a href="#faq" className="hover:text-slate-900 transition-colors">
               Dúvidas
             </a>
           </nav>
 
-          {/* Ações e CTAs */}
+          {/* Ações Rápidas */}
           <div className="flex items-center gap-2.5">
             <Link
               href="/admin/login"
-              className="hidden sm:inline-flex items-center gap-1 px-3.5 py-2 rounded-xl text-xs font-bold text-slate-300 hover:text-white hover:bg-slate-900 border border-slate-800 transition cursor-pointer"
+              className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors"
             >
-              <Store className="w-3.5 h-3.5" />
-              <span>Painel do Lojista</span>
+              <Store className="w-3.5 h-3.5 text-slate-400" />
+              <span>Painel</span>
             </Link>
 
             <Link
               href="/criar-loja"
-              className="inline-flex items-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-extrabold text-slate-950 bg-gradient-to-r from-emerald-400 to-teal-300 hover:brightness-110 shadow-lg shadow-emerald-500/25 active:scale-95 transition cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-semibold text-white bg-slate-900 hover:bg-slate-800 shadow-xs hover:shadow active:scale-[0.98] transition-all"
             >
-              <Sparkles className="w-4 h-4" />
               <span>Criar Loja Grátis</span>
+              <ArrowRight className="w-3.5 h-3.5 text-slate-400" />
             </Link>
           </div>
         </div>
       </header>
 
       {/* ============================================================ */}
-      {/* 2. HERO SECTION */}
+      {/* 2. HERO PRINCIPAL (REQUISITOS ESPECÍFICOS DO PROMPT)         */}
       {/* ============================================================ */}
-      <section className="relative overflow-hidden pt-12 sm:pt-20 pb-16 sm:pb-24">
-        {/* Glows de Fundo */}
-        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[550px] sm:w-[750px] h-[350px] bg-emerald-500/15 rounded-full blur-[120px] pointer-events-none" />
-        <div className="absolute top-1/3 right-10 w-[300px] h-[300px] bg-teal-500/10 rounded-full blur-[100px] pointer-events-none" />
+      <section className="relative pt-12 sm:pt-20 pb-16 sm:pb-24 overflow-hidden">
+        {/* Efeito sutil de luz ambiente no fundo */}
+        <div className="absolute top-0 inset-x-0 h-96 bg-[radial-gradient(ellipse_80%_60%_at_50%_-20%,rgba(16,185,129,0.09),transparent)] pointer-events-none" />
 
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 relative z-10 text-center space-y-6 sm:space-y-8">
-          {/* Badge de Destaque */}
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-slate-900/90 border border-emerald-500/30 text-emerald-400 text-xs sm:text-sm font-bold shadow-md shadow-emerald-950/40 animate-fade-in">
-            <span className="flex h-2 w-2 rounded-full bg-emerald-400 animate-ping" />
-            <span>A plataforma mais rápida para transformar seu WhatsApp em catálogo de vendas</span>
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center space-y-6 sm:space-y-8 relative z-10">
+          {/* Requisito 2: Badge de Novidade no topo */}
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-50 border border-slate-200/80 text-xs font-medium text-slate-700 shadow-2xs hover:border-slate-300 transition-colors">
+            <span className="flex h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+            <span>✨ A nova vitrine digital para empresas locais</span>
           </div>
 
-          {/* Título Principal */}
-          <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black text-white tracking-tight leading-[1.15] max-w-4xl mx-auto">
-            Venda no WhatsApp com a velocidade de um app moderno{' '}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-400">
-              e ZERO comissões.
-            </span>
+          {/* Requisito 1 & 3: Tipografia h1 #0F172A com tracking-tight & Título focado em conversão */}
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight text-[#0F172A] leading-[1.12] max-w-3xl mx-auto">
+            Transforme seu WhatsApp em uma máquina de vendas, sem taxas por pedido.
           </h1>
 
-          {/* Subtítulo */}
-          <p className="text-sm sm:text-lg text-slate-400 max-w-2xl mx-auto leading-relaxed">
-            Diga adeus aos PDFs pesados e às comissões de até 27% dos marketplaces. Seu cliente monta a sacola,
-            escolhe entrega ou retirada, copia sua chave PIX com 1 clique e o pedido chega{' '}
-            <strong className="text-slate-200">100% pronto no seu WhatsApp</strong>.
+          {/* Requisito 4: Subtítulo direto */}
+          <p className="text-base sm:text-lg md:text-xl text-slate-600 font-normal leading-relaxed max-w-2xl mx-auto">
+            Substitua PDFs pesados e conversas confusas por um catálogo rápido com seu domínio próprio, cores da sua marca e pedido detalhado direto no seu Zap.
           </p>
 
-          {/* CTAs do Hero */}
+          {/* Requisito 5: Grupo de CTAs */}
           <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 max-w-md mx-auto">
+            {/* Botão 1 (Destaque): 'Ver Demonstração ao Vivo' */}
             <Link
-              href="/criar-loja"
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-7 py-4 rounded-2xl text-sm sm:text-base font-extrabold text-slate-950 bg-gradient-to-r from-emerald-400 to-teal-300 hover:brightness-110 shadow-xl shadow-emerald-500/30 active:scale-98 transition cursor-pointer"
+              href="/?tenant=loja_exemplo"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl text-sm font-semibold text-white bg-slate-900 hover:bg-slate-800 shadow-sm hover:shadow active:scale-[0.98] transition-all cursor-pointer"
             >
-              <span>Testar 30 Dias Grátis</span>
-              <ArrowRight className="w-5 h-5" />
+              <span>Ver Demonstração ao Vivo</span>
+              <ArrowRight className="w-4 h-4 text-slate-400" />
             </Link>
 
+            {/* Botão 2 (Outline/Sutil): 'Criar Catálogo da Minha Loja' */}
             <a
-              href="#demonstracao"
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-4 rounded-2xl text-sm sm:text-base font-bold text-slate-200 bg-slate-900/80 hover:bg-slate-800 border border-slate-700/70 transition cursor-pointer"
+              href={commercialWhatsappUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl text-sm font-semibold text-slate-700 bg-white hover:bg-slate-50 border border-slate-200/90 shadow-2xs hover:border-slate-300 active:scale-[0.98] transition-all cursor-pointer"
             >
-              <Smartphone className="w-4 h-4 text-emerald-400" />
-              <span>Ver Demonstração</span>
+              <MessageCircle className="w-4 h-4 text-emerald-600" />
+              <span>Criar Catálogo da Minha Loja</span>
             </a>
           </div>
 
-          {/* Badges de Confiança */}
-          <div className="pt-4 flex flex-wrap items-center justify-center gap-4 sm:gap-8 text-xs font-semibold text-slate-400">
+          {/* Micro-prova de confiança sutil */}
+          <div className="pt-2 flex flex-wrap items-center justify-center gap-6 text-xs text-slate-500 font-normal">
             <span className="flex items-center gap-1.5">
-              <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-              Sem cartão para testar
+              <Check className="w-3.5 h-3.5 text-emerald-600 stroke-[2.5]" />
+              Sem cartão de crédito
             </span>
             <span className="flex items-center gap-1.5">
-              <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-              Configure em 2 minutos
+              <Check className="w-3.5 h-3.5 text-emerald-600 stroke-[2.5]" />
+              Configuração em 2 minutos
             </span>
             <span className="flex items-center gap-1.5">
-              <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-              Integrado com Google Sheets
+              <Check className="w-3.5 h-3.5 text-emerald-600 stroke-[2.5]" />
+              Google Sheets sincronizado
             </span>
           </div>
         </div>
-      </section>
 
-      {/* ============================================================ */}
-      {/* 3. CALCULADORA DE ECONOMIA (MARKETPLACE X NOSSO CATÁLOGO) */}
-      {/* ============================================================ */}
-      <section id="calculadora" className="py-16 sm:py-24 bg-slate-900/50 border-y border-slate-800/80 relative">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6">
-          <div className="text-center max-w-3xl mx-auto mb-12 sm:mb-16 space-y-3">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs font-bold uppercase tracking-wider">
-              <Percent className="w-3.5 h-3.5" />
-              Calculadora de Economia Real
-            </div>
-            <h2 className="text-2xl sm:text-4xl font-extrabold text-white tracking-tight">
-              Quanto você deixa na mesa todos os meses em taxas abusivas?
-            </h2>
-            <p className="text-xs sm:text-base text-slate-400">
-              Arraste os seletores abaixo e veja na ponta do lápis quanto sobra no seu bolso vendendo com catálogo próprio.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center bg-slate-900/90 border border-slate-800 rounded-3xl p-6 sm:p-10 shadow-2xl">
-            {/* Controles da Calculadora */}
-            <div className="lg:col-span-7 space-y-8">
-              {/* Slider 1: Faturamento */}
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <label className="text-xs sm:text-sm font-bold text-slate-300 flex items-center gap-2">
-                    <DollarSign className="w-4 h-4 text-emerald-400" />
-                    Seu Faturamento Mensal Estimado:
-                  </label>
-                  <span className="text-base sm:text-xl font-black text-emerald-400">
-                    {formatCurrency(monthlyRevenue, 'BRL')}
-                  </span>
-                </div>
-                <input
-                  type="range"
-                  min={3000}
-                  max={80000}
-                  step={1000}
-                  value={monthlyRevenue}
-                  onChange={(e) => setMonthlyRevenue(Number(e.target.value))}
-                  className="w-full h-2.5 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-emerald-500"
-                />
-                <div className="flex justify-between text-[11px] text-slate-500 font-mono">
-                  <span>R$ 3.000</span>
-                  <span>R$ 40.000</span>
-                  <span>R$ 80.000+</span>
-                </div>
-              </div>
-
-              {/* Slider 2: Taxa de Marketplace */}
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <label className="text-xs sm:text-sm font-bold text-slate-300 flex items-center gap-2">
-                    <Sliders className="w-4 h-4 text-amber-400" />
-                    Taxa Média Cobrada por Marketplaces / Apps:
-                  </label>
-                  <span className="text-base sm:text-xl font-black text-amber-400">
-                    {marketplaceFee}% por pedido
-                  </span>
-                </div>
-                <input
-                  type="range"
-                  min={10}
-                  max={28}
-                  step={1}
-                  value={marketplaceFee}
-                  onChange={(e) => setMarketplaceFee(Number(e.target.value))}
-                  className="w-full h-2.5 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-amber-500"
-                />
-                <div className="flex justify-between text-[11px] text-slate-500 font-mono">
-                  <span>10% (Taxa mínima)</span>
-                  <span>18% (Média de delivery)</span>
-                  <span>28% (Comissão máxima)</span>
-                </div>
-              </div>
-
-              {/* Comparativo Rápido */}
-              <div className="grid grid-cols-2 gap-3 pt-2 text-xs">
-                <div className="p-3.5 rounded-2xl bg-rose-950/30 border border-rose-900/40">
-                  <span className="text-[11px] font-semibold text-rose-400 block">Comissão Perdida/Mês:</span>
-                  <span className="text-base sm:text-lg font-black text-rose-200">
-                    {formatCurrency(monthlyFeeAmount, 'BRL')}
-                  </span>
-                </div>
-                <div className="p-3.5 rounded-2xl bg-emerald-950/30 border border-emerald-900/40">
-                  <span className="text-[11px] font-semibold text-emerald-400 block">Comissão no Catálogo Zap:</span>
-                  <span className="text-base sm:text-lg font-black text-emerald-300">
-                    R$ 0,00 (0%)
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {/* Resultado do Lucro Retido */}
-            <div className="lg:col-span-5 bg-gradient-to-b from-emerald-950/40 to-slate-950 p-6 sm:p-8 rounded-3xl border border-emerald-500/30 text-center space-y-5">
-              <span className="inline-block text-[11px] font-extrabold uppercase tracking-wider text-emerald-400 bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/20">
-                Economia Real no Seu Bolso
-              </span>
-
-              <div className="space-y-1">
-                <span className="text-xs text-slate-400 block">Você economiza anualmente cerca de:</span>
-                <span className="text-3xl sm:text-4xl font-black text-emerald-400 tracking-tight block">
-                  {formatCurrency(yearlySavings, 'BRL')}
-                </span>
-                <span className="text-[11px] text-slate-400 block">
-                  livres de taxas para reinvestir em estoque, marketing ou lucro puro.
-                </span>
-              </div>
-
-              <div className="pt-2 border-t border-slate-800/80 text-xs text-slate-400 space-y-2">
-                <div className="flex items-center justify-between">
-                  <span>Custo Anual do Catálogo SaaS:</span>
-                  <span className="font-bold text-slate-200">{formatCurrency(saasYearlyCost, 'BRL')}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span>Taxas por cada venda:</span>
-                  <span className="font-bold text-emerald-400">0% (Isento)</span>
-                </div>
-              </div>
-
-              <Link
-                href="/criar-loja"
-                className="w-full inline-flex items-center justify-center gap-2 py-3.5 px-5 rounded-xl text-xs sm:text-sm font-extrabold text-slate-950 bg-emerald-400 hover:bg-emerald-300 shadow-lg shadow-emerald-500/20 transition cursor-pointer"
-              >
-                <span>Garantir Minha Economia Agora</span>
-                <ArrowRight className="w-4 h-4" />
-              </Link>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ============================================================ */}
-      {/* 4. DEMONSTRAÇÃO INTERATIVA & PREVIEW MOBILE */}
-      {/* ============================================================ */}
-      <section id="demonstracao" className="py-16 sm:py-24 max-w-6xl mx-auto px-4 sm:px-6">
-        <div className="text-center max-w-2xl mx-auto mb-10 sm:mb-14 space-y-3">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-bold uppercase tracking-wider">
-            <Smartphone className="w-3.5 h-3.5" />
-            Experiência do Consumidor
-          </div>
-          <h2 className="text-2xl sm:text-4xl font-extrabold text-white tracking-tight">
-            Veja como seu cliente compra em menos de 40 segundos
-          </h2>
-          <p className="text-xs sm:text-base text-slate-400">
-            Selecione um segmento abaixo para ver a velocidade e a beleza do catálogo adaptado para qualquer tipo de negócio.
-          </p>
-
-          {/* Abas de Nichos */}
-          <div className="flex items-center justify-center gap-2 overflow-x-auto py-2">
+        {/* ============================================================ */}
+        {/* Requisito 6: PREVIEW VISUAL DO PRODUTO (CONTAINER + MOCKUP)  */}
+        {/* ============================================================ */}
+        <div id="preview" className="mt-12 sm:mt-16 max-w-5xl mx-auto px-4 sm:px-6">
+          {/* Seletor de Segmentos para Testar Interatividade */}
+          <div className="flex items-center justify-center gap-2 mb-6 sm:mb-8 overflow-x-auto py-1">
             {DEMO_NICHES.map((niche) => {
               const active = selectedNiche.id === niche.id;
               return (
@@ -420,183 +306,299 @@ export default function SaaSCommercialLandingPage() {
                   key={niche.id}
                   type="button"
                   onClick={() => setSelectedNiche(niche)}
-                  className={`px-3 sm:px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition cursor-pointer ${
+                  className={`px-3 sm:px-4 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
                     active
-                      ? 'bg-emerald-500 text-slate-950 shadow-md'
-                      : 'bg-slate-900 text-slate-400 hover:text-white hover:bg-slate-800'
+                      ? 'bg-slate-900 text-white shadow-xs'
+                      : 'bg-slate-100 text-slate-600 hover:text-slate-900 hover:bg-slate-200/70'
                   }`}
                 >
-                  {niche.name}
+                  {niche.tabLabel}
                 </button>
               );
             })}
           </div>
-        </div>
 
-        {/* Mockup do Smartphone com o Catálogo */}
-        <div className="max-w-md mx-auto bg-slate-900 border-4 border-slate-700/80 rounded-[42px] p-3 shadow-2xl shadow-emerald-950/50 relative">
-          {/* Câmera / Notch do Celular */}
-          <div className="w-28 h-4 bg-slate-800 rounded-full mx-auto mb-2" />
+          {/* Container Centralizado com Efeito Sutil de Sombra Difusa (shadow-2xl) */}
+          <div className="relative rounded-3xl sm:rounded-[36px] bg-slate-50/80 border border-slate-200/80 p-4 sm:p-8 lg:p-10 shadow-2xl shadow-slate-900/10">
+            {/* Ambient diffuse back-glow */}
+            <div className="absolute inset-x-8 top-10 bottom-10 bg-emerald-500/5 rounded-full blur-3xl -z-10 pointer-events-none" />
 
-          {/* Tela do Celular */}
-          <div className="bg-white rounded-[32px] overflow-hidden text-slate-900 flex flex-col shadow-inner">
-            {/* Header Simulado do Catálogo */}
-            <div className="bg-white p-3.5 border-b border-slate-100 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-lg bg-emerald-100 flex items-center justify-center font-black text-emerald-700 text-xs">
-                  {selectedNiche.storeName.substring(0, 2).toUpperCase()}
-                </div>
-                <div>
-                  <h4 className="text-xs font-black text-slate-900 leading-none">{selectedNiche.storeName}</h4>
-                  <span className="text-[10px] text-emerald-600 font-bold flex items-center gap-1 mt-0.5">
-                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                    Aberto agora • {selectedNiche.deliveryTime}
-                  </span>
-                </div>
+            {/* Mockup Responsivo de Smartphone */}
+            <div className="w-full max-w-[340px] sm:max-w-[360px] mx-auto bg-slate-950 rounded-[44px] sm:rounded-[48px] p-2.5 sm:p-3 ring-1 ring-slate-800 shadow-[0_20px_50px_-10px_rgba(15,23,42,0.35)]">
+              {/* Dynamic Island / Speaker Pill */}
+              <div className="w-24 sm:w-28 h-4 bg-slate-950 rounded-full mx-auto mb-2 flex items-center justify-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-slate-800" />
+                <span className="w-2.5 h-2.5 rounded-full bg-slate-900 ring-1 ring-slate-800/80" />
               </div>
-              <div className="h-7 w-7 rounded-lg bg-emerald-500 text-white flex items-center justify-center text-xs font-black shadow-xs">
-                1
+
+              {/* Tela do Celular: Vitrine Digital Real com Produto e Sacola Aberta */}
+              <div className="bg-white rounded-[34px] sm:rounded-[38px] overflow-hidden text-slate-900 flex flex-col border border-slate-100 relative select-none font-sans min-h-[580px]">
+                {/* 1. Header do Catálogo na Tela */}
+                <div className="bg-white px-3.5 py-3 border-b border-slate-100 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-lg bg-emerald-50 border border-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-xs shadow-2xs">
+                      {selectedNiche.storeName.substring(0, 2).toUpperCase()}
+                    </div>
+                    <div>
+                      <h3 className="text-xs font-bold text-slate-900 leading-tight">
+                        {selectedNiche.storeName}
+                      </h3>
+                      <div className="flex items-center gap-1 mt-0.5">
+                        <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                        <span className="text-[10px] text-emerald-700 font-semibold">
+                          Aberto agora • {selectedNiche.deliveryTime}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Botão da Sacola com Contador 1 */}
+                  <div className="h-7 px-2 rounded-lg bg-slate-900 text-white flex items-center gap-1 text-[11px] font-bold shadow-2xs">
+                    <ShoppingBag className="w-3.5 h-3.5" />
+                    <span>1</span>
+                  </div>
+                </div>
+
+                {/* 2. Vitrine Real com Produto (Background do Mockup) */}
+                <div className="p-3.5 space-y-2.5 bg-slate-50/70 flex-1">
+                  {/* Card do Produto */}
+                  <div className="bg-white rounded-2xl border border-slate-200/70 p-2.5 shadow-2xs space-y-2">
+                    <div className="relative rounded-xl overflow-hidden aspect-[16/10] bg-slate-100">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={selectedNiche.image}
+                        alt={selectedNiche.productName}
+                        className="w-full h-full object-cover"
+                      />
+                      <span className="absolute top-2 left-2 bg-slate-900/90 backdrop-blur-xs text-white text-[10px] font-semibold px-2 py-0.5 rounded-full">
+                        {selectedNiche.badge}
+                      </span>
+                    </div>
+
+                    <div>
+                      <span className="text-[9px] uppercase tracking-wider font-bold text-slate-400 block">
+                        {selectedNiche.storeCategory}
+                      </span>
+                      <h4 className="text-xs font-bold text-slate-900 leading-snug">
+                        {selectedNiche.productName}
+                      </h4>
+                      <p className="text-[10px] text-slate-500 line-clamp-1 mt-0.5">
+                        {selectedNiche.productDescription}
+                      </p>
+                      <div className="flex items-center gap-2 mt-1.5">
+                        <span className="text-xs font-extrabold text-slate-900">
+                          {formatCurrency(selectedNiche.price, 'BRL')}
+                        </span>
+                        <span className="text-[10px] text-slate-400 line-through">
+                          {formatCurrency(selectedNiche.oldPrice, 'BRL')}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 3. SACOLA ABERTA (Bottom Sheet Drawer / Cart Overlay) */}
+                <div className="bg-white border-t border-slate-200/90 rounded-t-3xl shadow-[0_-12px_28px_rgba(15,23,42,0.08)] p-3.5 space-y-3 relative z-20">
+                  {/* Drag handle minimalista */}
+                  <div className="w-8 h-1 bg-slate-300 rounded-full mx-auto -mt-1 mb-1.5" />
+
+                  {/* Cabeçalho da Sacola */}
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-xs font-extrabold text-slate-900">Sua Sacola</span>
+                      <span className="text-[10px] font-bold bg-emerald-50 text-emerald-700 px-1.5 py-0.2 rounded-full border border-emerald-200/60">
+                        1 item
+                      </span>
+                    </div>
+                    <span className="text-[10px] text-slate-400">Entrega rápida</span>
+                  </div>
+
+                  {/* Item Selecionado na Sacola */}
+                  <div className="flex items-center gap-2.5 p-2 rounded-xl bg-slate-50 border border-slate-100">
+                    <div className="w-11 h-11 rounded-lg overflow-hidden flex-shrink-0 bg-slate-200">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={selectedNiche.image}
+                        alt={selectedNiche.productName}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h5 className="text-[11px] font-bold text-slate-900 truncate leading-tight">
+                        {selectedNiche.productName}
+                      </h5>
+                      <p className="text-[9px] text-slate-500 truncate mt-0.5">
+                        {selectedNiche.options}
+                      </p>
+                      <span className="text-[11px] font-extrabold text-slate-900 block mt-0.5">
+                        {formatCurrency(selectedNiche.price, 'BRL')}
+                      </span>
+                    </div>
+                    {/* Contador de Quantidade */}
+                    <div className="flex items-center gap-1.5 bg-white border border-slate-200 px-1.5 py-0.5 rounded-lg text-[10px] font-bold text-slate-700 shadow-2xs">
+                      <span>1 un</span>
+                    </div>
+                  </div>
+
+                  {/* Resumo Financeiro */}
+                  <div className="space-y-1 text-[11px] pt-1">
+                    <div className="flex justify-between text-slate-500">
+                      <span>Subtotal</span>
+                      <span>{formatCurrency(selectedNiche.price, 'BRL')}</span>
+                    </div>
+                    <div className="flex justify-between text-slate-500">
+                      <span className="flex items-center gap-1">
+                        <Truck className="w-3 h-3 text-slate-400" />
+                        <span>Taxa de Entrega</span>
+                      </span>
+                      <span>
+                        {selectedNiche.deliveryFee > 0
+                          ? formatCurrency(selectedNiche.deliveryFee, 'BRL')
+                          : 'Grátis'}
+                      </span>
+                    </div>
+                    <div className="flex justify-between text-xs font-extrabold text-slate-900 pt-1 border-t border-slate-100">
+                      <span>Total do Pedido</span>
+                      <span className="text-emerald-700">
+                        {formatCurrency(selectedNiche.price + selectedNiche.deliveryFee, 'BRL')}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Pílula de Chave PIX Rápida */}
+                  <div
+                    onClick={handleCopyPix}
+                    className="p-2 rounded-xl bg-emerald-50/80 border border-emerald-200/80 flex items-center justify-between text-[10px] cursor-pointer hover:bg-emerald-100/60 transition-colors"
+                  >
+                    <div className="flex items-center gap-1.5 text-emerald-950 font-semibold truncate">
+                      <QrCode className="w-3.5 h-3.5 text-emerald-600 flex-shrink-0" />
+                      <span className="truncate">PIX da loja: 11999999999</span>
+                    </div>
+                    <span className="flex items-center gap-1 font-bold text-emerald-700 bg-white px-1.5 py-0.5 rounded shadow-2xs flex-shrink-0">
+                      {copiedPix ? (
+                        <>
+                          <Check className="w-3 h-3 text-emerald-600" />
+                          <span>Copiado</span>
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="w-3 h-3 text-slate-400" />
+                          <span>Copiar</span>
+                        </>
+                      )}
+                    </span>
+                  </div>
+
+                  {/* Botão de Finalização no WhatsApp com Pedido Formatado */}
+                  <div className="pt-0.5">
+                    <Link
+                      href="/?tenant=loja_exemplo"
+                      className="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-sm transition-colors cursor-pointer"
+                    >
+                      <MessageCircle className="w-3.5 h-3.5" />
+                      <span>
+                        Enviar no WhatsApp •{' '}
+                        {formatCurrency(selectedNiche.price + selectedNiche.deliveryFee, 'BRL')}
+                      </span>
+                    </Link>
+                  </div>
+                </div>
               </div>
             </div>
 
-            {/* Imagem e Detalhes do Produto */}
-            <div className="p-3.5 space-y-3 bg-slate-50">
-              <div className="relative rounded-2xl overflow-hidden aspect-[4/3] bg-slate-200">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={selectedNiche.image}
-                  alt={selectedNiche.productName}
-                  className="w-full h-full object-cover"
-                />
-                <span className="absolute top-2 left-2 bg-emerald-600 text-white text-[10px] font-black px-2 py-0.5 rounded-full shadow-xs">
-                  Destaque da Loja
-                </span>
-              </div>
-
-              <div>
-                <span className="text-[10px] text-slate-400 uppercase font-bold tracking-wider">
-                  {selectedNiche.category}
-                </span>
-                <h3 className="text-sm font-extrabold text-slate-900 leading-tight">
-                  {selectedNiche.productName}
-                </h3>
-                <p className="text-[11px] text-slate-500 mt-0.5">{selectedNiche.options}</p>
-
-                <div className="flex items-center gap-2 mt-2">
-                  <span className="text-sm font-black text-emerald-600">
-                    {formatCurrency(selectedNiche.price, 'BRL')}
-                  </span>
-                  <span className="text-xs text-slate-400 line-through">
-                    {formatCurrency(selectedNiche.oldPrice, 'BRL')}
-                  </span>
-                </div>
-              </div>
-
-              {/* Bloco de Ação Rápida PIX */}
-              <div className="bg-emerald-50/80 border border-emerald-200 rounded-xl p-2.5 flex items-center justify-between text-xs">
-                <div className="flex items-center gap-1.5 text-emerald-950 font-bold">
-                  <QrCode className="w-3.5 h-3.5 text-emerald-600" />
-                  <span className="text-[11px]">Chave PIX rápida com 1 clique</span>
-                </div>
-                <span className="text-[10px] bg-emerald-200/80 text-emerald-900 font-black px-1.5 py-0.5 rounded">
-                  Copiar
-                </span>
-              </div>
-
-              {/* Botão de Envio WhatsApp */}
-              <button
-                type="button"
-                className="w-full py-2.5 rounded-xl bg-emerald-600 text-white font-extrabold text-xs flex items-center justify-center gap-1.5 shadow-md"
-              >
-                <MessageCircle className="w-4 h-4" />
-                <span>Pedir no WhatsApp • {formatCurrency(selectedNiche.price, 'BRL')}</span>
-              </button>
+            {/* Legenda Explicativa Abaixo do Mockup */}
+            <div className="mt-6 text-center text-xs text-slate-500 max-w-md mx-auto space-y-1">
+              <p className="font-semibold text-slate-700">
+                Experiência real sem downloads nem senhas para o cliente.
+              </p>
+              <p>
+                O cliente abre pelo link da sua bio do Instagram, escolhe as opções e envia a mensagem pronta direto para você.
+              </p>
             </div>
           </div>
         </div>
       </section>
 
       {/* ============================================================ */}
-      {/* 5. DIFERENCIAIS E FUNCIONALIDADES DO SISTEMA */}
+      {/* 3. DIFERENCIAIS EM GRID MINIMALISTA                          */}
       {/* ============================================================ */}
-      <section id="diferenciais" className="py-16 sm:py-24 bg-slate-900/40 border-t border-slate-800/80">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6">
-          <div className="text-center max-w-2xl mx-auto mb-12 sm:mb-16 space-y-3">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-bold uppercase tracking-wider">
-              <Zap className="w-3.5 h-3.5" />
+      <section id="diferenciais" className="py-16 sm:py-24 bg-slate-50/60 border-t border-slate-200/80">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 space-y-12 sm:space-y-16">
+          <div className="text-center max-w-2xl mx-auto space-y-3">
+            <span className="text-xs font-semibold text-emerald-700 uppercase tracking-wider">
               Recursos de Alta Performance
-            </div>
-            <h2 className="text-2xl sm:text-4xl font-extrabold text-white tracking-tight">
+            </span>
+            <h2 className="text-2xl sm:text-4xl font-extrabold text-[#0F172A] tracking-tight">
               Tudo o que seu comércio precisa para vender mais todo dia
             </h2>
-            <p className="text-xs sm:text-base text-slate-400">
+            <p className="text-sm sm:text-base text-slate-600">
               Desenvolvido ouvindo donos de lojas reais: nada de complicação técnica, apenas velocidade e conversão.
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
             {/* Card 1 */}
-            <div className="bg-slate-900/80 border border-slate-800 p-6 rounded-2xl space-y-3 hover:border-slate-700 transition">
-              <div className="h-10 w-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center">
-                <Percent className="w-5 h-5" />
+            <div className="bg-white border border-slate-200/80 p-6 rounded-2xl space-y-3 shadow-2xs hover:border-slate-300 transition-all">
+              <div className="h-9 w-9 rounded-xl bg-emerald-50 border border-emerald-100 text-emerald-700 flex items-center justify-center">
+                <Percent className="w-4 h-4 stroke-[2.2]" />
               </div>
-              <h3 className="text-base font-extrabold text-white">0% de Comissões por Venda</h3>
-              <p className="text-xs sm:text-sm text-slate-400 leading-relaxed">
+              <h3 className="text-base font-bold text-slate-900">0% de Comissões por Venda</h3>
+              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
                 Todo o lucro da venda é seu. Sem surpresas na fatura no fim do mês e sem porcentagens descontadas dos seus produtos.
               </p>
             </div>
 
             {/* Card 2 */}
-            <div className="bg-slate-900/80 border border-slate-800 p-6 rounded-2xl space-y-3 hover:border-slate-700 transition">
-              <div className="h-10 w-10 rounded-xl bg-teal-500/10 border border-teal-500/20 text-teal-400 flex items-center justify-center">
-                <FileSpreadsheet className="w-5 h-5" />
+            <div className="bg-white border border-slate-200/80 p-6 rounded-2xl space-y-3 shadow-2xs hover:border-slate-300 transition-all">
+              <div className="h-9 w-9 rounded-xl bg-slate-100 border border-slate-200 text-slate-700 flex items-center justify-center">
+                <FileSpreadsheet className="w-4 h-4 stroke-[2.2]" />
               </div>
-              <h3 className="text-base font-extrabold text-white">Google Sheets como Banco de Dados</h3>
-              <p className="text-xs sm:text-sm text-slate-400 leading-relaxed">
-                Altere preços, estoque e adicione fotos pelo celular no aplicativo do Google Sheets ou no Painel Administrativo.
+              <h3 className="text-base font-bold text-slate-900">Google Sheets como Banco de Dados</h3>
+              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+                Altere preços, estoque e fotos pelo celular no aplicativo do Google Sheets ou no Painel Administrativo.
               </p>
             </div>
 
             {/* Card 3 */}
-            <div className="bg-slate-900/80 border border-slate-800 p-6 rounded-2xl space-y-3 hover:border-slate-700 transition">
-              <div className="h-10 w-10 rounded-xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 flex items-center justify-center">
-                <QrCode className="w-5 h-5" />
+            <div className="bg-white border border-slate-200/80 p-6 rounded-2xl space-y-3 shadow-2xs hover:border-slate-300 transition-all">
+              <div className="h-9 w-9 rounded-xl bg-emerald-50 border border-emerald-100 text-emerald-700 flex items-center justify-center">
+                <QrCode className="w-4 h-4 stroke-[2.2]" />
               </div>
-              <h3 className="text-base font-extrabold text-white">Chave PIX Rápida com 1 Clique</h3>
-              <p className="text-xs sm:text-sm text-slate-400 leading-relaxed">
+              <h3 className="text-base font-bold text-slate-900">Chave PIX Rápida com 1 Clique</h3>
+              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
                 O cliente copia sua chave no checkout sem precisar pedir no WhatsApp, acelerando pagamentos e reduzindo desistências.
               </p>
             </div>
 
             {/* Card 4 */}
-            <div className="bg-slate-900/80 border border-slate-800 p-6 rounded-2xl space-y-3 hover:border-slate-700 transition">
-              <div className="h-10 w-10 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center">
-                <Clock className="w-5 h-5" />
+            <div className="bg-white border border-slate-200/80 p-6 rounded-2xl space-y-3 shadow-2xs hover:border-slate-300 transition-all">
+              <div className="h-9 w-9 rounded-xl bg-slate-100 border border-slate-200 text-slate-700 flex items-center justify-center">
+                <Clock className="w-4 h-4 stroke-[2.2]" />
               </div>
-              <h3 className="text-base font-extrabold text-white">Horário & Status Aberto/Fechado</h3>
-              <p className="text-xs sm:text-sm text-slate-400 leading-relaxed">
+              <h3 className="text-base font-bold text-slate-900">Horário & Status Aberto/Fechado</h3>
+              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
                 Com apenas 1 toque você define se está aberto agora ou recebendo pedidos agendados para abertura com aviso amigável.
               </p>
             </div>
 
             {/* Card 5 */}
-            <div className="bg-slate-900/80 border border-slate-800 p-6 rounded-2xl space-y-3 hover:border-slate-700 transition">
-              <div className="h-10 w-10 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 flex items-center justify-center">
-                <Palette className="w-5 h-5" />
+            <div className="bg-white border border-slate-200/80 p-6 rounded-2xl space-y-3 shadow-2xs hover:border-slate-300 transition-all">
+              <div className="h-9 w-9 rounded-xl bg-emerald-50 border border-emerald-100 text-emerald-700 flex items-center justify-center">
+                <Palette className="w-4 h-4 stroke-[2.2]" />
               </div>
-              <h3 className="text-base font-extrabold text-white">Sua Marca & Identidade Visual</h3>
-              <p className="text-xs sm:text-sm text-slate-400 leading-relaxed">
+              <h3 className="text-base font-bold text-slate-900">Sua Marca & Identidade Visual</h3>
+              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
                 Personalize com suas cores institucionais, banners rotativos de promoções e logotipo próprio em alta definição.
               </p>
             </div>
 
             {/* Card 6 */}
-            <div className="bg-slate-900/80 border border-slate-800 p-6 rounded-2xl space-y-3 hover:border-slate-700 transition">
-              <div className="h-10 w-10 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 flex items-center justify-center">
-                <ShieldCheck className="w-5 h-5" />
+            <div className="bg-white border border-slate-200/80 p-6 rounded-2xl space-y-3 shadow-2xs hover:border-slate-300 transition-all">
+              <div className="h-9 w-9 rounded-xl bg-slate-100 border border-slate-200 text-slate-700 flex items-center justify-center">
+                <ShieldCheck className="w-4 h-4 stroke-[2.2]" />
               </div>
-              <h3 className="text-base font-extrabold text-white">Checkout em 2 Etapas Otimizado</h3>
-              <p className="text-xs sm:text-sm text-slate-400 leading-relaxed">
+              <h3 className="text-base font-bold text-slate-900">Checkout Otimizado em 2 Passos</h3>
+              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
                 O cliente escolhe entrega ou retirada, informa endereço, método de pagamento e troco. Retém dados para compras futuras.
               </p>
             </div>
@@ -605,113 +607,203 @@ export default function SaaSCommercialLandingPage() {
       </section>
 
       {/* ============================================================ */}
-      {/* 5.5. PROVA SOCIAL, MÉTRICAS E DEPOIMENTOS DE LOJISTAS        */}
+      {/* 4. CALCULADORA DE ECONOMIA (MARKETPLACE X CATÁLOGO PRÓPRIO)  */}
       {/* ============================================================ */}
-      <section className="py-16 sm:py-24 bg-gradient-to-b from-slate-900/60 to-slate-950 border-t border-slate-800/80">
+      <section id="calculadora" className="py-16 sm:py-24 max-w-5xl mx-auto px-4 sm:px-6">
+        <div className="text-center max-w-2xl mx-auto mb-12 sm:mb-16 space-y-3">
+          <span className="text-xs font-semibold text-emerald-700 uppercase tracking-wider">
+            Calculadora de Economia Real
+          </span>
+          <h2 className="text-2xl sm:text-4xl font-extrabold text-[#0F172A] tracking-tight">
+            Quanto você deixa na mesa todos os meses em taxas abusivas?
+          </h2>
+          <p className="text-sm sm:text-base text-slate-600">
+            Arraste os seletores abaixo e veja na ponta do lápis quanto sobra no seu bolso vendendo com catálogo próprio.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center bg-white border border-slate-200/90 rounded-3xl p-6 sm:p-10 shadow-lg">
+          {/* Controles da Calculadora */}
+          <div className="lg:col-span-7 space-y-8">
+            {/* Slider 1: Faturamento */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <label className="text-xs sm:text-sm font-bold text-slate-700 flex items-center gap-2">
+                  <DollarSign className="w-4 h-4 text-emerald-600" />
+                  Seu Faturamento Mensal Estimado:
+                </label>
+                <span className="text-base sm:text-xl font-extrabold text-slate-900">
+                  {formatCurrency(monthlyRevenue, 'BRL')}
+                </span>
+              </div>
+              <input
+                type="range"
+                min={3000}
+                max={80000}
+                step={1000}
+                value={monthlyRevenue}
+                onChange={(e) => setMonthlyRevenue(Number(e.target.value))}
+                className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-slate-900"
+              />
+              <div className="flex justify-between text-[11px] text-slate-400 font-mono">
+                <span>R$ 3.000</span>
+                <span>R$ 40.000</span>
+                <span>R$ 80.000+</span>
+              </div>
+            </div>
+
+            {/* Slider 2: Taxa de Marketplace */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <label className="text-xs sm:text-sm font-bold text-slate-700 flex items-center gap-2">
+                  <Sliders className="w-4 h-4 text-slate-500" />
+                  Taxa Cobrada por Apps / Marketplaces:
+                </label>
+                <span className="text-base sm:text-xl font-extrabold text-slate-900">
+                  {marketplaceFee}% por pedido
+                </span>
+              </div>
+              <input
+                type="range"
+                min={10}
+                max={28}
+                step={1}
+                value={marketplaceFee}
+                onChange={(e) => setMarketplaceFee(Number(e.target.value))}
+                className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-slate-900"
+              />
+              <div className="flex justify-between text-[11px] text-slate-400 font-mono">
+                <span>10% (Mínima)</span>
+                <span>18% (Média de delivery)</span>
+                <span>28% (Comissão máxima)</span>
+              </div>
+            </div>
+
+            {/* Comparativo Rápido */}
+            <div className="grid grid-cols-2 gap-3 pt-2 text-xs">
+              <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200">
+                <span className="text-[11px] font-medium text-slate-500 block">Comissão Perdida/Mês:</span>
+                <span className="text-base sm:text-lg font-bold text-rose-600">
+                  {formatCurrency(monthlyFeeAmount, 'BRL')}
+                </span>
+              </div>
+              <div className="p-3.5 rounded-2xl bg-emerald-50/80 border border-emerald-200/80">
+                <span className="text-[11px] font-medium text-emerald-800 block">Comissão no Catálogo Zap:</span>
+                <span className="text-base sm:text-lg font-bold text-emerald-700">
+                  R$ 0,00 (0%)
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Resultado do Lucro Retido */}
+          <div className="lg:col-span-5 bg-slate-900 p-6 sm:p-8 rounded-2xl text-white text-center space-y-5">
+            <span className="inline-block text-[11px] font-semibold uppercase tracking-wider text-emerald-400 bg-emerald-950/60 px-3 py-1 rounded-full border border-emerald-500/30">
+              Economia Estimada
+            </span>
+
+            <div className="space-y-1">
+              <span className="text-xs text-slate-400 block">Você economiza anualmente cerca de:</span>
+              <span className="text-3xl sm:text-4xl font-extrabold text-emerald-400 tracking-tight block">
+                {formatCurrency(yearlySavings, 'BRL')}
+              </span>
+              <span className="text-[11px] text-slate-400 block">
+                livres de taxas para reinvestir no seu comércio ou lucro puro.
+              </span>
+            </div>
+
+            <div className="pt-2 border-t border-slate-800 text-xs text-slate-400 space-y-1.5">
+              <div className="flex items-center justify-between">
+                <span>Custo Anual do Sistema:</span>
+                <span className="font-semibold text-white">{formatCurrency(saasYearlyCost, 'BRL')}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span>Taxa por pedido:</span>
+                <span className="font-bold text-emerald-400">0% (Isento)</span>
+              </div>
+            </div>
+
+            <Link
+              href="/criar-loja"
+              className="w-full inline-flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-xs sm:text-sm font-semibold text-slate-900 bg-white hover:bg-slate-100 shadow-sm transition-colors cursor-pointer"
+            >
+              <span>Economizar Agora</span>
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* ============================================================ */}
+      {/* 5. PROVA SOCIAL & DEPOIMENTOS DE LOJISTAS                    */}
+      {/* ============================================================ */}
+      <section className="py-16 sm:py-24 bg-slate-50/60 border-t border-slate-200/80">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 space-y-12 sm:space-y-16">
           {/* Métricas Principais da Plataforma */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-            <div className="p-6 rounded-3xl bg-slate-900/90 border border-slate-800 text-center space-y-1">
-              <span className="text-2xl sm:text-4xl font-black text-emerald-400 block tracking-tight">1.200+</span>
-              <span className="text-xs text-slate-400 font-semibold block">Lojas Ativas no Brasil</span>
+            <div className="p-6 rounded-2xl bg-white border border-slate-200/80 text-center space-y-1 shadow-2xs">
+              <span className="text-2xl sm:text-3xl font-extrabold text-[#0F172A] block tracking-tight">1.200+</span>
+              <span className="text-xs text-slate-500 font-medium block">Lojas Ativas</span>
             </div>
-            <div className="p-6 rounded-3xl bg-slate-900/90 border border-slate-800 text-center space-y-1">
-              <span className="text-2xl sm:text-4xl font-black text-teal-300 block tracking-tight">R$ 4.8M+</span>
-              <span className="text-xs text-slate-400 font-semibold block">Em Pedidos Transacionados</span>
+            <div className="p-6 rounded-2xl bg-white border border-slate-200/80 text-center space-y-1 shadow-2xs">
+              <span className="text-2xl sm:text-3xl font-extrabold text-[#0F172A] block tracking-tight">R$ 4.8M+</span>
+              <span className="text-xs text-slate-500 font-medium block">Transacionados</span>
             </div>
-            <div className="p-6 rounded-3xl bg-slate-900/90 border border-slate-800 text-center space-y-1">
-              <span className="text-2xl sm:text-4xl font-black text-cyan-400 block tracking-tight">R$ 0,00</span>
-              <span className="text-xs text-slate-400 font-semibold block">Retido em Comissões</span>
+            <div className="p-6 rounded-2xl bg-white border border-slate-200/80 text-center space-y-1 shadow-2xs">
+              <span className="text-2xl sm:text-3xl font-extrabold text-emerald-700 block tracking-tight">R$ 0,00</span>
+              <span className="text-xs text-slate-500 font-medium block">Retido em Taxas</span>
             </div>
-            <div className="p-6 rounded-3xl bg-slate-900/90 border border-slate-800 text-center space-y-1">
-              <div className="flex items-center justify-center gap-1 text-amber-400">
-                <span className="text-2xl sm:text-4xl font-black block tracking-tight">4.9</span>
-                <Star className="w-5 h-5 fill-amber-400 text-amber-400 inline" />
+            <div className="p-6 rounded-2xl bg-white border border-slate-200/80 text-center space-y-1 shadow-2xs">
+              <div className="flex items-center justify-center gap-1 text-amber-500">
+                <span className="text-2xl sm:text-3xl font-extrabold text-[#0F172A] block tracking-tight">4.9</span>
+                <Star className="w-4 h-4 fill-amber-500 text-amber-500 inline" />
               </div>
-              <span className="text-xs text-slate-400 font-semibold block">Avaliação dos Lojistas</span>
+              <span className="text-xs text-slate-500 font-medium block">Avaliação dos Lojistas</span>
             </div>
           </div>
 
-          {/* Título da Seção de Depoimentos */}
-          <div className="text-center max-w-2xl mx-auto space-y-3">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-bold uppercase tracking-wider">
-              <Users className="w-3.5 h-3.5" />
-              Histórias de Sucesso
-            </div>
-            <h2 className="text-2xl sm:text-4xl font-extrabold text-white tracking-tight">
-              Quem usa, não volta para os marketplaces
-            </h2>
-            <p className="text-xs sm:text-base text-slate-400">
-              Veja como negócios locais estão aumentando suas margens de lucro com catálogo próprio.
-            </p>
-          </div>
-
-          {/* Cards de Depoimentos */}
+          {/* Depoimentos */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
-            {/* Depoimento 1 */}
-            <div className="p-6 rounded-3xl bg-slate-900/80 border border-slate-800 flex flex-col justify-between space-y-4 hover:border-slate-700 transition">
-              <div className="space-y-3">
-                <div className="flex items-center gap-1 text-amber-400">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="w-4 h-4 fill-amber-400" />
-                  ))}
-                </div>
-                <p className="text-xs sm:text-sm text-slate-300 leading-relaxed italic">
-                  &ldquo;Economizamos mais de R$ 2.400 todos os meses que antes iam embora em taxas de delivery. O cliente monta o lanche, escolhe os adicionais, copia o PIX e o pedido cai no nosso WhatsApp 100% pronto.&rdquo;
-                </p>
-              </div>
-              <div className="pt-3 border-t border-slate-800 flex items-center gap-3">
-                <div className="h-10 w-10 rounded-full bg-emerald-500/20 text-emerald-400 font-black text-xs flex items-center justify-center border border-emerald-500/30">
+            <div className="p-6 rounded-2xl bg-white border border-slate-200/80 flex flex-col justify-between space-y-4 shadow-2xs">
+              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed italic">
+                &ldquo;Economizamos mais de R$ 2.400 por mês que antes iam embora em comissões de delivery. O cliente monta o lanche, copia o PIX e o pedido cai no nosso WhatsApp 100% pronto.&rdquo;
+              </p>
+              <div className="pt-3 border-t border-slate-100 flex items-center gap-3">
+                <div className="h-9 w-9 rounded-full bg-emerald-50 text-emerald-700 font-bold text-xs flex items-center justify-center border border-emerald-100">
                   FC
                 </div>
                 <div>
-                  <h4 className="text-xs sm:text-sm font-bold text-white">Felipe Costa</h4>
+                  <h4 className="text-xs font-bold text-slate-900">Felipe Costa</h4>
                   <span className="text-[11px] text-slate-400 block">Artesanal Burger & Beer • SP</span>
                 </div>
               </div>
             </div>
 
-            {/* Depoimento 2 */}
-            <div className="p-6 rounded-3xl bg-slate-900/80 border border-slate-800 flex flex-col justify-between space-y-4 hover:border-slate-700 transition">
-              <div className="space-y-3">
-                <div className="flex items-center gap-1 text-amber-400">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="w-4 h-4 fill-amber-400" />
-                  ))}
-                </div>
-                <p className="text-xs sm:text-sm text-slate-300 leading-relaxed italic">
-                  &ldquo;Nossa loja no Instagram explodiu depois que colocamos o link do catálogo na bio. O cliente vê os tamanhos disponíveis na mesma hora e não fica horas perguntando &apos;quanto custa&apos; no direct.&rdquo;
-                </p>
-              </div>
-              <div className="pt-3 border-t border-slate-800 flex items-center gap-3">
-                <div className="h-10 w-10 rounded-full bg-teal-500/20 text-teal-400 font-black text-xs flex items-center justify-center border border-teal-500/30">
+            <div className="p-6 rounded-2xl bg-white border border-slate-200/80 flex flex-col justify-between space-y-4 shadow-2xs">
+              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed italic">
+                &ldquo;Nossa loja no Instagram converteu muito mais depois que colocamos o link na bio. O cliente vê os tamanhos disponíveis na hora e não fica horas perguntando preço no direct.&rdquo;
+              </p>
+              <div className="pt-3 border-t border-slate-100 flex items-center gap-3">
+                <div className="h-9 w-9 rounded-full bg-slate-100 text-slate-700 font-bold text-xs flex items-center justify-center border border-slate-200">
                   CD
                 </div>
                 <div>
-                  <h4 className="text-xs sm:text-sm font-bold text-white">Camila Duarte</h4>
+                  <h4 className="text-xs font-bold text-slate-900">Camila Duarte</h4>
                   <span className="text-[11px] text-slate-400 block">Bella Flor Boutique • MG</span>
                 </div>
               </div>
             </div>
 
-            {/* Depoimento 3 */}
-            <div className="p-6 rounded-3xl bg-slate-900/80 border border-slate-800 flex flex-col justify-between space-y-4 hover:border-slate-700 transition">
-              <div className="space-y-3">
-                <div className="flex items-center gap-1 text-amber-400">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="w-4 h-4 fill-amber-400" />
-                  ))}
-                </div>
-                <p className="text-xs sm:text-sm text-slate-300 leading-relaxed italic">
-                  &ldquo;Atualizo os preços e o estoque na minha planilha do Google Sheets direto pelo celular e em 5 segundos já tá no ar para os clientes. Praticidade nota 10, sem complicação de programação.&rdquo;
-                </p>
-              </div>
-              <div className="pt-3 border-t border-slate-800 flex items-center gap-3">
-                <div className="h-10 w-10 rounded-full bg-cyan-500/20 text-cyan-400 font-black text-xs flex items-center justify-center border border-cyan-500/30">
+            <div className="p-6 rounded-2xl bg-white border border-slate-200/80 flex flex-col justify-between space-y-4 shadow-2xs">
+              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed italic">
+                &ldquo;Atualizo os preços na planilha do Google Sheets direto pelo celular e em 5 segundos já tá no ar para os clientes. Praticidade nota 10, sem complicação de programação.&rdquo;
+              </p>
+              <div className="pt-3 border-t border-slate-100 flex items-center gap-3">
+                <div className="h-9 w-9 rounded-full bg-emerald-50 text-emerald-700 font-bold text-xs flex items-center justify-center border border-emerald-100">
                   MS
                 </div>
                 <div>
-                  <h4 className="text-xs sm:text-sm font-bold text-white">Mariana Souza</h4>
+                  <h4 className="text-xs font-bold text-slate-900">Mariana Souza</h4>
                   <span className="text-[11px] text-slate-400 block">Glow Natural Skincare • PR</span>
                 </div>
               </div>
@@ -721,88 +813,76 @@ export default function SaaSCommercialLandingPage() {
       </section>
 
       {/* ============================================================ */}
-      {/* 6. TABELA DE PLANOS & PREÇOS */}
+      {/* 6. TABELA DE PLANOS & PREÇOS (TRANSPARÊNCIA TOTAL)           */}
       {/* ============================================================ */}
-      <section id="precos" className="py-16 sm:py-24 max-w-5xl mx-auto px-4 sm:px-6">
-        <div className="text-center max-w-2xl mx-auto mb-10 sm:mb-14 space-y-3">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-bold uppercase tracking-wider">
-            <DollarSign className="w-3.5 h-3.5" />
-            Plano Único e Sem Pegadinhas
-          </div>
-          <h2 className="text-2xl sm:text-4xl font-extrabold text-white tracking-tight">
-            Investimento acessível que se paga nas primeiras vendas
+      <section id="precos" className="py-16 sm:py-24 max-w-4xl mx-auto px-4 sm:px-6">
+        <div className="text-center max-w-xl mx-auto mb-10 sm:mb-14 space-y-3">
+          <span className="text-xs font-semibold text-emerald-700 uppercase tracking-wider">
+            Investimento Transparente
+          </span>
+          <h2 className="text-2xl sm:text-4xl font-extrabold text-[#0F172A] tracking-tight">
+            Plano único, sem pegadinhas nem fidelidade
           </h2>
-          <p className="text-xs sm:text-base text-slate-400">
-            Comece com 30 dias de teste grátis. Apenas R$ 129,90/mês após o teste, sem multas nem contratos de fidelidade. Cancele quando quiser.
+          <p className="text-sm text-slate-600">
+            Comece com 30 dias de teste grátis. Apenas R$ 129,90/mês após o teste. Cancele quando quiser com 1 clique.
           </p>
         </div>
 
-        <div className="max-w-xl mx-auto">
-          {/* Card Plano Mensal em Destaque */}
-          <div className="bg-gradient-to-b from-slate-900 to-slate-950 border-2 border-emerald-500 rounded-3xl p-6 sm:p-10 flex flex-col justify-between space-y-8 relative shadow-2xl shadow-emerald-950/40">
-            <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-emerald-500 text-slate-950 text-[11px] font-black uppercase tracking-wider px-4 py-1 rounded-full shadow-md whitespace-nowrap">
-              Plano Completo • 30 Dias Grátis
+        <div className="max-w-md mx-auto">
+          <div className="bg-white border-2 border-slate-900 rounded-3xl p-6 sm:p-8 space-y-6 shadow-xl relative">
+            <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-[11px] font-semibold uppercase tracking-wider px-3.5 py-0.5 rounded-full whitespace-nowrap">
+              30 Dias Grátis para Testar
             </span>
 
-            <div className="space-y-6">
-              <div>
-                <h3 className="text-xl font-extrabold text-white">Plano Mensal Flexível</h3>
-                <p className="text-xs sm:text-sm text-slate-400 mt-1">
-                  Acesso total e irrestrito a todos os recursos da plataforma para vender mais.
-                </p>
-              </div>
-
-              <div className="pt-2 border-y border-slate-800/80 py-4">
-                <div className="flex items-baseline gap-1.5">
-                  <span className="text-4xl sm:text-5xl font-black text-emerald-400">R$ 129,90</span>
-                  <span className="text-sm text-slate-400 font-semibold">/mês</span>
-                </div>
-                <span className="text-xs text-slate-300 block mt-1.5 font-medium">
-                  Primeiros 30 dias 100% grátis • Sem cartão de crédito para iniciar • Cobrança via Asaas
-                </span>
-              </div>
-
-              <ul className="space-y-3.5 text-xs sm:text-sm text-slate-300">
-                <li className="flex items-center gap-2.5">
-                  <Check className="w-4 h-4 text-emerald-400 flex-shrink-0" />
-                  <span><strong>Produtos e fotos ilimitados</strong> em alta definição</span>
-                </li>
-                <li className="flex items-center gap-2.5">
-                  <Check className="w-4 h-4 text-emerald-400 flex-shrink-0" />
-                  <span><strong>Pedidos ilimitados</strong> enviados direto no WhatsApp</span>
-                </li>
-                <li className="flex items-center gap-2.5">
-                  <Check className="w-4 h-4 text-emerald-400 flex-shrink-0" />
-                  <span>Chave PIX rápida com botão de copiar em 1 clique</span>
-                </li>
-                <li className="flex items-center gap-2.5">
-                  <Check className="w-4 h-4 text-emerald-400 flex-shrink-0" />
-                  <span>Google Sheets integrado e sincronizado em tempo real</span>
-                </li>
-                <li className="flex items-center gap-2.5">
-                  <Check className="w-4 h-4 text-emerald-400 flex-shrink-0" />
-                  <span>Painel Administrativo completo para celular e computador</span>
-                </li>
-                <li className="flex items-center gap-2.5">
-                  <Check className="w-4 h-4 text-emerald-400 flex-shrink-0" />
-                  <span>Suporte a Domínio Próprio (.com.br) ou link exclusivo</span>
-                </li>
-                <li className="flex items-center gap-2.5">
-                  <Check className="w-4 h-4 text-emerald-400 flex-shrink-0" />
-                  <span><strong>0% de comissão</strong> sobre suas vendas (lucro 100% seu)</span>
-                </li>
-                <li className="flex items-center gap-2.5">
-                  <Check className="w-4 h-4 text-emerald-400 flex-shrink-0" />
-                  <span>Suporte humanizado via WhatsApp e garantia incondicional</span>
-                </li>
-              </ul>
+            <div>
+              <h3 className="text-lg font-bold text-slate-900">Plano Mensal Completo</h3>
+              <p className="text-xs text-slate-500 mt-0.5">
+                Acesso irrestrito a todos os recursos da plataforma.
+              </p>
             </div>
+
+            <div className="border-y border-slate-100 py-4">
+              <div className="flex items-baseline gap-1.5">
+                <span className="text-4xl font-extrabold text-slate-900 tracking-tight">R$ 129,90</span>
+                <span className="text-xs text-slate-500 font-medium">/mês</span>
+              </div>
+              <span className="text-[11px] text-slate-500 block mt-1">
+                Sem necessidade de cadastrar cartão para iniciar o teste.
+              </span>
+            </div>
+
+            <ul className="space-y-3 text-xs sm:text-sm text-slate-700">
+              <li className="flex items-center gap-2">
+                <Check className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+                <span><strong>0% de taxas</strong> por pedido</span>
+              </li>
+              <li className="flex items-center gap-2">
+                <Check className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+                <span>Produtos e fotos ilimitados</span>
+              </li>
+              <li className="flex items-center gap-2">
+                <Check className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+                <span>Google Sheets sincronizado em tempo real</span>
+              </li>
+              <li className="flex items-center gap-2">
+                <Check className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+                <span>Chave PIX com cópia em 1 clique</span>
+              </li>
+              <li className="flex items-center gap-2">
+                <Check className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+                <span>Suporte a domínio personalizado próprio</span>
+              </li>
+              <li className="flex items-center gap-2">
+                <Check className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+                <span>Painel administrativo para celular e computador</span>
+              </li>
+            </ul>
 
             <Link
               href="/criar-loja?plan=monthly"
-              className="w-full inline-flex items-center justify-center gap-2 py-4 px-6 rounded-xl text-sm font-black text-slate-950 bg-gradient-to-r from-emerald-400 to-teal-300 hover:brightness-110 shadow-lg shadow-emerald-500/20 transition cursor-pointer"
+              className="w-full inline-flex items-center justify-center gap-2 py-3.5 px-4 rounded-xl text-xs sm:text-sm font-semibold text-white bg-slate-900 hover:bg-slate-800 shadow-sm transition-colors cursor-pointer"
             >
-              <span>Começar Meu Teste de 30 Dias Grátis</span>
+              <span>Começar Teste Grátis de 30 Dias</span>
               <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
@@ -810,21 +890,17 @@ export default function SaaSCommercialLandingPage() {
       </section>
 
       {/* ============================================================ */}
-      {/* 7. PERGUNTAS FREQUENTES (FAQ) */}
+      {/* 7. PERGUNTAS FREQUENTES (FAQ)                                */}
       {/* ============================================================ */}
-      <section id="faq" className="py-16 sm:py-24 bg-slate-900/40 border-t border-slate-800/80">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 space-y-10">
-          <div className="text-center space-y-3">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-bold uppercase tracking-wider">
-              <HelpCircle className="w-3.5 h-3.5" />
+      <section id="faq" className="py-16 sm:py-24 bg-slate-50/60 border-t border-slate-200/80">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 space-y-8">
+          <div className="text-center space-y-2">
+            <span className="text-xs font-semibold text-emerald-700 uppercase tracking-wider">
               Tire Suas Dúvidas
-            </div>
-            <h2 className="text-2xl sm:text-4xl font-extrabold text-white tracking-tight">
+            </span>
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-[#0F172A] tracking-tight">
               Perguntas Frequentes
             </h2>
-            <p className="text-xs sm:text-base text-slate-400">
-              Tudo o que você precisa saber antes de começar seu teste gratuito.
-            </p>
           </div>
 
           <div className="space-y-3">
@@ -833,25 +909,25 @@ export default function SaaSCommercialLandingPage() {
               return (
                 <div
                   key={idx}
-                  className="rounded-2xl bg-slate-900/90 border border-slate-800 overflow-hidden transition"
+                  className="rounded-xl bg-white border border-slate-200/80 overflow-hidden transition-all shadow-2xs"
                 >
                   <button
                     type="button"
                     onClick={() => setOpenFaq(isOpen ? null : idx)}
                     className="w-full p-4 sm:p-5 text-left flex items-center justify-between gap-4 cursor-pointer"
                   >
-                    <span className="text-xs sm:text-sm font-bold text-white leading-snug">
+                    <span className="text-xs sm:text-sm font-bold text-slate-900 leading-snug">
                       {item.question}
                     </span>
                     {isOpen ? (
-                      <ChevronUp className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+                      <ChevronUp className="w-4 h-4 text-slate-500 flex-shrink-0" />
                     ) : (
                       <ChevronDown className="w-4 h-4 text-slate-400 flex-shrink-0" />
                     )}
                   </button>
 
                   {isOpen && (
-                    <div className="px-4 sm:px-5 pb-5 pt-1 text-xs sm:text-sm text-slate-400 leading-relaxed border-t border-slate-800/60">
+                    <div className="px-4 sm:px-5 pb-5 pt-1 text-xs sm:text-sm text-slate-600 leading-relaxed border-t border-slate-100">
                       {item.answer}
                     </div>
                   )}
@@ -863,78 +939,71 @@ export default function SaaSCommercialLandingPage() {
       </section>
 
       {/* ============================================================ */}
-      {/* 8. CTA FINAL DE CONVERSÃO */}
+      {/* 8. CTA FINAL DE CONVERSÃO                                    */}
       {/* ============================================================ */}
-      <section className="py-16 sm:py-24 relative overflow-hidden bg-gradient-to-b from-slate-950 via-emerald-950/20 to-slate-950 border-t border-slate-800/80">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center space-y-6 relative z-10">
-          <div className="h-16 w-16 rounded-2xl bg-gradient-to-tr from-emerald-500 to-teal-300 mx-auto flex items-center justify-center text-slate-950 shadow-xl shadow-emerald-500/20">
-            <Sparkles className="w-8 h-8" />
-          </div>
-
-          <h2 className="text-2xl sm:text-5xl font-black text-white tracking-tight leading-tight">
+      <section className="py-16 sm:py-20 bg-slate-900 text-white text-center">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 space-y-6">
+          <h2 className="text-2xl sm:text-4xl font-extrabold tracking-tight">
             Pronto para ver suas vendas no WhatsApp decolarem?
           </h2>
-
-          <p className="text-xs sm:text-base text-slate-400 max-w-xl mx-auto">
+          <p className="text-sm sm:text-base text-slate-400 max-w-xl mx-auto leading-relaxed">
             Crie seu catálogo agora mesmo. Não precisa de cartão de crédito e sua loja fica pronta em menos de 2 minutos.
           </p>
-
           <div className="pt-2">
             <Link
               href="/criar-loja"
-              className="inline-flex items-center justify-center gap-2.5 px-8 py-4 rounded-2xl text-sm sm:text-base font-extrabold text-slate-950 bg-gradient-to-r from-emerald-400 to-teal-300 hover:brightness-110 shadow-xl shadow-emerald-500/30 active:scale-98 transition cursor-pointer"
+              className="inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-xl text-sm font-semibold text-slate-900 bg-white hover:bg-slate-100 shadow-sm transition-colors cursor-pointer"
             >
-              <span>Criar Meu Catálogo Grátis Agora</span>
-              <ArrowRight className="w-5 h-5" />
+              <span>Criar Catálogo Grátis</span>
+              <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
         </div>
       </section>
 
       {/* ============================================================ */}
-      {/* 9. FOOTER INSTITUCIONAL */}
+      {/* 9. FOOTER INSTITUCIONAL                                      */}
       {/* ============================================================ */}
-      <footer className="bg-slate-950 border-t border-slate-800 py-10 sm:py-14 text-xs text-slate-500">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+      <footer className="bg-white border-t border-slate-200/80 py-10 text-xs text-slate-500">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 space-y-6">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-2">
-              <div className="h-7 w-7 rounded-lg bg-emerald-500 flex items-center justify-center text-slate-950">
-                <ShoppingBag className="w-4 h-4" />
+              <div className="h-7 w-7 rounded-lg bg-slate-900 flex items-center justify-center text-white">
+                <ShoppingBag className="w-3.5 h-3.5 text-emerald-400" />
               </div>
-              <span className="text-sm font-black text-white">
-                Catálogo<span className="text-emerald-400">Zap</span>
+              <span className="text-sm font-bold text-slate-900">
+                Catálogo<span className="text-emerald-600">Zap</span>
               </span>
             </div>
 
-            <div className="flex flex-wrap items-center justify-center gap-5 text-slate-400">
-              <Link href="/criar-loja" className="hover:text-white transition">
+            <div className="flex flex-wrap items-center justify-center gap-5 text-slate-500">
+              <Link href="/criar-loja" className="hover:text-slate-900 transition-colors">
                 Criar Nova Loja
               </Link>
-              <Link href="/admin/login" className="hover:text-white transition">
+              <Link href="/admin/login" className="hover:text-slate-900 transition-colors">
                 Painel do Lojista
               </Link>
-              <Link href="/saas-admin" className="hover:text-white transition">
-                Administração do SaaS
+              <Link href="/saas-admin" className="hover:text-slate-900 transition-colors">
+                Administração SaaS
               </Link>
             </div>
           </div>
 
-          <div className="border-t border-slate-900 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px]">
+          <div className="border-t border-slate-100 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px] text-slate-400">
             <p>© {new Date().getFullYear()} CatálogoZap SaaS. Todos os direitos reservados.</p>
             <p>Plataforma White-Label Multi-Tenant com Google Sheets & WhatsApp</p>
           </div>
         </div>
       </footer>
 
-      {/* Floating CTA bar on mobile */}
-      <aside aria-label="Ação rápida no mobile" className="fixed bottom-0 inset-x-0 z-40 p-3 sm:hidden bg-slate-950/90 backdrop-blur-md border-t border-slate-800">
+      {/* CTA Flutuante Discreto no Mobile */}
+      <aside aria-label="Ação rápida no mobile" className="fixed bottom-0 inset-x-0 z-40 p-3 sm:hidden bg-white/90 backdrop-blur-md border-t border-slate-200">
         <Link
           href="/criar-loja"
-          className="w-full py-3 px-4 rounded-xl text-xs font-black text-slate-950 bg-gradient-to-r from-emerald-400 to-teal-300 hover:brightness-110 shadow-lg flex items-center justify-center gap-2 active:scale-98 transition"
+          className="w-full py-3 px-4 rounded-xl text-xs font-semibold text-white bg-slate-900 shadow-sm flex items-center justify-center gap-2 active:scale-98 transition"
         >
-          <Sparkles className="w-4 h-4" />
-          <span>Criar Loja Grátis • Testar 30 Dias</span>
-          <ArrowRight className="w-4 h-4" />
+          <span>Criar Catálogo Grátis • 30 Dias</span>
+          <ArrowRight className="w-3.5 h-3.5 text-slate-400" />
         </Link>
       </aside>
     </div>
