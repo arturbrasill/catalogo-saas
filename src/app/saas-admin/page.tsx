@@ -694,7 +694,7 @@ export default function SaasAdminPage() {
                         <span className="font-semibold text-slate-700 block">
                           {store.plan === 'trial_30d' && 'Teste 30 Dias'}
                           {store.plan === 'monthly' && 'Mensal (R$ 129,90)'}
-                          {store.plan === 'yearly' && 'Anual (R$ 99,90/mês)'}
+                          {store.plan === 'yearly' && 'Anual (Legado)'}
                           {!store.plan && 'Teste 30 Dias'}
                         </span>
                       </td>
@@ -840,7 +840,7 @@ export default function SaasAdminPage() {
                       <span className="font-semibold">
                         {store.plan === 'trial_30d' && 'Teste 30d'}
                         {store.plan === 'monthly' && 'Mensal (R$ 129,90)'}
-                        {store.plan === 'yearly' && 'Anual (R$ 99,90)'}
+                        {store.plan === 'yearly' && 'Anual (Legado)'}
                         {!store.plan && 'Teste 30d'}
                       </span>
                     </div>
@@ -1013,8 +1013,10 @@ export default function SaasAdminPage() {
                     className="w-full px-3 py-2 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500"
                   >
                     <option value="trial_30d">Teste 30 Dias Grátis</option>
-                    <option value="monthly">Mensal (R$ 129,90)</option>
-                    <option value="yearly">Anual (R$ 99,90/mês — R$ 1.198,80/ano)</option>
+                    <option value="monthly">Plano Mensal (R$ 129,90)</option>
+                    {editPlan === 'yearly' && (
+                      <option value="yearly">Anual (Legado - R$ 99,90/mês)</option>
+                    )}
                   </select>
                 </div>
 

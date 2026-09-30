@@ -122,13 +122,12 @@ export default function SaaSCommercialLandingPage() {
   const [monthlyRevenue, setMonthlyRevenue] = useState<number>(15000);
   const [marketplaceFee, setMarketplaceFee] = useState<number>(18);
   const [selectedNiche, setSelectedNiche] = useState(DEMO_NICHES[0]!);
-  const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('yearly');
   const [openFaq, setOpenFaq] = useState<number | null>(0);
 
   // Cálculos da calculadora
   const monthlyFeeAmount = (monthlyRevenue * marketplaceFee) / 100;
   const yearlyMarketplaceLoss = monthlyFeeAmount * 12;
-  const saasYearlyCost = billingCycle === 'yearly' ? 99.9 * 12 : 129.9 * 12;
+  const saasYearlyCost = 129.9 * 12; // Plano Mensal de R$ 129,90/mês
   const yearlySavings = Math.max(0, yearlyMarketplaceLoss - saasYearlyCost);
 
   return (
@@ -728,143 +727,82 @@ export default function SaaSCommercialLandingPage() {
         <div className="text-center max-w-2xl mx-auto mb-10 sm:mb-14 space-y-3">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-bold uppercase tracking-wider">
             <DollarSign className="w-3.5 h-3.5" />
-            Planos Sem Pegadinhas
+            Plano Único e Sem Pegadinhas
           </div>
           <h2 className="text-2xl sm:text-4xl font-extrabold text-white tracking-tight">
             Investimento acessível que se paga nas primeiras vendas
           </h2>
           <p className="text-xs sm:text-base text-slate-400">
-            Comece com 30 dias de teste grátis. Cancele quando quiser, sem multas nem contratos de fidelidade.
+            Comece com 30 dias de teste grátis. Apenas R$ 129,90/mês após o teste, sem multas nem contratos de fidelidade. Cancele quando quiser.
           </p>
-
-          {/* Toggle Mensal / Anual */}
-          <div className="pt-4 flex items-center justify-center gap-3 text-xs sm:text-sm font-bold">
-            <span className={billingCycle === 'monthly' ? 'text-white' : 'text-slate-400'}>
-              Faturamento Mensal
-            </span>
-            <button
-              type="button"
-              onClick={() => setBillingCycle(billingCycle === 'monthly' ? 'yearly' : 'monthly')}
-              className="w-14 h-8 bg-slate-800 rounded-full p-1 transition cursor-pointer border border-slate-700 relative"
-              aria-label="Alternar ciclo de pagamento"
-            >
-              <div
-                className={`w-6 h-6 rounded-full bg-emerald-400 transition-transform ${
-                  billingCycle === 'yearly' ? 'translate-x-6' : 'translate-x-0'
-                }`}
-              />
-            </button>
-            <span className={`flex items-center gap-1 ${billingCycle === 'yearly' ? 'text-emerald-400' : 'text-slate-400'}`}>
-              <span>Faturamento Anual</span>
-              <span className="text-[10px] bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded-full font-black">
-                -23% OFF
-              </span>
-            </span>
-          </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto items-stretch">
-          {/* Plano Mensal */}
-          <div className="bg-slate-900/80 border border-slate-800 rounded-3xl p-6 sm:p-8 flex flex-col justify-between space-y-6">
-            <div className="space-y-4">
+        <div className="max-w-xl mx-auto">
+          {/* Card Plano Mensal em Destaque */}
+          <div className="bg-gradient-to-b from-slate-900 to-slate-950 border-2 border-emerald-500 rounded-3xl p-6 sm:p-10 flex flex-col justify-between space-y-8 relative shadow-2xl shadow-emerald-950/40">
+            <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-emerald-500 text-slate-950 text-[11px] font-black uppercase tracking-wider px-4 py-1 rounded-full shadow-md whitespace-nowrap">
+              Plano Completo • 30 Dias Grátis
+            </span>
+
+            <div className="space-y-6">
               <div>
-                <h3 className="text-lg font-extrabold text-white">Plano Mensal Flexível</h3>
-                <p className="text-xs text-slate-400 mt-1">Ideal para começar e testar sem compromisso anual.</p>
+                <h3 className="text-xl font-extrabold text-white">Plano Mensal Flexível</h3>
+                <p className="text-xs sm:text-sm text-slate-400 mt-1">
+                  Acesso total e irrestrito a todos os recursos da plataforma para vender mais.
+                </p>
               </div>
 
-              <div className="pt-2">
-                <div className="flex items-baseline gap-1">
-                  <span className="text-3xl sm:text-4xl font-black text-white">R$ 129,90</span>
-                  <span className="text-xs text-slate-400 font-semibold">/mês</span>
+              <div className="pt-2 border-y border-slate-800/80 py-4">
+                <div className="flex items-baseline gap-1.5">
+                  <span className="text-4xl sm:text-5xl font-black text-emerald-400">R$ 129,90</span>
+                  <span className="text-sm text-slate-400 font-semibold">/mês</span>
                 </div>
-                <span className="text-[11px] text-emerald-400 font-bold block mt-1">
-                  Primeiros 30 dias 100% grátis
+                <span className="text-xs text-slate-300 block mt-1.5 font-medium">
+                  Primeiros 30 dias 100% grátis • Sem cartão de crédito para iniciar • Cobrança via Asaas
                 </span>
               </div>
 
-              <ul className="space-y-3 pt-2 text-xs sm:text-sm text-slate-300">
-                <li className="flex items-center gap-2">
+              <ul className="space-y-3.5 text-xs sm:text-sm text-slate-300">
+                <li className="flex items-center gap-2.5">
                   <Check className="w-4 h-4 text-emerald-400 flex-shrink-0" />
-                  <span>Produtos e fotos ilimitados</span>
+                  <span><strong>Produtos e fotos ilimitados</strong> em alta definição</span>
                 </li>
-                <li className="flex items-center gap-2">
+                <li className="flex items-center gap-2.5">
                   <Check className="w-4 h-4 text-emerald-400 flex-shrink-0" />
-                  <span>Pedidos ilimitados no WhatsApp</span>
+                  <span><strong>Pedidos ilimitados</strong> enviados direto no WhatsApp</span>
                 </li>
-                <li className="flex items-center gap-2">
+                <li className="flex items-center gap-2.5">
                   <Check className="w-4 h-4 text-emerald-400 flex-shrink-0" />
-                  <span>Chave PIX com botão de copiar</span>
+                  <span>Chave PIX rápida com botão de copiar em 1 clique</span>
                 </li>
-                <li className="flex items-center gap-2">
+                <li className="flex items-center gap-2.5">
                   <Check className="w-4 h-4 text-emerald-400 flex-shrink-0" />
-                  <span>Google Sheets integrado em tempo real</span>
+                  <span>Google Sheets integrado e sincronizado em tempo real</span>
                 </li>
-                <li className="flex items-center gap-2">
+                <li className="flex items-center gap-2.5">
                   <Check className="w-4 h-4 text-emerald-400 flex-shrink-0" />
-                  <span>Painel Admin do Lojista no celular</span>
+                  <span>Painel Administrativo completo para celular e computador</span>
+                </li>
+                <li className="flex items-center gap-2.5">
+                  <Check className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+                  <span>Suporte a Domínio Próprio (.com.br) ou link exclusivo</span>
+                </li>
+                <li className="flex items-center gap-2.5">
+                  <Check className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+                  <span><strong>0% de comissão</strong> sobre suas vendas (lucro 100% seu)</span>
+                </li>
+                <li className="flex items-center gap-2.5">
+                  <Check className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+                  <span>Suporte humanizado via WhatsApp e garantia incondicional</span>
                 </li>
               </ul>
             </div>
 
             <Link
               href="/criar-loja?plan=monthly"
-              className="w-full inline-flex items-center justify-center gap-2 py-3.5 px-4 rounded-xl text-xs sm:text-sm font-bold text-white bg-slate-800 hover:bg-slate-700 border border-slate-700 transition cursor-pointer"
+              className="w-full inline-flex items-center justify-center gap-2 py-4 px-6 rounded-xl text-sm font-black text-slate-950 bg-gradient-to-r from-emerald-400 to-teal-300 hover:brightness-110 shadow-lg shadow-emerald-500/20 transition cursor-pointer"
             >
-              <span>Começar Teste de 30 Dias</span>
-            </Link>
-          </div>
-
-          {/* Plano Anual Recomendado */}
-          <div className="bg-gradient-to-b from-slate-900 to-slate-950 border-2 border-emerald-500 rounded-3xl p-6 sm:p-8 flex flex-col justify-between space-y-6 relative shadow-2xl shadow-emerald-950/40">
-            <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-emerald-500 text-slate-950 text-[11px] font-black uppercase tracking-wider px-3.5 py-1 rounded-full shadow-md">
-              Mais Escolhido pelos Lojistas
-            </span>
-
-            <div className="space-y-4">
-              <div>
-                <h3 className="text-lg font-extrabold text-white">Plano Anual Pro</h3>
-                <p className="text-xs text-slate-400 mt-1">Máxima economia com todos os recursos liberados.</p>
-              </div>
-
-              <div className="pt-2">
-                <div className="flex items-baseline gap-1">
-                  <span className="text-3xl sm:text-4xl font-black text-emerald-400">R$ 99,90</span>
-                  <span className="text-xs text-slate-400 font-semibold">/mês</span>
-                </div>
-                <span className="text-[11px] text-slate-400 block mt-1">
-                  Cobrado anualmente (R$ 1.198,80) • <strong>Economia de R$ 360,00</strong>
-                </span>
-              </div>
-
-              <ul className="space-y-3 pt-2 text-xs sm:text-sm text-slate-300">
-                <li className="flex items-center gap-2">
-                  <Check className="w-4 h-4 text-emerald-400 flex-shrink-0" />
-                  <span><strong>Tudo</strong> do plano mensal</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <Check className="w-4 h-4 text-emerald-400 flex-shrink-0" />
-                  <span>Suporte prioritário VIP via WhatsApp</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <Check className="w-4 h-4 text-emerald-400 flex-shrink-0" />
-                  <span>Suporte a Domínio Próprio (.com.br)</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <Check className="w-4 h-4 text-emerald-400 flex-shrink-0" />
-                  <span>Auxílio gratuito na configuração da planilha</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <Check className="w-4 h-4 text-emerald-400 flex-shrink-0" />
-                  <span>Garantia incondicional de 15 dias</span>
-                </li>
-              </ul>
-            </div>
-
-            <Link
-              href="/criar-loja?plan=yearly"
-              className="w-full inline-flex items-center justify-center gap-2 py-3.5 px-4 rounded-xl text-xs sm:text-sm font-black text-slate-950 bg-gradient-to-r from-emerald-400 to-teal-300 hover:brightness-110 shadow-lg shadow-emerald-500/20 transition cursor-pointer"
-            >
-              <span>Garantir Plano Anual com Desconto</span>
+              <span>Começar Meu Teste de 30 Dias Grátis</span>
               <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
