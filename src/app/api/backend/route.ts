@@ -253,6 +253,11 @@ export async function GET(request: NextRequest) {
       const data = await response.json();
       return NextResponse.json(sanitizeStoreResponse(data, tenant));
     } catch (err) {
+      if (tenantId === 'loja_exemplo') {
+        const localResult = getLocalEngine(tenantId).doGet({ action, categoryId });
+        return NextResponse.json(sanitizeStoreResponse(localResult, tenant));
+      }
+
       return NextResponse.json(
         {
           success: false,

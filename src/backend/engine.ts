@@ -995,6 +995,50 @@ export function getLocalEngine(tenantId = 'loja_exemplo'): BackendEngine {
         : 'loja-exemplo.com.br',
     });
     engineInstances.set(tenantId, engine);
+
+    // Se for a loja de demonstração e não houver produtos, inicializa produtos modelo para test drive
+    if (tenantId === 'loja_exemplo' && engine.getActiveProducts().length === 0) {
+      engine.handleCreateProduct({
+        categoriaId: 'cat_geral',
+        nome: 'Vestido Midi Floral Elegance',
+        descricao: 'Tecido leve premium com caimento fluido, amarração na cintura e estampa botânica exclusiva.',
+        preco: 189.9,
+        precoPromocional: 159.9,
+        imagens: ['https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?w=600&auto=format&fit=crop&q=80'],
+        variacoes: [
+          { tipo: 'Tamanho', opcoes: ['P', 'M', 'G'] },
+          { tipo: 'Cor', opcoes: ['Terracota', 'Verde Oliva'] }
+        ],
+        estoque: 15,
+        ativo: true
+      });
+      engine.handleCreateProduct({
+        categoriaId: 'cat_geral',
+        nome: 'Double Smash Bacon Especial',
+        descricao: '2 carnes smash 110g, queijo cheddar inglês, bacon crocante e molho da casa no pão brioche artesanal.',
+        preco: 38.9,
+        precoPromocional: 34.9,
+        imagens: ['https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=600&auto=format&fit=crop&q=80'],
+        variacoes: [
+          { tipo: 'Ponto da Carne', opcoes: ['Ao ponto', 'Bem passado'] }
+        ],
+        estoque: 50,
+        ativo: true
+      });
+      engine.handleCreateProduct({
+        categoriaId: 'cat_geral',
+        nome: 'Sérum Facial Vitamina C 15%',
+        descricao: 'Fórmula antioxidante pura com ácido hialurônico de triplo peso molecular e toque seco.',
+        preco: 89.9,
+        precoPromocional: 79.9,
+        imagens: ['https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=600&auto=format&fit=crop&q=80'],
+        variacoes: [
+          { tipo: 'Volume', opcoes: ['30ml', '50ml'] }
+        ],
+        estoque: 20,
+        ativo: true
+      });
+    }
   }
   return engine;
 }
