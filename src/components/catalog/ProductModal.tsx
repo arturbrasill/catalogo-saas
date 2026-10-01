@@ -5,7 +5,7 @@ import type { Product, StoreConfig, SelectedVariation } from '@/types';
 import { useCart } from '@/lib/cart';
 import { useWishlist } from '@/lib/wishlist';
 import { formatCurrency, calculateSubtotal } from '@/lib/whatsapp';
-import { extractProductImages } from '@/lib/sheetNormalization';
+import { extractProductImages, DEFAULT_PRODUCT_IMAGE_FALLBACK } from '@/lib/sheetNormalization';
 import {
   calculateEffectiveProductPrice,
   parseVariationOption,
@@ -293,6 +293,9 @@ export function ProductModal({
                         src={currentImage}
                         alt={product.nome}
                         onClick={() => setIsZoomOpen(true)}
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src = DEFAULT_PRODUCT_IMAGE_FALLBACK;
+                        }}
                         className="h-full w-full object-cover cursor-zoom-in group-hover:scale-103 transition-transform duration-300"
                       />
 
@@ -383,6 +386,9 @@ export function ProductModal({
                             <img
                               src={imgUrl}
                               alt={`Miniatura ${idx + 1}`}
+                              onError={(e) => {
+                                (e.target as HTMLImageElement).src = DEFAULT_PRODUCT_IMAGE_FALLBACK;
+                              }}
                               className="h-full w-full object-cover transition-transform duration-200 group-hover:scale-105"
                             />
                             {isSelected && (
@@ -833,6 +839,9 @@ export function ProductModal({
             <img
               src={currentImage}
               alt={product.nome}
+              onError={(e) => {
+                (e.target as HTMLImageElement).src = DEFAULT_PRODUCT_IMAGE_FALLBACK;
+              }}
               className="max-h-[75vh] max-w-[90vw] object-contain rounded-2xl shadow-2xl animate-scale-in"
               onClick={(e) => e.stopPropagation()}
             />

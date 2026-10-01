@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useCart } from '@/lib/cart';
-import { formatCurrency, formatVariation, buildWhatsAppUrl } from '@/lib/whatsapp';
+import { formatCurrency, formatVariation, buildWhatsAppUrl, isMobileDevice } from '@/lib/whatsapp';
 import type { StoreConfig, PaymentMethod, CustomerOrderInfo } from '@/types';
 import {
   X,
@@ -201,10 +201,14 @@ export function CartDrawer({ store }: CartDrawerProps) {
         },
         orderInfo
       );
-      // Roteamento resiliente: abre o WhatsApp com fallback caso bloqueador de popup impeça nova aba
-      const newTab = window.open(url, '_blank', 'noopener,noreferrer');
-      if (!newTab || newTab.closed || typeof newTab.closed === 'undefined') {
+      // Roteamento resiliente: em mobile redireciona diretamente para o app nativo do WhatsApp; em desktop abre nova aba com fallback
+      if (isMobileDevice()) {
         window.location.href = url;
+      } else {
+        const newTab = window.open(url, '_blank', 'noopener,noreferrer');
+        if (!newTab || newTab.closed || typeof newTab.closed === 'undefined') {
+          window.location.href = url;
+        }
       }
     } catch (err) {
       setCheckoutError(
