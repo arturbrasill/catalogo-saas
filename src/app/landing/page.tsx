@@ -6,10 +6,7 @@ import {
   Sparkles,
   ShoppingBag,
   ArrowRight,
-  CheckCircle2,
   Check,
-  Zap,
-  Clock,
   QrCode,
   Smartphone,
   Store,
@@ -18,22 +15,16 @@ import {
   ChevronUp,
   MessageCircle,
   FileSpreadsheet,
-  Palette,
   Percent,
   Sliders,
-  HelpCircle,
   Star,
-  Users,
   ShieldCheck,
   Truck,
   Copy,
-  ExternalLink,
   Globe,
   Lock,
   X,
   XCircle,
-  Flame,
-  BadgeCheck,
 } from 'lucide-react';
 import { formatCurrency } from '@/lib/whatsapp';
 
@@ -131,7 +122,7 @@ const FAQ_ITEMS = [
   {
     question: 'Vocês cobram alguma comissão ou porcentagem sobre as minhas vendas?',
     answer:
-      'NÃO! Cobramos ZERO comissão por pedido. Você paga apenas a assinatura fixa do sistema e todo o dinheiro das suas vendas cai direto na sua conta bancária (via PIX, dinheiro ou maquininha). Não retemos um único centavo.',
+      'NÃO! Cobramos ZERO comissão por pedido. Você paga apenas a assinatura mensal fixa do sistema e todo o dinheiro das suas vendas cai direto na sua conta bancária (via PIX, dinheiro ou maquininha). Não retemos um único centavo.',
   },
   {
     question: 'Como os pedidos chegam para mim?',
@@ -167,7 +158,7 @@ export default function SaaSCommercialLandingPage() {
   const [openFaq, setOpenFaq] = useState<number | null>(0);
   const [copiedPix, setCopiedPix] = useState(false);
 
-  // Cálculos da calculadora de economia
+  // Cálculos da calculadora de economia baseada no plano mensal único
   const monthlyFeeAmount = (monthlyRevenue * marketplaceFee) / 100;
   const yearlyMarketplaceLoss = monthlyFeeAmount * 12;
   const saasYearlyCost = 129.9 * 12; // R$ 129,90/mês
@@ -184,12 +175,18 @@ export default function SaaSCommercialLandingPage() {
     commercialHireMessage
   )}`;
 
+  // Mensagem para o botão flutuante mobile
+  const specialistMessage = 'Olá! Gostaria de falar com um especialista sobre o catálogo para minha loja.';
+  const specialistWhatsappUrl = `https://wa.me/5511999999999?text=${encodeURIComponent(
+    specialistMessage
+  )}`;
+
   return (
-    <div className="min-h-screen bg-white text-slate-900 selection:bg-emerald-500 selection:text-white font-sans antialiased">
+    <div className="min-h-screen bg-white text-slate-900 selection:bg-emerald-500 selection:text-white font-sans antialiased w-full overflow-x-hidden">
       {/* ============================================================ */}
       {/* 1. NAVBAR MINIMALISTA & ELEGANTE (Linear / Raycast Style)   */}
       {/* ============================================================ */}
-      <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-200/80 transition-all">
+      <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-slate-200/80 transition-all">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 sm:h-18 flex items-center justify-between gap-4">
           {/* Logo Minimalista */}
           <Link href="/landing" className="flex items-center gap-2.5 group">
@@ -221,7 +218,7 @@ export default function SaaSCommercialLandingPage() {
               Calculadora
             </a>
             <a href="#precos" className="hover:text-slate-900 transition-colors">
-              Preços
+              Preço
             </a>
             <a href="#faq" className="hover:text-slate-900 transition-colors">
               Dúvidas
@@ -252,24 +249,24 @@ export default function SaaSCommercialLandingPage() {
       {/* ============================================================ */}
       {/* 2. HERO PRINCIPAL COM MOCKUP RESPONSIVO                      */}
       {/* ============================================================ */}
-      <section className="relative pt-12 sm:pt-20 pb-16 sm:pb-24 overflow-hidden">
+      <section className="relative pt-10 sm:pt-16 md:pt-20 pb-16 sm:pb-24 overflow-x-hidden">
         {/* Efeito sutil de luz ambiente no fundo */}
         <div className="absolute top-0 inset-x-0 h-96 bg-[radial-gradient(ellipse_80%_60%_at_50%_-20%,rgba(16,185,129,0.09),transparent)] pointer-events-none" />
 
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center space-y-6 sm:space-y-8 relative z-10">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center space-y-5 sm:space-y-7 relative z-10">
           {/* Badge de Novidade no topo */}
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-50 border border-slate-200/80 text-xs font-medium text-slate-700 shadow-2xs hover:border-slate-300 transition-colors">
-            <span className="flex h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-            <span>✨ A nova vitrine digital para empresas locais</span>
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-50 border border-slate-200/80 text-xs font-medium text-slate-700 shadow-2xs hover:border-slate-300 transition-colors max-w-full">
+            <span className="flex h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse flex-shrink-0" />
+            <span className="truncate">✨ A nova vitrine digital para empresas locais</span>
           </div>
 
-          {/* Título Principal curto e focado na conversão */}
-          <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight text-[#0F172A] leading-[1.12] max-w-3xl mx-auto">
+          {/* Título Principal curto e focado na conversão (Responsivo: 360px a 400px sem quebra abrupta) */}
+          <h1 className="text-3xl xs:text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight text-[#0F172A] leading-[1.14] max-w-3xl mx-auto break-words">
             Transforme seu WhatsApp em uma máquina de vendas, sem taxas por pedido.
           </h1>
 
           {/* Subtítulo direto */}
-          <p className="text-base sm:text-lg md:text-xl text-slate-600 font-normal leading-relaxed max-w-2xl mx-auto">
+          <p className="text-sm xs:text-base sm:text-lg md:text-xl text-slate-600 font-normal leading-relaxed max-w-2xl mx-auto">
             Substitua PDFs pesados e conversas confusas por um catálogo rápido com seu domínio próprio, cores da sua marca e pedido detalhado direto no seu Zap.
           </p>
 
@@ -297,7 +294,7 @@ export default function SaaSCommercialLandingPage() {
           </div>
 
           {/* Micro-prova de confiança sutil */}
-          <div className="pt-2 flex flex-wrap items-center justify-center gap-6 text-xs text-slate-500 font-normal">
+          <div className="pt-2 flex flex-wrap items-center justify-center gap-4 sm:gap-6 text-xs text-slate-500 font-normal">
             <span className="flex items-center gap-1.5">
               <Check className="w-3.5 h-3.5 text-emerald-600 stroke-[2.5]" />
               Sem cartão de crédito
@@ -316,23 +313,23 @@ export default function SaaSCommercialLandingPage() {
         {/* ============================================================ */}
         {/* BLOCO 1: 'TEST DRIVE INSTANTÂNEO' COM 3 NICHOS E MOCKUP     */}
         {/* ============================================================ */}
-        <div id="test-drive" className="mt-14 sm:mt-18 max-w-5xl mx-auto px-4 sm:px-6">
+        <div id="test-drive" className="mt-12 sm:mt-16 max-w-5xl mx-auto px-3 sm:px-6 overflow-x-hidden">
           {/* Cabeçalho do Test Drive */}
-          <div className="text-center max-w-xl mx-auto mb-6 sm:mb-8 space-y-2">
+          <div className="text-center max-w-xl mx-auto mb-6 sm:mb-8 space-y-2 px-2">
             <span className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200/80">
               <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
               Test Drive Instantâneo
             </span>
-            <h3 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-slate-900 tracking-tight">
               Veja a vitrine se adaptar à identidade do seu negócio
-            </h3>
+            </h2>
             <p className="text-xs sm:text-sm text-slate-500">
-              Clique nos 3 nichos abaixo para alternar a logo, cores primárias e produtos em tempo real:
+              Clique nos 3 botões abaixo para alternar a logo, cores primárias e produtos em tempo real:
             </p>
           </div>
 
           {/* Barra Interativa com 3 Botões de Nichos Específicos */}
-          <div className="flex items-center justify-center gap-2.5 sm:gap-3 mb-6 sm:mb-8 overflow-x-auto py-1">
+          <div className="flex items-center justify-center gap-2 sm:gap-3 mb-6 sm:mb-8 overflow-x-auto py-1 px-2 no-scrollbar">
             {DEMO_NICHES.map((niche) => {
               const active = selectedNiche.id === niche.id;
               return (
@@ -340,14 +337,14 @@ export default function SaaSCommercialLandingPage() {
                   key={niche.id}
                   type="button"
                   onClick={() => setSelectedNiche(niche)}
-                  className={`px-4 sm:px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold whitespace-nowrap transition-all duration-200 cursor-pointer flex items-center gap-2 ${
+                  className={`px-3.5 sm:px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold whitespace-nowrap transition-all duration-200 cursor-pointer flex items-center gap-2 ${
                     active
                       ? 'bg-slate-900 text-white shadow-md ring-2 ring-slate-900/10 scale-102'
                       : 'bg-slate-100 text-slate-600 hover:text-slate-900 hover:bg-slate-200/80'
                   }`}
                 >
                   <span
-                    className="w-2.5 h-2.5 rounded-full"
+                    className="w-2.5 h-2.5 rounded-full flex-shrink-0"
                     style={{ backgroundColor: niche.primaryColor }}
                   />
                   <span>{niche.tabLabel}</span>
@@ -362,28 +359,28 @@ export default function SaaSCommercialLandingPage() {
           </div>
 
           {/* Container Centralizado com Sombra Difusa (shadow-2xl) */}
-          <div className="relative rounded-3xl sm:rounded-[36px] bg-slate-50/80 border border-slate-200/80 p-4 sm:p-8 lg:p-10 shadow-2xl shadow-slate-900/10">
+          <div className="relative rounded-3xl sm:rounded-[36px] bg-slate-50/80 border border-slate-200/80 p-3 sm:p-8 lg:p-10 shadow-2xl shadow-slate-900/10 overflow-hidden">
             {/* Glow difuso que assume a cor do nicho selecionado */}
             <div
               className="absolute inset-x-8 top-10 bottom-10 rounded-full blur-3xl -z-10 opacity-20 pointer-events-none transition-colors duration-300"
               style={{ backgroundColor: selectedNiche.primaryColor }}
             />
 
-            {/* Mockup Responsivo de Smartphone */}
-            <div className="w-full max-w-[340px] sm:max-w-[360px] mx-auto bg-slate-950 rounded-[44px] sm:rounded-[48px] p-2.5 sm:p-3 ring-1 ring-slate-800 shadow-[0_20px_50px_-10px_rgba(15,23,42,0.35)]">
+            {/* Mockup Responsivo de Smartphone (Ajustado para telas de 360px a 400px sem scroll horizontal) */}
+            <div className="w-full max-w-[310px] xs:max-w-[335px] sm:max-w-[360px] mx-auto bg-slate-950 rounded-[40px] sm:rounded-[48px] p-2 xs:p-2.5 sm:p-3 ring-1 ring-slate-800 shadow-[0_20px_50px_-10px_rgba(15,23,42,0.35)]">
               {/* Dynamic Island / Alto-falante */}
-              <div className="w-24 sm:w-28 h-4 bg-slate-950 rounded-full mx-auto mb-2 flex items-center justify-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-slate-800" />
-                <span className="w-2.5 h-2.5 rounded-full bg-slate-900 ring-1 ring-slate-800/80" />
+              <div className="w-20 sm:w-28 h-3.5 sm:h-4 bg-slate-950 rounded-full mx-auto mb-2 flex items-center justify-center gap-1.5">
+                <span className="w-1.5 sm:w-2 h-1.5 sm:h-2 rounded-full bg-slate-800" />
+                <span className="w-2 sm:w-2.5 h-2 sm:h-2.5 rounded-full bg-slate-900 ring-1 ring-slate-800/80" />
               </div>
 
               {/* Tela do Celular com Vitrine e Sacola Aberta */}
-              <div className="bg-white rounded-[34px] sm:rounded-[38px] overflow-hidden text-slate-900 flex flex-col border border-slate-100 relative select-none font-sans min-h-[580px]">
+              <div className="bg-white rounded-[32px] sm:rounded-[38px] overflow-hidden text-slate-900 flex flex-col border border-slate-100 relative select-none font-sans min-h-[560px]">
                 {/* 1. Header do Catálogo na Tela (Logo Monograma + Cores Adaptadas) */}
-                <div className="bg-white px-3.5 py-3 border-b border-slate-100 flex items-center justify-between">
-                  <div className="flex items-center gap-2">
+                <div className="bg-white px-3 py-2.5 sm:px-3.5 sm:py-3 border-b border-slate-100 flex items-center justify-between">
+                  <div className="flex items-center gap-2 min-w-0">
                     <div
-                      className="w-8 h-8 rounded-lg flex items-center justify-center font-extrabold text-xs shadow-2xs border transition-all duration-200"
+                      className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center font-extrabold text-xs shadow-2xs border flex-shrink-0 transition-all duration-200"
                       style={{
                         backgroundColor: selectedNiche.primaryBgLight,
                         color: selectedNiche.primaryColor,
@@ -392,17 +389,17 @@ export default function SaaSCommercialLandingPage() {
                     >
                       {selectedNiche.logoMonogram}
                     </div>
-                    <div>
-                      <h4 className="text-xs font-bold text-slate-900 leading-tight">
+                    <div className="min-w-0">
+                      <h4 className="text-xs font-bold text-slate-900 leading-tight truncate">
                         {selectedNiche.storeName}
                       </h4>
-                      <div className="flex items-center gap-1 mt-0.5">
+                      <div className="flex items-center gap-1 mt-0.5 truncate">
                         <span
-                          className="h-1.5 w-1.5 rounded-full animate-pulse"
+                          className="h-1.5 w-1.5 rounded-full animate-pulse flex-shrink-0"
                           style={{ backgroundColor: selectedNiche.primaryColor }}
                         />
                         <span
-                          className="text-[10px] font-semibold"
+                          className="text-[10px] font-semibold truncate"
                           style={{ color: selectedNiche.primaryTextColor }}
                         >
                           Aberto agora • {selectedNiche.deliveryTime}
@@ -413,7 +410,7 @@ export default function SaaSCommercialLandingPage() {
 
                   {/* Botão da Sacola com Cor do Tema */}
                   <div
-                    className="h-7 px-2.5 rounded-lg text-white flex items-center gap-1 text-[11px] font-bold shadow-2xs transition-colors duration-200"
+                    className="h-7 px-2.5 rounded-lg text-white flex items-center gap-1 text-[11px] font-bold shadow-2xs transition-colors duration-200 flex-shrink-0"
                     style={{ backgroundColor: selectedNiche.primaryColor }}
                   >
                     <ShoppingBag className="w-3.5 h-3.5" />
@@ -422,7 +419,7 @@ export default function SaaSCommercialLandingPage() {
                 </div>
 
                 {/* 2. Vitrine Real com Produto (Background do Mockup) */}
-                <div className="p-3.5 space-y-2.5 bg-slate-50/70 flex-1">
+                <div className="p-3 sm:p-3.5 space-y-2 sm:space-y-2.5 bg-slate-50/70 flex-1">
                   <div className="bg-white rounded-2xl border border-slate-200/70 p-2.5 shadow-2xs space-y-2">
                     <div className="relative rounded-xl overflow-hidden aspect-[16/10] bg-slate-100">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -440,10 +437,10 @@ export default function SaaSCommercialLandingPage() {
                     </div>
 
                     <div>
-                      <span className="text-[9px] uppercase tracking-wider font-bold text-slate-400 block">
+                      <span className="text-[9px] uppercase tracking-wider font-bold text-slate-400 block truncate">
                         {selectedNiche.storeCategory}
                       </span>
-                      <h4 className="text-xs font-bold text-slate-900 leading-snug">
+                      <h4 className="text-xs font-bold text-slate-900 leading-snug truncate">
                         {selectedNiche.productName}
                       </h4>
                       <p className="text-[10px] text-slate-500 line-clamp-1 mt-0.5">
@@ -462,8 +459,8 @@ export default function SaaSCommercialLandingPage() {
                 </div>
 
                 {/* 3. SACOLA ABERTA (Bottom Sheet Drawer / Cart Overlay) */}
-                <div className="bg-white border-t border-slate-200/90 rounded-t-3xl shadow-[0_-12px_28px_rgba(15,23,42,0.08)] p-3.5 space-y-3 relative z-20">
-                  <div className="w-8 h-1 bg-slate-300 rounded-full mx-auto -mt-1 mb-1.5" />
+                <div className="bg-white border-t border-slate-200/90 rounded-t-3xl shadow-[0_-12px_28px_rgba(15,23,42,0.08)] p-3 sm:p-3.5 space-y-2.5 sm:space-y-3 relative z-20">
+                  <div className="w-8 h-1 bg-slate-300 rounded-full mx-auto -mt-1 mb-1" />
 
                   {/* Cabeçalho da Sacola */}
                   <div className="flex items-center justify-between">
@@ -480,12 +477,12 @@ export default function SaaSCommercialLandingPage() {
                         1 item
                       </span>
                     </div>
-                    <span className="text-[10px] text-slate-400">{selectedNiche.deliveryTime}</span>
+                    <span className="text-[10px] text-slate-400 truncate max-w-[120px]">{selectedNiche.deliveryTime}</span>
                   </div>
 
                   {/* Item Selecionado */}
-                  <div className="flex items-center gap-2.5 p-2 rounded-xl bg-slate-50 border border-slate-100">
-                    <div className="w-11 h-11 rounded-lg overflow-hidden flex-shrink-0 bg-slate-200">
+                  <div className="flex items-center gap-2 p-2 rounded-xl bg-slate-50 border border-slate-100">
+                    <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-lg overflow-hidden flex-shrink-0 bg-slate-200">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
                         src={selectedNiche.image}
@@ -504,13 +501,13 @@ export default function SaaSCommercialLandingPage() {
                         {formatCurrency(selectedNiche.price, 'BRL')}
                       </span>
                     </div>
-                    <div className="flex items-center gap-1.5 bg-white border border-slate-200 px-1.5 py-0.5 rounded-lg text-[10px] font-bold text-slate-700 shadow-2xs">
+                    <div className="flex items-center gap-1 bg-white border border-slate-200 px-1.5 py-0.5 rounded-lg text-[10px] font-bold text-slate-700 shadow-2xs flex-shrink-0">
                       <span>1 un</span>
                     </div>
                   </div>
 
                   {/* Resumo Financeiro */}
-                  <div className="space-y-1 text-[11px] pt-1">
+                  <div className="space-y-1 text-[11px] pt-0.5">
                     <div className="flex justify-between text-slate-500">
                       <span>Subtotal</span>
                       <span>{formatCurrency(selectedNiche.price, 'BRL')}</span>
@@ -573,7 +570,7 @@ export default function SaaSCommercialLandingPage() {
                       style={{ backgroundColor: selectedNiche.primaryColor }}
                     >
                       <MessageCircle className="w-3.5 h-3.5" />
-                      <span>
+                      <span className="truncate">
                         Enviar no WhatsApp •{' '}
                         {formatCurrency(selectedNiche.price + selectedNiche.deliveryFee, 'BRL')}
                       </span>
@@ -584,13 +581,13 @@ export default function SaaSCommercialLandingPage() {
             </div>
 
             {/* Legenda Informativa com Detalhes da Adaptação Visual */}
-            <div className="mt-6 text-center text-xs text-slate-500 max-w-lg mx-auto space-y-1">
+            <div className="mt-5 text-center text-xs text-slate-500 max-w-lg mx-auto space-y-1 px-2">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white border border-slate-200 text-slate-700 font-semibold shadow-2xs">
                 <span
-                  className="w-2 h-2 rounded-full"
+                  className="w-2 h-2 rounded-full flex-shrink-0"
                   style={{ backgroundColor: selectedNiche.primaryColor }}
                 />
-                <span>Paleta ativa: {selectedNiche.paletteName}</span>
+                <span className="truncate">Paleta ativa: {selectedNiche.paletteName}</span>
               </div>
               <p className="text-[11px] text-slate-500 pt-1">
                 Logo personalizada, cores primárias, banners e dados sincronizados via Google Sheets ou Painel Admin.
@@ -603,17 +600,17 @@ export default function SaaSCommercialLandingPage() {
       {/* ============================================================ */}
       {/* 3. SEÇÃO DE CONTRASTE 'ANTES & DEPOIS' (ROTINA DO LOJISTA)   */}
       {/* ============================================================ */}
-      <section id="comparativo" className="py-20 sm:py-28 bg-slate-50/70 border-t border-slate-200/80">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 space-y-12 sm:space-y-16">
+      <section id="comparativo" className="py-16 sm:py-24 md:py-28 bg-slate-50/70 border-t border-slate-200/80 overflow-x-hidden">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 space-y-10 sm:space-y-14">
           {/* Cabeçalho da Seção */}
-          <div className="text-center max-w-2xl mx-auto space-y-3">
+          <div className="text-center max-w-2xl mx-auto space-y-2.5">
             <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
               Comparativo Prático
             </span>
-            <h2 className="text-2xl sm:text-4xl font-extrabold text-[#0F172A] tracking-tight">
+            <h2 className="text-2xl xs:text-3xl sm:text-4xl font-extrabold text-[#0F172A] tracking-tight break-words">
               A diferença real na rotina do seu comércio
             </h2>
-            <p className="text-sm sm:text-base text-slate-600 leading-relaxed">
+            <p className="text-xs xs:text-sm sm:text-base text-slate-600 leading-relaxed">
               Veja como você economiza tempo e elimina o estresse do atendimento manual no WhatsApp.
             </p>
           </div>
@@ -621,7 +618,7 @@ export default function SaaSCommercialLandingPage() {
           {/* 2 Cards Lado a Lado */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 items-stretch">
             {/* Card 1: 'O Jeito Antigo' (Fundo levemente cinza/vermelho sutil) */}
-            <div className="rounded-3xl bg-rose-50/50 border border-rose-200/70 p-6 sm:p-8 space-y-6 flex flex-col justify-between">
+            <div className="rounded-3xl bg-rose-50/50 border border-rose-200/70 p-5 sm:p-8 space-y-6 flex flex-col justify-between">
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-100/80 text-rose-700 text-xs font-bold">
@@ -638,7 +635,7 @@ export default function SaaSCommercialLandingPage() {
                   Muito esforço manual para pouca conversão, com clientes impacientes esperando respostas.
                 </p>
 
-                <ul className="space-y-4 pt-2">
+                <ul className="space-y-3.5 pt-2">
                   <li className="flex items-start gap-3">
                     <div className="h-6 w-6 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center flex-shrink-0 mt-0.5">
                       <X className="w-3.5 h-3.5 stroke-[2.5]" />
@@ -689,7 +686,7 @@ export default function SaaSCommercialLandingPage() {
             </div>
 
             {/* Card 2: 'Com Nosso Catálogo' (Fundo branco com borda destacada e sombra) */}
-            <div className="rounded-3xl bg-white border-2 border-emerald-500/90 p-6 sm:p-8 space-y-6 flex flex-col justify-between shadow-xl shadow-slate-900/5 relative ring-1 ring-emerald-500/20">
+            <div className="rounded-3xl bg-white border-2 border-emerald-500/90 p-5 sm:p-8 space-y-6 flex flex-col justify-between shadow-xl shadow-slate-900/5 relative ring-1 ring-emerald-500/20">
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-bold">
@@ -708,7 +705,7 @@ export default function SaaSCommercialLandingPage() {
                   O cliente tem autonomia para navegar e o pedido chega pronto para faturar.
                 </p>
 
-                <ul className="space-y-4 pt-2">
+                <ul className="space-y-3.5 pt-2">
                   <li className="flex items-start gap-3">
                     <div className="h-6 w-6 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center flex-shrink-0 mt-0.5">
                       <Check className="w-3.5 h-3.5 stroke-[2.5]" />
@@ -765,30 +762,30 @@ export default function SaaSCommercialLandingPage() {
       {/* ============================================================ */}
       {/* 4. BENTO GRID DE RECURSOS (4 BLOCOS ASSIMÉTRICOS)            */}
       {/* ============================================================ */}
-      <section id="recursos" className="py-20 sm:py-28 bg-white border-t border-slate-200/80">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 space-y-12 sm:space-y-16">
+      <section id="recursos" className="py-16 sm:py-24 md:py-28 bg-white border-t border-slate-200/80 overflow-x-hidden">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 space-y-10 sm:space-y-14">
           {/* Cabeçalho do Bento Grid */}
-          <div className="text-center max-w-2xl mx-auto space-y-3">
+          <div className="text-center max-w-2xl mx-auto space-y-2.5">
             <span className="text-xs font-semibold text-emerald-700 uppercase tracking-wider">
               Tecnologia e Performance
             </span>
-            <h2 className="text-2xl sm:text-4xl font-extrabold text-[#0F172A] tracking-tight">
+            <h2 className="text-2xl xs:text-3xl sm:text-4xl font-extrabold text-[#0F172A] tracking-tight break-words">
               Tudo o que seu comércio precisa para vender em alto nível
             </h2>
-            <p className="text-sm sm:text-base text-slate-600 leading-relaxed">
+            <p className="text-xs xs:text-sm sm:text-base text-slate-600 leading-relaxed">
               Recursos de alta conversão empacotados em uma interface limpa, sem complexidade de programação.
             </p>
           </div>
 
           {/* Grid Assimétrico 4 Blocos */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 sm:gap-8">
             {/* Bloco 1 (Largo - col-span-12 lg:col-span-7): 'Sua Marca, Seu Domínio' */}
-            <div className="lg:col-span-7 bg-slate-50/80 border border-slate-200/80 rounded-3xl p-6 sm:p-8 space-y-6 flex flex-col justify-between shadow-2xs hover:border-slate-300 transition-all">
-              <div className="space-y-3">
+            <div className="lg:col-span-7 bg-slate-50/80 border border-slate-200/80 rounded-3xl p-5 sm:p-8 space-y-6 flex flex-col justify-between shadow-2xs hover:border-slate-300 transition-all">
+              <div className="space-y-2.5">
                 <div className="h-9 w-9 rounded-xl bg-slate-900 text-white flex items-center justify-center shadow-xs">
                   <Globe className="w-4 h-4 text-emerald-400" />
                 </div>
-                <h3 className="text-xl font-bold text-slate-900 tracking-tight">
+                <h3 className="text-lg sm:text-xl font-bold text-slate-900 tracking-tight">
                   Sua Marca, Seu Domínio
                 </h3>
                 <p className="text-xs sm:text-sm text-slate-600 leading-relaxed max-w-xl">
@@ -797,29 +794,29 @@ export default function SaaSCommercialLandingPage() {
               </div>
 
               {/* Input simulado de navegador com URL e Badge SSL */}
-              <div className="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-sm space-y-3">
+              <div className="bg-white border border-slate-200/90 rounded-2xl p-3.5 sm:p-4 shadow-sm space-y-3">
                 <div className="flex items-center gap-1.5 pb-1">
-                  <span className="h-2.5 w-2.5 rounded-full bg-slate-300" />
-                  <span className="h-2.5 w-2.5 rounded-full bg-slate-300" />
-                  <span className="h-2.5 w-2.5 rounded-full bg-slate-300" />
-                  <span className="text-[10px] text-slate-400 ml-2 font-mono">Navegador do Cliente</span>
+                  <span className="h-2 w-2 rounded-full bg-slate-300" />
+                  <span className="h-2 w-2 rounded-full bg-slate-300" />
+                  <span className="h-2 w-2 rounded-full bg-slate-300" />
+                  <span className="text-[10px] text-slate-400 ml-2 font-mono truncate">Navegador do Cliente</span>
                 </div>
 
-                <div className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 flex items-center justify-between text-xs font-mono shadow-inner gap-2">
-                  <div className="flex items-center gap-2 truncate">
+                <div className="bg-slate-50 border border-slate-200 rounded-xl px-2.5 sm:px-3 py-2 flex items-center justify-between text-xs font-mono shadow-inner gap-2 overflow-hidden">
+                  <div className="flex items-center gap-1.5 sm:gap-2 truncate">
                     <Lock className="w-3.5 h-3.5 text-emerald-600 flex-shrink-0" />
-                    <span className="text-slate-400 text-[11px]">https://</span>
+                    <span className="text-slate-400 text-[11px] hidden xs:inline">https://</span>
                     <span className="text-slate-900 font-semibold text-xs truncate">
                       loja.seudominio.com.br
                     </span>
                   </div>
                   <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200/80 flex-shrink-0">
                     <ShieldCheck className="w-3 h-3" />
-                    Certificado SSL Grátis
+                    <span className="hidden xs:inline">Certificado</span> SSL Grátis
                   </span>
                 </div>
 
-                <div className="flex flex-wrap items-center gap-3 text-[11px] text-slate-500 pt-1">
+                <div className="flex flex-wrap items-center gap-2.5 sm:gap-3 text-[11px] text-slate-500 pt-1">
                   <span className="flex items-center gap-1">
                     <Check className="w-3 h-3 text-emerald-600" />
                     Sem menções a terceiros
@@ -830,19 +827,19 @@ export default function SaaSCommercialLandingPage() {
                   </span>
                   <span className="flex items-center gap-1">
                     <Check className="w-3 h-3 text-emerald-600" />
-                    Pronto para a bio do Instagram
+                    Pronto para bio
                   </span>
                 </div>
               </div>
             </div>
 
             {/* Bloco 2 (Médio - col-span-12 lg:col-span-5): 'Zero Comissões' */}
-            <div className="lg:col-span-5 bg-slate-900 text-white rounded-3xl p-6 sm:p-8 space-y-6 flex flex-col justify-between shadow-lg">
-              <div className="space-y-3">
+            <div className="lg:col-span-5 bg-slate-900 text-white rounded-3xl p-5 sm:p-8 space-y-6 flex flex-col justify-between shadow-lg">
+              <div className="space-y-2.5">
                 <div className="h-9 w-9 rounded-xl bg-emerald-950/80 border border-emerald-500/30 text-emerald-400 flex items-center justify-center">
                   <Percent className="w-4 h-4 stroke-[2.2]" />
                 </div>
-                <h3 className="text-xl font-bold text-white tracking-tight">
+                <h3 className="text-lg sm:text-xl font-bold text-white tracking-tight">
                   Zero Comissões
                 </h3>
                 <p className="text-xs sm:text-sm text-slate-400 leading-relaxed">
@@ -851,7 +848,7 @@ export default function SaaSCommercialLandingPage() {
               </div>
 
               {/* Destaque Visual 100% do Lucro */}
-              <div className="bg-slate-950/80 border border-slate-800 rounded-2xl p-5 text-center space-y-3">
+              <div className="bg-slate-950/80 border border-slate-800 rounded-2xl p-4 sm:p-5 text-center space-y-3">
                 <div className="space-y-0.5">
                   <span className="text-4xl sm:text-5xl font-black text-emerald-400 tracking-tight block">
                     100%
@@ -863,24 +860,24 @@ export default function SaaSCommercialLandingPage() {
 
                 <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-800 text-[11px]">
                   <div className="p-2 rounded-lg bg-slate-900 border border-slate-800 text-left">
-                    <span className="text-slate-500 block">Marketplaces</span>
-                    <span className="text-rose-400 font-bold">18% a 27% por pedido</span>
+                    <span className="text-slate-500 block text-[10px]">Marketplaces</span>
+                    <span className="text-rose-400 font-bold text-xs">18% a 27%</span>
                   </div>
                   <div className="p-2 rounded-lg bg-emerald-950/50 border border-emerald-500/30 text-left">
-                    <span className="text-slate-400 block">Nosso Catálogo</span>
-                    <span className="text-emerald-400 font-bold">0% de taxa (R$ 0,00)</span>
+                    <span className="text-slate-400 block text-[10px]">CatálogoZap</span>
+                    <span className="text-emerald-400 font-bold text-xs">0% (R$ 0,00)</span>
                   </div>
                 </div>
               </div>
             </div>
 
             {/* Bloco 3 (Médio - col-span-12 lg:col-span-5): 'Painel Simples no Celular' */}
-            <div className="lg:col-span-5 bg-slate-50/80 border border-slate-200/80 rounded-3xl p-6 sm:p-8 space-y-6 flex flex-col justify-between shadow-2xs hover:border-slate-300 transition-all">
-              <div className="space-y-3">
+            <div className="lg:col-span-5 bg-slate-50/80 border border-slate-200/80 rounded-3xl p-5 sm:p-8 space-y-6 flex flex-col justify-between shadow-2xs hover:border-slate-300 transition-all">
+              <div className="space-y-2.5">
                 <div className="h-9 w-9 rounded-xl bg-slate-900 text-white flex items-center justify-center shadow-xs">
                   <Smartphone className="w-4 h-4 text-emerald-400" />
                 </div>
-                <h3 className="text-xl font-bold text-slate-900 tracking-tight">
+                <h3 className="text-lg sm:text-xl font-bold text-slate-900 tracking-tight">
                   Painel Simples no Celular
                 </h3>
                 <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
@@ -889,11 +886,11 @@ export default function SaaSCommercialLandingPage() {
               </div>
 
               {/* Ilustração Visual de Edição Rápida */}
-              <div className="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-sm space-y-3">
+              <div className="bg-white border border-slate-200/90 rounded-2xl p-3.5 sm:p-4 shadow-sm space-y-3">
                 <div className="flex items-center justify-between border-b border-slate-100 pb-2">
-                  <span className="text-xs font-bold text-slate-900">Edição Rápida de Produto</span>
+                  <span className="text-xs font-bold text-slate-900">Edição Rápida</span>
                   <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200/80">
-                    Salvo instantaneamente
+                    Salvo na hora
                   </span>
                 </div>
 
@@ -912,10 +909,10 @@ export default function SaaSCommercialLandingPage() {
                   </div>
 
                   <div className="flex items-center justify-between pt-1">
-                    <span className="text-slate-600 text-xs">Estoque Ativo:</span>
-                    <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
+                    <span className="text-slate-600 text-xs">Status do Estoque:</span>
+                    <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
                       <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                      Em Pronta Entrega
+                      Pronta Entrega
                     </span>
                   </div>
                 </div>
@@ -923,12 +920,12 @@ export default function SaaSCommercialLandingPage() {
             </div>
 
             {/* Bloco 4 (Largo - col-span-12 lg:col-span-7): 'Pedido Pré-Formatado' */}
-            <div className="lg:col-span-7 bg-slate-50/80 border border-slate-200/80 rounded-3xl p-6 sm:p-8 space-y-6 flex flex-col justify-between shadow-2xs hover:border-slate-300 transition-all">
-              <div className="space-y-3">
+            <div className="lg:col-span-7 bg-slate-50/80 border border-slate-200/80 rounded-3xl p-5 sm:p-8 space-y-6 flex flex-col justify-between shadow-2xs hover:border-slate-300 transition-all">
+              <div className="space-y-2.5">
                 <div className="h-9 w-9 rounded-xl bg-slate-900 text-white flex items-center justify-center shadow-xs">
                   <MessageCircle className="w-4 h-4 text-emerald-400" />
                 </div>
-                <h3 className="text-xl font-bold text-slate-900 tracking-tight">
+                <h3 className="text-lg sm:text-xl font-bold text-slate-900 tracking-tight">
                   Pedido Pré-Formatado
                 </h3>
                 <p className="text-xs sm:text-sm text-slate-600 leading-relaxed max-w-xl">
@@ -943,9 +940,9 @@ export default function SaaSCommercialLandingPage() {
                     <div className="h-4 w-4 rounded-full bg-emerald-600 text-white flex items-center justify-center text-[9px] font-bold">
                       W
                     </div>
-                    <span className="font-semibold text-slate-800">WhatsApp da sua Loja</span>
+                    <span className="font-semibold text-slate-800 truncate">WhatsApp da sua Loja</span>
                   </div>
-                  <span className="text-[10px] text-slate-500">Hoje às 14:32</span>
+                  <span className="text-[10px] text-slate-500 flex-shrink-0">Hoje às 14:32</span>
                 </div>
 
                 {/* Balão do WhatsApp */}
@@ -981,28 +978,28 @@ export default function SaaSCommercialLandingPage() {
       {/* ============================================================ */}
       {/* 5. CALCULADORA DE ECONOMIA (MARKETPLACE X CATÁLOGO PRÓPRIO)  */}
       {/* ============================================================ */}
-      <section id="calculadora" className="py-20 sm:py-28 max-w-5xl mx-auto px-4 sm:px-6">
-        <div className="text-center max-w-2xl mx-auto mb-12 sm:mb-16 space-y-3">
+      <section id="calculadora" className="py-16 sm:py-24 md:py-28 max-w-5xl mx-auto px-4 sm:px-6 overflow-x-hidden">
+        <div className="text-center max-w-2xl mx-auto mb-10 sm:mb-14 space-y-2.5">
           <span className="text-xs font-semibold text-emerald-700 uppercase tracking-wider">
             Calculadora de Economia Real
           </span>
-          <h2 className="text-2xl sm:text-4xl font-extrabold text-[#0F172A] tracking-tight">
+          <h2 className="text-2xl xs:text-3xl sm:text-4xl font-extrabold text-[#0F172A] tracking-tight break-words">
             Quanto você deixa na mesa todos os meses em taxas abusivas?
           </h2>
-          <p className="text-sm sm:text-base text-slate-600">
+          <p className="text-xs xs:text-sm sm:text-base text-slate-600">
             Arraste os seletores abaixo e veja na ponta do lápis quanto sobra no seu bolso vendendo com catálogo próprio.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center bg-white border border-slate-200/90 rounded-3xl p-6 sm:p-10 shadow-lg">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center bg-white border border-slate-200/90 rounded-3xl p-5 sm:p-10 shadow-lg">
           {/* Controles da Calculadora */}
-          <div className="lg:col-span-7 space-y-8">
+          <div className="lg:col-span-7 space-y-7">
             {/* Slider 1: Faturamento */}
-            <div className="space-y-3">
+            <div className="space-y-2.5">
               <div className="flex items-center justify-between">
-                <label className="text-xs sm:text-sm font-bold text-slate-700 flex items-center gap-2">
-                  <DollarSign className="w-4 h-4 text-emerald-600" />
-                  Seu Faturamento Mensal Estimado:
+                <label className="text-xs sm:text-sm font-bold text-slate-700 flex items-center gap-1.5 sm:gap-2">
+                  <DollarSign className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+                  <span>Faturamento Mensal Estimado:</span>
                 </label>
                 <span className="text-base sm:text-xl font-extrabold text-slate-900">
                   {formatCurrency(monthlyRevenue, 'BRL')}
@@ -1025,11 +1022,11 @@ export default function SaaSCommercialLandingPage() {
             </div>
 
             {/* Slider 2: Taxa de Marketplace */}
-            <div className="space-y-3">
+            <div className="space-y-2.5">
               <div className="flex items-center justify-between">
-                <label className="text-xs sm:text-sm font-bold text-slate-700 flex items-center gap-2">
-                  <Sliders className="w-4 h-4 text-slate-500" />
-                  Taxa Cobrada por Apps / Marketplaces:
+                <label className="text-xs sm:text-sm font-bold text-slate-700 flex items-center gap-1.5 sm:gap-2">
+                  <Sliders className="w-4 h-4 text-slate-500 flex-shrink-0" />
+                  <span>Taxa Cobrada por Marketplaces:</span>
                 </label>
                 <span className="text-base sm:text-xl font-extrabold text-slate-900">
                   {marketplaceFee}% por pedido
@@ -1046,13 +1043,13 @@ export default function SaaSCommercialLandingPage() {
               />
               <div className="flex justify-between text-[11px] text-slate-400 font-mono">
                 <span>10% (Mínima)</span>
-                <span>18% (Média de delivery)</span>
-                <span>28% (Comissão máxima)</span>
+                <span>18% (Média delivery)</span>
+                <span>28% (Máxima)</span>
               </div>
             </div>
 
             {/* Comparativo Rápido */}
-            <div className="grid grid-cols-2 gap-3 pt-2 text-xs">
+            <div className="grid grid-cols-2 gap-3 pt-1 text-xs">
               <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200">
                 <span className="text-[11px] font-medium text-slate-500 block">Comissão Perdida/Mês:</span>
                 <span className="text-base sm:text-lg font-bold text-rose-600">
@@ -1060,7 +1057,7 @@ export default function SaaSCommercialLandingPage() {
                 </span>
               </div>
               <div className="p-3.5 rounded-2xl bg-emerald-50/80 border border-emerald-200/80">
-                <span className="text-[11px] font-medium text-emerald-800 block">Comissão no Catálogo Zap:</span>
+                <span className="text-[11px] font-medium text-emerald-800 block">Comissão no CatálogoZap:</span>
                 <span className="text-base sm:text-lg font-bold text-emerald-700">
                   R$ 0,00 (0%)
                 </span>
@@ -1069,7 +1066,7 @@ export default function SaaSCommercialLandingPage() {
           </div>
 
           {/* Resultado do Lucro Retido */}
-          <div className="lg:col-span-5 bg-slate-900 p-6 sm:p-8 rounded-2xl text-white text-center space-y-5">
+          <div className="lg:col-span-5 bg-slate-900 p-6 sm:p-8 rounded-2xl text-white text-center space-y-4 sm:space-y-5">
             <span className="inline-block text-[11px] font-semibold uppercase tracking-wider text-emerald-400 bg-emerald-950/60 px-3 py-1 rounded-full border border-emerald-500/30">
               Economia Estimada
             </span>
@@ -1086,7 +1083,7 @@ export default function SaaSCommercialLandingPage() {
 
             <div className="pt-2 border-t border-slate-800 text-xs text-slate-400 space-y-1.5">
               <div className="flex items-center justify-between">
-                <span>Custo Anual do Sistema:</span>
+                <span>Custo Anual (R$ 129,90/mês):</span>
                 <span className="font-semibold text-white">{formatCurrency(saasYearlyCost, 'BRL')}</span>
               </div>
               <div className="flex items-center justify-between">
@@ -1109,23 +1106,23 @@ export default function SaaSCommercialLandingPage() {
       {/* ============================================================ */}
       {/* 6. PROVA SOCIAL & DEPOIMENTOS DE LOJISTAS                    */}
       {/* ============================================================ */}
-      <section className="py-20 sm:py-28 bg-slate-50/60 border-t border-slate-200/80">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 space-y-12 sm:space-y-16">
+      <section className="py-16 sm:py-24 md:py-28 bg-slate-50/60 border-t border-slate-200/80 overflow-x-hidden">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 space-y-10 sm:space-y-14">
           {/* Métricas Principais da Plataforma */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-            <div className="p-6 rounded-2xl bg-white border border-slate-200/80 text-center space-y-1 shadow-2xs">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-6">
+            <div className="p-5 sm:p-6 rounded-2xl bg-white border border-slate-200/80 text-center space-y-1 shadow-2xs">
               <span className="text-2xl sm:text-3xl font-extrabold text-[#0F172A] block tracking-tight">1.200+</span>
               <span className="text-xs text-slate-500 font-medium block">Lojas Ativas</span>
             </div>
-            <div className="p-6 rounded-2xl bg-white border border-slate-200/80 text-center space-y-1 shadow-2xs">
+            <div className="p-5 sm:p-6 rounded-2xl bg-white border border-slate-200/80 text-center space-y-1 shadow-2xs">
               <span className="text-2xl sm:text-3xl font-extrabold text-[#0F172A] block tracking-tight">R$ 4.8M+</span>
               <span className="text-xs text-slate-500 font-medium block">Transacionados</span>
             </div>
-            <div className="p-6 rounded-2xl bg-white border border-slate-200/80 text-center space-y-1 shadow-2xs">
+            <div className="p-5 sm:p-6 rounded-2xl bg-white border border-slate-200/80 text-center space-y-1 shadow-2xs">
               <span className="text-2xl sm:text-3xl font-extrabold text-emerald-700 block tracking-tight">R$ 0,00</span>
               <span className="text-xs text-slate-500 font-medium block">Retido em Taxas</span>
             </div>
-            <div className="p-6 rounded-2xl bg-white border border-slate-200/80 text-center space-y-1 shadow-2xs">
+            <div className="p-5 sm:p-6 rounded-2xl bg-white border border-slate-200/80 text-center space-y-1 shadow-2xs">
               <div className="flex items-center justify-center gap-1 text-amber-500">
                 <span className="text-2xl sm:text-3xl font-extrabold text-[#0F172A] block tracking-tight">4.9</span>
                 <Star className="w-4 h-4 fill-amber-500 text-amber-500 inline" />
@@ -1135,13 +1132,13 @@ export default function SaaSCommercialLandingPage() {
           </div>
 
           {/* Depoimentos */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
-            <div className="p-6 rounded-2xl bg-white border border-slate-200/80 flex flex-col justify-between space-y-4 shadow-2xs">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5 sm:gap-8">
+            <div className="p-5 sm:p-6 rounded-2xl bg-white border border-slate-200/80 flex flex-col justify-between space-y-4 shadow-2xs">
               <p className="text-xs sm:text-sm text-slate-600 leading-relaxed italic">
                 &ldquo;Economizamos mais de R$ 2.400 por mês que antes iam embora em comissões de delivery. O cliente monta o lanche, copia o PIX e o pedido cai no nosso WhatsApp 100% pronto.&rdquo;
               </p>
               <div className="pt-3 border-t border-slate-100 flex items-center gap-3">
-                <div className="h-9 w-9 rounded-full bg-emerald-50 text-emerald-700 font-bold text-xs flex items-center justify-center border border-emerald-100">
+                <div className="h-9 w-9 rounded-full bg-emerald-50 text-emerald-700 font-bold text-xs flex items-center justify-center border border-emerald-100 flex-shrink-0">
                   FC
                 </div>
                 <div>
@@ -1151,12 +1148,12 @@ export default function SaaSCommercialLandingPage() {
               </div>
             </div>
 
-            <div className="p-6 rounded-2xl bg-white border border-slate-200/80 flex flex-col justify-between space-y-4 shadow-2xs">
+            <div className="p-5 sm:p-6 rounded-2xl bg-white border border-slate-200/80 flex flex-col justify-between space-y-4 shadow-2xs">
               <p className="text-xs sm:text-sm text-slate-600 leading-relaxed italic">
                 &ldquo;Nossa loja no Instagram converteu muito mais depois que colocamos o link na bio. O cliente vê os tamanhos disponíveis na hora e não fica horas perguntando preço no direct.&rdquo;
               </p>
               <div className="pt-3 border-t border-slate-100 flex items-center gap-3">
-                <div className="h-9 w-9 rounded-full bg-slate-100 text-slate-700 font-bold text-xs flex items-center justify-center border border-slate-200">
+                <div className="h-9 w-9 rounded-full bg-slate-100 text-slate-700 font-bold text-xs flex items-center justify-center border border-slate-200 flex-shrink-0">
                   CD
                 </div>
                 <div>
@@ -1166,12 +1163,12 @@ export default function SaaSCommercialLandingPage() {
               </div>
             </div>
 
-            <div className="p-6 rounded-2xl bg-white border border-slate-200/80 flex flex-col justify-between space-y-4 shadow-2xs">
+            <div className="p-5 sm:p-6 rounded-2xl bg-white border border-slate-200/80 flex flex-col justify-between space-y-4 shadow-2xs">
               <p className="text-xs sm:text-sm text-slate-600 leading-relaxed italic">
                 &ldquo;Atualizo os preços na planilha do Google Sheets direto pelo celular e em 5 segundos já tá no ar para os clientes. Praticidade nota 10, sem complicação de programação.&rdquo;
               </p>
               <div className="pt-3 border-t border-slate-100 flex items-center gap-3">
-                <div className="h-9 w-9 rounded-full bg-emerald-50 text-emerald-700 font-bold text-xs flex items-center justify-center border border-emerald-100">
+                <div className="h-9 w-9 rounded-full bg-emerald-50 text-emerald-700 font-bold text-xs flex items-center justify-center border border-emerald-100 flex-shrink-0">
                   MS
                 </div>
                 <div>
@@ -1185,71 +1182,69 @@ export default function SaaSCommercialLandingPage() {
       </section>
 
       {/* ============================================================ */}
-      {/* 7. SEÇÃO DE PREÇOS (TRANSPARÊNCIA TOTAL PARA O COMÉRCIO)     */}
+      {/* 7. SEÇÃO DE PREÇO ÚNICO (MENSALIDADE SIMPLES E TRANSPARENTE) */}
       {/* ============================================================ */}
-      <section id="precos" className="py-20 sm:py-28 max-w-5xl mx-auto px-4 sm:px-6 space-y-12 sm:space-y-16">
-        <div className="text-center max-w-2xl mx-auto space-y-3">
+      <section id="precos" className="py-16 sm:py-24 md:py-28 max-w-4xl mx-auto px-4 sm:px-6 space-y-10 sm:space-y-14 overflow-x-hidden">
+        <div className="text-center max-w-xl mx-auto space-y-2.5">
           <span className="text-xs font-semibold text-emerald-700 uppercase tracking-wider">
-            Preços Transparentes
+            Preço Transparente
           </span>
-          <h2 className="text-2xl sm:text-4xl font-extrabold text-[#0F172A] tracking-tight">
-            Planos simples, honestos e sem pegadinhas
+          <h2 className="text-2xl xs:text-3xl sm:text-4xl font-extrabold text-[#0F172A] tracking-tight break-words">
+            Um único plano, sem pegadinhas nem fidelidade
           </h2>
-          <p className="text-sm sm:text-base text-slate-600">
-            Acesso completo e ilimitado para transformar seu comércio. Escolha a periodicidade ideal para o seu negócio:
+          <p className="text-xs xs:text-sm sm:text-base text-slate-600">
+            Acesso irrestrito a todos os recursos da plataforma para vender mais no WhatsApp.
           </p>
         </div>
 
         {/* Selos em Destaque: 'Sem fidelidade' e 'Sem taxas sobre suas vendas' */}
-        <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-8 pt-1">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-slate-50 border border-slate-200 text-xs sm:text-sm font-bold text-slate-800 shadow-2xs">
-            <ShieldCheck className="w-4 h-4 text-emerald-600" />
+        <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-6 pt-1">
+          <div className="inline-flex items-center gap-1.5 sm:gap-2 px-3.5 py-1.5 rounded-full bg-slate-50 border border-slate-200 text-xs font-bold text-slate-800 shadow-2xs">
+            <ShieldCheck className="w-4 h-4 text-emerald-600 flex-shrink-0" />
             <span>Sem fidelidade</span>
             <span className="text-slate-400 font-normal hidden sm:inline">(Cancele quando quiser)</span>
           </div>
 
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-emerald-50 border border-emerald-200 text-xs sm:text-sm font-bold text-emerald-900 shadow-2xs">
-            <Percent className="w-4 h-4 text-emerald-600" />
+          <div className="inline-flex items-center gap-1.5 sm:gap-2 px-3.5 py-1.5 rounded-full bg-emerald-50 border border-emerald-200 text-xs font-bold text-emerald-900 shadow-2xs">
+            <Percent className="w-4 h-4 text-emerald-600 flex-shrink-0" />
             <span>Sem taxas sobre suas vendas</span>
             <span className="text-emerald-700 font-normal hidden sm:inline">(0% de comissão)</span>
           </div>
 
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-slate-50 border border-slate-200 text-xs sm:text-sm font-bold text-slate-800 shadow-2xs">
-            <Sparkles className="w-4 h-4 text-emerald-600" />
+          <div className="inline-flex items-center gap-1.5 sm:gap-2 px-3.5 py-1.5 rounded-full bg-slate-50 border border-slate-200 text-xs font-bold text-slate-800 shadow-2xs">
+            <Sparkles className="w-4 h-4 text-emerald-600 flex-shrink-0" />
             <span>30 dias de teste grátis</span>
             <span className="text-slate-400 font-normal hidden sm:inline">(Sem cartão)</span>
           </div>
         </div>
 
-        {/* Tabela de 2 Planos Claros com Foco em Legibilidade e Badges de Valor */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-stretch max-w-4xl mx-auto">
-          {/* Card 1: Mensalidade Única / Plano Mensal */}
-          <div className="bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 space-y-6 flex flex-col justify-between shadow-sm hover:border-slate-300 transition-all">
-            <div className="space-y-5">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-lg font-bold text-slate-900">Mensalidade Única</h3>
-                  <p className="text-xs text-slate-500 mt-0.5">
-                    Máxima flexibilidade para começar hoje
-                  </p>
-                </div>
-                <span className="text-[11px] font-bold text-slate-700 bg-slate-100 border border-slate-200 px-2.5 py-1 rounded-full">
-                  Sem Fidelidade
-                </span>
+        {/* Card Único de Plano Mensal com Foco em Legibilidade */}
+        <div className="max-w-md mx-auto">
+          <div className="bg-white border-2 border-slate-900 rounded-3xl p-6 sm:p-8 space-y-6 shadow-xl relative ring-1 ring-slate-900/10">
+            <span className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-[11px] font-bold uppercase tracking-wider px-4 py-1 rounded-full whitespace-nowrap shadow-md">
+              Plano Mensal Completo • 30 Dias Grátis
+            </span>
+
+            <div className="space-y-4 pt-1">
+              <div>
+                <h3 className="text-lg font-bold text-slate-900">Mensalidade Única</h3>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Liberdade total para o lojista, sem compromisso de longo prazo
+                </p>
               </div>
 
               <div className="border-y border-slate-100 py-4">
                 <div className="flex items-baseline gap-1.5">
-                  <span className="text-4xl font-extrabold text-slate-900 tracking-tight">R$ 129,90</span>
-                  <span className="text-xs text-slate-500 font-medium">/mês</span>
+                  <span className="text-4xl sm:text-5xl font-extrabold text-slate-900 tracking-tight">R$ 129,90</span>
+                  <span className="text-xs sm:text-sm text-slate-500 font-medium">/mês</span>
                 </div>
-                <span className="text-[11px] text-slate-500 block mt-1">
-                  Primeiros 30 dias 100% grátis • Renovação mensal simples
+                <span className="text-[11px] text-slate-500 block mt-1.5">
+                  Comece agora com 30 dias grátis • Sem cartão de crédito para iniciar
                 </span>
               </div>
 
               {/* Lista Completa e Clara do que está incluso */}
-              <ul className="space-y-3.5 text-xs sm:text-sm text-slate-700">
+              <ul className="space-y-3 text-xs sm:text-sm text-slate-700">
                 <li className="flex items-center gap-2.5">
                   <Check className="w-4 h-4 text-emerald-600 flex-shrink-0" />
                   <span><strong>Hospedagem Inclusa</strong> de alta performance</span>
@@ -1272,111 +1267,21 @@ export default function SaaSCommercialLandingPage() {
                 </li>
                 <li className="flex items-center gap-2.5">
                   <Check className="w-4 h-4 text-emerald-600 flex-shrink-0" />
-                  <span>Google Sheets integrado em tempo real</span>
+                  <span>Google Sheets integrado e sincronizado em tempo real</span>
                 </li>
                 <li className="flex items-center gap-2.5">
                   <Check className="w-4 h-4 text-emerald-600 flex-shrink-0" />
-                  <span>Chave PIX com botão de copiar em 1 clique</span>
+                  <span>Chave PIX com cópia rápida em 1 clique</span>
                 </li>
                 <li className="flex items-center gap-2.5">
                   <Check className="w-4 h-4 text-emerald-600 flex-shrink-0" />
-                  <span><strong>0% de taxas</strong> sobre suas vendas</span>
+                  <span><strong>0% de taxas</strong> sobre suas vendas (lucro 100% seu)</span>
                 </li>
               </ul>
             </div>
 
             {/* Ações: WhatsApp Comercial Obrigatório + Link Direto */}
-            <div className="space-y-2 pt-4">
-              <a
-                href={commercialWhatsappHireUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-full inline-flex items-center justify-center gap-2 py-3.5 px-4 rounded-xl text-xs sm:text-sm font-semibold text-slate-800 bg-slate-100 hover:bg-slate-200 border border-slate-200 shadow-2xs transition-colors cursor-pointer"
-              >
-                <MessageCircle className="w-4 h-4 text-emerald-600" />
-                <span>Contratar no WhatsApp</span>
-              </a>
-
-              <Link
-                href="/criar-loja?plan=monthly"
-                className="w-full inline-flex items-center justify-center gap-1.5 py-2 text-[11px] font-medium text-slate-500 hover:text-slate-800 transition-colors"
-              >
-                <span>Ou criar loja online agora</span>
-                <ArrowRight className="w-3 h-3" />
-              </Link>
-            </div>
-          </div>
-
-          {/* Card 2: Plano Anual (Destaque / Recomendado) */}
-          <div className="bg-white border-2 border-slate-900 rounded-3xl p-6 sm:p-8 space-y-6 flex flex-col justify-between shadow-xl relative ring-1 ring-slate-900/10">
-            {/* Badge de Valor no Topo */}
-            <span className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-[11px] font-bold uppercase tracking-wider px-3.5 py-1 rounded-full whitespace-nowrap shadow-md flex items-center gap-1.5">
-              <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
-              <span>Plano Anual • Economize R$ 480</span>
-            </span>
-
-            <div className="space-y-5">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-lg font-bold text-slate-900">Plano Anual</h3>
-                  <p className="text-xs text-slate-500 mt-0.5">
-                    Melhor custo-benefício (equivale a 2 meses grátis)
-                  </p>
-                </div>
-                <span className="text-[11px] font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-full">
-                  Mais Popular
-                </span>
-              </div>
-
-              <div className="border-y border-slate-100 py-4">
-                <div className="flex items-baseline gap-1.5">
-                  <span className="text-4xl font-extrabold text-slate-900 tracking-tight">R$ 89,90</span>
-                  <span className="text-xs text-slate-500 font-medium">/mês</span>
-                </div>
-                <span className="text-[11px] text-emerald-700 font-semibold block mt-1">
-                  R$ 1.078,80 faturado anualmente • Economia imediata de R$ 480
-                </span>
-              </div>
-
-              {/* Lista Completa e Clara do que está incluso */}
-              <ul className="space-y-3.5 text-xs sm:text-sm text-slate-700">
-                <li className="flex items-center gap-2.5">
-                  <Check className="w-4 h-4 text-emerald-600 flex-shrink-0" />
-                  <span><strong>Tudo do Plano Mensal incluso</strong></span>
-                </li>
-                <li className="flex items-center gap-2.5">
-                  <Check className="w-4 h-4 text-emerald-600 flex-shrink-0" />
-                  <span><strong>Hospedagem Inclusa</strong> com CDN ultrarrápida</span>
-                </li>
-                <li className="flex items-center gap-2.5">
-                  <Check className="w-4 h-4 text-emerald-600 flex-shrink-0" />
-                  <span><strong>Domínio Próprio (.com.br)</strong> com SSL grátis</span>
-                </li>
-                <li className="flex items-center gap-2.5">
-                  <Check className="w-4 h-4 text-emerald-600 flex-shrink-0" />
-                  <span><strong>Suporte Prioritário VIP</strong> no WhatsApp</span>
-                </li>
-                <li className="flex items-center gap-2.5">
-                  <Check className="w-4 h-4 text-emerald-600 flex-shrink-0" />
-                  <span><strong>Painel de Gestão Completo</strong> (celular e PC)</span>
-                </li>
-                <li className="flex items-center gap-2.5">
-                  <Check className="w-4 h-4 text-emerald-600 flex-shrink-0" />
-                  <span><strong>Atualizações Ilimitadas</strong> sem qualquer custo</span>
-                </li>
-                <li className="flex items-center gap-2.5">
-                  <Check className="w-4 h-4 text-emerald-600 flex-shrink-0" />
-                  <span>Configuração assistida pela nossa equipe</span>
-                </li>
-                <li className="flex items-center gap-2.5">
-                  <Check className="w-4 h-4 text-emerald-600 flex-shrink-0" />
-                  <span><strong>0% de comissões por venda</strong> sempre</span>
-                </li>
-              </ul>
-            </div>
-
-            {/* Ações: WhatsApp Comercial Obrigatório + Link Direto */}
-            <div className="space-y-2 pt-4">
+            <div className="space-y-2 pt-2">
               <a
                 href={commercialWhatsappHireUrl}
                 target="_blank"
@@ -1384,14 +1289,14 @@ export default function SaaSCommercialLandingPage() {
                 className="w-full inline-flex items-center justify-center gap-2 py-3.5 px-4 rounded-xl text-xs sm:text-sm font-semibold text-white bg-slate-900 hover:bg-slate-800 shadow-sm transition-colors cursor-pointer"
               >
                 <MessageCircle className="w-4 h-4 text-emerald-400" />
-                <span>Garantir Plano Anual no WhatsApp</span>
+                <span>Contratar no WhatsApp</span>
               </a>
 
               <Link
-                href="/criar-loja?plan=annual"
+                href="/criar-loja?plan=monthly"
                 className="w-full inline-flex items-center justify-center gap-1.5 py-2 text-[11px] font-medium text-slate-500 hover:text-slate-800 transition-colors"
               >
-                <span>Ou criar loja online no plano anual</span>
+                <span>Ou criar minha loja online em 2 minutos</span>
                 <ArrowRight className="w-3 h-3" />
               </Link>
             </div>
@@ -1402,7 +1307,7 @@ export default function SaaSCommercialLandingPage() {
       {/* ============================================================ */}
       {/* 8. PERGUNTAS FREQUENTES (FAQ)                                */}
       {/* ============================================================ */}
-      <section id="faq" className="py-20 sm:py-28 bg-slate-50/60 border-t border-slate-200/80">
+      <section id="faq" className="py-16 sm:py-24 md:py-28 bg-slate-50/60 border-t border-slate-200/80 overflow-x-hidden">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 space-y-8">
           <div className="text-center space-y-2">
             <span className="text-xs font-semibold text-emerald-700 uppercase tracking-wider">
@@ -1451,12 +1356,12 @@ export default function SaaSCommercialLandingPage() {
       {/* ============================================================ */}
       {/* 9. CTA FINAL DE CONVERSÃO                                    */}
       {/* ============================================================ */}
-      <section className="py-20 sm:py-28 bg-slate-900 text-white text-center">
+      <section className="py-16 sm:py-20 md:py-24 bg-slate-900 text-white text-center overflow-x-hidden">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 space-y-6">
-          <h2 className="text-2xl sm:text-4xl font-extrabold tracking-tight">
+          <h2 className="text-2xl xs:text-3xl sm:text-4xl font-extrabold tracking-tight break-words">
             Pronto para ver suas vendas no WhatsApp decolarem?
           </h2>
-          <p className="text-sm sm:text-base text-slate-400 max-w-xl mx-auto leading-relaxed">
+          <p className="text-xs xs:text-sm sm:text-base text-slate-400 max-w-xl mx-auto leading-relaxed">
             Crie seu catálogo agora mesmo. Não precisa de cartão de crédito e sua loja fica pronta em menos de 2 minutos.
           </p>
           <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
@@ -1482,23 +1387,38 @@ export default function SaaSCommercialLandingPage() {
       </section>
 
       {/* ============================================================ */}
-      {/* 10. FOOTER INSTITUCIONAL                                     */}
+      {/* 10. RODAPÉ MINIMALISTA (FEITO PARA FORTALECER O COMÉRCIO)    */}
       {/* ============================================================ */}
-      <footer className="bg-white border-t border-slate-200/80 py-12 text-xs text-slate-500">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 space-y-6">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-2">
-              <div className="h-7 w-7 rounded-lg bg-slate-900 flex items-center justify-center text-white">
-                <ShoppingBag className="w-3.5 h-3.5 text-emerald-400" />
+      <footer className="bg-slate-50 border-t border-slate-200/80 py-12 text-xs text-slate-500 overflow-x-hidden">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 space-y-8">
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+            <div className="space-y-1.5">
+              <div className="flex items-center gap-2">
+                <div className="h-7 w-7 rounded-lg bg-slate-900 flex items-center justify-center text-white">
+                  <ShoppingBag className="w-3.5 h-3.5 text-emerald-400" />
+                </div>
+                <span className="text-base font-extrabold tracking-tight text-slate-900">
+                  Catálogo<span className="text-emerald-600">Zap</span>
+                </span>
               </div>
-              <span className="text-sm font-bold text-slate-900">
-                Catálogo<span className="text-emerald-600">Zap</span>
-              </span>
+              <p className="text-xs text-slate-600 font-medium">
+                Feito para fortalecer o comércio local
+              </p>
             </div>
 
-            <div className="flex flex-wrap items-center justify-center gap-5 text-slate-500">
+            {/* Links rápidos de contato e navegação */}
+            <div className="flex flex-wrap items-center gap-4 sm:gap-6 text-xs text-slate-600">
+              <a
+                href={commercialWhatsappHireUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:text-slate-900 transition-colors flex items-center gap-1"
+              >
+                <MessageCircle className="w-3.5 h-3.5 text-emerald-600" />
+                <span>WhatsApp Comercial</span>
+              </a>
               <Link href="/criar-loja" className="hover:text-slate-900 transition-colors">
-                Criar Nova Loja
+                Criar Loja
               </Link>
               <Link href="/admin/login" className="hover:text-slate-900 transition-colors">
                 Painel do Lojista
@@ -1509,26 +1429,39 @@ export default function SaaSCommercialLandingPage() {
             </div>
           </div>
 
-          <div className="border-t border-slate-100 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px] text-slate-400">
+          {/* Linha de Termos simples e Copyright */}
+          <div className="border-t border-slate-200/70 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px] text-slate-500">
             <p>© {new Date().getFullYear()} CatálogoZap SaaS. Todos os direitos reservados.</p>
-            <p>Plataforma White-Label Multi-Tenant com Google Sheets & WhatsApp</p>
+            <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 text-slate-500">
+              <span>Termos de Uso Simplificados</span>
+              <span>•</span>
+              <span>Privacidade e Segurança</span>
+              <span>•</span>
+              <span>0% de Comissões por Venda</span>
+            </div>
           </div>
         </div>
       </footer>
 
-      {/* CTA Flutuante Discreto no Mobile */}
-      <aside aria-label="Ação rápida no mobile" className="fixed bottom-0 inset-x-0 z-40 p-3 sm:hidden bg-white/90 backdrop-blur-md border-t border-slate-200">
+      {/* ============================================================ */}
+      {/* BOTÃO FLUTUANTE DE WHATSAPP (MOBILE ONLY - CANTO INFERIOR)   */}
+      {/* ============================================================ */}
+      <div className="fixed bottom-4 right-4 z-50 md:hidden">
         <a
-          href={commercialWhatsappHireUrl}
+          href={specialistWhatsappUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="w-full py-3 px-4 rounded-xl text-xs font-semibold text-white bg-slate-900 shadow-sm flex items-center justify-center gap-2 active:scale-98 transition"
+          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-lg shadow-emerald-950/25 active:scale-95 transition-all ring-2 ring-white/90"
+          aria-label="Falar com Especialista no WhatsApp"
         >
-          <MessageCircle className="w-3.5 h-3.5 text-emerald-400" />
-          <span>Falar no WhatsApp • Testar 30 Dias</span>
-          <ArrowRight className="w-3.5 h-3.5 text-slate-400" />
+          <span className="relative flex h-2 w-2">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-300 opacity-75" />
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-white" />
+          </span>
+          <MessageCircle className="w-4 h-4" />
+          <span>Falar com Especialista</span>
         </a>
-      </aside>
+      </div>
     </div>
   );
 }
