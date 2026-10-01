@@ -28,6 +28,10 @@ import {
   Truck,
   Copy,
   ExternalLink,
+  Globe,
+  Lock,
+  X,
+  XCircle,
 } from 'lucide-react';
 import { formatCurrency } from '@/lib/whatsapp';
 
@@ -194,7 +198,10 @@ export default function SaaSCommercialLandingPage() {
             <a href="#preview" className="hover:text-slate-900 transition-colors">
               Demonstração
             </a>
-            <a href="#diferenciais" className="hover:text-slate-900 transition-colors">
+            <a href="#comparativo" className="hover:text-slate-900 transition-colors">
+              Antes & Depois
+            </a>
+            <a href="#recursos" className="hover:text-slate-900 transition-colors">
               Recursos
             </a>
             <a href="#calculadora" className="hover:text-slate-900 transition-colors">
@@ -230,30 +237,30 @@ export default function SaaSCommercialLandingPage() {
       </header>
 
       {/* ============================================================ */}
-      {/* 2. HERO PRINCIPAL (REQUISITOS ESPECÍFICOS DO PROMPT)         */}
+      {/* 2. HERO PRINCIPAL COM MOCKUP RESPONSIVO                      */}
       {/* ============================================================ */}
       <section className="relative pt-12 sm:pt-20 pb-16 sm:pb-24 overflow-hidden">
         {/* Efeito sutil de luz ambiente no fundo */}
         <div className="absolute top-0 inset-x-0 h-96 bg-[radial-gradient(ellipse_80%_60%_at_50%_-20%,rgba(16,185,129,0.09),transparent)] pointer-events-none" />
 
         <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center space-y-6 sm:space-y-8 relative z-10">
-          {/* Requisito 2: Badge de Novidade no topo */}
+          {/* Badge de Novidade no topo */}
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-50 border border-slate-200/80 text-xs font-medium text-slate-700 shadow-2xs hover:border-slate-300 transition-colors">
             <span className="flex h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
             <span>✨ A nova vitrine digital para empresas locais</span>
           </div>
 
-          {/* Requisito 1 & 3: Tipografia h1 #0F172A com tracking-tight & Título focado em conversão */}
+          {/* Título Principal curto e focado na conversão */}
           <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight text-[#0F172A] leading-[1.12] max-w-3xl mx-auto">
             Transforme seu WhatsApp em uma máquina de vendas, sem taxas por pedido.
           </h1>
 
-          {/* Requisito 4: Subtítulo direto */}
+          {/* Subtítulo direto */}
           <p className="text-base sm:text-lg md:text-xl text-slate-600 font-normal leading-relaxed max-w-2xl mx-auto">
             Substitua PDFs pesados e conversas confusas por um catálogo rápido com seu domínio próprio, cores da sua marca e pedido detalhado direto no seu Zap.
           </p>
 
-          {/* Requisito 5: Grupo de CTAs */}
+          {/* Grupo de CTAs */}
           <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 max-w-md mx-auto">
             {/* Botão 1 (Destaque): 'Ver Demonstração ao Vivo' */}
             <Link
@@ -293,11 +300,9 @@ export default function SaaSCommercialLandingPage() {
           </div>
         </div>
 
-        {/* ============================================================ */}
-        {/* Requisito 6: PREVIEW VISUAL DO PRODUTO (CONTAINER + MOCKUP)  */}
-        {/* ============================================================ */}
+        {/* PREVIEW VISUAL DO PRODUTO (CONTAINER + MOCKUP SMARTPHONE) */}
         <div id="preview" className="mt-12 sm:mt-16 max-w-5xl mx-auto px-4 sm:px-6">
-          {/* Seletor de Segmentos para Testar Interatividade */}
+          {/* Seletor de Segmentos */}
           <div className="flex items-center justify-center gap-2 mb-6 sm:mb-8 overflow-x-auto py-1">
             {DEMO_NICHES.map((niche) => {
               const active = selectedNiche.id === niche.id;
@@ -318,20 +323,20 @@ export default function SaaSCommercialLandingPage() {
             })}
           </div>
 
-          {/* Container Centralizado com Efeito Sutil de Sombra Difusa (shadow-2xl) */}
+          {/* Container Centralizado com Sombra Difusa (shadow-2xl) */}
           <div className="relative rounded-3xl sm:rounded-[36px] bg-slate-50/80 border border-slate-200/80 p-4 sm:p-8 lg:p-10 shadow-2xl shadow-slate-900/10">
-            {/* Ambient diffuse back-glow */}
+            {/* Glow difuso ambiente */}
             <div className="absolute inset-x-8 top-10 bottom-10 bg-emerald-500/5 rounded-full blur-3xl -z-10 pointer-events-none" />
 
             {/* Mockup Responsivo de Smartphone */}
             <div className="w-full max-w-[340px] sm:max-w-[360px] mx-auto bg-slate-950 rounded-[44px] sm:rounded-[48px] p-2.5 sm:p-3 ring-1 ring-slate-800 shadow-[0_20px_50px_-10px_rgba(15,23,42,0.35)]">
-              {/* Dynamic Island / Speaker Pill */}
+              {/* Dynamic Island / Alto-falante */}
               <div className="w-24 sm:w-28 h-4 bg-slate-950 rounded-full mx-auto mb-2 flex items-center justify-center gap-1.5">
                 <span className="w-2 h-2 rounded-full bg-slate-800" />
                 <span className="w-2.5 h-2.5 rounded-full bg-slate-900 ring-1 ring-slate-800/80" />
               </div>
 
-              {/* Tela do Celular: Vitrine Digital Real com Produto e Sacola Aberta */}
+              {/* Tela do Celular com Vitrine e Sacola Aberta */}
               <div className="bg-white rounded-[34px] sm:rounded-[38px] overflow-hidden text-slate-900 flex flex-col border border-slate-100 relative select-none font-sans min-h-[580px]">
                 {/* 1. Header do Catálogo na Tela */}
                 <div className="bg-white px-3.5 py-3 border-b border-slate-100 flex items-center justify-between">
@@ -361,7 +366,6 @@ export default function SaaSCommercialLandingPage() {
 
                 {/* 2. Vitrine Real com Produto (Background do Mockup) */}
                 <div className="p-3.5 space-y-2.5 bg-slate-50/70 flex-1">
-                  {/* Card do Produto */}
                   <div className="bg-white rounded-2xl border border-slate-200/70 p-2.5 shadow-2xs space-y-2">
                     <div className="relative rounded-xl overflow-hidden aspect-[16/10] bg-slate-100">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -399,7 +403,6 @@ export default function SaaSCommercialLandingPage() {
 
                 {/* 3. SACOLA ABERTA (Bottom Sheet Drawer / Cart Overlay) */}
                 <div className="bg-white border-t border-slate-200/90 rounded-t-3xl shadow-[0_-12px_28px_rgba(15,23,42,0.08)] p-3.5 space-y-3 relative z-20">
-                  {/* Drag handle minimalista */}
                   <div className="w-8 h-1 bg-slate-300 rounded-full mx-auto -mt-1 mb-1.5" />
 
                   {/* Cabeçalho da Sacola */}
@@ -413,7 +416,7 @@ export default function SaaSCommercialLandingPage() {
                     <span className="text-[10px] text-slate-400">Entrega rápida</span>
                   </div>
 
-                  {/* Item Selecionado na Sacola */}
+                  {/* Item Selecionado */}
                   <div className="flex items-center gap-2.5 p-2 rounded-xl bg-slate-50 border border-slate-100">
                     <div className="w-11 h-11 rounded-lg overflow-hidden flex-shrink-0 bg-slate-200">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -434,7 +437,6 @@ export default function SaaSCommercialLandingPage() {
                         {formatCurrency(selectedNiche.price, 'BRL')}
                       </span>
                     </div>
-                    {/* Contador de Quantidade */}
                     <div className="flex items-center gap-1.5 bg-white border border-slate-200 px-1.5 py-0.5 rounded-lg text-[10px] font-bold text-slate-700 shadow-2xs">
                       <span>1 un</span>
                     </div>
@@ -489,7 +491,7 @@ export default function SaaSCommercialLandingPage() {
                     </span>
                   </div>
 
-                  {/* Botão de Finalização no WhatsApp com Pedido Formatado */}
+                  {/* Botão de Finalização no WhatsApp */}
                   <div className="pt-0.5">
                     <Link
                       href="/?tenant=loja_exemplo"
@@ -506,7 +508,7 @@ export default function SaaSCommercialLandingPage() {
               </div>
             </div>
 
-            {/* Legenda Explicativa Abaixo do Mockup */}
+            {/* Legenda Explicativa */}
             <div className="mt-6 text-center text-xs text-slate-500 max-w-md mx-auto space-y-1">
               <p className="font-semibold text-slate-700">
                 Experiência real sem downloads nem senhas para o cliente.
@@ -520,96 +522,390 @@ export default function SaaSCommercialLandingPage() {
       </section>
 
       {/* ============================================================ */}
-      {/* 3. DIFERENCIAIS EM GRID MINIMALISTA                          */}
+      {/* 3. SEÇÃO DE CONTRASTE 'ANTES & DEPOIS' (ROTINA DO LOJISTA)   */}
       {/* ============================================================ */}
-      <section id="diferenciais" className="py-16 sm:py-24 bg-slate-50/60 border-t border-slate-200/80">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 space-y-12 sm:space-y-16">
+      <section id="comparativo" className="py-20 sm:py-28 bg-slate-50/70 border-t border-slate-200/80">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 space-y-12 sm:space-y-16">
+          {/* Cabeçalho da Seção */}
           <div className="text-center max-w-2xl mx-auto space-y-3">
-            <span className="text-xs font-semibold text-emerald-700 uppercase tracking-wider">
-              Recursos de Alta Performance
+            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+              Comparativo Prático
             </span>
             <h2 className="text-2xl sm:text-4xl font-extrabold text-[#0F172A] tracking-tight">
-              Tudo o que seu comércio precisa para vender mais todo dia
+              A diferença real na rotina do seu comércio
             </h2>
-            <p className="text-sm sm:text-base text-slate-600">
-              Desenvolvido ouvindo donos de lojas reais: nada de complicação técnica, apenas velocidade e conversão.
+            <p className="text-sm sm:text-base text-slate-600 leading-relaxed">
+              Veja como você economiza tempo e elimina o estresse do atendimento manual no WhatsApp.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
-            {/* Card 1 */}
-            <div className="bg-white border border-slate-200/80 p-6 rounded-2xl space-y-3 shadow-2xs hover:border-slate-300 transition-all">
-              <div className="h-9 w-9 rounded-xl bg-emerald-50 border border-emerald-100 text-emerald-700 flex items-center justify-center">
-                <Percent className="w-4 h-4 stroke-[2.2]" />
+          {/* 2 Cards Lado a Lado */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 items-stretch">
+            {/* Card 1: 'O Jeito Antigo' (Fundo levemente cinza/vermelho sutil) */}
+            <div className="rounded-3xl bg-rose-50/50 border border-rose-200/70 p-6 sm:p-8 space-y-6 flex flex-col justify-between">
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-100/80 text-rose-700 text-xs font-bold">
+                    <XCircle className="w-3.5 h-3.5" />
+                    O Jeito Antigo
+                  </span>
+                  <span className="text-[11px] font-semibold text-rose-500">Sem sistema</span>
+                </div>
+
+                <h3 className="text-lg sm:text-xl font-bold text-slate-900 leading-tight">
+                  Conversas caóticas e perda diária de pedidos
+                </h3>
+                <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+                  Muito esforço manual para pouca conversão, com clientes impacientes esperando respostas.
+                </p>
+
+                <ul className="space-y-4 pt-2">
+                  <li className="flex items-start gap-3">
+                    <div className="h-6 w-6 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <X className="w-3.5 h-3.5 stroke-[2.5]" />
+                    </div>
+                    <div className="space-y-0.5">
+                      <strong className="text-xs sm:text-sm font-bold text-slate-900 block">
+                        PDFs pesados de 40MB que travam o celular
+                      </strong>
+                      <p className="text-xs text-slate-500 leading-relaxed">
+                        Arquivos lentos que demoram para baixar no 4G, enchem a memória do cliente e ficam desatualizados no dia seguinte.
+                      </p>
+                    </div>
+                  </li>
+
+                  <li className="flex items-start gap-3">
+                    <div className="h-6 w-6 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <X className="w-3.5 h-3.5 stroke-[2.5]" />
+                    </div>
+                    <div className="space-y-0.5">
+                      <strong className="text-xs sm:text-sm font-bold text-slate-900 block">
+                        Cliente perguntando preço e tamanho o dia todo
+                      </strong>
+                      <p className="text-xs text-slate-500 leading-relaxed">
+                        Dezenas de mensagens manuais no direct e no WhatsApp para tirar dúvidas básicas que poderiam estar visíveis com 1 clique.
+                      </p>
+                    </div>
+                  </li>
+
+                  <li className="flex items-start gap-3">
+                    <div className="h-6 w-6 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <X className="w-3.5 h-3.5 stroke-[2.5]" />
+                    </div>
+                    <div className="space-y-0.5">
+                      <strong className="text-xs sm:text-sm font-bold text-slate-900 block">
+                        Pedidos anotados no papel com erro
+                      </strong>
+                      <p className="text-xs text-slate-500 leading-relaxed">
+                        Anotações perdidas em comandas ou blocos de notas, esquecimento de adicionais, troco errado e endereço incompleto.
+                      </p>
+                    </div>
+                  </li>
+                </ul>
               </div>
-              <h3 className="text-base font-bold text-slate-900">0% de Comissões por Venda</h3>
-              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-                Todo o lucro da venda é seu. Sem surpresas na fatura no fim do mês e sem porcentagens descontadas dos seus produtos.
-              </p>
+
+              <div className="pt-4 border-t border-rose-200/60 text-[11px] text-rose-600 font-medium">
+                Resultado: Clientes desistem antes de comprar e o lojista perde horas no chat.
+              </div>
             </div>
 
-            {/* Card 2 */}
-            <div className="bg-white border border-slate-200/80 p-6 rounded-2xl space-y-3 shadow-2xs hover:border-slate-300 transition-all">
-              <div className="h-9 w-9 rounded-xl bg-slate-100 border border-slate-200 text-slate-700 flex items-center justify-center">
-                <FileSpreadsheet className="w-4 h-4 stroke-[2.2]" />
-              </div>
-              <h3 className="text-base font-bold text-slate-900">Google Sheets como Banco de Dados</h3>
-              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-                Altere preços, estoque e fotos pelo celular no aplicativo do Google Sheets ou no Painel Administrativo.
-              </p>
-            </div>
+            {/* Card 2: 'Com Nosso Catálogo' (Fundo branco com borda destacada e sombra) */}
+            <div className="rounded-3xl bg-white border-2 border-emerald-500/90 p-6 sm:p-8 space-y-6 flex flex-col justify-between shadow-xl shadow-slate-900/5 relative ring-1 ring-emerald-500/20">
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-bold">
+                    <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
+                    Com Nosso Catálogo
+                  </span>
+                  <span className="text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200/80">
+                    Moderno & Rápido
+                  </span>
+                </div>
 
-            {/* Card 3 */}
-            <div className="bg-white border border-slate-200/80 p-6 rounded-2xl space-y-3 shadow-2xs hover:border-slate-300 transition-all">
-              <div className="h-9 w-9 rounded-xl bg-emerald-50 border border-emerald-100 text-emerald-700 flex items-center justify-center">
-                <QrCode className="w-4 h-4 stroke-[2.2]" />
-              </div>
-              <h3 className="text-base font-bold text-slate-900">Chave PIX Rápida com 1 Clique</h3>
-              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-                O cliente copia sua chave no checkout sem precisar pedir no WhatsApp, acelerando pagamentos e reduzindo desistências.
-              </p>
-            </div>
+                <h3 className="text-lg sm:text-xl font-bold text-slate-900 leading-tight">
+                  Vendas rápidas, automáticas e organizadas
+                </h3>
+                <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+                  O cliente tem autonomia para navegar e o pedido chega pronto para faturar.
+                </p>
 
-            {/* Card 4 */}
-            <div className="bg-white border border-slate-200/80 p-6 rounded-2xl space-y-3 shadow-2xs hover:border-slate-300 transition-all">
-              <div className="h-9 w-9 rounded-xl bg-slate-100 border border-slate-200 text-slate-700 flex items-center justify-center">
-                <Clock className="w-4 h-4 stroke-[2.2]" />
-              </div>
-              <h3 className="text-base font-bold text-slate-900">Horário & Status Aberto/Fechado</h3>
-              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-                Com apenas 1 toque você define se está aberto agora ou recebendo pedidos agendados para abertura com aviso amigável.
-              </p>
-            </div>
+                <ul className="space-y-4 pt-2">
+                  <li className="flex items-start gap-3">
+                    <div className="h-6 w-6 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <Check className="w-3.5 h-3.5 stroke-[2.5]" />
+                    </div>
+                    <div className="space-y-0.5">
+                      <strong className="text-xs sm:text-sm font-bold text-slate-900 block">
+                        Link limpo na bio do Instagram
+                      </strong>
+                      <p className="text-xs text-slate-500 leading-relaxed">
+                        Carregamento instantâneo no navegador do celular, sem necessidade de baixar aplicativo e sempre atualizado em tempo real.
+                      </p>
+                    </div>
+                  </li>
 
-            {/* Card 5 */}
-            <div className="bg-white border border-slate-200/80 p-6 rounded-2xl space-y-3 shadow-2xs hover:border-slate-300 transition-all">
-              <div className="h-9 w-9 rounded-xl bg-emerald-50 border border-emerald-100 text-emerald-700 flex items-center justify-center">
-                <Palette className="w-4 h-4 stroke-[2.2]" />
-              </div>
-              <h3 className="text-base font-bold text-slate-900">Sua Marca & Identidade Visual</h3>
-              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-                Personalize com suas cores institucionais, banners rotativos de promoções e logotipo próprio em alta definição.
-              </p>
-            </div>
+                  <li className="flex items-start gap-3">
+                    <div className="h-6 w-6 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <Check className="w-3.5 h-3.5 stroke-[2.5]" />
+                    </div>
+                    <div className="space-y-0.5">
+                      <strong className="text-xs sm:text-sm font-bold text-slate-900 block">
+                        Cliente escolhe cor/tamanho e clica em pedir
+                      </strong>
+                      <p className="text-xs text-slate-500 leading-relaxed">
+                        Fotos nítidas, variações organizadas, cálculo automático de frete ou retirada e botão para copiar chave PIX em 1 toque.
+                      </p>
+                    </div>
+                  </li>
 
-            {/* Card 6 */}
-            <div className="bg-white border border-slate-200/80 p-6 rounded-2xl space-y-3 shadow-2xs hover:border-slate-300 transition-all">
-              <div className="h-9 w-9 rounded-xl bg-slate-100 border border-slate-200 text-slate-700 flex items-center justify-center">
-                <ShieldCheck className="w-4 h-4 stroke-[2.2]" />
+                  <li className="flex items-start gap-3">
+                    <div className="h-6 w-6 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <Check className="w-3.5 h-3.5 stroke-[2.5]" />
+                    </div>
+                    <div className="space-y-0.5">
+                      <strong className="text-xs sm:text-sm font-bold text-slate-900 block">
+                        Pedido chega organizado e somado no WhatsApp
+                      </strong>
+                      <p className="text-xs text-slate-500 leading-relaxed">
+                        Mensagem pré-formatada com itens, adicionais, dados de entrega e valor total calculado, pronto para você só despachar.
+                      </p>
+                    </div>
+                  </li>
+                </ul>
               </div>
-              <h3 className="text-base font-bold text-slate-900">Checkout Otimizado em 2 Passos</h3>
-              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-                O cliente escolhe entrega ou retirada, informa endereço, método de pagamento e troco. Retém dados para compras futuras.
-              </p>
+
+              <div className="pt-4 border-t border-slate-100 text-[11px] text-emerald-700 font-semibold flex items-center justify-between">
+                <span>Resultado: Mais vendas diárias e menos tempo no chat.</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </div>
             </div>
           </div>
         </div>
       </section>
 
       {/* ============================================================ */}
-      {/* 4. CALCULADORA DE ECONOMIA (MARKETPLACE X CATÁLOGO PRÓPRIO)  */}
+      {/* 4. BENTO GRID DE RECURSOS (4 BLOCOS ASSIMÉTRICOS)            */}
       {/* ============================================================ */}
-      <section id="calculadora" className="py-16 sm:py-24 max-w-5xl mx-auto px-4 sm:px-6">
+      <section id="recursos" className="py-20 sm:py-28 bg-white border-t border-slate-200/80">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 space-y-12 sm:space-y-16">
+          {/* Cabeçalho do Bento Grid */}
+          <div className="text-center max-w-2xl mx-auto space-y-3">
+            <span className="text-xs font-semibold text-emerald-700 uppercase tracking-wider">
+              Tecnologia e Performance
+            </span>
+            <h2 className="text-2xl sm:text-4xl font-extrabold text-[#0F172A] tracking-tight">
+              Tudo o que seu comércio precisa para vender em alto nível
+            </h2>
+            <p className="text-sm sm:text-base text-slate-600 leading-relaxed">
+              Recursos de alta conversão empacotados em uma interface limpa, sem complexidade de programação.
+            </p>
+          </div>
+
+          {/* Grid Assimétrico 4 Blocos */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8">
+            {/* Bloco 1 (Largo - col-span-12 lg:col-span-7): 'Sua Marca, Seu Domínio' */}
+            <div className="lg:col-span-7 bg-slate-50/80 border border-slate-200/80 rounded-3xl p-6 sm:p-8 space-y-6 flex flex-col justify-between shadow-2xs hover:border-slate-300 transition-all">
+              <div className="space-y-3">
+                <div className="h-9 w-9 rounded-xl bg-slate-900 text-white flex items-center justify-center shadow-xs">
+                  <Globe className="w-4 h-4 text-emerald-400" />
+                </div>
+                <h3 className="text-xl font-bold text-slate-900 tracking-tight">
+                  Sua Marca, Seu Domínio
+                </h3>
+                <p className="text-xs sm:text-sm text-slate-600 leading-relaxed max-w-xl">
+                  Tenha presença profissional no mercado. Use seu próprio domínio personalizado (ex: <code className="text-slate-800 font-mono text-xs bg-slate-200/70 px-1 py-0.5 rounded">sualoja.com.br</code>) ou subdomínio instantâneo, com conexão segura e otimização para carregamento mobile.
+                </p>
+              </div>
+
+              {/* Input simulado de navegador com URL e Badge SSL */}
+              <div className="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-sm space-y-3">
+                {/* Topbar com botões de janela */}
+                <div className="flex items-center gap-1.5 pb-1">
+                  <span className="h-2.5 w-2.5 rounded-full bg-slate-300" />
+                  <span className="h-2.5 w-2.5 rounded-full bg-slate-300" />
+                  <span className="h-2.5 w-2.5 rounded-full bg-slate-300" />
+                  <span className="text-[10px] text-slate-400 ml-2 font-mono">Navegador do Cliente</span>
+                </div>
+
+                {/* Barra de Endereço Simulada */}
+                <div className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 flex items-center justify-between text-xs font-mono shadow-inner gap-2">
+                  <div className="flex items-center gap-2 truncate">
+                    <Lock className="w-3.5 h-3.5 text-emerald-600 flex-shrink-0" />
+                    <span className="text-slate-400 text-[11px]">https://</span>
+                    <span className="text-slate-900 font-semibold text-xs truncate">
+                      loja.seudominio.com.br
+                    </span>
+                  </div>
+                  {/* Badge de certificado SSL grátis */}
+                  <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200/80 flex-shrink-0">
+                    <ShieldCheck className="w-3 h-3" />
+                    Certificado SSL Grátis
+                  </span>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-3 text-[11px] text-slate-500 pt-1">
+                  <span className="flex items-center gap-1">
+                    <Check className="w-3 h-3 text-emerald-600" />
+                    Sem menções a terceiros
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <Check className="w-3 h-3 text-emerald-600" />
+                    Hospedagem inclusa
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <Check className="w-3 h-3 text-emerald-600" />
+                    Pronto para a bio do Instagram
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Bloco 2 (Médio - col-span-12 lg:col-span-5): 'Zero Comissões' */}
+            <div className="lg:col-span-5 bg-slate-900 text-white rounded-3xl p-6 sm:p-8 space-y-6 flex flex-col justify-between shadow-lg">
+              <div className="space-y-3">
+                <div className="h-9 w-9 rounded-xl bg-emerald-950/80 border border-emerald-500/30 text-emerald-400 flex items-center justify-center">
+                  <Percent className="w-4 h-4 stroke-[2.2]" />
+                </div>
+                <h3 className="text-xl font-bold text-white tracking-tight">
+                  Zero Comissões
+                </h3>
+                <p className="text-xs sm:text-sm text-slate-400 leading-relaxed">
+                  100% do lucro das suas vendas fica direto com você. Sem cobrança de porcentagem por pedido e sem reter dinheiro das suas vendas.
+                </p>
+              </div>
+
+              {/* Destaque Visual 100% do Lucro */}
+              <div className="bg-slate-950/80 border border-slate-800 rounded-2xl p-5 text-center space-y-3">
+                <div className="space-y-0.5">
+                  <span className="text-4xl sm:text-5xl font-black text-emerald-400 tracking-tight block">
+                    100%
+                  </span>
+                  <span className="text-xs text-slate-300 font-semibold tracking-wide uppercase">
+                    Do lucro fica com o lojista
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-800 text-[11px]">
+                  <div className="p-2 rounded-lg bg-slate-900 border border-slate-800 text-left">
+                    <span className="text-slate-500 block">Marketplaces</span>
+                    <span className="text-rose-400 font-bold">18% a 27% por pedido</span>
+                  </div>
+                  <div className="p-2 rounded-lg bg-emerald-950/50 border border-emerald-500/30 text-left">
+                    <span className="text-slate-400 block">Nosso Catálogo</span>
+                    <span className="text-emerald-400 font-bold">0% de taxa (R$ 0,00)</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Bloco 3 (Médio - col-span-12 lg:col-span-5): 'Painel Simples no Celular' */}
+            <div className="lg:col-span-5 bg-slate-50/80 border border-slate-200/80 rounded-3xl p-6 sm:p-8 space-y-6 flex flex-col justify-between shadow-2xs hover:border-slate-300 transition-all">
+              <div className="space-y-3">
+                <div className="h-9 w-9 rounded-xl bg-slate-900 text-white flex items-center justify-center shadow-xs">
+                  <Smartphone className="w-4 h-4 text-emerald-400" />
+                </div>
+                <h3 className="text-xl font-bold text-slate-900 tracking-tight">
+                  Painel Simples no Celular
+                </h3>
+                <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+                  Altere preços, estoque e fotos em segundos. Funciona perfeitamente pelo navegador do smartphone ou conectado à sua planilha Google Sheets.
+                </p>
+              </div>
+
+              {/* Ilustração Visual de Edição Rápida */}
+              <div className="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-sm space-y-3">
+                <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+                  <span className="text-xs font-bold text-slate-900">Edição Rápida de Produto</span>
+                  <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200/80">
+                    Salvo instantaneamente
+                  </span>
+                </div>
+
+                <div className="space-y-2 text-xs">
+                  <div>
+                    <span className="text-[10px] text-slate-400 font-medium block">Preço Promocional</span>
+                    <div className="flex items-center gap-2 mt-0.5">
+                      <span className="px-2.5 py-1 rounded-lg bg-slate-50 border border-slate-200 font-bold text-slate-900">
+                        R$ 38,90
+                      </span>
+                      <span className="text-[10px] text-slate-400 line-through">R$ 44,90</span>
+                      <span className="text-[10px] text-emerald-700 font-bold bg-emerald-50 px-1.5 py-0.5 rounded">
+                        -13% OFF
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between pt-1">
+                    <span className="text-slate-600 text-xs">Estoque Ativo:</span>
+                    <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
+                      <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                      Em Pronta Entrega
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Bloco 4 (Largo - col-span-12 lg:col-span-7): 'Pedido Pré-Formatado' */}
+            <div className="lg:col-span-7 bg-slate-50/80 border border-slate-200/80 rounded-3xl p-6 sm:p-8 space-y-6 flex flex-col justify-between shadow-2xs hover:border-slate-300 transition-all">
+              <div className="space-y-3">
+                <div className="h-9 w-9 rounded-xl bg-slate-900 text-white flex items-center justify-center shadow-xs">
+                  <MessageCircle className="w-4 h-4 text-emerald-400" />
+                </div>
+                <h3 className="text-xl font-bold text-slate-900 tracking-tight">
+                  Pedido Pré-Formatado
+                </h3>
+                <p className="text-xs sm:text-sm text-slate-600 leading-relaxed max-w-xl">
+                  Adeus conversas truncadas. O cliente aperta um botão e você recebe uma mensagem padronizada no WhatsApp com item, tamanho, quantidade e subtotal calculado.
+                </p>
+              </div>
+
+              {/* Caixa de Mensagem Realista do WhatsApp */}
+              <div className="bg-[#EFEAE2] border border-slate-300/80 rounded-2xl p-3 sm:p-4 space-y-2 shadow-inner">
+                <div className="flex items-center justify-between text-[11px] text-slate-600 pb-1 border-b border-slate-300/40">
+                  <div className="flex items-center gap-1.5">
+                    <div className="h-4 w-4 rounded-full bg-emerald-600 text-white flex items-center justify-center text-[9px] font-bold">
+                      W
+                    </div>
+                    <span className="font-semibold text-slate-800">WhatsApp da sua Loja</span>
+                  </div>
+                  <span className="text-[10px] text-slate-500">Hoje às 14:32</span>
+                </div>
+
+                {/* Balão do WhatsApp */}
+                <div className="bg-white rounded-xl rounded-tl-xs p-3 text-xs text-slate-800 shadow-xs space-y-1.5 border border-slate-200/60 max-w-lg">
+                  <p className="font-bold text-slate-900 text-[11px]">
+                    👋 Olá! Gostaria de fazer o seguinte pedido:
+                  </p>
+                  <div className="border-t border-slate-100 pt-1.5 space-y-1 text-[11px] font-mono leading-relaxed">
+                    <p className="font-bold text-slate-900 font-sans">
+                      🛍️ 1x Double Smash Bacon Especial
+                    </p>
+                    <p className="text-slate-600 text-[10px]">
+                      • Ponto: Ao ponto | Molho: Da Casa
+                    </p>
+                    <p className="text-slate-600 text-[10px]">
+                      • Tipo: Entrega (Rua das Flores, 142 - Apto 32B)
+                    </p>
+                    <p className="text-slate-600 text-[10px]">
+                      • Pagamento: PIX (chave copiada no catálogo)
+                    </p>
+                    <div className="pt-1 border-t border-slate-100 flex items-center justify-between font-sans text-xs">
+                      <span className="font-extrabold text-slate-900">Total: R$ 44,90</span>
+                      <span className="text-[10px] text-slate-400">14:32 ✓✓</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ============================================================ */}
+      {/* 5. CALCULADORA DE ECONOMIA (MARKETPLACE X CATÁLOGO PRÓPRIO)  */}
+      {/* ============================================================ */}
+      <section id="calculadora" className="py-20 sm:py-28 max-w-5xl mx-auto px-4 sm:px-6">
         <div className="text-center max-w-2xl mx-auto mb-12 sm:mb-16 space-y-3">
           <span className="text-xs font-semibold text-emerald-700 uppercase tracking-wider">
             Calculadora de Economia Real
@@ -735,9 +1031,9 @@ export default function SaaSCommercialLandingPage() {
       </section>
 
       {/* ============================================================ */}
-      {/* 5. PROVA SOCIAL & DEPOIMENTOS DE LOJISTAS                    */}
+      {/* 6. PROVA SOCIAL & DEPOIMENTOS DE LOJISTAS                    */}
       {/* ============================================================ */}
-      <section className="py-16 sm:py-24 bg-slate-50/60 border-t border-slate-200/80">
+      <section className="py-20 sm:py-28 bg-slate-50/60 border-t border-slate-200/80">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 space-y-12 sm:space-y-16">
           {/* Métricas Principais da Plataforma */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
@@ -813,9 +1109,9 @@ export default function SaaSCommercialLandingPage() {
       </section>
 
       {/* ============================================================ */}
-      {/* 6. TABELA DE PLANOS & PREÇOS (TRANSPARÊNCIA TOTAL)           */}
+      {/* 7. TABELA DE PLANOS & PREÇOS (TRANSPARÊNCIA TOTAL)           */}
       {/* ============================================================ */}
-      <section id="precos" className="py-16 sm:py-24 max-w-4xl mx-auto px-4 sm:px-6">
+      <section id="precos" className="py-20 sm:py-28 max-w-4xl mx-auto px-4 sm:px-6">
         <div className="text-center max-w-xl mx-auto mb-10 sm:mb-14 space-y-3">
           <span className="text-xs font-semibold text-emerald-700 uppercase tracking-wider">
             Investimento Transparente
@@ -890,9 +1186,9 @@ export default function SaaSCommercialLandingPage() {
       </section>
 
       {/* ============================================================ */}
-      {/* 7. PERGUNTAS FREQUENTES (FAQ)                                */}
+      {/* 8. PERGUNTAS FREQUENTES (FAQ)                                */}
       {/* ============================================================ */}
-      <section id="faq" className="py-16 sm:py-24 bg-slate-50/60 border-t border-slate-200/80">
+      <section id="faq" className="py-20 sm:py-28 bg-slate-50/60 border-t border-slate-200/80">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 space-y-8">
           <div className="text-center space-y-2">
             <span className="text-xs font-semibold text-emerald-700 uppercase tracking-wider">
@@ -939,9 +1235,9 @@ export default function SaaSCommercialLandingPage() {
       </section>
 
       {/* ============================================================ */}
-      {/* 8. CTA FINAL DE CONVERSÃO                                    */}
+      {/* 9. CTA FINAL DE CONVERSÃO                                    */}
       {/* ============================================================ */}
-      <section className="py-16 sm:py-20 bg-slate-900 text-white text-center">
+      <section className="py-20 sm:py-28 bg-slate-900 text-white text-center">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 space-y-6">
           <h2 className="text-2xl sm:text-4xl font-extrabold tracking-tight">
             Pronto para ver suas vendas no WhatsApp decolarem?
@@ -962,9 +1258,9 @@ export default function SaaSCommercialLandingPage() {
       </section>
 
       {/* ============================================================ */}
-      {/* 9. FOOTER INSTITUCIONAL                                      */}
+      {/* 10. FOOTER INSTITUCIONAL                                     */}
       {/* ============================================================ */}
-      <footer className="bg-white border-t border-slate-200/80 py-10 text-xs text-slate-500">
+      <footer className="bg-white border-t border-slate-200/80 py-12 text-xs text-slate-500">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 space-y-6">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-2">
