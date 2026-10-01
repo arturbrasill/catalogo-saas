@@ -32,10 +32,12 @@ import {
   Lock,
   X,
   XCircle,
+  Flame,
+  BadgeCheck,
 } from 'lucide-react';
 import { formatCurrency } from '@/lib/whatsapp';
 
-// Mock de nichos para demonstração interativa na vitrine do smartphone
+// Mock de nichos para demonstração interativa no Test Drive Instantâneo
 interface NicheData {
   id: string;
   tabLabel: string;
@@ -50,12 +52,39 @@ interface NicheData {
   image: string;
   options: string;
   deliveryTime: string;
+  primaryColor: string;
+  primaryBgLight: string;
+  primaryTextColor: string;
+  primaryBorderColor: string;
+  logoMonogram: string;
+  paletteName: string;
 }
 
 const DEMO_NICHES: NicheData[] = [
   {
+    id: 'fashion',
+    tabLabel: 'Moda & Roupas',
+    storeName: 'Bella Flor Boutique',
+    storeCategory: 'Vestuário Feminino & Coleção',
+    badge: 'Lançamento',
+    productName: 'Vestido Midi Floral Elegance',
+    productDescription: 'Tecido leve premium com caimento fluido, amarração na cintura e estampa botânica exclusiva.',
+    price: 189.9,
+    oldPrice: 229.9,
+    deliveryFee: 0.0, // Frete grátis
+    image: 'https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?w=600&auto=format&fit=crop&q=80',
+    options: 'Tamanho: M • Cor: Terracota',
+    deliveryTime: 'Envio Imediato / Retirada',
+    primaryColor: '#BE185D', // rose-700
+    primaryBgLight: '#FDF2F8', // pink-50
+    primaryTextColor: '#9D174D', // pink-800
+    primaryBorderColor: '#FBCFE8', // pink-200
+    logoMonogram: 'BF',
+    paletteName: 'Terracota & Rosa Elegance',
+  },
+  {
     id: 'food',
-    tabLabel: 'Burgers & Delivery',
+    tabLabel: 'Hamburgueria / Lanches',
     storeName: 'Artesanal Burger & Beer',
     storeCategory: 'Hamburgueria & Porções',
     badge: 'Mais Pedido',
@@ -67,51 +96,33 @@ const DEMO_NICHES: NicheData[] = [
     image: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=600&auto=format&fit=crop&q=80',
     options: 'Ponto: Ao ponto • Molho da Casa',
     deliveryTime: '30-40 min',
-  },
-  {
-    id: 'fashion',
-    tabLabel: 'Moda & Roupas',
-    storeName: 'Bella Flor Boutique',
-    storeCategory: 'Vestuário Feminino',
-    badge: 'Lançamento',
-    productName: 'Vestido Midi Floral Elegance',
-    productDescription: 'Tecido leve premium com caimento fluido, amarração na cintura e estampa botânica exclusiva.',
-    price: 189.9,
-    oldPrice: 229.9,
-    deliveryFee: 15.0,
-    image: 'https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?w=600&auto=format&fit=crop&q=80',
-    options: 'Tamanho: M • Cor: Terracota',
-    deliveryTime: 'Envio Rápido / Retirada',
+    primaryColor: '#D97706', // amber-600
+    primaryBgLight: '#FFFBEB', // amber-50
+    primaryTextColor: '#B45309', // amber-700
+    primaryBorderColor: '#FDE68A', // amber-200
+    logoMonogram: 'AB',
+    paletteName: 'Amber Burger & Warm Gold',
   },
   {
     id: 'beauty',
-    tabLabel: 'Cosméticos & Skincare',
+    tabLabel: 'Cosméticos',
     storeName: 'Glow Natural Skincare',
-    storeCategory: 'Cosméticos Naturais',
-    badge: 'Vegano',
+    storeCategory: 'Cosméticos Naturais & Skincare',
+    badge: '100% Vegano',
     productName: 'Sérum Facial Vitamina C 15%',
     productDescription: 'Fórmula antioxidante pura com ácido hialurônico de triplo peso molecular e toque seco.',
     price: 89.9,
     oldPrice: 119.9,
-    deliveryFee: 10.0,
+    deliveryFee: 0.0, // Retirada / Frete Grátis
     image: 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=600&auto=format&fit=crop&q=80',
     options: 'Frasco: 30ml • Toque Seco',
     deliveryTime: 'Pronta Entrega',
-  },
-  {
-    id: 'shoes',
-    tabLabel: 'Calçados & Tênis',
-    storeName: 'Passo Firme Sneaker Store',
-    storeCategory: 'Calçados Urbanos',
-    badge: 'Destaque',
-    productName: 'Sneaker Streetwear Couro Branco',
-    productDescription: 'Acabamento em couro legítimo macio, solado vulcanizado e palmilha anti-impacto ultra conforto.',
-    price: 249.9,
-    oldPrice: 299.9,
-    deliveryFee: 0.0,
-    image: 'https://images.unsplash.com/photo-1549298916-b41d501d3772?w=600&auto=format&fit=crop&q=80',
-    options: 'Numeração: 41 • Cor: Branco/Gelo',
-    deliveryTime: 'Frete Grátis na Semana',
+    primaryColor: '#059669', // emerald-600
+    primaryBgLight: '#ECFDF5', // emerald-50
+    primaryTextColor: '#047857', // emerald-700
+    primaryBorderColor: '#A7F3D0', // emerald-200
+    logoMonogram: 'GN',
+    paletteName: 'Botanical Emerald & Pure Sage',
   },
 ];
 
@@ -120,7 +131,7 @@ const FAQ_ITEMS = [
   {
     question: 'Vocês cobram alguma comissão ou porcentagem sobre as minhas vendas?',
     answer:
-      'NÃO! Cobramos ZERO comissão por pedido. Você paga apenas a mensalidade fixa do sistema e todo o dinheiro das suas vendas cai direto na sua conta bancária (via PIX, dinheiro ou maquininha). Não retemos um único centavo.',
+      'NÃO! Cobramos ZERO comissão por pedido. Você paga apenas a assinatura fixa do sistema e todo o dinheiro das suas vendas cai direto na sua conta bancária (via PIX, dinheiro ou maquininha). Não retemos um único centavo.',
   },
   {
     question: 'Como os pedidos chegam para mim?',
@@ -167,8 +178,10 @@ export default function SaaSCommercialLandingPage() {
     setTimeout(() => setCopiedPix(false), 2000);
   };
 
-  const commercialWhatsappUrl = `https://wa.me/5511999999999?text=${encodeURIComponent(
-    'Olá! Quero criar o catálogo digital da minha loja e começar meu teste grátis.'
+  // Mensagem solicitada para contratação direta via WhatsApp
+  const commercialHireMessage = 'Olá! Tenho interesse em implantar o catálogo na minha loja.';
+  const commercialWhatsappHireUrl = `https://wa.me/5511999999999?text=${encodeURIComponent(
+    commercialHireMessage
   )}`;
 
   return (
@@ -195,8 +208,8 @@ export default function SaaSCommercialLandingPage() {
 
           {/* Navegação Desktop */}
           <nav className="hidden md:flex items-center gap-6 text-xs font-medium text-slate-600">
-            <a href="#preview" className="hover:text-slate-900 transition-colors">
-              Demonstração
+            <a href="#test-drive" className="hover:text-slate-900 transition-colors">
+              Test Drive
             </a>
             <a href="#comparativo" className="hover:text-slate-900 transition-colors">
               Antes & Depois
@@ -208,7 +221,7 @@ export default function SaaSCommercialLandingPage() {
               Calculadora
             </a>
             <a href="#precos" className="hover:text-slate-900 transition-colors">
-              Planos
+              Preços
             </a>
             <a href="#faq" className="hover:text-slate-900 transition-colors">
               Dúvidas
@@ -273,7 +286,7 @@ export default function SaaSCommercialLandingPage() {
 
             {/* Botão 2 (Outline/Sutil): 'Criar Catálogo da Minha Loja' */}
             <a
-              href={commercialWhatsappUrl}
+              href={commercialWhatsappHireUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl text-sm font-semibold text-slate-700 bg-white hover:bg-slate-50 border border-slate-200/90 shadow-2xs hover:border-slate-300 active:scale-[0.98] transition-all cursor-pointer"
@@ -300,10 +313,26 @@ export default function SaaSCommercialLandingPage() {
           </div>
         </div>
 
-        {/* PREVIEW VISUAL DO PRODUTO (CONTAINER + MOCKUP SMARTPHONE) */}
-        <div id="preview" className="mt-12 sm:mt-16 max-w-5xl mx-auto px-4 sm:px-6">
-          {/* Seletor de Segmentos */}
-          <div className="flex items-center justify-center gap-2 mb-6 sm:mb-8 overflow-x-auto py-1">
+        {/* ============================================================ */}
+        {/* BLOCO 1: 'TEST DRIVE INSTANTÂNEO' COM 3 NICHOS E MOCKUP     */}
+        {/* ============================================================ */}
+        <div id="test-drive" className="mt-14 sm:mt-18 max-w-5xl mx-auto px-4 sm:px-6">
+          {/* Cabeçalho do Test Drive */}
+          <div className="text-center max-w-xl mx-auto mb-6 sm:mb-8 space-y-2">
+            <span className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200/80">
+              <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
+              Test Drive Instantâneo
+            </span>
+            <h3 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
+              Veja a vitrine se adaptar à identidade do seu negócio
+            </h3>
+            <p className="text-xs sm:text-sm text-slate-500">
+              Clique nos 3 nichos abaixo para alternar a logo, cores primárias e produtos em tempo real:
+            </p>
+          </div>
+
+          {/* Barra Interativa com 3 Botões de Nichos Específicos */}
+          <div className="flex items-center justify-center gap-2.5 sm:gap-3 mb-6 sm:mb-8 overflow-x-auto py-1">
             {DEMO_NICHES.map((niche) => {
               const active = selectedNiche.id === niche.id;
               return (
@@ -311,13 +340,22 @@ export default function SaaSCommercialLandingPage() {
                   key={niche.id}
                   type="button"
                   onClick={() => setSelectedNiche(niche)}
-                  className={`px-3 sm:px-4 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
+                  className={`px-4 sm:px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold whitespace-nowrap transition-all duration-200 cursor-pointer flex items-center gap-2 ${
                     active
-                      ? 'bg-slate-900 text-white shadow-xs'
-                      : 'bg-slate-100 text-slate-600 hover:text-slate-900 hover:bg-slate-200/70'
+                      ? 'bg-slate-900 text-white shadow-md ring-2 ring-slate-900/10 scale-102'
+                      : 'bg-slate-100 text-slate-600 hover:text-slate-900 hover:bg-slate-200/80'
                   }`}
                 >
-                  {niche.tabLabel}
+                  <span
+                    className="w-2.5 h-2.5 rounded-full"
+                    style={{ backgroundColor: niche.primaryColor }}
+                  />
+                  <span>{niche.tabLabel}</span>
+                  {active && (
+                    <span className="text-[10px] font-semibold opacity-75 hidden sm:inline">
+                      • Ativo
+                    </span>
+                  )}
                 </button>
               );
             })}
@@ -325,8 +363,11 @@ export default function SaaSCommercialLandingPage() {
 
           {/* Container Centralizado com Sombra Difusa (shadow-2xl) */}
           <div className="relative rounded-3xl sm:rounded-[36px] bg-slate-50/80 border border-slate-200/80 p-4 sm:p-8 lg:p-10 shadow-2xl shadow-slate-900/10">
-            {/* Glow difuso ambiente */}
-            <div className="absolute inset-x-8 top-10 bottom-10 bg-emerald-500/5 rounded-full blur-3xl -z-10 pointer-events-none" />
+            {/* Glow difuso que assume a cor do nicho selecionado */}
+            <div
+              className="absolute inset-x-8 top-10 bottom-10 rounded-full blur-3xl -z-10 opacity-20 pointer-events-none transition-colors duration-300"
+              style={{ backgroundColor: selectedNiche.primaryColor }}
+            />
 
             {/* Mockup Responsivo de Smartphone */}
             <div className="w-full max-w-[340px] sm:max-w-[360px] mx-auto bg-slate-950 rounded-[44px] sm:rounded-[48px] p-2.5 sm:p-3 ring-1 ring-slate-800 shadow-[0_20px_50px_-10px_rgba(15,23,42,0.35)]">
@@ -338,27 +379,43 @@ export default function SaaSCommercialLandingPage() {
 
               {/* Tela do Celular com Vitrine e Sacola Aberta */}
               <div className="bg-white rounded-[34px] sm:rounded-[38px] overflow-hidden text-slate-900 flex flex-col border border-slate-100 relative select-none font-sans min-h-[580px]">
-                {/* 1. Header do Catálogo na Tela */}
+                {/* 1. Header do Catálogo na Tela (Logo Monograma + Cores Adaptadas) */}
                 <div className="bg-white px-3.5 py-3 border-b border-slate-100 flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-lg bg-emerald-50 border border-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-xs shadow-2xs">
-                      {selectedNiche.storeName.substring(0, 2).toUpperCase()}
+                    <div
+                      className="w-8 h-8 rounded-lg flex items-center justify-center font-extrabold text-xs shadow-2xs border transition-all duration-200"
+                      style={{
+                        backgroundColor: selectedNiche.primaryBgLight,
+                        color: selectedNiche.primaryColor,
+                        borderColor: selectedNiche.primaryBorderColor,
+                      }}
+                    >
+                      {selectedNiche.logoMonogram}
                     </div>
                     <div>
-                      <h3 className="text-xs font-bold text-slate-900 leading-tight">
+                      <h4 className="text-xs font-bold text-slate-900 leading-tight">
                         {selectedNiche.storeName}
-                      </h3>
+                      </h4>
                       <div className="flex items-center gap-1 mt-0.5">
-                        <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                        <span className="text-[10px] text-emerald-700 font-semibold">
+                        <span
+                          className="h-1.5 w-1.5 rounded-full animate-pulse"
+                          style={{ backgroundColor: selectedNiche.primaryColor }}
+                        />
+                        <span
+                          className="text-[10px] font-semibold"
+                          style={{ color: selectedNiche.primaryTextColor }}
+                        >
                           Aberto agora • {selectedNiche.deliveryTime}
                         </span>
                       </div>
                     </div>
                   </div>
 
-                  {/* Botão da Sacola com Contador 1 */}
-                  <div className="h-7 px-2 rounded-lg bg-slate-900 text-white flex items-center gap-1 text-[11px] font-bold shadow-2xs">
+                  {/* Botão da Sacola com Cor do Tema */}
+                  <div
+                    className="h-7 px-2.5 rounded-lg text-white flex items-center gap-1 text-[11px] font-bold shadow-2xs transition-colors duration-200"
+                    style={{ backgroundColor: selectedNiche.primaryColor }}
+                  >
                     <ShoppingBag className="w-3.5 h-3.5" />
                     <span>1</span>
                   </div>
@@ -374,7 +431,10 @@ export default function SaaSCommercialLandingPage() {
                         alt={selectedNiche.productName}
                         className="w-full h-full object-cover"
                       />
-                      <span className="absolute top-2 left-2 bg-slate-900/90 backdrop-blur-xs text-white text-[10px] font-semibold px-2 py-0.5 rounded-full">
+                      <span
+                        className="absolute top-2 left-2 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-xs transition-colors duration-200"
+                        style={{ backgroundColor: selectedNiche.primaryColor }}
+                      >
                         {selectedNiche.badge}
                       </span>
                     </div>
@@ -409,11 +469,18 @@ export default function SaaSCommercialLandingPage() {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-1.5">
                       <span className="text-xs font-extrabold text-slate-900">Sua Sacola</span>
-                      <span className="text-[10px] font-bold bg-emerald-50 text-emerald-700 px-1.5 py-0.2 rounded-full border border-emerald-200/60">
+                      <span
+                        className="text-[10px] font-bold px-1.5 py-0.2 rounded-full border transition-colors duration-200"
+                        style={{
+                          backgroundColor: selectedNiche.primaryBgLight,
+                          color: selectedNiche.primaryTextColor,
+                          borderColor: selectedNiche.primaryBorderColor,
+                        }}
+                      >
                         1 item
                       </span>
                     </div>
-                    <span className="text-[10px] text-slate-400">Entrega rápida</span>
+                    <span className="text-[10px] text-slate-400">{selectedNiche.deliveryTime}</span>
                   </div>
 
                   {/* Item Selecionado */}
@@ -461,7 +528,7 @@ export default function SaaSCommercialLandingPage() {
                     </div>
                     <div className="flex justify-between text-xs font-extrabold text-slate-900 pt-1 border-t border-slate-100">
                       <span>Total do Pedido</span>
-                      <span className="text-emerald-700">
+                      <span style={{ color: selectedNiche.primaryColor }}>
                         {formatCurrency(selectedNiche.price + selectedNiche.deliveryFee, 'BRL')}
                       </span>
                     </div>
@@ -470,16 +537,23 @@ export default function SaaSCommercialLandingPage() {
                   {/* Pílula de Chave PIX Rápida */}
                   <div
                     onClick={handleCopyPix}
-                    className="p-2 rounded-xl bg-emerald-50/80 border border-emerald-200/80 flex items-center justify-between text-[10px] cursor-pointer hover:bg-emerald-100/60 transition-colors"
+                    className="p-2 rounded-xl border flex items-center justify-between text-[10px] cursor-pointer transition-colors"
+                    style={{
+                      backgroundColor: selectedNiche.primaryBgLight,
+                      borderColor: selectedNiche.primaryBorderColor,
+                    }}
                   >
-                    <div className="flex items-center gap-1.5 text-emerald-950 font-semibold truncate">
-                      <QrCode className="w-3.5 h-3.5 text-emerald-600 flex-shrink-0" />
-                      <span className="truncate">PIX da loja: 11999999999</span>
+                    <div className="flex items-center gap-1.5 font-semibold truncate" style={{ color: selectedNiche.primaryTextColor }}>
+                      <QrCode className="w-3.5 h-3.5 flex-shrink-0" />
+                      <span className="truncate">PIX oficial: 11999999999</span>
                     </div>
-                    <span className="flex items-center gap-1 font-bold text-emerald-700 bg-white px-1.5 py-0.5 rounded shadow-2xs flex-shrink-0">
+                    <span
+                      className="flex items-center gap-1 font-bold bg-white px-1.5 py-0.5 rounded shadow-2xs flex-shrink-0"
+                      style={{ color: selectedNiche.primaryColor }}
+                    >
                       {copiedPix ? (
                         <>
-                          <Check className="w-3 h-3 text-emerald-600" />
+                          <Check className="w-3 h-3" />
                           <span>Copiado</span>
                         </>
                       ) : (
@@ -491,11 +565,12 @@ export default function SaaSCommercialLandingPage() {
                     </span>
                   </div>
 
-                  {/* Botão de Finalização no WhatsApp */}
+                  {/* Botão de Finalização no WhatsApp com Cor do Tema */}
                   <div className="pt-0.5">
                     <Link
                       href="/?tenant=loja_exemplo"
-                      className="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-sm transition-colors cursor-pointer"
+                      className="w-full py-2.5 rounded-xl text-white font-bold text-xs flex items-center justify-center gap-2 shadow-sm transition-all duration-200 cursor-pointer hover:brightness-105 active:scale-[0.99]"
+                      style={{ backgroundColor: selectedNiche.primaryColor }}
                     >
                       <MessageCircle className="w-3.5 h-3.5" />
                       <span>
@@ -508,13 +583,17 @@ export default function SaaSCommercialLandingPage() {
               </div>
             </div>
 
-            {/* Legenda Explicativa */}
-            <div className="mt-6 text-center text-xs text-slate-500 max-w-md mx-auto space-y-1">
-              <p className="font-semibold text-slate-700">
-                Experiência real sem downloads nem senhas para o cliente.
-              </p>
-              <p>
-                O cliente abre pelo link da sua bio do Instagram, escolhe as opções e envia a mensagem pronta direto para você.
+            {/* Legenda Informativa com Detalhes da Adaptação Visual */}
+            <div className="mt-6 text-center text-xs text-slate-500 max-w-lg mx-auto space-y-1">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white border border-slate-200 text-slate-700 font-semibold shadow-2xs">
+                <span
+                  className="w-2 h-2 rounded-full"
+                  style={{ backgroundColor: selectedNiche.primaryColor }}
+                />
+                <span>Paleta ativa: {selectedNiche.paletteName}</span>
+              </div>
+              <p className="text-[11px] text-slate-500 pt-1">
+                Logo personalizada, cores primárias, banners e dados sincronizados via Google Sheets ou Painel Admin.
               </p>
             </div>
           </div>
@@ -719,7 +798,6 @@ export default function SaaSCommercialLandingPage() {
 
               {/* Input simulado de navegador com URL e Badge SSL */}
               <div className="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-sm space-y-3">
-                {/* Topbar com botões de janela */}
                 <div className="flex items-center gap-1.5 pb-1">
                   <span className="h-2.5 w-2.5 rounded-full bg-slate-300" />
                   <span className="h-2.5 w-2.5 rounded-full bg-slate-300" />
@@ -727,7 +805,6 @@ export default function SaaSCommercialLandingPage() {
                   <span className="text-[10px] text-slate-400 ml-2 font-mono">Navegador do Cliente</span>
                 </div>
 
-                {/* Barra de Endereço Simulada */}
                 <div className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 flex items-center justify-between text-xs font-mono shadow-inner gap-2">
                   <div className="flex items-center gap-2 truncate">
                     <Lock className="w-3.5 h-3.5 text-emerald-600 flex-shrink-0" />
@@ -736,7 +813,6 @@ export default function SaaSCommercialLandingPage() {
                       loja.seudominio.com.br
                     </span>
                   </div>
-                  {/* Badge de certificado SSL grátis */}
                   <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200/80 flex-shrink-0">
                     <ShieldCheck className="w-3 h-3" />
                     Certificado SSL Grátis
@@ -1109,78 +1185,216 @@ export default function SaaSCommercialLandingPage() {
       </section>
 
       {/* ============================================================ */}
-      {/* 7. TABELA DE PLANOS & PREÇOS (TRANSPARÊNCIA TOTAL)           */}
+      {/* 7. SEÇÃO DE PREÇOS (TRANSPARÊNCIA TOTAL PARA O COMÉRCIO)     */}
       {/* ============================================================ */}
-      <section id="precos" className="py-20 sm:py-28 max-w-4xl mx-auto px-4 sm:px-6">
-        <div className="text-center max-w-xl mx-auto mb-10 sm:mb-14 space-y-3">
+      <section id="precos" className="py-20 sm:py-28 max-w-5xl mx-auto px-4 sm:px-6 space-y-12 sm:space-y-16">
+        <div className="text-center max-w-2xl mx-auto space-y-3">
           <span className="text-xs font-semibold text-emerald-700 uppercase tracking-wider">
-            Investimento Transparente
+            Preços Transparentes
           </span>
           <h2 className="text-2xl sm:text-4xl font-extrabold text-[#0F172A] tracking-tight">
-            Plano único, sem pegadinhas nem fidelidade
+            Planos simples, honestos e sem pegadinhas
           </h2>
-          <p className="text-sm text-slate-600">
-            Comece com 30 dias de teste grátis. Apenas R$ 129,90/mês após o teste. Cancele quando quiser com 1 clique.
+          <p className="text-sm sm:text-base text-slate-600">
+            Acesso completo e ilimitado para transformar seu comércio. Escolha a periodicidade ideal para o seu negócio:
           </p>
         </div>
 
-        <div className="max-w-md mx-auto">
-          <div className="bg-white border-2 border-slate-900 rounded-3xl p-6 sm:p-8 space-y-6 shadow-xl relative">
-            <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-[11px] font-semibold uppercase tracking-wider px-3.5 py-0.5 rounded-full whitespace-nowrap">
-              30 Dias Grátis para Testar
+        {/* Selos em Destaque: 'Sem fidelidade' e 'Sem taxas sobre suas vendas' */}
+        <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-8 pt-1">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-slate-50 border border-slate-200 text-xs sm:text-sm font-bold text-slate-800 shadow-2xs">
+            <ShieldCheck className="w-4 h-4 text-emerald-600" />
+            <span>Sem fidelidade</span>
+            <span className="text-slate-400 font-normal hidden sm:inline">(Cancele quando quiser)</span>
+          </div>
+
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-emerald-50 border border-emerald-200 text-xs sm:text-sm font-bold text-emerald-900 shadow-2xs">
+            <Percent className="w-4 h-4 text-emerald-600" />
+            <span>Sem taxas sobre suas vendas</span>
+            <span className="text-emerald-700 font-normal hidden sm:inline">(0% de comissão)</span>
+          </div>
+
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-slate-50 border border-slate-200 text-xs sm:text-sm font-bold text-slate-800 shadow-2xs">
+            <Sparkles className="w-4 h-4 text-emerald-600" />
+            <span>30 dias de teste grátis</span>
+            <span className="text-slate-400 font-normal hidden sm:inline">(Sem cartão)</span>
+          </div>
+        </div>
+
+        {/* Tabela de 2 Planos Claros com Foco em Legibilidade e Badges de Valor */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-stretch max-w-4xl mx-auto">
+          {/* Card 1: Mensalidade Única / Plano Mensal */}
+          <div className="bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 space-y-6 flex flex-col justify-between shadow-sm hover:border-slate-300 transition-all">
+            <div className="space-y-5">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-lg font-bold text-slate-900">Mensalidade Única</h3>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    Máxima flexibilidade para começar hoje
+                  </p>
+                </div>
+                <span className="text-[11px] font-bold text-slate-700 bg-slate-100 border border-slate-200 px-2.5 py-1 rounded-full">
+                  Sem Fidelidade
+                </span>
+              </div>
+
+              <div className="border-y border-slate-100 py-4">
+                <div className="flex items-baseline gap-1.5">
+                  <span className="text-4xl font-extrabold text-slate-900 tracking-tight">R$ 129,90</span>
+                  <span className="text-xs text-slate-500 font-medium">/mês</span>
+                </div>
+                <span className="text-[11px] text-slate-500 block mt-1">
+                  Primeiros 30 dias 100% grátis • Renovação mensal simples
+                </span>
+              </div>
+
+              {/* Lista Completa e Clara do que está incluso */}
+              <ul className="space-y-3.5 text-xs sm:text-sm text-slate-700">
+                <li className="flex items-center gap-2.5">
+                  <Check className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+                  <span><strong>Hospedagem Inclusa</strong> de alta performance</span>
+                </li>
+                <li className="flex items-center gap-2.5">
+                  <Check className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+                  <span><strong>Domínio Próprio</strong> (.com.br) ou link exclusivo</span>
+                </li>
+                <li className="flex items-center gap-2.5">
+                  <Check className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+                  <span><strong>Suporte Direto</strong> humanizado no WhatsApp</span>
+                </li>
+                <li className="flex items-center gap-2.5">
+                  <Check className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+                  <span><strong>Painel de Gestão</strong> para celular e computador</span>
+                </li>
+                <li className="flex items-center gap-2.5">
+                  <Check className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+                  <span><strong>Atualizações Ilimitadas</strong> (produtos, fotos e preços)</span>
+                </li>
+                <li className="flex items-center gap-2.5">
+                  <Check className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+                  <span>Google Sheets integrado em tempo real</span>
+                </li>
+                <li className="flex items-center gap-2.5">
+                  <Check className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+                  <span>Chave PIX com botão de copiar em 1 clique</span>
+                </li>
+                <li className="flex items-center gap-2.5">
+                  <Check className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+                  <span><strong>0% de taxas</strong> sobre suas vendas</span>
+                </li>
+              </ul>
+            </div>
+
+            {/* Ações: WhatsApp Comercial Obrigatório + Link Direto */}
+            <div className="space-y-2 pt-4">
+              <a
+                href={commercialWhatsappHireUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full inline-flex items-center justify-center gap-2 py-3.5 px-4 rounded-xl text-xs sm:text-sm font-semibold text-slate-800 bg-slate-100 hover:bg-slate-200 border border-slate-200 shadow-2xs transition-colors cursor-pointer"
+              >
+                <MessageCircle className="w-4 h-4 text-emerald-600" />
+                <span>Contratar no WhatsApp</span>
+              </a>
+
+              <Link
+                href="/criar-loja?plan=monthly"
+                className="w-full inline-flex items-center justify-center gap-1.5 py-2 text-[11px] font-medium text-slate-500 hover:text-slate-800 transition-colors"
+              >
+                <span>Ou criar loja online agora</span>
+                <ArrowRight className="w-3 h-3" />
+              </Link>
+            </div>
+          </div>
+
+          {/* Card 2: Plano Anual (Destaque / Recomendado) */}
+          <div className="bg-white border-2 border-slate-900 rounded-3xl p-6 sm:p-8 space-y-6 flex flex-col justify-between shadow-xl relative ring-1 ring-slate-900/10">
+            {/* Badge de Valor no Topo */}
+            <span className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-[11px] font-bold uppercase tracking-wider px-3.5 py-1 rounded-full whitespace-nowrap shadow-md flex items-center gap-1.5">
+              <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
+              <span>Plano Anual • Economize R$ 480</span>
             </span>
 
-            <div>
-              <h3 className="text-lg font-bold text-slate-900">Plano Mensal Completo</h3>
-              <p className="text-xs text-slate-500 mt-0.5">
-                Acesso irrestrito a todos os recursos da plataforma.
-              </p>
-            </div>
-
-            <div className="border-y border-slate-100 py-4">
-              <div className="flex items-baseline gap-1.5">
-                <span className="text-4xl font-extrabold text-slate-900 tracking-tight">R$ 129,90</span>
-                <span className="text-xs text-slate-500 font-medium">/mês</span>
+            <div className="space-y-5">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-lg font-bold text-slate-900">Plano Anual</h3>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    Melhor custo-benefício (equivale a 2 meses grátis)
+                  </p>
+                </div>
+                <span className="text-[11px] font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-full">
+                  Mais Popular
+                </span>
               </div>
-              <span className="text-[11px] text-slate-500 block mt-1">
-                Sem necessidade de cadastrar cartão para iniciar o teste.
-              </span>
+
+              <div className="border-y border-slate-100 py-4">
+                <div className="flex items-baseline gap-1.5">
+                  <span className="text-4xl font-extrabold text-slate-900 tracking-tight">R$ 89,90</span>
+                  <span className="text-xs text-slate-500 font-medium">/mês</span>
+                </div>
+                <span className="text-[11px] text-emerald-700 font-semibold block mt-1">
+                  R$ 1.078,80 faturado anualmente • Economia imediata de R$ 480
+                </span>
+              </div>
+
+              {/* Lista Completa e Clara do que está incluso */}
+              <ul className="space-y-3.5 text-xs sm:text-sm text-slate-700">
+                <li className="flex items-center gap-2.5">
+                  <Check className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+                  <span><strong>Tudo do Plano Mensal incluso</strong></span>
+                </li>
+                <li className="flex items-center gap-2.5">
+                  <Check className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+                  <span><strong>Hospedagem Inclusa</strong> com CDN ultrarrápida</span>
+                </li>
+                <li className="flex items-center gap-2.5">
+                  <Check className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+                  <span><strong>Domínio Próprio (.com.br)</strong> com SSL grátis</span>
+                </li>
+                <li className="flex items-center gap-2.5">
+                  <Check className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+                  <span><strong>Suporte Prioritário VIP</strong> no WhatsApp</span>
+                </li>
+                <li className="flex items-center gap-2.5">
+                  <Check className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+                  <span><strong>Painel de Gestão Completo</strong> (celular e PC)</span>
+                </li>
+                <li className="flex items-center gap-2.5">
+                  <Check className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+                  <span><strong>Atualizações Ilimitadas</strong> sem qualquer custo</span>
+                </li>
+                <li className="flex items-center gap-2.5">
+                  <Check className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+                  <span>Configuração assistida pela nossa equipe</span>
+                </li>
+                <li className="flex items-center gap-2.5">
+                  <Check className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+                  <span><strong>0% de comissões por venda</strong> sempre</span>
+                </li>
+              </ul>
             </div>
 
-            <ul className="space-y-3 text-xs sm:text-sm text-slate-700">
-              <li className="flex items-center gap-2">
-                <Check className="w-4 h-4 text-emerald-600 flex-shrink-0" />
-                <span><strong>0% de taxas</strong> por pedido</span>
-              </li>
-              <li className="flex items-center gap-2">
-                <Check className="w-4 h-4 text-emerald-600 flex-shrink-0" />
-                <span>Produtos e fotos ilimitados</span>
-              </li>
-              <li className="flex items-center gap-2">
-                <Check className="w-4 h-4 text-emerald-600 flex-shrink-0" />
-                <span>Google Sheets sincronizado em tempo real</span>
-              </li>
-              <li className="flex items-center gap-2">
-                <Check className="w-4 h-4 text-emerald-600 flex-shrink-0" />
-                <span>Chave PIX com cópia em 1 clique</span>
-              </li>
-              <li className="flex items-center gap-2">
-                <Check className="w-4 h-4 text-emerald-600 flex-shrink-0" />
-                <span>Suporte a domínio personalizado próprio</span>
-              </li>
-              <li className="flex items-center gap-2">
-                <Check className="w-4 h-4 text-emerald-600 flex-shrink-0" />
-                <span>Painel administrativo para celular e computador</span>
-              </li>
-            </ul>
+            {/* Ações: WhatsApp Comercial Obrigatório + Link Direto */}
+            <div className="space-y-2 pt-4">
+              <a
+                href={commercialWhatsappHireUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full inline-flex items-center justify-center gap-2 py-3.5 px-4 rounded-xl text-xs sm:text-sm font-semibold text-white bg-slate-900 hover:bg-slate-800 shadow-sm transition-colors cursor-pointer"
+              >
+                <MessageCircle className="w-4 h-4 text-emerald-400" />
+                <span>Garantir Plano Anual no WhatsApp</span>
+              </a>
 
-            <Link
-              href="/criar-loja?plan=monthly"
-              className="w-full inline-flex items-center justify-center gap-2 py-3.5 px-4 rounded-xl text-xs sm:text-sm font-semibold text-white bg-slate-900 hover:bg-slate-800 shadow-sm transition-colors cursor-pointer"
-            >
-              <span>Começar Teste Grátis de 30 Dias</span>
-              <ArrowRight className="w-4 h-4" />
-            </Link>
+              <Link
+                href="/criar-loja?plan=annual"
+                className="w-full inline-flex items-center justify-center gap-1.5 py-2 text-[11px] font-medium text-slate-500 hover:text-slate-800 transition-colors"
+              >
+                <span>Ou criar loja online no plano anual</span>
+                <ArrowRight className="w-3 h-3" />
+              </Link>
+            </div>
           </div>
         </div>
       </section>
@@ -1245,12 +1459,22 @@ export default function SaaSCommercialLandingPage() {
           <p className="text-sm sm:text-base text-slate-400 max-w-xl mx-auto leading-relaxed">
             Crie seu catálogo agora mesmo. Não precisa de cartão de crédito e sua loja fica pronta em menos de 2 minutos.
           </p>
-          <div className="pt-2">
+          <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
+            <a
+              href={commercialWhatsappHireUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-xl text-sm font-semibold text-slate-900 bg-white hover:bg-slate-100 shadow-sm transition-colors cursor-pointer"
+            >
+              <MessageCircle className="w-4 h-4 text-emerald-600" />
+              <span>Falar no WhatsApp Comercial</span>
+            </a>
+
             <Link
               href="/criar-loja"
-              className="inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-xl text-sm font-semibold text-slate-900 bg-white hover:bg-slate-100 shadow-sm transition-colors cursor-pointer"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-xl text-sm font-semibold text-white bg-slate-800 hover:bg-slate-700 border border-slate-700 shadow-sm transition-colors cursor-pointer"
             >
-              <span>Criar Catálogo Grátis</span>
+              <span>Criar Catálogo Online</span>
               <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
@@ -1294,13 +1518,16 @@ export default function SaaSCommercialLandingPage() {
 
       {/* CTA Flutuante Discreto no Mobile */}
       <aside aria-label="Ação rápida no mobile" className="fixed bottom-0 inset-x-0 z-40 p-3 sm:hidden bg-white/90 backdrop-blur-md border-t border-slate-200">
-        <Link
-          href="/criar-loja"
+        <a
+          href={commercialWhatsappHireUrl}
+          target="_blank"
+          rel="noopener noreferrer"
           className="w-full py-3 px-4 rounded-xl text-xs font-semibold text-white bg-slate-900 shadow-sm flex items-center justify-center gap-2 active:scale-98 transition"
         >
-          <span>Criar Catálogo Grátis • 30 Dias</span>
+          <MessageCircle className="w-3.5 h-3.5 text-emerald-400" />
+          <span>Falar no WhatsApp • Testar 30 Dias</span>
           <ArrowRight className="w-3.5 h-3.5 text-slate-400" />
-        </Link>
+        </a>
       </aside>
     </div>
   );
