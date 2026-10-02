@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useCart } from '@/lib/cart';
 import { formatCurrency, formatVariation, buildWhatsAppUrl, isMobileDevice } from '@/lib/whatsapp';
+import { getStoreStatus } from '@/lib/storeStatus';
 import type { StoreConfig, PaymentMethod, CustomerOrderInfo } from '@/types';
 import {
   X,
@@ -23,6 +24,7 @@ import {
   User,
   FileText,
   Copy,
+  Clock,
 } from 'lucide-react';
 
 interface CartDrawerProps {
@@ -32,6 +34,7 @@ interface CartDrawerProps {
 const CUSTOMER_STORAGE_KEY = 'catalogo_customer_details_v1';
 
 export function CartDrawer({ store }: CartDrawerProps) {
+  const storeStatus = getStoreStatus(store);
   const {
     items,
     isCartOpen,
@@ -314,10 +317,24 @@ export function CartDrawer({ store }: CartDrawerProps) {
 
           {/* Banner Informativo */}
           {items.length > 0 && (
-            <div className="bg-brand-primary/10 border-b border-brand-primary/20 px-5 py-2 text-xs text-brand-primary flex items-center gap-2">
-              <span className="h-2 w-2 rounded-full bg-brand-primary animate-pulse flex-shrink-0" />
+            <div
+              className={`border-b px-5 py-2 text-xs flex items-center gap-2 ${
+                storeStatus.isOpen
+                  ? 'bg-brand-primary/10 border-brand-primary/20 text-brand-primary'
+                  : 'bg-amber-500/10 border-amber-300/40 text-amber-900'
+              }`}
+            >
+              <span
+                className={`h-2 w-2 rounded-full flex-shrink-0 ${
+                  storeStatus.isOpen ? 'bg-brand-primary animate-pulse' : 'bg-amber-500'
+                }`}
+              />
               <span className="font-medium text-[11px] sm:text-xs text-slate-800">
-                {step === 'items'
+                {!storeStatus.isOpen
+                  ? `Loja fechada agora • Pedidos serão atendidos no próximo expediente${
+                      storeStatus.businessHours ? ` (${storeStatus.businessHours})` : ''
+                    }`
+                  : step === 'items'
                   ? 'Revise seus itens e avance para os dados de entrega!'
                   : 'Seu pedido será enviado formatado direto no WhatsApp!'}
               </span>
@@ -812,6 +829,19 @@ export function CartDrawer({ store }: CartDrawerProps) {
                   </div>
                 </div>
 
+                {/* Aviso quando loja estiver fechada */}
+                {!storeStatus.isOpen && (
+                  <div className="p-3 bg-amber-50 border border-amber-200/90 rounded-2xl flex items-start gap-2.5 text-xs text-amber-950 animate-fade-in shadow-2xs">
+                    <Clock className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
+                    <div className="leading-snug">
+                      <span className="font-bold block text-amber-950">Aviso: Loja Fechada no Momento</span>
+                      <p className="text-[11px] text-amber-900/90 mt-0.5">
+                        {storeStatus.cartNotice}
+                      </p>
+                    </div>
+                  </div>
+                )}
+
                 <button
                   type="button"
                   onClick={handleCheckoutWhatsApp}
@@ -819,8 +849,15 @@ export function CartDrawer({ store }: CartDrawerProps) {
                   style={{ backgroundColor: '#25D366' }} // Verde Oficial WhatsApp
                 >
                   <MessageCircle className="w-5 h-5 fill-current" />
-                  <span>Finalizar Pedido no WhatsApp</span>
+                  <span>
+                    {storeStatus.isOpen ? 'Finalizar Pedido no WhatsApp' : 'Enviar Pedido (Fila de Atendimento)'}
+                  </span>
                 </button>
+                {!storeStatus.isOpen && (
+                  <p className="text-[10px] text-center text-slate-500 font-medium -mt-1">
+                    Seu pedido será respondido pela equipe no próximo horário de atendimento.
+                  </p>
+                )}
 
                 <div className="text-center">
                   <button

@@ -15,7 +15,9 @@ import { BannerSlider } from '@/components/catalog/BannerSlider';
 import { TrustBadges } from '@/components/catalog/TrustBadges';
 import { ProductGridSkeleton, BannerSkeleton } from '@/components/catalog/ProductGridSkeleton';
 import { TopAnnouncementBar } from '@/components/catalog/TopAnnouncementBar';
+import { StoreStatusBanner } from '@/components/catalog/StoreStatusBanner';
 import { applyThemeToDocument } from '@/lib/themePresets';
+import { getStoreStatus } from '@/lib/storeStatus';
 import type { StoreConfig, Category, Product, CatalogLayoutMode } from '@/types';
 import {
   type CatalogFilterState,
@@ -54,10 +56,11 @@ function CatalogContent({ onStoreLoaded }: CatalogContentProps) {
   const [showAnnouncement, setShowAnnouncement] = useState(true);
   const [layoutMode, setLayoutMode] = useState<CatalogLayoutMode>('grid');
 
-  // Filtros & Ordenação Avançados (Fase 2)
   const [filters, setFilters] = useState<CatalogFilterState>(DEFAULT_FILTERS);
   const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+
+  const storeStatus = useMemo(() => getStoreStatus(store), [store]);
 
   const updateFilters = useCallback((newFilters: Partial<CatalogFilterState>) => {
     setFilters((prev) => ({ ...prev, ...newFilters }));
@@ -248,20 +251,13 @@ function CatalogContent({ onStoreLoaded }: CatalogContentProps) {
                   {store?.store_name || 'Catálogo Digital'}
                 </h1>
                 <div className="flex items-center gap-2 mt-0.5">
-                  {store?.is_open !== false ? (
-                    <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200/80">
-                      <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                      Aberto Agora
-                    </span>
-                  ) : (
-                    <span
-                      className="inline-flex items-center gap-1 text-[10px] font-bold text-amber-800 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200/80"
-                      title={store?.business_hours ? `Horário: ${store.business_hours}` : 'Fechado no momento'}
-                    >
-                      <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
-                      Fechado {store?.business_hours ? `(${store.business_hours})` : ''}
-                    </span>
-                  )}
+                  <span
+                    className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full border ${storeStatus.badgeClass}`}
+                    title={storeStatus.businessHours ? `Horário de atendimento: ${storeStatus.businessHours}` : storeStatus.statusLabel}
+                  >
+                    <span className={`h-1.5 w-1.5 rounded-full ${storeStatus.dotClass}`} />
+                    {storeStatus.statusLabel}
+                  </span>
                   <span className="text-[11px] text-slate-400 hidden sm:inline">•</span>
                   <p className="text-[11px] text-slate-500 truncate hidden sm:block">
                     Catálogo Oficial • Pedidos WhatsApp
@@ -422,6 +418,9 @@ function CatalogContent({ onStoreLoaded }: CatalogContentProps) {
           </nav>
         )}
       </header>
+
+      {/* 2.1. Aviso Dinâmico de Loja Aberta/Fechada (Exibido quando a loja estiver fechada) */}
+      <StoreStatusBanner store={store} />
 
       {/* Conteúdo Principal */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-6">

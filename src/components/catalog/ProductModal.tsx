@@ -715,6 +715,11 @@ export function ProductModal({
                     </span>
                   )}
                 </button>
+                {store.is_open === false && (
+                  <p className="text-[10px] text-center text-amber-800 font-medium">
+                    🕒 Loja fechada agora — pedidos serão atendidos no próximo expediente.
+                  </p>
+                )}
               </div>
             </div>
           </div>
