@@ -31,6 +31,7 @@ export default function AdminCuponsPage() {
   const [coupons, setCoupons] = useState<Coupon[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
 
@@ -168,6 +169,7 @@ export default function AdminCuponsPage() {
           token
         );
         setCoupons((prev) => prev.map((c) => (c.id === updated.id ? updated : c)));
+        setSuccessMessage(`Cupom "${updated.codigo}" atualizado com sucesso!`);
       } else {
         const created = await api.createCoupon(
           {
@@ -182,8 +184,10 @@ export default function AdminCuponsPage() {
           token
         );
         setCoupons((prev) => [...prev, created]);
+        setSuccessMessage(`Cupom "${created.codigo}" cadastrado com sucesso!`);
       }
       setIsModalOpen(false);
+      setTimeout(() => setSuccessMessage(null), 4000);
     } catch (err) {
       setFormError(err instanceof Error ? err.message : 'Erro ao salvar cupom.');
     } finally {
@@ -194,10 +198,13 @@ export default function AdminCuponsPage() {
   const handleDelete = async () => {
     if (!deleteTarget || !token) return;
     setIsDeleting(true);
+    const deletedCode = deleteTarget.codigo;
     try {
       await api.deleteCoupon(deleteTarget.id, token);
       setCoupons((prev) => prev.filter((c) => c.id !== deleteTarget.id));
       setDeleteTarget(null);
+      setSuccessMessage(`Cupom "${deletedCode}" excluído com sucesso!`);
+      setTimeout(() => setSuccessMessage(null), 4000);
     } catch (err) {
       alert(err instanceof Error ? err.message : 'Erro ao excluir cupom.');
     } finally {
@@ -298,6 +305,24 @@ export default function AdminCuponsPage() {
             Exibindo <strong>{filteredCoupons.length}</strong> de {coupons.length} cupons
           </span>
         </div>
+
+        {/* Feedback Visual: Sucesso */}
+        {successMessage && (
+          <div className="rounded-2xl bg-emerald-50 border border-emerald-200 p-4 text-xs sm:text-sm text-emerald-800 flex items-center justify-between shadow-xs animate-fade-in">
+            <div className="flex items-center gap-2.5">
+              <CheckCircle2 className="w-5 h-5 text-emerald-600 flex-shrink-0" />
+              <span className="font-semibold">{successMessage}</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setSuccessMessage(null)}
+              className="text-emerald-700 hover:text-emerald-900 cursor-pointer p-1"
+              aria-label="Fechar aviso"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        )}
 
         {/* Estado de Erro de Carregamento */}
         {errorMessage && (

@@ -18,6 +18,7 @@ import {
   Layers,
   Sparkles,
   AlertTriangle,
+  CheckCircle2,
 } from 'lucide-react';
 
 export default function AdminCategoriasPage() {
@@ -25,6 +26,7 @@ export default function AdminCategoriasPage() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -113,6 +115,7 @@ export default function AdminCategoriasPage() {
             .map((c) => (c.id === updated.id ? updated : c))
             .sort((a, b) => a.ordem - b.ordem)
         );
+        setSuccessMessage(`Categoria "${updated.nome}" atualizada com sucesso!`);
       } else {
         const created = await api.createCategory(
           {
@@ -124,8 +127,10 @@ export default function AdminCategoriasPage() {
           token
         );
         setCategories((prev) => [...prev, created].sort((a, b) => a.ordem - b.ordem));
+        setSuccessMessage(`Categoria "${created.nome}" cadastrada com sucesso!`);
       }
       setIsModalOpen(false);
+      setTimeout(() => setSuccessMessage(null), 4000);
     } catch (err) {
       setFormError(err instanceof Error ? err.message : 'Erro ao salvar categoria.');
     } finally {
@@ -136,10 +141,13 @@ export default function AdminCategoriasPage() {
   const confirmDeleteCategory = async () => {
     if (!token || !deleteTarget) return;
     setIsDeleting(true);
+    const catName = deleteTarget.nome;
     try {
       await api.deleteCategory(deleteTarget.id, token);
       setCategories((prev) => prev.filter((item) => item.id !== deleteTarget.id));
       setDeleteTarget(null);
+      setSuccessMessage(`Categoria "${catName}" removida com sucesso!`);
+      setTimeout(() => setSuccessMessage(null), 4000);
     } catch (err) {
       setErrorMessage(err instanceof Error ? err.message : 'Erro ao desativar categoria.');
     } finally {
@@ -170,10 +178,31 @@ export default function AdminCategoriasPage() {
           </button>
         </div>
 
+        {/* Feedback Visual: Sucesso */}
+        {successMessage && (
+          <div className="rounded-2xl bg-emerald-50 border border-emerald-200 p-4 text-xs sm:text-sm text-emerald-800 flex items-center justify-between shadow-xs animate-fade-in">
+            <div className="flex items-center gap-2.5">
+              <CheckCircle2 className="w-5 h-5 text-emerald-600 flex-shrink-0" />
+              <span className="font-semibold">{successMessage}</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setSuccessMessage(null)}
+              className="text-emerald-700 hover:text-emerald-900 cursor-pointer p-1"
+              aria-label="Fechar aviso"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        )}
+
         {/* Mensagem de Erro */}
         {errorMessage && (
-          <div className="rounded-2xl bg-rose-50 border border-rose-200 p-4 text-xs sm:text-sm text-rose-800 flex items-center justify-between">
-            <span>{errorMessage}</span>
+          <div className="rounded-2xl bg-rose-50 border border-rose-200 p-4 text-xs sm:text-sm text-rose-800 flex items-center justify-between shadow-xs animate-shake">
+            <div className="flex items-center gap-2.5">
+              <AlertCircle className="w-5 h-5 text-rose-600 flex-shrink-0" />
+              <span>{errorMessage}</span>
+            </div>
             <button
               type="button"
               onClick={loadCategories}

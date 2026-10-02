@@ -26,6 +26,7 @@ import {
   Tag,
   Eye,
   AlertTriangle,
+  CheckCircle2,
 } from 'lucide-react';
 
 export default function AdminProdutosPage() {
@@ -34,6 +35,7 @@ export default function AdminProdutosPage() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   // Filtros de Busca em Tempo Real
   const [searchTerm, setSearchTerm] = useState('');
@@ -203,6 +205,7 @@ export default function AdminProdutosPage() {
         setProducts((prev) =>
           prev.map((item) => (item.id === updated.id ? updated : item))
         );
+        setSuccessMessage(`Produto "${updated.nome}" atualizado com sucesso!`);
       } else {
         // Criação
         const created = await api.createProduct(
@@ -222,8 +225,10 @@ export default function AdminProdutosPage() {
           token
         );
         setProducts((prev) => [created, ...prev]);
+        setSuccessMessage(`Produto "${created.nome}" cadastrado com sucesso!`);
       }
       setIsModalOpen(false);
+      setTimeout(() => setSuccessMessage(null), 4000);
     } catch (err) {
       setFormError(err instanceof Error ? err.message : 'Erro ao salvar produto.');
     } finally {
@@ -253,6 +258,8 @@ export default function AdminProdutosPage() {
       setProducts((prev) =>
         prev.map((item) => (item.id === updated.id ? updated : item))
       );
+      setSuccessMessage(nextStatus ? `Produto "${p.nome}" ativado na vitrine!` : `Produto "${p.nome}" pausado.`);
+      setTimeout(() => setSuccessMessage(null), 3500);
     } catch (err) {
       // Reverte em caso de falha
       setProducts((prev) =>
@@ -268,10 +275,13 @@ export default function AdminProdutosPage() {
   const confirmDeleteProduct = async () => {
     if (!token || !deleteTarget) return;
     setIsDeleting(true);
+    const deletedName = deleteTarget.nome;
     try {
       await api.deleteProduct(deleteTarget.id, token);
       setProducts((prev) => prev.filter((item) => item.id !== deleteTarget.id));
       setDeleteTarget(null);
+      setSuccessMessage(`Produto "${deletedName}" arquivado com sucesso!`);
+      setTimeout(() => setSuccessMessage(null), 4000);
     } catch (err) {
       setErrorMessage(err instanceof Error ? err.message : 'Erro ao arquivar produto.');
     } finally {
@@ -338,6 +348,42 @@ export default function AdminProdutosPage() {
             <span>Novo Produto</span>
           </button>
         </div>
+
+        {/* Feedback Visual: Sucesso */}
+        {successMessage && (
+          <div className="rounded-2xl bg-emerald-50 border border-emerald-200 p-4 text-xs sm:text-sm text-emerald-800 flex items-center justify-between shadow-xs animate-fade-in">
+            <div className="flex items-center gap-2.5">
+              <CheckCircle2 className="w-5 h-5 text-emerald-600 flex-shrink-0" />
+              <span className="font-semibold">{successMessage}</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setSuccessMessage(null)}
+              className="text-emerald-700 hover:text-emerald-900 cursor-pointer p-1"
+              aria-label="Fechar aviso"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        )}
+
+        {/* Feedback Visual: Erro */}
+        {errorMessage && (
+          <div className="rounded-2xl bg-rose-50 border border-rose-200 p-4 text-xs sm:text-sm text-rose-800 flex items-center justify-between shadow-xs animate-shake">
+            <div className="flex items-center gap-2.5">
+              <AlertCircle className="w-5 h-5 text-rose-600 flex-shrink-0" />
+              <span>{errorMessage}</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setErrorMessage(null)}
+              className="text-rose-700 hover:text-rose-900 cursor-pointer p-1"
+              aria-label="Fechar aviso"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        )}
 
         {/* Barra de Filtros e Busca em Tempo Real */}
         <div className="bg-white rounded-3xl border border-slate-200/80 p-4 sm:p-5 shadow-xs space-y-3.5">

@@ -203,6 +203,30 @@ export default function AdminConfiguracoesPage() {
     loadConfig();
   }, []);
 
+  // Sincroniza dinamicamente as variáveis CSS no documento em tempo real ao interagir com o Color Picker e temas
+  useEffect(() => {
+    if (!isLoading && primaryColor) {
+      applyThemeToDocument({
+        primary_color: primaryColor,
+        secondary_color: secondaryColor,
+        background_color: backgroundColor,
+        text_color: textColor,
+        theme_preset: themePreset,
+        announcement_bg_color: announcementBgColor,
+        announcement_text_color: announcementTextColor,
+      });
+    }
+  }, [
+    isLoading,
+    primaryColor,
+    secondaryColor,
+    backgroundColor,
+    textColor,
+    themePreset,
+    announcementBgColor,
+    announcementTextColor,
+  ]);
+
   const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
