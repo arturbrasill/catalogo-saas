@@ -78,8 +78,16 @@ function CatalogContent({ onStoreLoaded, tenantSlug }: CatalogContentProps) {
       const initialData = await api.getAll(tenantSlug);
       if (initialData.store) {
         initialData.store.whatsapp = String(initialData.store.whatsapp ?? '').trim();
-        if (typeof document !== 'undefined' && initialData.store.store_name) {
-          document.title = `${initialData.store.store_name} | Catálogo Oficial`;
+        if (typeof document !== 'undefined') {
+          if (initialData.store.store_name) {
+            document.title = `${initialData.store.store_name} | Catálogo Oficial`;
+          }
+          if (initialData.store.logo_url) {
+            const link = document.querySelector("link[rel~='icon']") as HTMLLinkElement | null;
+            if (link) {
+              link.href = initialData.store.logo_url;
+            }
+          }
         }
         if (initialData.store.catalog_layout) {
           setLayoutMode(initialData.store.catalog_layout);
@@ -235,7 +243,7 @@ function CatalogContent({ onStoreLoaded, tenantSlug }: CatalogContentProps) {
           <div className="h-16 sm:h-20 flex items-center justify-between gap-3 sm:gap-6">
             {/* Logo e Nome da Marca com Selo de Status da Loja */}
             <div className="flex items-center gap-3 min-w-0 flex-shrink-0">
-              <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-card bg-slate-50 border border-slate-200 overflow-hidden flex-shrink-0 flex items-center justify-center shadow-xs">
+              <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-card bg-slate-900 border border-slate-800 overflow-hidden flex-shrink-0 flex items-center justify-center shadow-xs">
                 {store?.logo_url ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
@@ -244,12 +252,17 @@ function CatalogContent({ onStoreLoaded, tenantSlug }: CatalogContentProps) {
                     className="h-full w-full object-cover"
                   />
                 ) : (
-                  <StoreIcon className="w-6 h-6 text-slate-400 stroke-[1.5]" />
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src="/numclick-badge.png"
+                    alt={store?.store_name || 'NumClick'}
+                    className="h-full w-full object-cover"
+                  />
                 )}
               </div>
               <div className="min-w-0">
                 <h1 className="text-sm sm:text-base md:text-lg font-black font-heading text-slate-900 tracking-tight truncate leading-tight">
-                  {store?.store_name || 'Catálogo Digital'}
+                  {store?.store_name || 'NumClick'}
                 </h1>
                 <div className="flex items-center gap-2 mt-0.5">
                   <span
@@ -547,7 +560,7 @@ function CatalogContent({ onStoreLoaded, tenantSlug }: CatalogContentProps) {
       <footer className="border-t border-slate-200/80 bg-white py-10 text-center text-xs text-slate-500 space-y-3">
         <div className="max-w-7xl mx-auto px-4 space-y-2">
           <p className="font-extrabold text-slate-800 text-sm">
-            {store?.store_name || 'Catálogo Digital'}
+            {store?.store_name || 'NumClick'}
           </p>
           <p className="text-[11px] text-slate-400">
             Catálogo digital de alta performance • Pedidos enviados diretamente para o WhatsApp oficial
@@ -565,6 +578,14 @@ function CatalogContent({ onStoreLoaded, tenantSlug }: CatalogContentProps) {
               className="text-slate-500 hover:text-slate-800 font-medium underline transition"
             >
               Criar Minha Loja
+            </Link>
+            <span>•</span>
+            <Link
+              href="/landing"
+              className="inline-flex items-center gap-1 text-slate-500 hover:text-slate-800 font-medium transition"
+            >
+              <span>Feito com</span>
+              <span className="font-bold text-slate-700">NumClick</span>
             </Link>
           </div>
         </div>

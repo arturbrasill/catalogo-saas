@@ -410,10 +410,15 @@ export default function SaasAdminPage() {
       <div className="min-h-screen bg-slate-900 text-slate-100 flex items-center justify-center p-4 sm:p-6 py-12 sm:py-16">
         <div className="max-w-md w-full bg-slate-800/90 border border-slate-700/80 rounded-2xl p-6 sm:p-8 shadow-2xl backdrop-blur-md">
           <div className="text-center mb-6">
-            <div className="w-12 h-12 rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center mx-auto mb-3">
-              <ShieldCheck className="w-6 h-6" />
+            <div className="w-14 h-14 rounded-2xl overflow-hidden bg-slate-950 border border-slate-700/80 flex items-center justify-center mx-auto mb-3 shadow-lg">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/numclick-badge.png"
+                alt="NumClick"
+                className="w-full h-full object-cover"
+              />
             </div>
-            <h1 className="text-xl sm:text-2xl font-extrabold text-white">Painel Master SaaS</h1>
+            <h1 className="text-xl sm:text-2xl font-extrabold text-white">NumClick SuperAdmin</h1>
             <p className="text-xs text-slate-400 mt-1">
               Gerencie todos os lojistas, assinaturas e faturamento em tempo real.
             </p>
@@ -470,13 +475,18 @@ export default function SaasAdminPage() {
       <header className="h-16 sm:h-20 bg-white border-b border-slate-200 sticky top-0 z-30 px-4 sm:px-8 flex items-center shadow-xs">
         <div className="max-w-7xl w-full mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-xl bg-slate-900 text-white flex items-center justify-center font-bold text-sm">
-              <ShieldCheck className="w-4 h-4 text-emerald-400" />
+            <div className="w-9 h-9 rounded-xl overflow-hidden bg-slate-900 border border-slate-800 flex items-center justify-center shadow-xs">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/numclick-badge.png"
+                alt="NumClick"
+                className="w-full h-full object-cover"
+              />
             </div>
             <div>
               <div className="flex items-center gap-2">
                 <span className="font-extrabold text-slate-900 text-sm sm:text-base tracking-tight">
-                  SuperAdmin SaaS
+                  NumClick SuperAdmin
                 </span>
                 <span className="bg-emerald-100 text-emerald-700 text-[10px] font-bold px-2 py-0.5 rounded-full border border-emerald-200/60">
                   Online
@@ -1224,7 +1234,7 @@ export default function SaasAdminPage() {
 
       {/* Footer */}
       <footer className="border-t border-slate-200 bg-white py-4 px-4 text-center text-xs text-slate-400">
-        Painel Master SaaS Multi-Tenant • Plataforma Cloud
+        NumClick SuperAdmin SaaS • Plataforma Cloud
       </footer>
     </div>
   );

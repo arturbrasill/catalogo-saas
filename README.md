@@ -1,4 +1,4 @@
-# SaaS Catálogo Digital Multi-Tenant
+# NumClick — SaaS Catálogo Digital Multi-Tenant
 
 Plataforma white-label multi-tenant de catálogo digital para empresas locais com arquitetura de baixo custo, alta velocidade e fechamento de pedidos direto no WhatsApp.
 

@@ -36,24 +36,48 @@ export async function generateMetadata(): Promise<Metadata> {
   const host = headersList.get('x-tenant-host');
   const tenant = tenantId ? findTenant(tenantId) : (host ? findTenant(host) : null);
 
-  const storeName = tenant?.name || 'Catálogo Digital';
-  const title = `${storeName} | Catálogo Oficial`;
-  const description = `Confira os produtos e novidades da loja ${storeName} e faça seu pedido direto pelo WhatsApp!`;
+  const storeName = tenant?.name || 'NumClick';
+  const title = tenant?.name
+    ? `${tenant.name} | Catálogo Oficial`
+    : 'NumClick | Catálogos Digitais & Vendas via WhatsApp';
+  const description = tenant?.name
+    ? `Confira os produtos e novidades da loja ${tenant.name} e faça seu pedido direto pelo WhatsApp!`
+    : 'NumClick: Plataforma White-Label de Catálogos Digitais de alta conversão para empresas locais venderem pelo WhatsApp sem taxas ou comissões.';
+
+  const iconUrl = tenant?.logo_url || '/favicon.ico';
 
   return {
     title,
     description,
+    icons: {
+      icon: [
+        { url: iconUrl, sizes: 'any' },
+        { url: '/favicon-32x32.png', sizes: '32x32', type: 'image/png' },
+        { url: '/favicon.png', sizes: '64x64', type: 'image/png' },
+      ],
+      apple: [{ url: tenant?.logo_url || '/apple-icon.png', sizes: '180x180', type: 'image/png' }],
+      shortcut: iconUrl,
+    },
     openGraph: {
       title,
       description,
       type: 'website',
       locale: 'pt_BR',
       siteName: storeName,
+      images: [
+        {
+          url: tenant?.logo_url || '/numclick-og.png',
+          width: 1200,
+          height: 630,
+          alt: storeName,
+        },
+      ],
     },
     twitter: {
       card: 'summary_large_image',
       title,
       description,
+      images: [tenant?.logo_url || '/numclick-og.png'],
     },
   };
 }
@@ -90,6 +114,10 @@ export default function RootLayout({
       className={`${plusJakartaSans.variable} ${inter.variable} ${playfairDisplay.variable} ${spaceGrotesk.variable}`}
     >
       <head>
+        <link rel="icon" href="/favicon.ico" sizes="any" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+        <link rel="icon" type="image/png" sizes="64x64" href="/favicon.png" />
+        <link rel="apple-touch-icon" href="/apple-icon.png" />
         <style
           id="saas-theme-tokens"
           dangerouslySetInnerHTML={{ __html: initialCssVariables }}

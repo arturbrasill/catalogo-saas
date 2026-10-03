@@ -216,14 +216,19 @@ export default function CriarLojaPage() {
       <header className="h-16 sm:h-20 bg-white/95 backdrop-blur-md border-b border-slate-200/80 sticky top-0 z-30 px-4 sm:px-8 flex items-center shadow-xs">
         <div className="max-w-4xl w-full mx-auto flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2.5 group">
-            <div className="w-8 h-8 rounded-xl bg-slate-900 text-white flex items-center justify-center font-black text-sm shadow-xs group-hover:scale-105 transition-transform">
-              C
+            <div className="w-8 h-8 rounded-xl overflow-hidden bg-slate-900 border border-slate-800 flex items-center justify-center shadow-xs group-hover:scale-105 transition-transform">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/numclick-badge.png"
+                alt="NumClick"
+                className="w-full h-full object-cover"
+              />
             </div>
             <div className="leading-tight">
               <span className="font-bold text-slate-900 tracking-tight text-sm sm:text-base">
-                Catálogo SaaS
+                NumClick
               </span>
-              <span className="text-[10px] text-slate-500 block">Plataforma Multi-Tenant</span>
+              <span className="text-[10px] text-slate-500 block">Plataforma de Catálogos Digitais</span>
             </div>
           </Link>
 
@@ -818,7 +823,7 @@ export default function CriarLojaPage() {
 
       {/* Footer Minimalista */}
       <footer className="border-t border-slate-200 bg-white py-4 px-4 text-center text-xs text-slate-400">
-        Plataforma SaaS Multi-Tenant • Acesso em tempo real em qualquer dispositivo
+        NumClick SaaS • Plataforma de Catálogos Digitais de Alta Conversão
       </footer>
     </div>
   );

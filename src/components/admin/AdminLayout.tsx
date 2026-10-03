@@ -89,16 +89,21 @@ export function AdminLayout({ children }: AdminLayoutProps) {
         <aside className="hidden lg:flex flex-col w-64 bg-slate-950 text-slate-300 border-r border-slate-900 shadow-xl select-none">
           {/* Brand Header */}
           <div className="h-16 sm:h-20 flex items-center px-6 border-b border-slate-900/80 gap-3">
-            <div className="h-10 w-10 rounded-xl bg-gradient-to-tr from-brand-primary to-brand-primary-hover flex items-center justify-center text-white font-black shadow-lg shadow-black/40 flex-shrink-0">
-              <Store className="w-5 h-5" />
+            <div className="h-10 w-10 rounded-xl overflow-hidden flex items-center justify-center text-white font-black shadow-lg shadow-black/40 flex-shrink-0 bg-slate-900 border border-slate-800">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/numclick-badge.png"
+                alt="NumClick Logo"
+                className="w-full h-full object-cover"
+              />
             </div>
             <div className="min-w-0">
               <span className="font-extrabold text-white block leading-tight text-sm tracking-tight truncate">
-                Painel Lojista
+                NumClick
               </span>
               <span className="text-[11px] text-brand-primary font-semibold flex items-center gap-1 mt-0.5">
                 <span className="h-1.5 w-1.5 rounded-full bg-brand-primary animate-pulse" />
-                SaaS Multi-tenant
+                Painel do Lojista
               </span>
             </div>
           </div>
@@ -257,10 +262,15 @@ export function AdminLayout({ children }: AdminLayoutProps) {
               <div className="relative w-72 max-w-[80vw] bg-slate-950 text-slate-300 flex flex-col z-10 shadow-2xl">
                 <div className="h-16 sm:h-20 flex items-center justify-between px-5 border-b border-slate-900">
                   <div className="flex items-center gap-2.5">
-                    <div className="h-8 w-8 rounded-lg bg-brand-primary flex items-center justify-center text-white font-bold">
-                      <Store className="w-4 h-4" />
+                    <div className="h-8 w-8 rounded-lg overflow-hidden flex items-center justify-center bg-slate-900 border border-slate-800">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src="/numclick-badge.png"
+                        alt="NumClick Logo"
+                        className="w-full h-full object-cover"
+                      />
                     </div>
-                    <span className="font-extrabold text-white text-sm">Painel Lojista</span>
+                    <span className="font-extrabold text-white text-sm">NumClick • Lojista</span>
                   </div>
                   <button
                     type="button"

@@ -67,7 +67,7 @@ export default function AdminDashboardPage() {
               <span className="text-xs font-bold uppercase tracking-wider text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
                 Painel do Lojista
               </span>
-              <span className="text-xs text-slate-400">• Catálogo Digital</span>
+              <span className="text-xs text-slate-400">• NumClick</span>
             </div>
             <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
               {store?.store_name ? `Olá, ${store.store_name}!` : 'Bem-vindo ao Painel!'}

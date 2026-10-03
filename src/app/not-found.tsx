@@ -5,6 +5,14 @@ export default function NotFound() {
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
       <div className="max-w-md w-full bg-white rounded-2xl shadow-xl border border-gray-100 p-8 text-center space-y-6">
+        <div className="flex items-center justify-center gap-2">
+          <div className="h-8 w-8 rounded-xl overflow-hidden bg-slate-900 border border-slate-800 flex items-center justify-center shadow-xs">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/numclick-badge.png" alt="NumClick" className="w-full h-full object-cover" />
+          </div>
+          <span className="font-extrabold text-slate-900 text-base">NumClick</span>
+        </div>
+
         <div className="inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-amber-50 text-amber-600 border border-amber-200 shadow-xs">
           <AlertCircle className="w-8 h-8" />
         </div>

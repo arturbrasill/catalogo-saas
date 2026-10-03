@@ -69,20 +69,25 @@ export default function AdminLoginPage() {
       <main className="w-full max-w-[420px] bg-white rounded-3xl shadow-[0_20px_50px_rgba(15,23,42,0.08)] border border-slate-200/80 p-8 sm:p-10 space-y-7 relative z-10 animate-fade-in transition-all">
         {/* Cabeçalho de Identidade */}
         <div className="text-center space-y-3">
-          <div className="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-900 text-white shadow-md shadow-slate-900/10">
-            <Store className="w-7 h-7 stroke-[1.8]" />
+          <div className="inline-flex h-14 w-14 items-center justify-center rounded-2xl overflow-hidden bg-slate-900 border border-slate-800 shadow-md shadow-slate-900/10">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/numclick-badge.png"
+              alt="NumClick"
+              className="w-full h-full object-cover"
+            />
           </div>
 
           <div className="space-y-1">
             <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-50 border border-emerald-100/80 text-[11px] font-semibold text-emerald-700 mb-1">
               <Sparkles className="w-3 h-3 text-emerald-600" />
-              <span>{tenantSlug ? `Loja: ${tenantSlug}` : 'Painel do Lojista'}</span>
+              <span>{tenantSlug ? `Loja: ${tenantSlug}` : 'NumClick • Painel do Lojista'}</span>
             </div>
             <h1 className="text-2xl font-black text-slate-900 tracking-tight">
               Acesso Administrativo
             </h1>
             <p className="text-xs sm:text-sm text-slate-500 max-w-[280px] mx-auto leading-relaxed">
-              Entre com seu usuário e senha escolhidos no cadastro para gerenciar sua loja.
+              Entre com seu usuário e senha escolhidos no cadastro para gerenciar sua loja no NumClick.
             </p>
           </div>
         </div>

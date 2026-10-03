@@ -226,14 +226,19 @@ export default function SaaSCommercialLandingPage() {
       {/* ============================================================ */}
       <header className="sticky top-0 z-40 bg-white/85 backdrop-blur-md border-b border-slate-200/80 transition-all">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 sm:h-20 flex items-center justify-between gap-4">
-          {/* Logo Minimalista */}
+          {/* Logo Oficial NumClick */}
           <Link href="/landing" className="flex items-center gap-2.5 group">
-            <div className="h-9 w-9 rounded-xl bg-slate-900 flex items-center justify-center text-white shadow-xs group-hover:bg-slate-800 transition-colors">
-              <ShoppingBag className="w-4 h-4 text-emerald-400 stroke-[2.2]" />
+            <div className="h-9 w-9 rounded-xl overflow-hidden shadow-xs border border-slate-200/60 group-hover:scale-105 transition-transform flex items-center justify-center bg-slate-950">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/numclick-badge.png"
+                alt="NumClick Logo"
+                className="w-full h-full object-cover"
+              />
             </div>
             <div className="flex items-center gap-1.5">
               <span className="text-base font-extrabold tracking-tight text-slate-900">
-                Catálogo<span className="text-emerald-600">Zap</span>
+                Num<span className="text-emerald-600">Click</span>
               </span>
               <span className="text-[10px] font-semibold tracking-wide bg-slate-100 text-slate-600 border border-slate-200/70 px-1.5 py-0.5 rounded-md hidden sm:inline-block">
                 SaaS
@@ -916,7 +921,7 @@ export default function SaaSCommercialLandingPage() {
                     <span className="text-rose-400 font-bold text-xs">18% a 27%</span>
                   </div>
                   <div className="p-2 rounded-lg bg-emerald-950/50 border border-emerald-500/30 text-left">
-                    <span className="text-slate-400 block text-[10px]">CatálogoZap</span>
+                    <span className="text-slate-400 block text-[10px]">NumClick</span>
                     <span className="text-emerald-400 font-bold text-xs">0% (R$ 0,00)</span>
                   </div>
                 </div>
@@ -1110,7 +1115,7 @@ export default function SaaSCommercialLandingPage() {
                   </span>
                 </div>
                 <div className="p-3 sm:p-3.5 rounded-2xl bg-emerald-950/30 border border-emerald-900/40">
-                  <span className="text-[10px] sm:text-[11px] font-semibold text-emerald-400 block leading-tight">Comissão no CatálogoZap:</span>
+                  <span className="text-[10px] sm:text-[11px] font-semibold text-emerald-400 block leading-tight">Comissão no NumClick:</span>
                   <span className="text-sm sm:text-lg font-black text-emerald-300 mt-0.5 block truncate">
                     R$ 0,00 (0%)
                   </span>
@@ -1440,11 +1445,16 @@ export default function SaaSCommercialLandingPage() {
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
             <div className="space-y-1.5">
               <div className="flex items-center gap-2">
-                <div className="h-7 w-7 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center text-white">
-                  <ShoppingBag className="w-3.5 h-3.5 text-emerald-400" />
+                <div className="h-7 w-7 rounded-lg overflow-hidden border border-slate-800 flex items-center justify-center bg-slate-950">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src="/numclick-badge.png"
+                    alt="NumClick Logo"
+                    className="w-full h-full object-cover"
+                  />
                 </div>
                 <span className="text-base font-extrabold tracking-tight text-white">
-                  Catálogo<span className="text-emerald-400">Zap</span>
+                  Num<span className="text-emerald-400">Click</span>
                 </span>
               </div>
               <p className="text-xs text-slate-400 font-medium">
@@ -1477,7 +1487,7 @@ export default function SaaSCommercialLandingPage() {
 
           {/* Linha de Termos simples e Copyright */}
           <div className="border-t border-slate-900 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px] text-slate-500">
-            <p>© {new Date().getFullYear()} CatálogoZap SaaS. Todos os direitos reservados.</p>
+            <p>© {new Date().getFullYear()} NumClick SaaS. Todos os direitos reservados.</p>
             <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 text-slate-500">
               <span>Termos de Uso Simplificados</span>
               <span>•</span>

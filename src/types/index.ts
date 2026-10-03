@@ -258,6 +258,8 @@ export interface Tenant {
   asaasSubscriptionId?: string;
   asaasPaymentLink?: string;
   // Campos visuais de tema e anúncio
+  logo_url?: string;
+  logoUrl?: string;
   primary_color?: string;
   secondary_color?: string;
   background_color?: string;
