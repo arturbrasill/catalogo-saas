@@ -28,7 +28,7 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  // Sincroniza dados da nuvem em tempo real (Google Sheets Master e/ou Vercel KV)
+  // Sincroniza dados da nuvem em tempo real (Vercel KV / Upstash / Supabase)
   try {
     await syncTenantsFromRemote();
   } catch (err) {
@@ -92,15 +92,13 @@ export async function POST(request: NextRequest) {
       niche: body.niche || 'Geral',
     };
 
-    // Auto-provisiona a loja e sua planilha no Google Sheets
+    // Auto-provisiona a loja e seu catálogo digital
     const result = await registerTenant(input);
 
     return NextResponse.json({
       success: true,
       data: {
         tenant: result.tenant,
-        spreadsheetUrl: result.spreadsheetUrl,
-        spreadsheetId: result.spreadsheetId,
         catalogUrl: `/?tenant=${result.tenant.slug}`,
         adminUrl: `/admin/login?tenant=${result.tenant.slug}`,
       },

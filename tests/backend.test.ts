@@ -10,7 +10,7 @@ import {
 } from '../src/lib/schemas';
 import type { StoreConfig, Product, Category } from '../src/types';
 
-describe('Módulo 1 — Backend Google Sheets + Apps Script (Auditoria & Testes Finais)', () => {
+describe('Módulo 1 — Backend & Engine de Persistência (Auditoria & Testes Finais)', () => {
   let engine: BackendEngine;
   let adminToken: string;
 

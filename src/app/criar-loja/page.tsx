@@ -11,7 +11,6 @@ import {
   ArrowRight,
   Lock,
   Phone,
-  FileSpreadsheet,
   Palette,
   ShieldCheck,
   Zap,
@@ -56,7 +55,6 @@ export default function CriarLojaPage() {
   // Resultado após criação
   const [createdData, setCreatedData] = useState<{
     tenant: any;
-    spreadsheetUrl: string;
     catalogUrl: string;
     adminUrl: string;
     asaasPaymentUrl?: string | null;
@@ -237,7 +235,7 @@ export default function CriarLojaPage() {
                 Abra sua Loja Digital Agora
               </h1>
               <p className="text-xs sm:text-sm text-slate-500 mt-2 max-w-md mx-auto leading-relaxed">
-                Tudo configurado automaticamente na nuvem: catálogo, painel admin e integração com Google Sheets.
+                Tudo configurado automaticamente na nuvem: catálogo digital de alta conversão e painel admin completo.
               </p>
             </div>
 
@@ -519,7 +517,7 @@ export default function CriarLojaPage() {
                       <div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
                       <span>
                         {loadingStep === 1 && 'Criando loja e credenciais...'}
-                        {loadingStep === 2 && 'Provisionando Google Sheets...'}
+                        {loadingStep === 2 && 'Configurando vitrine e banco de dados...'}
                         {loadingStep === 3 && 'Finalizando catálogo...'}
                       </span>
                     </div>
@@ -533,7 +531,7 @@ export default function CriarLojaPage() {
 
                 <p className="text-[11px] text-center text-slate-400 mt-3 flex items-center justify-center gap-1.5">
                   <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
-                  Seus dados e produtos ficam 100% seguros na nuvem e integrados à sua planilha.
+                  Seus dados e produtos ficam 100% seguros na nuvem e sincronizados em tempo real.
                 </p>
               </div>
             </form>
@@ -550,7 +548,7 @@ export default function CriarLojaPage() {
                 Sua Loja Foi Criada com Sucesso!
               </h2>
               <p className="text-xs sm:text-sm text-slate-500 mt-1 max-w-md mx-auto">
-                O catálogo de <strong>{createdData.tenant.name}</strong> e as tabelas do Google Sheets já estão online e prontos para uso.
+                O catálogo de <strong>{createdData.tenant.name}</strong> e seu painel de controle já estão online e prontos para uso.
               </p>
             </div>
 
@@ -636,35 +634,13 @@ export default function CriarLojaPage() {
                 </div>
               </div>
 
-              {/* Google Sheets Provisionado */}
-              <div>
-                <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1 flex items-center gap-1.5">
-                  <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-600" />
-                  3. Planilha no Google Sheets da Loja
-                </label>
-                <div className="flex items-center gap-2">
-                  <div className="flex-1 bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs font-mono text-slate-700 truncate">
-                    {createdData.spreadsheetUrl}
-                  </div>
-                  <a
-                    href={createdData.spreadsheetUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="inline-flex items-center gap-1 px-3 py-2 rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-100 font-semibold text-xs border border-emerald-200 transition-colors"
-                  >
-                    <span>Abrir Tabela</span>
-                    <ExternalLink className="w-3 h-3" />
-                  </a>
-                </div>
-              </div>
-
               {/* Fatura Asaas (se plano mensal) */}
               {createdData.asaasPaymentUrl && (
                 <div className="p-3 bg-emerald-50 border border-emerald-300/80 rounded-xl">
                   <div className="flex items-center justify-between mb-1">
                     <span className="text-[11px] font-bold text-emerald-800 uppercase tracking-wider flex items-center gap-1">
                       <CreditCard className="w-3.5 h-3.5 text-emerald-600" />
-                      4. Fatura Asaas — R$ 129,90 (PIX, Cartão ou Boleto)
+                      3. Fatura Asaas — R$ 129,90 (PIX, Cartão ou Boleto)
                     </span>
                     <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full">
                       Aguardando Pagamento

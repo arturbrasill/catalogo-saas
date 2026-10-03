@@ -1,6 +1,6 @@
 /**
  * Serviço desacoplado de Upload de Imagens
- * Não armazena arquivos binários no Google Sheets; apenas URLs públicas.
+ * Não armazena arquivos binários no banco de dados; apenas URLs públicas.
  */
 
 export interface ImageUploadResult {

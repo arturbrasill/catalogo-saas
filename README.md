@@ -8,8 +8,8 @@ Plataforma white-label multi-tenant de catálogo digital para empresas locais co
 
 - **Frontend**: Next.js 14 (App Router), React 18, TypeScript estrito, Tailwind CSS, Lucide Icons.
 - **Roteamento Edge**: Next.js Middleware para resolução dinâmica de tenants por hostname.
-- **Persistência**: Google Sheets (uma planilha isolada por tenant).
-- **Backend API**: Google Apps Script Web App com bloqueio atômico de concorrência (`LockService`).
+- **Persistência**: Banco de Dados na Nuvem (PostgreSQL / Supabase / Vercel KV) com isolamento multi-tenant.
+- **Backend API**: Next.js Serverless Gateway com persistência direta e cache otimizado.
 - **Checkout & Conversão**: WhatsApp oficial da loja via links estruturados `wa.me` com `encodeURIComponent`.
 - **Hospedagem de Mídia**: Provedor externo com CDN (Cloudinary / Unsigned Presets).
 - **Deploy**: Vercel (Edge Serverless) com emissão automática de SSL/TLS para domínios próprios.
@@ -20,15 +20,15 @@ Plataforma white-label multi-tenant de catálogo digital para empresas locais co
 
 | Documento | Descrição |
 | :--- | :--- |
-| [`docs/DEPLOY.md`](file:///C:/Users/artur/Downloads/catalogo_saas_antigravity_kit/docs/DEPLOY.md) | Guia passo a passo de deploy do frontend (Vercel) e backend (Google Sheets/GAS). |
+| [`docs/DEPLOY.md`](file:///C:/Users/artur/Downloads/catalogo_saas_antigravity_kit/docs/DEPLOY.md) | Guia passo a passo de deploy do frontend (Vercel) e infraestrutura em nuvem. |
 | [`docs/ONBOARDING.md`](file:///C:/Users/artur/Downloads/catalogo_saas_antigravity_kit/docs/ONBOARDING.md) | Procedimento Operacional Padrão (POP) para cadastrar uma nova loja em menos de 10 minutos. |
 | [`docs/DNS.md`](file:///C:/Users/artur/Downloads/catalogo_saas_antigravity_kit/docs/DNS.md) | Configuração de domínios no Registro.br e Cloudflare (A, CNAME, HTTPS, propagação). |
 | [`docs/SECURITY.md`](file:///C:/Users/artur/Downloads/catalogo_saas_antigravity_kit/docs/SECURITY.md) | Política de segurança, proteção de segredos, SHA-256 + salt e prevenção de spoofing. |
 | [`docs/BACKUP.md`](file:///C:/Users/artur/Downloads/catalogo_saas_antigravity_kit/docs/BACKUP.md) | Procedimentos de backup automatizado diário e plano de recuperação de desastres (DR). |
 | [`docs/TROUBLESHOOTING.md`](file:///C:/Users/artur/Downloads/catalogo_saas_antigravity_kit/docs/TROUBLESHOOTING.md) | Matriz de diagnóstico rápido e resolução dos erros mais comuns da operação. |
-| [`docs/INTEGRATION_TESTS.md`](file:///C:/Users/artur/Downloads/catalogo_saas_antigravity_kit/docs/INTEGRATION_TESTS.md) | Relatório da suíte de 96 testes cobrindo os 4 fluxos operacionais completos. |
+| [`docs/INTEGRATION_TESTS.md`](file:///C:/Users/artur/Downloads/catalogo_saas_antigravity_kit/docs/INTEGRATION_TESTS.md) | Relatório da suíte de testes cobrindo os fluxos operacionais completos. |
 | [`docs/API_CONTRACT.md`](file:///C:/Users/artur/Downloads/catalogo_saas_antigravity_kit/docs/API_CONTRACT.md) | Especificação estrita de todos os endpoints GET/POST e códigos de erro. |
-| [`docs/DATA_MODEL.md`](file:///C:/Users/artur/Downloads/catalogo_saas_antigravity_kit/docs/DATA_MODEL.md) | Schema das abas do Google Sheets (`config`, `categorias`, `produtos`). |
+| [`docs/DATA_MODEL.md`](file:///C:/Users/artur/Downloads/catalogo_saas_antigravity_kit/docs/DATA_MODEL.md) | Schema das tabelas de dados (`config`, `categorias`, `produtos`). |
 | [`docs/ARCHITECTURE.md`](file:///C:/Users/artur/Downloads/catalogo_saas_antigravity_kit/docs/ARCHITECTURE.md) | Diagrama de arquitetura, subsistemas e isolamento físico de dados. |
 
 ---

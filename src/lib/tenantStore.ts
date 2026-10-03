@@ -46,18 +46,15 @@ function initializeDefaultTenantDetails() {
       tenant.plan = 'monthly';
       tenant.subscriptionStatus = 'active';
       tenant.subscriptionExpiresAt = future30Days;
-      tenant.spreadsheetUrl = 'https://docs.google.com/spreadsheets/d/1ExemploSpreadsheetID/edit';
       tenant.notes = 'Loja de demonstração oficial';
     } else if (tenant.tenantId === 'moda_style') {
       tenant.plan = 'monthly';
       tenant.subscriptionStatus = 'active';
       tenant.subscriptionExpiresAt = future30Days;
-      tenant.spreadsheetUrl = 'https://docs.google.com/spreadsheets/d/1ModaStyleSpreadsheetID/edit';
     } else if (tenant.tenantId === 'calcados_express') {
       tenant.plan = 'trial_30d';
       tenant.subscriptionStatus = 'expired';
       tenant.subscriptionExpiresAt = past5Days;
-      tenant.spreadsheetUrl = 'https://docs.google.com/spreadsheets/d/1CalcadosSpreadsheetID/edit';
       tenant.notes = 'Período de teste de 30 dias finalizado';
     } else {
       tenant.plan = 'monthly';
@@ -369,7 +366,7 @@ export function isTenantActive(tenant: Tenant): {
 /**
  * Cria e configura automaticamente uma nova loja (Auto-Provisioning)
  * - Cria a estrutura de banco de dados
- * - Gera a planilha no Google Sheets (real ou em nuvem integrada)
+ * - Provisiona dados e catálogo em nuvem
  * - Configura senhas, temas e abas
  * - Registra no multi-tenant
  */
@@ -397,7 +394,7 @@ export async function registerTenant(input: CreateTenantInput): Promise<{
   const status: SubscriptionStatus = plan === 'trial_30d' ? 'trial' : 'active';
   const expiresAt = new Date(now.getTime() + durationDays * 24 * 60 * 60 * 1000).toISOString();
 
-  // 1. Tenta auto-provisionar via Google Apps Script Master Provisioner (cria planilha real privada no Google Drive do dono)
+  // 1. Tenta auto-provisionar via Master Provisioner caso configurado
   const provisionerUrl = getMasterProvisionerUrl();
   let generatedSheetId = '1sheet_' + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
   let spreadsheetUrl = `https://docs.google.com/spreadsheets/d/${generatedSheetId}/edit`;

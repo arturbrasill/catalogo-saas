@@ -50,7 +50,7 @@ describe('Bateria de Testes Ponta a Ponta — Simulação de Produção Real', (
       ativo: true,
     };
 
-    it('A.1: Normaliza dados do Google Sheets sem gerar NaN e aplicando fallback SVG moderno', () => {
+    it('A.1: Normaliza dados de produtos sem gerar NaN e aplicando fallback SVG moderno', () => {
       const product = normalizeProduct(rawProductA);
 
       // Preço deve ser 49.9 numérico, nunca NaN

@@ -119,7 +119,7 @@ describe('Módulo 4 — Motor de WhatsApp (src/lib/whatsapp.ts)', () => {
       expect(normalizePhoneNumber('086999456987')).toBe('5586999456987');
     });
 
-    it('deve aceitar tipo numérico vindo do Google Sheets sem erros', () => {
+    it('deve aceitar tipo numérico vindo da API sem erros', () => {
       expect(normalizePhoneNumber(5586999456987)).toBe('5586999456987');
       expect(normalizePhoneNumber(86999456987)).toBe('5586999456987');
     });

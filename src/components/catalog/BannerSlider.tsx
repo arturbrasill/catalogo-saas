@@ -130,7 +130,7 @@ export function BannerSlider({ banners = [], storeName = 'Loja' }: BannerSliderP
                 className="w-full h-full object-cover object-center transition-transform duration-700 pointer-events-none"
                 loading={idx === 0 ? 'eager' : 'lazy'}
                 onError={(e) => {
-                  // Fallback suave caso o link de imagem do Sheets expire ou seja inválido
+                  // Fallback suave caso o link de imagem expire ou seja inválido
                   (e.target as HTMLElement).style.display = 'none';
                 }}
               />

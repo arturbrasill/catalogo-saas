@@ -125,7 +125,7 @@ import { normalizeProduct } from '@/lib/sheetNormalization';
 
 /**
  * Assegura que o campo whatsapp e outros campos sensíveis retornados da API
- * estejam no formato estrito de string e normaliza dados de produtos do Sheets.
+ * estejam no formato estrito de string e normaliza dados de produtos.
  */
 function sanitizeStoreResponse<T>(data: T, tenant?: Tenant | null): T {
   if (data && typeof data === 'object' && 'data' in data) {

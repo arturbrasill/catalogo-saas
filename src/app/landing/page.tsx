@@ -146,7 +146,7 @@ const FAQ_ITEMS = [
   {
     question: 'Como atualizo meus produtos, preços e fotos?',
     answer:
-      'Você tem duas opções simples: atualizar pelo Painel Administrativo no navegador do celular ou direto pela sua Planilha Google Sheets! Mudou o preço ou estoque na planilha, o catálogo atualiza na mesma hora.',
+      'Basta acessar o seu Painel Administrativo direto no navegador do celular ou computador! Mudou o preço, foto ou estoque no painel, o catálogo atualiza na mesma hora de forma 100% instantânea.',
   },
   {
     question: 'Preciso de computador ou conhecimento de programação?',
@@ -347,7 +347,7 @@ export default function SaaSCommercialLandingPage() {
             </span>
             <span className="flex items-center gap-1.5">
               <Check className="w-3.5 h-3.5 text-emerald-600 stroke-[2.5]" />
-              Google Sheets sincronizado
+              Sincronização em tempo real
             </span>
           </div>
         </div>
@@ -642,7 +642,7 @@ export default function SaaSCommercialLandingPage() {
                 <span className="truncate">Paleta ativa: {selectedNiche.paletteName}</span>
               </div>
               <p className="text-[11px] text-slate-500 pt-1">
-                Logo personalizada, cores primárias, banners e dados sincronizados via Google Sheets ou Painel Admin.
+                Logo personalizada, cores primárias, banners e dados sincronizados em tempo real via Painel Admin.
               </p>
             </div>
           </div>
@@ -933,7 +933,7 @@ export default function SaaSCommercialLandingPage() {
                   Painel Simples no Celular
                 </h3>
                 <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-                  Altere preços, estoque e fotos em segundos. Funciona perfeitamente pelo navegador do smartphone ou conectado à sua planilha Google Sheets.
+                  Altere preços, estoque e fotos em segundos. Funciona perfeitamente direto pelo navegador do smartphone ou computador.
                 </p>
               </div>
 
@@ -1219,7 +1219,7 @@ export default function SaaSCommercialLandingPage() {
 
             <div className="p-5 sm:p-6 rounded-2xl bg-white border border-slate-200/80 flex flex-col justify-between space-y-4 shadow-2xs">
               <p className="text-xs sm:text-sm text-slate-600 leading-relaxed italic">
-                &ldquo;Atualizo os preços na planilha do Google Sheets direto pelo celular e em 5 segundos já tá no ar para os clientes. Praticidade nota 10, sem complicação de programação.&rdquo;
+                &ldquo;Atualizo os preços no painel administrativo direto pelo celular e em 5 segundos já tá no ar para os clientes. Praticidade nota 10, sem complicação de programação.&rdquo;
               </p>
               <div className="pt-3 border-t border-slate-100 flex items-center gap-3">
                 <div className="h-9 w-9 rounded-full bg-emerald-50 text-emerald-700 font-bold text-xs flex items-center justify-center border border-emerald-100 flex-shrink-0">
@@ -1272,7 +1272,7 @@ export default function SaaSCommercialLandingPage() {
           </div>
         </div>
 
-        {/* Card Único de Plano Mensal com Itens Solicitados (Sem Hospedagem, Sem Domínio, Sem Sheets) */}
+        {/* Card Único de Plano Mensal com Itens Solicitados */}
         <div className="max-w-md mx-auto">
           <div className="bg-white border-2 border-slate-900 rounded-3xl p-6 sm:p-8 space-y-6 shadow-xl relative ring-1 ring-slate-900/10">
             <span className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-[10px] sm:text-[11px] font-bold uppercase tracking-wider px-3.5 sm:px-4 py-1 rounded-full whitespace-nowrap shadow-md max-w-[92%] truncate text-center">
@@ -1297,7 +1297,7 @@ export default function SaaSCommercialLandingPage() {
                 </span>
               </div>
 
-              {/* Lista dos Recursos Inclusos (Retiradas Hospedagem, Domínio e Sheets a pedido) */}
+              {/* Lista dos Recursos Inclusos */}
               <ul className="space-y-3.5 text-xs sm:text-sm text-slate-700">
                 <li className="flex items-center gap-2.5">
                   <Check className="w-4 h-4 text-emerald-600 flex-shrink-0" />

@@ -44,8 +44,8 @@ export interface StoreConfig {
 }
 
 /**
- * Configurações internas completas armazenadas na planilha.
- * Utilizado exclusivamente no ambiente seguro do backend Apps Script.
+ * Configurações internas completas armazenadas no banco de dados / engine.
+ * Utilizado exclusivamente no ambiente seguro do backend.
  */
 export interface StoreConfigInternal extends StoreConfig {
   admin_password_hash: string;

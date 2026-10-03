@@ -1,12 +1,12 @@
 /**
- * Módulo de Normalização e Sanitização Robusta para Dados do Google Sheets
+ * Módulo de Normalização e Sanitização Robusta para Dados de Catálogo e Produtos
  * Diretrizes: skill-qa-auditoria-deploy.md
  */
 
 import type { Product, Category, StoreConfig, CatalogInitialData, VariationOption } from '@/types';
 
 /**
- * Placeholder SVG elegante codificado em Data URI para produtos sem foto na planilha.
+ * Placeholder SVG elegante codificado em Data URI para produtos sem foto.
  * Garante design limpo, cantos harmônicos e nunca quebra o layout.
  */
 export const DEFAULT_PRODUCT_IMAGE_FALLBACK =
@@ -249,7 +249,7 @@ export function normalizeVariations(raw: unknown): VariationOption[] {
 }
 
 /**
- * Normaliza e blinda um produto vindo do Google Sheets ou API contra valores nulos/indefinidos.
+ * Normaliza e blinda um produto vindo da API ou banco de dados contra valores nulos/indefinidos.
  */
 export function normalizeProduct(raw: any): Product {
   if (!raw || typeof raw !== 'object') {
@@ -313,7 +313,7 @@ export function normalizeProduct(raw: any): Product {
 }
 
 /**
- * Normaliza e sanitiza toda a carga inicial do catálogo vinda da planilha.
+ * Normaliza e sanitiza toda a carga inicial do catálogo.
  */
 export function normalizeCatalogInitialData(raw: any): CatalogInitialData {
   if (!raw || typeof raw !== 'object') {

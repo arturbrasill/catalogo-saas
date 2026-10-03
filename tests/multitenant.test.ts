@@ -256,7 +256,7 @@ describe('Módulo 5 — Multi-Tenant e Resolução de Domínios (src/lib/tenantR
   // 4. AUTO-PROVISIONAMENTO E GESTÃO DE ASSINATURAS SAAS
   // ============================================================
   describe('SaaS Auto-Provisioning & Gestão de Assinaturas (src/lib/tenantStore.ts)', () => {
-    it('deve auto-provisionar nova loja com Google Sheets e credenciais de acesso', async () => {
+    it('deve auto-provisionar nova loja e credenciais de acesso', async () => {
       const { registerTenant, findTenant, resetDynamicTenants } = await import('../src/lib/tenantStore');
       resetDynamicTenants();
 

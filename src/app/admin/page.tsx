@@ -67,7 +67,7 @@ export default function AdminDashboardPage() {
               <span className="text-xs font-bold uppercase tracking-wider text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
                 Painel do Lojista
               </span>
-              <span className="text-xs text-slate-400">• Multi-tenant Google Sheets</span>
+              <span className="text-xs text-slate-400">• Catálogo Digital</span>
             </div>
             <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
               {store?.store_name ? `Olá, ${store.store_name}!` : 'Bem-vindo ao Painel!'}
@@ -127,7 +127,7 @@ export default function AdminDashboardPage() {
               <div className="text-3xl font-black text-slate-900 tracking-tight">
                 {isLoading ? '...' : totalProducts}
               </div>
-              <p className="text-xs text-slate-500 mt-0.5">Itens sincronizados na planilha</p>
+              <p className="text-xs text-slate-500 mt-0.5">Itens cadastrados no catálogo</p>
             </div>
             <div className="pt-2 border-t border-slate-100 flex items-center gap-1.5 text-[11px] text-slate-600">
               <span className="font-semibold text-emerald-600">{activeProducts} ativos</span>
