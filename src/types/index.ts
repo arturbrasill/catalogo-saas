@@ -42,6 +42,7 @@ export interface StoreConfig {
   // Layout da Vitrine
   catalog_layout?: CatalogLayoutMode;
   // Status de Pagamento Asaas
+  subscription_plan?: SubscriptionPlan;
   pending_payment?: boolean;
   asaas_payment_link?: string;
 }

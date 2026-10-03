@@ -178,6 +178,9 @@ function sanitizeStoreResponse<T>(data: T, tenant?: Tenant | null): T {
           }
           if (tenant) {
             storeObj['subscription_status'] = tenant.subscriptionStatus || 'active';
+            if (tenant.plan) {
+              storeObj['subscription_plan'] = tenant.plan;
+            }
             if (tenant.subscriptionExpiresAt) {
               storeObj['subscription_expires_at'] = tenant.subscriptionExpiresAt;
             }

@@ -19,6 +19,8 @@ import {
 } from 'lucide-react';
 import { useAuth, ProtectedRoute } from '@/lib/auth';
 import { api } from '@/lib/api';
+import type { StoreConfig } from '@/types';
+import { InadimplenciaModal } from '@/components/admin/InadimplenciaModal';
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -28,13 +30,15 @@ export function AdminLayout({ children }: AdminLayoutProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const pathname = usePathname();
   const { logout } = useAuth();
+  const [store, setStore] = useState<StoreConfig | null>(null);
+  const [overdueModalDismissed, setOverdueModalDismissed] = useState(false);
 
   const navigation = [
     { name: 'Dashboard', href: '/admin', icon: LayoutDashboard, badge: null },
     { name: 'Produtos', href: '/admin/produtos', icon: Package, badge: 'Inventário' },
     { name: 'Categorias', href: '/admin/categorias', icon: FolderTree, badge: null },
     { name: 'Cupons', href: '/admin/cupons', icon: TicketPercent, badge: 'Promoções' },
-    { name: 'Configurações', href: '/admin/configuracoes', icon: Settings, badge: 'Tema & WhatsApp' },
+    { name: 'Configurações', href: '/admin/configuracoes', icon: Settings, badge: 'Tema & Assinatura' },
   ];
 
   const isActive = (href: string) => {
@@ -46,30 +50,64 @@ export function AdminLayout({ children }: AdminLayoutProps) {
 
   const [storeSlug, setStoreSlug] = useState<string>('');
 
+  const loadStore = async () => {
+    try {
+      const st = await api.getStore();
+      if (st) {
+        setStore(st);
+        if (st.store_id) {
+          setStoreSlug(st.store_id);
+        }
+      }
+    } catch {
+      // ignore
+    }
+  };
+
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search);
       const urlTenant = params.get('tenant');
       if (urlTenant) {
         setStoreSlug(urlTenant);
-        return;
-      }
-      const match = document.cookie.match(/(?:^|;\s*)app_tenant=([^;]+)/);
-      if (match && match[1]) {
-        setStoreSlug(decodeURIComponent(match[1]));
-        return;
+      } else {
+        const match = document.cookie.match(/(?:^|;\s*)app_tenant=([^;]+)/);
+        if (match && match[1]) {
+          setStoreSlug(decodeURIComponent(match[1]));
+        }
       }
     }
-
-    api
-      .getStore()
-      .then((st) => {
-        if (st?.store_id) {
-          setStoreSlug(st.store_id);
-        }
-      })
-      .catch(() => {});
+    loadStore();
   }, []);
+
+  const isTrial = Boolean(
+    store &&
+      (store.subscription_status === 'trial' ||
+        store.subscription_plan === 'trial_7d' ||
+        store.subscription_plan === 'trial_30d') &&
+      !store.pending_payment &&
+      store.subscription_status !== 'blocked' &&
+      store.subscription_status !== 'expired'
+  );
+
+  const daysRemaining = store?.subscription_expires_at
+    ? Math.max(
+        0,
+        Math.ceil(
+          (new Date(store.subscription_expires_at).getTime() - Date.now()) / (1000 * 60 * 60 * 24)
+        )
+      )
+    : 7;
+
+  const isOverdueOrBlocked = Boolean(
+    store &&
+      (store.subscription_status === 'blocked' ||
+        store.subscription_status === 'expired' ||
+        store.pending_payment === true ||
+        (store.subscription_expires_at &&
+          new Date(store.subscription_expires_at).getTime() < Date.now() &&
+          store.subscription_status !== 'active'))
+  );
 
   const catalogHref = storeSlug ? `/${storeSlug}` : '/';
 
@@ -202,6 +240,43 @@ export function AdminLayout({ children }: AdminLayoutProps) {
 
         {/* Conteúdo Principal */}
         <div className="flex-1 flex flex-col min-w-0">
+          {/* Top Bar / Banner Fixo de Status de Teste */}
+          {isTrial && (
+            <aside
+              aria-label="Status do teste gratuito"
+              className="bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 text-white px-4 py-2.5 sm:px-8 flex flex-col sm:flex-row items-center justify-between gap-2.5 text-xs sm:text-sm font-medium z-30 shadow-xs sticky top-0"
+            >
+              <div className="flex items-center gap-2 text-center sm:text-left">
+                <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-white/20 text-white font-bold text-[10px] sm:text-[11px] uppercase tracking-wider backdrop-blur-xs">
+                  ⚡ Teste Gratuito
+                </span>
+                <span>
+                  Você está no período de teste gratuito: restam <strong>{daysRemaining} {daysRemaining === 1 ? 'dia' : 'dias'}</strong>. Sua assinatura será de <strong>R$ 79,90/mês</strong>.
+                </span>
+              </div>
+              <div className="flex items-center gap-2 shrink-0">
+                {store?.asaas_payment_link ? (
+                  <a
+                    href={store.asaas_payment_link}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-white text-emerald-800 font-bold hover:bg-emerald-50 shadow-xs transition text-xs"
+                  >
+                    <span>Assinar Agora</span>
+                    <ExternalLink className="w-3.5 h-3.5" />
+                  </a>
+                ) : (
+                  <a
+                    href="/admin/configuracoes?tab=subscription"
+                    className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-white text-emerald-800 font-bold hover:bg-emerald-50 shadow-xs transition text-xs"
+                  >
+                    <span>Ver Detalhes do Pagamento</span>
+                  </a>
+                )}
+              </div>
+            </aside>
+          )}
+
           {/* Top Bar Desktop / Header */}
           <header className="h-16 sm:h-20 bg-white border-b border-slate-200/80 px-4 sm:px-8 py-3.5 sm:py-4 flex items-center justify-between sticky top-0 z-20 shadow-xs">
             <div className="flex items-center gap-3">
@@ -332,6 +407,16 @@ export function AdminLayout({ children }: AdminLayoutProps) {
             {children}
           </main>
         </div>
+
+        {/* Modal Amigável de Bloqueio por Inadimplência / Pagamento Pendente */}
+        {store && isOverdueOrBlocked && !overdueModalDismissed && (
+          <InadimplenciaModal
+            store={store}
+            isOpen={true}
+            onClose={() => setOverdueModalDismissed(true)}
+            onRefreshStatus={loadStore}
+          />
+        )}
       </div>
     </ProtectedRoute>
   );

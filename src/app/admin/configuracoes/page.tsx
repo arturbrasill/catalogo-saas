@@ -39,6 +39,10 @@ import {
   Coffee,
   Monitor,
   CheckCircle2,
+  CreditCard,
+  ExternalLink,
+  ShieldCheck,
+  Calendar,
 } from 'lucide-react';
 
 const COLOR_PRESETS = [
@@ -129,7 +133,7 @@ export default function AdminConfiguracoesPage() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   // Navegação Principal de Abas
-  const [activeMainTab, setActiveMainTab] = useState<'appearance' | 'store_data'>('appearance');
+  const [activeMainTab, setActiveMainTab] = useState<'appearance' | 'store_data' | 'subscription'>('appearance');
 
   // Sub-abas de Aparência
   const [appearanceSubTab, setAppearanceSubTab] = useState<
@@ -137,6 +141,8 @@ export default function AdminConfiguracoesPage() {
   >('colors');
 
   const [currentStoreId, setCurrentStoreId] = useState<string>('');
+  const [rawStore, setRawStore] = useState<StoreConfig | null>(null);
+  const [isGeneratingInvoice, setIsGeneratingInvoice] = useState(false);
   const [storeName, setStoreName] = useState('');
   const [logoUrl, setLogoUrl] = useState('');
   const [primaryColor, setPrimaryColor] = useState('#10b981');
@@ -166,6 +172,7 @@ export default function AdminConfiguracoesPage() {
     setErrorMessage(null);
     try {
       const data = await api.getStore();
+      setRawStore(data);
       if (data.store_id) {
         setCurrentStoreId(data.store_id);
       }
@@ -206,7 +213,72 @@ export default function AdminConfiguracoesPage() {
 
   useEffect(() => {
     loadConfig();
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('tab') === 'subscription') {
+        setActiveMainTab('subscription');
+      }
+    }
   }, []);
+
+  const handleGenerateInvoice = async () => {
+    setIsGeneratingInvoice(true);
+    try {
+      const res = await fetch('/api/asaas/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          tenantId: currentStoreId || rawStore?.store_id,
+          plan: 'monthly',
+        }),
+      });
+      const json = await res.json();
+      if (json.success && json.data?.invoiceUrl) {
+        window.open(json.data.invoiceUrl, '_blank');
+        await loadConfig();
+      } else {
+        alert(json.error || 'Não foi possível gerar a fatura no momento.');
+      }
+    } catch (err) {
+      alert('Erro ao conectar ao Asaas: ' + String(err));
+    } finally {
+      setIsGeneratingInvoice(false);
+    }
+  };
+
+  const isTrial = Boolean(
+    rawStore &&
+      (rawStore.subscription_status === 'trial' ||
+        rawStore.subscription_plan === 'trial_7d' ||
+        rawStore.subscription_plan === 'trial_30d') &&
+      !rawStore.pending_payment &&
+      rawStore.subscription_status !== 'blocked' &&
+      rawStore.subscription_status !== 'expired'
+  );
+
+  const isOverdueOrBlocked = Boolean(
+    rawStore &&
+      (rawStore.subscription_status === 'blocked' ||
+        rawStore.subscription_status === 'expired' ||
+        rawStore.pending_payment === true)
+  );
+
+  const daysRemaining = rawStore?.subscription_expires_at
+    ? Math.max(
+        0,
+        Math.ceil(
+          (new Date(rawStore.subscription_expires_at).getTime() - Date.now()) / (1000 * 60 * 60 * 24)
+        )
+      )
+    : 7;
+
+  const formattedNextDueDate = rawStore?.subscription_expires_at
+    ? new Date(rawStore.subscription_expires_at).toLocaleDateString('pt-BR', {
+        day: '2-digit',
+        month: 'long',
+        year: 'numeric',
+      })
+    : 'Em 7 dias';
 
   // Sincroniza dinamicamente as variáveis CSS no documento em tempo real ao interagir com o Color Picker e temas
   useEffect(() => {
@@ -437,8 +509,8 @@ export default function AdminConfiguracoesPage() {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 items-start">
             {/* Coluna 1: Abas de Configuração e Formulário (7 colunas) */}
             <div className="lg:col-span-7 space-y-6">
-              {/* Abas Principais: Aparência vs Dados da Loja */}
-              <div className="flex bg-slate-100 p-1 rounded-2xl border border-slate-200/80">
+              {/* Abas Principais: Aparência vs Dados da Loja vs Assinatura */}
+              <div className="flex flex-col sm:flex-row bg-slate-100 p-1 rounded-2xl border border-slate-200/80 gap-1 sm:gap-0">
                 <button
                   type="button"
                   onClick={() => setActiveMainTab('appearance')}
@@ -463,6 +535,24 @@ export default function AdminConfiguracoesPage() {
                 >
                   <Store className="w-4 h-4 text-emerald-600" />
                   <span>Dados & Contato</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setActiveMainTab('subscription')}
+                  className={`flex-1 py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center justify-center gap-1.5 sm:gap-2 cursor-pointer ${
+                    activeMainTab === 'subscription'
+                      ? 'bg-white text-slate-900 shadow-sm'
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  <CreditCard className="w-4 h-4 text-emerald-600" />
+                  <span>Minha Assinatura</span>
+                  {isTrial && (
+                    <span className="hidden sm:inline-block text-[10px] bg-emerald-100 text-emerald-800 font-bold px-1.5 py-0.2 rounded-full">
+                      {daysRemaining}d
+                    </span>
+                  )}
                 </button>
               </div>
 
@@ -1363,26 +1453,161 @@ export default function AdminConfiguracoesPage() {
                   </div>
                 )}
 
-                {/* Botão de Salvar no Rodapé */}
-                <div className="pt-2">
-                  <button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="w-full inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-2xl text-xs sm:text-sm font-bold text-white bg-slate-900 hover:bg-slate-800 shadow-md transition disabled:opacity-50 cursor-pointer"
-                  >
-                    {isSubmitting ? (
-                      <>
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                        <span>Salvando Configurações...</span>
-                      </>
-                    ) : (
-                      <>
-                        <Save className="w-4 h-4" />
-                        <span>Salvar Todas as Configurações</span>
-                      </>
-                    )}
-                  </button>
-                </div>
+                {/* ============================================================ */}
+                {/* ABA 3: MINHA ASSINATURA */}
+                {/* ============================================================ */}
+                {activeMainTab === 'subscription' && (
+                  <div className="bg-white rounded-3xl border border-slate-200/80 p-5 sm:p-7 shadow-xs space-y-6 animate-fade-in">
+                    {/* Header da Seção */}
+                    <div className="flex items-center justify-between pb-4 border-b border-slate-100">
+                      <div>
+                        <span className="text-xs font-bold uppercase tracking-wider text-emerald-600 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
+                          Gestão de Cobrança
+                        </span>
+                        <h3 className="text-lg font-bold text-slate-900 mt-1">Minha Assinatura</h3>
+                        <p className="text-xs text-slate-500 mt-0.5">
+                          Acompanhe os detalhes da sua assinatura e faturamento no Asaas.
+                        </p>
+                      </div>
+                      <div className="h-10 w-10 rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-600">
+                        <CreditCard className="w-5 h-5" />
+                      </div>
+                    </div>
+
+                    {/* Bento Grid: Plano Atual, Status e Próximo Vencimento */}
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                      {/* Card 1: Plano Atual */}
+                      <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-1">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
+                          Plano Atual
+                        </span>
+                        <span className="font-extrabold text-slate-900 text-sm block">
+                          Plano Mensal - R$ 79,90/mês
+                        </span>
+                        <span className="text-[11px] text-slate-500 block">Catálogo Digital Ilimitado</span>
+                      </div>
+
+                      {/* Card 2: Status */}
+                      <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-1">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
+                          Status
+                        </span>
+                        {isTrial ? (
+                          <div className="flex items-center gap-1.5">
+                            <span className="h-2 w-2 rounded-full bg-amber-500 animate-pulse" />
+                            <span className="font-extrabold text-amber-700 text-sm">
+                              Período de Teste (7 dias)
+                            </span>
+                          </div>
+                        ) : isOverdueOrBlocked ? (
+                          <div className="flex items-center gap-1.5">
+                            <span className="h-2 w-2 rounded-full bg-rose-500" />
+                            <span className="font-extrabold text-rose-700 text-sm">
+                              Pagamento Pendente
+                            </span>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-1.5">
+                            <span className="h-2 w-2 rounded-full bg-emerald-500" />
+                            <span className="font-extrabold text-emerald-700 text-sm">
+                              Assinatura Ativa
+                            </span>
+                          </div>
+                        )}
+                        <span className="text-[11px] text-slate-500 block">
+                          {isTrial
+                            ? `Restam ${daysRemaining} ${daysRemaining === 1 ? 'dia' : 'dias'} grátis`
+                            : 'Renovação automática'}
+                        </span>
+                      </div>
+
+                      {/* Card 3: Próximo Vencimento */}
+                      <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-1">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
+                          Próximo Vencimento
+                        </span>
+                        <span className="font-extrabold text-slate-900 text-sm block">
+                          {formattedNextDueDate}
+                        </span>
+                        <span className="text-[11px] text-slate-500 block">Fatura Asaas</span>
+                      </div>
+                    </div>
+
+                    {/* Detalhes de Fatura e Gateway Asaas */}
+                    <div className="p-5 rounded-2xl bg-gradient-to-br from-slate-900 via-slate-950 to-slate-900 text-white space-y-4 shadow-md">
+                      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                        <div>
+                          <span className="text-[10px] font-bold uppercase tracking-wider bg-emerald-500/20 text-emerald-400 px-2.5 py-0.5 rounded-full inline-block mb-1 border border-emerald-500/30">
+                            Gateway Oficial Asaas
+                          </span>
+                          <h4 className="text-base font-bold text-white">
+                            Link de Pagamento e Faturas
+                          </h4>
+                          <p className="text-xs text-slate-400 mt-0.5">
+                            Você pode pagar sua mensalidade com PIX, Cartão de Crédito ou Boleto bancário.
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <span className="text-2xl font-black text-emerald-400 tracking-tight">R$ 79,90</span>
+                          <span className="text-[10px] text-slate-400 block font-medium">/mês</span>
+                        </div>
+                      </div>
+
+                      <div className="pt-2 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                        {rawStore?.asaas_payment_link ? (
+                          <a
+                            href={rawStore.asaas_payment_link}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs shadow-md transition text-center"
+                          >
+                            <CreditCard className="w-4 h-4" />
+                            <span>Acessar Fatura no Asaas (R$ 79,90)</span>
+                            <ExternalLink className="w-3.5 h-3.5" />
+                          </a>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={handleGenerateInvoice}
+                            disabled={isGeneratingInvoice}
+                            className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs shadow-md transition disabled:opacity-60 cursor-pointer text-center"
+                          >
+                            <CreditCard className="w-4 h-4" />
+                            <span>{isGeneratingInvoice ? 'Gerando Fatura...' : 'Acessar Link de Pagamento (R$ 79,90)'}</span>
+                            <ExternalLink className="w-3.5 h-3.5" />
+                          </button>
+                        )}
+
+                        <div className="text-[11px] text-slate-400 text-center sm:text-left flex-1">
+                          Sem fidelidade • Cancele quando quiser • Acesso instantâneo
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Botão de Salvar no Rodapé (oculto na aba de assinatura) */}
+                {activeMainTab !== 'subscription' && (
+                  <div className="pt-2">
+                    <button
+                      type="submit"
+                      disabled={isSubmitting}
+                      className="w-full inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-2xl text-xs sm:text-sm font-bold text-white bg-slate-900 hover:bg-slate-800 shadow-md transition disabled:opacity-50 cursor-pointer"
+                    >
+                      {isSubmitting ? (
+                        <>
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                          <span>Salvando Configurações...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Save className="w-4 h-4" />
+                          <span>Salvar Todas as Configurações</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                )}
               </form>
             </div>
 
