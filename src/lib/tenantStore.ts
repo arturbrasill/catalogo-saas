@@ -508,6 +508,12 @@ export function updateTenantSubscription(input: UpdateSubscriptionInput): Tenant
   if (input.asaasCustomerId !== undefined) tenant.asaasCustomerId = input.asaasCustomerId;
   if (input.asaasSubscriptionId !== undefined) tenant.asaasSubscriptionId = input.asaasSubscriptionId;
   if (input.asaasPaymentLink !== undefined) tenant.asaasPaymentLink = input.asaasPaymentLink;
+  if (input.catalog_layout !== undefined) tenant.catalog_layout = input.catalog_layout;
+  if (input.theme_preset !== undefined) tenant.theme_preset = input.theme_preset;
+  if (input.announcement_enabled !== undefined) tenant.announcement_enabled = input.announcement_enabled;
+  if (input.announcement_text !== undefined) tenant.announcement_text = input.announcement_text;
+  if (input.announcement_bg_color !== undefined) tenant.announcement_bg_color = input.announcement_bg_color;
+  if (input.announcement_text_color !== undefined) tenant.announcement_text_color = input.announcement_text_color;
 
   // Atualiza referências no registro
   for (const [key, t] of Object.entries(inMemoryRegistry)) {

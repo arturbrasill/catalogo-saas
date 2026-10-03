@@ -49,9 +49,23 @@ CREATE TABLE IF NOT EXISTS public.store_configs (
   business_hours TEXT,
   pix_key TEXT,
   pix_key_type TEXT DEFAULT 'cpf',
+  catalog_layout TEXT NOT NULL DEFAULT 'grid',
+  theme_preset TEXT NOT NULL DEFAULT 'modern',
+  announcement_enabled BOOLEAN NOT NULL DEFAULT true,
+  announcement_text TEXT DEFAULT 'Compre online e receba em casa com frete seguro ou retire na loja física',
+  announcement_bg_color TEXT DEFAULT '#0f172a',
+  announcement_text_color TEXT DEFAULT '#ffffff',
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
+-- Migrações idempotentes para tabelas existentes
+ALTER TABLE public.store_configs ADD COLUMN IF NOT EXISTS catalog_layout TEXT DEFAULT 'grid';
+ALTER TABLE public.store_configs ADD COLUMN IF NOT EXISTS theme_preset TEXT DEFAULT 'modern';
+ALTER TABLE public.store_configs ADD COLUMN IF NOT EXISTS announcement_enabled BOOLEAN DEFAULT true;
+ALTER TABLE public.store_configs ADD COLUMN IF NOT EXISTS announcement_text TEXT DEFAULT 'Compre online e receba em casa com frete seguro ou retire na loja física';
+ALTER TABLE public.store_configs ADD COLUMN IF NOT EXISTS announcement_bg_color TEXT DEFAULT '#0f172a';
+ALTER TABLE public.store_configs ADD COLUMN IF NOT EXISTS announcement_text_color TEXT DEFAULT '#ffffff';
 
 -- 3. TABELA DE CATEGORIAS
 CREATE TABLE IF NOT EXISTS public.categories (

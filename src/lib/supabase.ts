@@ -324,6 +324,15 @@ export async function fetchStoreConfigFromSupabase(tenantId: string): Promise<St
       business_hours: data.business_hours,
       pix_key: data.pix_key,
       pix_key_type: data.pix_key_type,
+      catalog_layout: (data.catalog_layout as any) || undefined,
+      theme_preset: (data.theme_preset as any) || undefined,
+      announcement_enabled:
+        data.announcement_enabled !== undefined ? Boolean(data.announcement_enabled) : undefined,
+      announcement_text: data.announcement_text !== undefined ? String(data.announcement_text) : undefined,
+      announcement_bg_color:
+        data.announcement_bg_color !== undefined ? String(data.announcement_bg_color) : undefined,
+      announcement_text_color:
+        data.announcement_text_color !== undefined ? String(data.announcement_text_color) : undefined,
     };
   } catch (err) {
     console.warn('Erro em fetchStoreConfigFromSupabase:', err);
@@ -361,17 +370,37 @@ export async function saveStoreConfigInSupabase(tenantId: string, config: SaveCo
     if (config.business_hours !== undefined) payload['business_hours'] = String(config.business_hours).trim();
     if (config.pix_key !== undefined) payload['pix_key'] = String(config.pix_key).trim();
     if (config.pix_key_type !== undefined) payload['pix_key_type'] = config.pix_key_type;
+    if (config.catalog_layout !== undefined) payload['catalog_layout'] = config.catalog_layout;
+    if (config.theme_preset !== undefined) payload['theme_preset'] = config.theme_preset;
+    if (config.announcement_enabled !== undefined) payload['announcement_enabled'] = Boolean(config.announcement_enabled);
+    if (config.announcement_text !== undefined) payload['announcement_text'] = String(config.announcement_text).trim();
+    if (config.announcement_bg_color !== undefined) payload['announcement_bg_color'] = String(config.announcement_bg_color).trim();
+    if (config.announcement_text_color !== undefined) payload['announcement_text_color'] = String(config.announcement_text_color).trim();
 
-    const { data, error } = await supabase
+    let res = await supabase
       .from('store_configs')
       .upsert(payload, { onConflict: 'tenant_id' })
       .select()
-      .single();
+      .maybeSingle();
 
-    if (error || !data) {
-      console.warn('Erro ao salvar store_config no Supabase:', error?.message);
-      return null;
+    if (res.error) {
+      console.warn('Tentativa com novas colunas no Supabase retornou aviso, executando fallback base:', res.error.message);
+      const basePayload = { ...payload };
+      delete basePayload['catalog_layout'];
+      delete basePayload['theme_preset'];
+      delete basePayload['announcement_enabled'];
+      delete basePayload['announcement_text'];
+      delete basePayload['announcement_bg_color'];
+      delete basePayload['announcement_text_color'];
+
+      res = await supabase
+        .from('store_configs')
+        .upsert(basePayload, { onConflict: 'tenant_id' })
+        .select()
+        .maybeSingle();
     }
+
+    const savedRecord = res.data || payload;
 
     // SINCRONIZAÇÃO AUTOMÁTICA IMEDIATA:
     // Se o WhatsApp ou Nome da loja foram alterados pelo lojista,
@@ -390,22 +419,36 @@ export async function saveStoreConfigInSupabase(tenantId: string, config: SaveCo
     }
 
     return {
-      store_id: data.tenant_id,
-      store_name: data.store_name,
-      logo_url: data.logo_url,
-      primary_color: data.primary_color,
-      secondary_color: data.secondary_color,
-      background_color: data.background_color,
-      text_color: data.text_color,
-      banners: Array.isArray(data.banners) ? data.banners : [],
-      whatsapp: data.whatsapp ? String(data.whatsapp) : '',
-      domain: data.domain,
-      currency: data.currency,
-      timezone: data.timezone,
-      is_open: data.is_open,
-      business_hours: data.business_hours,
-      pix_key: data.pix_key,
-      pix_key_type: data.pix_key_type,
+      store_id: savedRecord.tenant_id || tenantId,
+      store_name: savedRecord.store_name,
+      logo_url: savedRecord.logo_url,
+      primary_color: savedRecord.primary_color,
+      secondary_color: savedRecord.secondary_color,
+      background_color: savedRecord.background_color,
+      text_color: savedRecord.text_color,
+      banners: Array.isArray(savedRecord.banners) ? savedRecord.banners : [],
+      whatsapp: savedRecord.whatsapp ? String(savedRecord.whatsapp) : '',
+      domain: savedRecord.domain,
+      currency: savedRecord.currency,
+      timezone: savedRecord.timezone,
+      is_open: savedRecord.is_open,
+      business_hours: savedRecord.business_hours,
+      pix_key: savedRecord.pix_key,
+      pix_key_type: savedRecord.pix_key_type,
+      catalog_layout: config.catalog_layout || (savedRecord.catalog_layout as any) || 'grid',
+      theme_preset: config.theme_preset || (savedRecord.theme_preset as any) || 'modern',
+      announcement_enabled:
+        config.announcement_enabled !== undefined
+          ? Boolean(config.announcement_enabled)
+          : savedRecord.announcement_enabled !== undefined
+          ? Boolean(savedRecord.announcement_enabled)
+          : true,
+      announcement_text:
+        config.announcement_text !== undefined ? String(config.announcement_text) : savedRecord.announcement_text,
+      announcement_bg_color:
+        config.announcement_bg_color !== undefined ? String(config.announcement_bg_color) : savedRecord.announcement_bg_color,
+      announcement_text_color:
+        config.announcement_text_color !== undefined ? String(config.announcement_text_color) : savedRecord.announcement_text_color,
     };
   } catch (err) {
     console.warn('Erro em saveStoreConfigInSupabase:', err);

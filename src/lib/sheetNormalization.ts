@@ -355,6 +355,26 @@ export function normalizeCatalogInitialData(raw: any): CatalogInitialData {
     business_hours: rawStore.business_hours ? String(rawStore.business_hours).trim() : undefined,
     pix_key: rawStore.pix_key ? String(rawStore.pix_key).trim() : undefined,
     pix_key_type: rawStore.pix_key_type || undefined,
+    catalog_layout:
+      rawStore.catalog_layout === 'grid' ||
+      rawStore.catalog_layout === 'list' ||
+      rawStore.catalog_layout === 'editorial'
+        ? rawStore.catalog_layout
+        : 'grid',
+    theme_preset: rawStore.theme_preset || 'modern',
+    announcement_enabled:
+      rawStore.announcement_enabled !== undefined
+        ? Boolean(rawStore.announcement_enabled)
+        : true,
+    announcement_text: rawStore.announcement_text
+      ? String(rawStore.announcement_text).trim()
+      : undefined,
+    announcement_bg_color: rawStore.announcement_bg_color
+      ? String(rawStore.announcement_bg_color).trim()
+      : undefined,
+    announcement_text_color: rawStore.announcement_text_color
+      ? String(rawStore.announcement_text_color).trim()
+      : undefined,
   };
 
   const rawCategories = Array.isArray(raw.categories) ? raw.categories : [];

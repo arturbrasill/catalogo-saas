@@ -247,4 +247,38 @@ describe('Layout Modes e Selos Promocionais (Vitrine Configurável)', () => {
       }
     });
   });
+
+  describe('4. Normalização do Catálogo Inicial (normalizeCatalogInitialData)', () => {
+    it('deve preservar os modos de layout (grid, list, editorial) na carga inicial do catálogo', async () => {
+      const { normalizeCatalogInitialData } = await import('@/lib/sheetNormalization');
+
+      const modes: CatalogLayoutMode[] = ['grid', 'list', 'editorial'];
+      for (const mode of modes) {
+        const raw = {
+          store: {
+            store_id: 'test_store',
+            store_name: 'Minha Loja',
+            catalog_layout: mode,
+          },
+          categories: [],
+          products: [],
+        };
+        const normalized = normalizeCatalogInitialData(raw);
+        expect(normalized.store.catalog_layout).toBe(mode);
+      }
+    });
+
+    it('deve adotar "grid" como fallback caso catalog_layout seja inválido ou não informado', async () => {
+      const { normalizeCatalogInitialData } = await import('@/lib/sheetNormalization');
+
+      const rawInvalid = {
+        store: {
+          store_id: 'test_store',
+          catalog_layout: 'desconhecido_invalido',
+        },
+      };
+      const normalized = normalizeCatalogInitialData(rawInvalid);
+      expect(normalized.store.catalog_layout).toBe('grid');
+    });
+  });
 });

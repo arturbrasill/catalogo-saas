@@ -299,6 +299,12 @@ export interface UpdateSubscriptionInput {
   asaasCustomerId?: string;
   asaasSubscriptionId?: string;
   asaasPaymentLink?: string;
+  catalog_layout?: CatalogLayoutMode;
+  theme_preset?: ThemePreset;
+  announcement_enabled?: boolean;
+  announcement_text?: string;
+  announcement_bg_color?: string;
+  announcement_text_color?: string;
 }
 
 export interface AsaasCustomerInput {

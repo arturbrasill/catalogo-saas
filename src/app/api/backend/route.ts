@@ -19,7 +19,7 @@ import {
   updateCouponInSupabase,
   deleteCouponInSupabase,
 } from '@/lib/supabase';
-import { updateTenantSubscription } from '@/lib/tenantStore';
+import { updateTenantSubscription, findTenant } from '@/lib/tenantStore';
 
 /**
  * Validação rigorosa de segurança para URLs remotas de API.
@@ -194,6 +194,14 @@ export async function GET(request: NextRequest) {
     if (action === 'store') {
       const config = await fetchStoreConfigFromSupabase(tenantId);
       if (config) {
+        const localTenant = findTenant(tenantId);
+        const localEngineConfig = getLocalEngine(tenantId).getPublicStoreConfig();
+        if (!config.catalog_layout) {
+          config.catalog_layout = localTenant?.catalog_layout || localEngineConfig?.catalog_layout || 'grid';
+        }
+        if (!config.theme_preset) {
+          config.theme_preset = localTenant?.theme_preset || localEngineConfig?.theme_preset || 'modern';
+        }
         return NextResponse.json(sanitizeStoreResponse({ success: true, data: config, error: null }, tenant));
       }
     } else if (action === 'categories') {
@@ -213,6 +221,14 @@ export async function GET(request: NextRequest) {
         fetchProductsFromSupabase(tenantId),
       ]);
       if (config && cats && prods) {
+        const localTenant = findTenant(tenantId);
+        const localEngineConfig = getLocalEngine(tenantId).getPublicStoreConfig();
+        if (!config.catalog_layout) {
+          config.catalog_layout = localTenant?.catalog_layout || localEngineConfig?.catalog_layout || 'grid';
+        }
+        if (!config.theme_preset) {
+          config.theme_preset = localTenant?.theme_preset || localEngineConfig?.theme_preset || 'modern';
+        }
         return NextResponse.json(
           sanitizeStoreResponse(
             {
@@ -306,6 +322,12 @@ export async function POST(request: NextRequest) {
           tenantId,
           whatsapp: payload.config.whatsapp,
           name: payload.config.store_name,
+          catalog_layout: payload.config.catalog_layout,
+          theme_preset: payload.config.theme_preset,
+          announcement_enabled: payload.config.announcement_enabled,
+          announcement_text: payload.config.announcement_text,
+          announcement_bg_color: payload.config.announcement_bg_color,
+          announcement_text_color: payload.config.announcement_text_color,
         });
       } catch (err) {
         console.warn('Erro ao sincronizar tenantStore com saveConfig:', err);
@@ -320,13 +342,15 @@ export async function POST(request: NextRequest) {
           return NextResponse.json(sanitizeStoreResponse({ success: true, data: loginRes, error: null }, tenant));
         }
       } else if (payload.action === 'saveConfig') {
+        try {
+          getLocalEngine(tenantId).handleSaveConfig(payload.config);
+        } catch {}
         const saved = await saveStoreConfigInSupabase(tenantId, payload.config);
         if (saved) {
-          try {
-            getLocalEngine(tenantId).handleSaveConfig(payload.config);
-          } catch {}
           return NextResponse.json(sanitizeStoreResponse({ success: true, data: saved, error: null }, tenant));
         }
+        const localSaved = getLocalEngine(tenantId).getPublicStoreConfig();
+        return NextResponse.json(sanitizeStoreResponse({ success: true, data: localSaved, error: null }, tenant));
       } else if (payload.action === 'createProduct') {
         const prod = await createProductInSupabase(tenantId, payload.product);
         if (prod) {
