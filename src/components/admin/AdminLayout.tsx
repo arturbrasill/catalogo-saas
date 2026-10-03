@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard,
@@ -18,6 +18,7 @@ import {
   TicketPercent,
 } from 'lucide-react';
 import { useAuth, ProtectedRoute } from '@/lib/auth';
+import { api } from '@/lib/api';
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -42,6 +43,35 @@ export function AdminLayout({ children }: AdminLayoutProps) {
     }
     return pathname.startsWith(href);
   };
+
+  const [storeSlug, setStoreSlug] = useState<string>('');
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const urlTenant = params.get('tenant');
+      if (urlTenant) {
+        setStoreSlug(urlTenant);
+        return;
+      }
+      const match = document.cookie.match(/(?:^|;\s*)app_tenant=([^;]+)/);
+      if (match && match[1]) {
+        setStoreSlug(decodeURIComponent(match[1]));
+        return;
+      }
+    }
+
+    api
+      .getStore()
+      .then((st) => {
+        if (st?.store_id) {
+          setStoreSlug(st.store_id);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  const catalogHref = storeSlug ? `/${storeSlug}` : '/';
 
   const getPageTitle = () => {
     if (pathname === '/admin') return 'Visão Geral';
@@ -127,7 +157,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
           {/* Rodapé da Sidebar */}
           <div className="p-4 border-t border-slate-900 space-y-2">
             <a
-              href="/"
+              href={catalogHref}
               target="_blank"
               rel="noreferrer"
               className="flex items-center justify-between w-full px-3.5 py-2.5 text-xs font-semibold text-slate-300 hover:text-white hover:bg-slate-900 rounded-xl transition border border-slate-800/60"
@@ -195,7 +225,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
             {/* Ações Rápidas do Topbar */}
             <div className="flex items-center gap-3">
               <a
-                href="/"
+                href={catalogHref}
                 target="_blank"
                 rel="noreferrer"
                 className="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-xl transition cursor-pointer"
@@ -266,7 +296,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
 
                 <div className="p-4 border-t border-slate-900 space-y-2">
                   <a
-                    href="/"
+                    href={catalogHref}
                     target="_blank"
                     rel="noreferrer"
                     className="flex items-center justify-center gap-2 w-full px-3 py-2 text-xs font-bold text-slate-300 bg-slate-900 rounded-xl"

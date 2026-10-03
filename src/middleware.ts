@@ -36,7 +36,28 @@ export function middleware(request: NextRequest) {
   const rawHost =
     request.headers.get('x-forwarded-host') || request.headers.get('host');
   const normalizedHost = normalizeHostname(rawHost);
-  const queryTenant = request.nextUrl.searchParams.get('tenant') || request.cookies.get('app_tenant')?.value;
+
+  // Extrai possível tenant da rota de primeiro nível (ex.: /aura-concept ou /aura-concept/...)
+  const firstPathSegment = cleanPath.split('/')[1]?.toLowerCase();
+  const RESERVED_ROUTES = new Set([
+    'admin',
+    'api',
+    'criar-loja',
+    'saas-admin',
+    'saas-login',
+    'landing',
+    'planos',
+    'tenant-not-found',
+    '_next',
+    'static',
+    'favicon.ico',
+  ]);
+  const pathTenant = firstPathSegment && !RESERVED_ROUTES.has(firstPathSegment) ? firstPathSegment : null;
+
+  const queryTenant =
+    request.nextUrl.searchParams.get('tenant') ||
+    pathTenant ||
+    request.cookies.get('app_tenant')?.value;
 
   // 3. Resolve contra o registro conhecido de tenants
   const tenant = resolveTenant(normalizedHost, queryTenant);
@@ -46,6 +67,7 @@ export function middleware(request: NextRequest) {
     const url = request.nextUrl.clone();
     url.pathname = '/tenant-not-found';
     url.searchParams.set('host', normalizedHost);
+    if (pathTenant) url.searchParams.set('tenant', pathTenant);
     return NextResponse.rewrite(url);
   }
 
@@ -65,9 +87,8 @@ export function middleware(request: NextRequest) {
     },
   });
 
-  // Se veio por query param ?tenant=..., grava cookie de conveniência para navegação contínua
-  const urlParamTenant = request.nextUrl.searchParams.get('tenant');
-  if (urlParamTenant) {
+  // Se veio por rota limpa (/nome-da-loja) ou query param ?tenant=..., grava cookie de conveniência para navegação contínua
+  if (pathTenant || request.nextUrl.searchParams.get('tenant')) {
     response.cookies.set('app_tenant', tenant.tenantId, {
       path: '/',
       maxAge: 60 * 60 * 24 * 7, // 7 dias

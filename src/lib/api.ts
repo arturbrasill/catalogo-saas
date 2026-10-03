@@ -33,9 +33,53 @@ export class ApiClient {
     this.defaultHeaders = defaultHeaders;
   }
 
-  private async request<T>(endpoint: string, options?: RequestInit): Promise<T> {
+  public detectTenant(): string | null {
+    if (typeof window === 'undefined') return null;
+    const params = new URLSearchParams(window.location.search);
+    const query = params.get('tenant');
+    if (query && query.trim()) return query.trim();
+
+    const segments = window.location.pathname.split('/').filter(Boolean);
+    const first = segments[0]?.toLowerCase();
+    const reserved = [
+      'admin',
+      'api',
+      'criar-loja',
+      'saas-admin',
+      'saas-login',
+      'landing',
+      'planos',
+      'tenant-not-found',
+      '_next',
+      'static',
+      'favicon.ico',
+    ];
+    if (first && !reserved.includes(first)) {
+      return first;
+    }
+
+    const match = document.cookie.match(/(?:^|;\s*)app_tenant=([^;]+)/);
+    if (match && match[1]) {
+      return decodeURIComponent(match[1]);
+    }
+
+    return null;
+  }
+
+  private appendTenant(endpoint: string, explicitTenant?: string): string {
+    const tenant = explicitTenant || this.detectTenant();
+    if (!tenant) return endpoint;
+
+    if (endpoint.includes('tenant=')) return endpoint;
+
+    const separator = endpoint.includes('?') ? '&' : '?';
+    return `${endpoint}${separator}tenant=${encodeURIComponent(tenant)}`;
+  }
+
+  private async request<T>(endpoint: string, options?: RequestInit, explicitTenant?: string): Promise<T> {
+    const targetUrl = this.appendTenant(endpoint, explicitTenant);
     try {
-      const res = await fetch(endpoint, {
+      const res = await fetch(targetUrl, {
         ...options,
         headers: {
           'Content-Type': 'application/json',
@@ -75,24 +119,24 @@ export class ApiClient {
   // CONSULTAS PÚBLICAS (GET)
   // ==========================================
 
-  public async getStore(): Promise<StoreConfig> {
-    return this.request<StoreConfig>(`${this.baseUrl}?action=store`);
+  public async getStore(tenantId?: string): Promise<StoreConfig> {
+    return this.request<StoreConfig>(`${this.baseUrl}?action=store`, undefined, tenantId);
   }
 
-  public async getCategories(): Promise<Category[]> {
-    return this.request<Category[]>(`${this.baseUrl}?action=categories`);
+  public async getCategories(tenantId?: string): Promise<Category[]> {
+    return this.request<Category[]>(`${this.baseUrl}?action=categories`, undefined, tenantId);
   }
 
-  public async getProducts(categoryId?: string): Promise<Product[]> {
+  public async getProducts(categoryId?: string, tenantId?: string): Promise<Product[]> {
     const url = categoryId
       ? `${this.baseUrl}?action=products&categoryId=${encodeURIComponent(categoryId)}`
       : `${this.baseUrl}?action=products`;
-    const data = await this.request<Product[]>(url);
+    const data = await this.request<Product[]>(url, undefined, tenantId);
     return Array.isArray(data) ? data.map(normalizeProduct) : [];
   }
 
-  public async getAll(): Promise<CatalogInitialData> {
-    const data = await this.request<CatalogInitialData>(`${this.baseUrl}?action=all`);
+  public async getAll(tenantId?: string): Promise<CatalogInitialData> {
+    const data = await this.request<CatalogInitialData>(`${this.baseUrl}?action=all`, undefined, tenantId);
     return normalizeCatalogInitialData(data);
   }
 

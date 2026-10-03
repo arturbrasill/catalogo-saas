@@ -99,7 +99,7 @@ export async function POST(request: NextRequest) {
       success: true,
       data: {
         tenant: result.tenant,
-        catalogUrl: `/?tenant=${result.tenant.slug}`,
+        catalogUrl: `/${result.tenant.slug}`,
         adminUrl: `/admin/login?tenant=${result.tenant.slug}`,
       },
     });

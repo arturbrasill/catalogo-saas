@@ -667,7 +667,7 @@ export default function SaasAdminPage() {
                       <td className="py-3.5 px-4">
                         <div className="font-bold text-slate-900">{store.name}</div>
                         <div className="text-[11px] text-slate-400 font-mono flex items-center gap-1">
-                          <span>?tenant={store.slug || store.tenantId}</span>
+                          <span>/{store.slug || store.tenantId}</span>
                         </div>
                       </td>
 
@@ -771,7 +771,7 @@ export default function SaasAdminPage() {
 
                           {/* Ver Catálogo */}
                           <a
-                            href={`/?tenant=${store.slug || store.tenantId}`}
+                            href={`/${store.slug || store.tenantId}`}
                             target="_blank"
                             rel="noreferrer"
                             className="p-1.5 rounded-lg bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-200 transition-colors"
@@ -824,7 +824,7 @@ export default function SaasAdminPage() {
                     <div>
                       <h4 className="font-bold text-slate-900 text-sm">{store.name}</h4>
                       <p className="text-[11px] font-mono text-slate-400">
-                        ?tenant={store.slug || store.tenantId}
+                        /{store.slug || store.tenantId}
                       </p>
                     </div>
                     <span
@@ -898,7 +898,7 @@ export default function SaasAdminPage() {
                         </a>
                       )}
                       <a
-                        href={`/?tenant=${store.slug || store.tenantId}`}
+                        href={`/${store.slug || store.tenantId}`}
                         target="_blank"
                         rel="noreferrer"
                         className="p-1.5 rounded-lg bg-slate-50 text-slate-700 border border-slate-200"
@@ -1100,7 +1100,7 @@ export default function SaasAdminPage() {
             <p className="text-sm text-slate-600 mb-4 leading-relaxed">
               Você tem certeza que deseja excluir a loja{' '}
               <strong className="text-slate-900 font-semibold">{storeToDelete.name}</strong> (
-              <span className="font-mono text-xs text-slate-500">?tenant={storeToDelete.slug || storeToDelete.tenantId}</span>)?
+              <span className="font-mono text-xs text-slate-500">/{storeToDelete.slug || storeToDelete.tenantId}</span>)?
             </p>
 
             <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl mb-5 text-xs text-rose-800 space-y-1">

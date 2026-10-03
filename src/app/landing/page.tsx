@@ -312,7 +312,7 @@ export default function SaaSCommercialLandingPage() {
           <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 max-w-md mx-auto">
             {/* Botão 1 (Destaque): 'Ver Demonstração ao Vivo' */}
             <Link
-              href="/?tenant=loja_exemplo"
+              href="/loja_exemplo"
               target="_blank"
               rel="noopener noreferrer"
               title="Abrir catálogo demonstrativo em nova aba"
@@ -614,7 +614,7 @@ export default function SaaSCommercialLandingPage() {
                   {/* Botão de Finalização no WhatsApp com Cor do Tema */}
                   <div className="pt-0.5">
                     <Link
-                      href="/?tenant=loja_exemplo"
+                      href="/loja_exemplo"
                       target="_blank"
                       rel="noopener noreferrer"
                       title="Abrir catálogo demonstrativo em nova aba"

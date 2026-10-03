@@ -67,10 +67,38 @@ function resolveContextTenant(request: NextRequest): {
   // Prioridade canônica para o Host registrado (previne header injection)
   let tenant = getTenantByHostname(rawHost);
 
-  // Se estiver em ambiente compartilhado (localhost ou vercel.app), permite query param ?tenant= ou cookie
-  const queryTenant =
+  // Se estiver em ambiente compartilhado (localhost ou vercel.app), permite query param ?tenant=, header x-tenant-id, cookie ou referer
+  let queryTenant =
     request.nextUrl.searchParams.get('tenant') ||
+    request.headers.get('x-tenant-id') ||
     request.cookies.get('app_tenant')?.value;
+
+  if (!queryTenant) {
+    const referer = request.headers.get('referer');
+    if (referer) {
+      try {
+        const refUrl = new URL(referer);
+        const refSegments = refUrl.pathname.split('/').filter(Boolean);
+        const first = refSegments[0]?.toLowerCase();
+        const RESERVED = [
+          'admin',
+          'api',
+          'criar-loja',
+          'saas-admin',
+          'saas-login',
+          'landing',
+          'planos',
+          'tenant-not-found',
+        ];
+        if (first && !RESERVED.includes(first)) {
+          queryTenant = first;
+        }
+      } catch {
+        // ignore referer parse error
+      }
+    }
+  }
+
   if (queryTenant && (normalized === 'localhost' || normalized === '127.0.0.1' || normalized.endsWith('.vercel.app') || !tenant)) {
     const resolvedFromQuery = resolveTenant(rawHost, queryTenant);
     if (resolvedFromQuery) {

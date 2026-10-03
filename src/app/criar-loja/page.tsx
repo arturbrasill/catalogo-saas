@@ -61,9 +61,12 @@ export default function CriarLojaPage() {
   } | null>(null);
   const [copiedLink, setCopiedLink] = useState<string | null>(null);
 
-  // Lê plano pré-selecionado da URL (?plan=monthly ou ?plan=trial_30d)
+  const [hostDomain, setHostDomain] = useState('numclick-app.vercel.app');
+
+  // Lê plano pré-selecionado da URL (?plan=monthly ou ?plan=trial_30d) e hostname atual
   useEffect(() => {
     if (typeof window !== 'undefined') {
+      setHostDomain(window.location.host || 'numclick-app.vercel.app');
       const params = new URLSearchParams(window.location.search);
       const p = params.get('plan');
       if (p === 'monthly' || p === 'trial_30d') {
@@ -298,7 +301,7 @@ export default function CriarLojaPage() {
                   </label>
                   <div className="flex items-center text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-slate-500">
                     <Globe className="w-4 h-4 mr-2 text-slate-400 flex-shrink-0" />
-                    <span className="opacity-70">seucatalogo.com/?tenant=</span>
+                    <span className="opacity-70">{hostDomain}/</span>
                     <input
                       type="text"
                       required

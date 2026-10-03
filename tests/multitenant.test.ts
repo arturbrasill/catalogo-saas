@@ -604,6 +604,66 @@ describe('Módulo 5 — Multi-Tenant e Resolução de Domínios (src/lib/tenantR
       expect(findTenant(created.tenant.tenantId)).toBeNull();
     });
   });
+
+  // ============================================================
+  // 11. ROTAS LIMPAS /slug (SEM ?tenant=)
+  // ============================================================
+  describe('11. Resolução de Rotas Limpas /slug (Path-based Multi-Tenant)', () => {
+    it('ApiClient.detectTenant() deve detectar slug diretamente da rota /nomedaloja', async () => {
+      const { api } = await import('../src/lib/api');
+
+      // Simula window.location no navegador
+      const originalWindow = global.window;
+      try {
+        (global as any).window = {
+          location: {
+            pathname: '/aura-concept',
+            search: '',
+            hostname: 'numclick-app.vercel.app',
+          },
+        };
+        (global as any).document = {
+          cookie: '',
+        };
+
+        const detected = api.detectTenant();
+        expect(detected).toBe('aura-concept');
+
+        // Rotas reservadas não devem ser tratadas como slug de loja
+        (global as any).window.location.pathname = '/admin';
+        expect(api.detectTenant()).toBeNull();
+
+        (global as any).window.location.pathname = '/saas-admin';
+        expect(api.detectTenant()).toBeNull();
+
+        (global as any).window.location.pathname = '/criar-loja';
+        expect(api.detectTenant()).toBeNull();
+      } finally {
+        (global as any).window = originalWindow;
+      }
+    });
+
+    it('Middleware deve interceptar rota /slug, injetar headers e gravar cookie app_tenant', async () => {
+      const { middleware } = await import('../src/middleware');
+
+      const req = new NextRequest('https://numclick-app.vercel.app/aura-concept', {
+        headers: {
+          host: 'numclick-app.vercel.app',
+        },
+      });
+
+      const res = middleware(req);
+      expect(res).toBeTruthy();
+      // Não deve reescrever para tenant-not-found (é um NextResponse.next() válido)
+      expect(res.headers.get('x-middleware-rewrite')).toBeNull();
+
+      // Verifica se o cookie app_tenant foi configurado
+      const cookies = res.cookies.getAll();
+      const appTenantCookie = cookies.find((c) => c.name === 'app_tenant');
+      expect(appTenantCookie).toBeTruthy();
+      expect(appTenantCookie?.value).toContain('aura');
+    });
+  });
 });
 
 
