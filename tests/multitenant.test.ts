@@ -325,17 +325,17 @@ describe('Módulo 5 — Multi-Tenant e Resolução de Domínios (src/lib/tenantR
       expect(metrics.estimatedMonthlyRevenue).toBeGreaterThanOrEqual(0);
     });
 
-    it('deve gerar cobrança Asaas de R$ 129,90 e processar webhook de confirmação', async () => {
+    it('deve gerar cobrança Asaas de R$ 79,90 e processar webhook de confirmação', async () => {
       const { createAsaasPayment, ASAAS_MONTHLY_PRICE } = await import('../src/lib/asaas');
       const { POST: webhookHandler } = await import('../src/app/api/asaas/webhook/route');
       const { findTenant } = await import('../src/lib/tenantStore');
 
-      expect(ASAAS_MONTHLY_PRICE).toBe(129.9);
+      expect(ASAAS_MONTHLY_PRICE).toBe(79.9);
 
       // 1. Gera cobrança
       const payment = await createAsaasPayment({
         customer: 'cus_test_123',
-        value: 129.9,
+        value: 79.9,
         dueDate: '2026-10-30',
         description: 'Assinatura Mensal Catálogo Digital',
         externalReference: 'bella_boutique_teste',
@@ -350,7 +350,7 @@ describe('Módulo 5 — Multi-Tenant e Resolução de Domínios (src/lib/tenantR
         payment: {
           id: payment.id,
           customer: 'cus_test_123',
-          value: 129.9,
+          value: 79.9,
           status: 'CONFIRMED',
           billingType: 'PIX',
           externalReference: 'bella_boutique_teste',

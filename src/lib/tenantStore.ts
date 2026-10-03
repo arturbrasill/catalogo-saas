@@ -646,9 +646,9 @@ export function getSaasMetrics(): SaasMetrics {
     } else {
       activeStores++;
       if (tenant.plan === 'monthly') {
-        estimatedMonthlyRevenue += 129.9; // Plano mensal oficial R$ 129,90
+        estimatedMonthlyRevenue += 79.9; // Plano mensal oficial R$ 79,90
       } else if (tenant.plan === 'yearly') {
-        estimatedMonthlyRevenue += 99.9; // Plano anual proporcional R$ 99,90/mês
+        estimatedMonthlyRevenue += 59.9; // Plano anual proporcional R$ 59,90/mês
       }
     }
   }

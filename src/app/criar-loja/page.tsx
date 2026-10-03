@@ -481,7 +481,7 @@ export default function CriarLojaPage() {
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {/* Teste 30 Dias Grátis */}
+                  {/* Teste 7 Dias Grátis */}
                   <label
                     className={`relative p-4 rounded-xl border cursor-pointer transition-all flex flex-col justify-between ${
                       plan === 'trial_30d'
@@ -499,14 +499,14 @@ export default function CriarLojaPage() {
                     />
                     <div>
                       <div className="flex items-center justify-between mb-1.5">
-                        <span className="text-[10px] font-bold text-blue-700 bg-blue-100 px-2 py-0.5 rounded-md">
+                        <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-md">
                           Teste Grátis
                         </span>
                         {plan === 'trial_30d' && <CheckCircle2 className="w-4 h-4 text-emerald-600" />}
                       </div>
-                      <h4 className="text-sm font-bold text-slate-900">Teste por 30 Dias</h4>
+                      <h4 className="text-sm font-bold text-slate-900">Experimente por 7 Dias Grátis</h4>
                       <p className="text-[11px] text-slate-500 mt-1 leading-normal">
-                        Acesso liberado completo por 30 dias. Cancela de forma 100% automática ao final caso não renove.
+                        Acesso total liberado por 7 dias grátis. Cancela de forma 100% automática ao final caso não renove.
                       </p>
                     </div>
                     <div className="mt-4 pt-2.5 border-t border-slate-200/60 font-extrabold text-sm text-slate-900 flex items-baseline justify-between">
@@ -515,7 +515,7 @@ export default function CriarLojaPage() {
                     </div>
                   </label>
 
-                  {/* Plano Mensal R$ 129,90 */}
+                  {/* Plano Mensal R$ 79,90 */}
                   <label
                     className={`relative p-4 rounded-xl border cursor-pointer transition-all flex flex-col justify-between ${
                       plan === 'monthly'
@@ -545,7 +545,7 @@ export default function CriarLojaPage() {
                       </p>
                     </div>
                     <div className="mt-4 pt-2.5 border-t border-slate-200/60 font-extrabold text-sm text-slate-900 flex items-baseline justify-between">
-                      <span>R$ 129,90</span>
+                      <span>R$ 79,90</span>
                       <span className="text-[10px] font-normal text-slate-500">/mês</span>
                     </div>
                   </label>
@@ -767,7 +767,7 @@ export default function CriarLojaPage() {
                   <div className="flex items-center justify-between mb-1">
                     <span className="text-[11px] font-bold text-emerald-800 uppercase tracking-wider flex items-center gap-1">
                       <CreditCard className="w-3.5 h-3.5 text-emerald-600" />
-                      3. Fatura Asaas — R$ 129,90 (PIX, Cartão ou Boleto)
+                      3. Fatura Asaas — R$ 79,90 (PIX, Cartão ou Boleto)
                     </span>
                     <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full">
                       Aguardando Pagamento
@@ -788,12 +788,12 @@ export default function CriarLojaPage() {
                 </div>
               )}
 
-              {/* Informação sobre o Teste de 30 Dias */}
+              {/* Informação sobre o Teste de 7 Dias */}
               {!createdData.asaasPaymentUrl && (
-                <div className="p-3 bg-blue-50 border border-blue-200 rounded-xl text-xs text-blue-800 flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-blue-600 flex-shrink-0" />
+                <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-xs text-emerald-900 flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
                   <span>
-                    <strong>Teste Grátis Ativo:</strong> Você tem 30 dias de acesso liberado. O sistema cancela o catálogo de forma 100% automática ao fim dos 30 dias caso você não contrate o plano mensal.
+                    <strong>Teste Grátis Ativo:</strong> Você tem 7 dias de acesso liberado. O sistema cancela o catálogo de forma 100% automática ao fim dos 7 dias caso você não contrate o plano mensal.
                   </span>
                 </div>
               )}

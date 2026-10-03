@@ -1,7 +1,7 @@
 import type { AsaasCustomerInput, AsaasPaymentInput } from '@/types';
 
-export const ASAAS_MONTHLY_PRICE = 129.9;
-export const ASAAS_YEARLY_PRICE = 1198.8; // R$ 99,90/mês cobrado anualmente
+export const ASAAS_MONTHLY_PRICE = 79.9;
+export const ASAAS_YEARLY_PRICE = 718.8; // R$ 59,90/mês cobrado anualmente
 
 export function getAsaasApiKey(): string {
   return process.env['ASAAS_API_KEY'] || '';
@@ -72,7 +72,7 @@ export async function createOrGetAsaasCustomer(
 }
 
 /**
- * Cria uma cobrança ou link de fatura avulso de R$ 129,90 via Asaas (PIX, Cartão, Boleto)
+ * Cria uma cobrança ou link de fatura avulso de R$ 79,90 via Asaas (PIX, Cartão, Boleto)
  */
 export async function createAsaasPayment(
   input: AsaasPaymentInput
@@ -123,7 +123,7 @@ export async function createAsaasPayment(
 }
 
 /**
- * Cria uma assinatura mensal recorrente de R$ 129,90 no Asaas
+ * Cria uma assinatura mensal recorrente de R$ 79,90 no Asaas
  */
 export async function createAsaasSubscription(input: {
   customerId: string;
@@ -157,7 +157,7 @@ export async function createAsaasSubscription(input: {
         value: valueToCharge,
         nextDueDate: input.nextDueDate,
         cycle: 'MONTHLY',
-        description: input.description || 'Assinatura Recorrente Mensal Catálogo SaaS (R$ 129,90)',
+        description: input.description || 'Assinatura Recorrente Mensal Catálogo SaaS (R$ 79,90)',
         externalReference: input.externalReference,
       }),
     });

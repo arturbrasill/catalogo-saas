@@ -45,7 +45,7 @@ export async function POST(request: NextRequest) {
         subscriptionExpiresAt: newExpiry,
         asaasCustomerId: payment.customer,
         asaasPaymentLink: payment.invoiceUrl || tenant.asaasPaymentLink,
-        notes: `Pagamento de R$ 129,90 confirmado via Asaas em ${new Date().toLocaleDateString('pt-BR')} (ID: ${payment.id})`,
+        notes: `Pagamento de R$ 79,90 confirmado via Asaas em ${new Date().toLocaleDateString('pt-BR')} (ID: ${payment.id})`,
       });
 
       return NextResponse.json({

@@ -31,9 +31,9 @@ describe('Integração Asaas — Gateway de Pagamentos e Assinaturas', () => {
   });
 
   describe('Configurações e Variáveis de Ambiente', () => {
-    it('deve identificar o valor do plano mensal fixo de R$ 129,90 e anual de R$ 1.198,80', () => {
-      expect(ASAAS_MONTHLY_PRICE).toBe(129.9);
-      expect(ASAAS_YEARLY_PRICE).toBe(1198.8);
+    it('deve identificar o valor do plano mensal fixo de R$ 79,90 e anual de R$ 718,80', () => {
+      expect(ASAAS_MONTHLY_PRICE).toBe(79.9);
+      expect(ASAAS_YEARLY_PRICE).toBe(718.8);
     });
 
     it('deve ler chave de API dinamicamente', () => {
@@ -133,7 +133,7 @@ describe('Integração Asaas — Gateway de Pagamentos e Assinaturas', () => {
       );
     });
 
-    it('deve criar cobrança de R$ 129,90 com vencimento especificado', async () => {
+    it('deve criar cobrança de R$ 79,90 com vencimento especificado', async () => {
       process.env['ASAAS_API_KEY'] = '$aact_prod_mock';
       process.env['ASAAS_ENVIRONMENT'] = 'production';
 
@@ -157,7 +157,7 @@ describe('Integração Asaas — Gateway de Pagamentos e Assinaturas', () => {
       expect(mockFetch).toHaveBeenCalledWith(
         'https://api.asaas.com/v3/payments',
         expect.objectContaining({
-          body: expect.stringContaining('"value":129.9'),
+          body: expect.stringContaining('"value":79.9'),
         })
       );
     });
@@ -281,7 +281,7 @@ describe('Integração Asaas — Gateway de Pagamentos e Assinaturas', () => {
   });
 
   describe('Checkout Endpoint (/api/asaas/checkout)', () => {
-    it('deve gerar fatura mensal (R$ 129,90) e anual (R$ 1.198,80) corretamente', async () => {
+    it('deve gerar fatura mensal (R$ 79,90) e anual corretamente', async () => {
       const { POST: handleCheckout } = await import('../src/app/api/asaas/checkout/route');
 
       // Tenant de teste
@@ -309,7 +309,7 @@ describe('Integração Asaas — Gateway de Pagamentos e Assinaturas', () => {
       expect(resMonthly.status).toBe(200);
       const dataMonthly = await resMonthly.json();
       expect(dataMonthly.success).toBe(true);
-      expect(dataMonthly.data.value).toBe(129.9);
+      expect(dataMonthly.data.value).toBe(79.9);
       expect(dataMonthly.data.invoiceUrl).toContain('https://sandbox.asaas.com/i/');
 
       // 2. Checkout Plano Anual
@@ -327,7 +327,7 @@ describe('Integração Asaas — Gateway de Pagamentos e Assinaturas', () => {
       expect(resYearly.status).toBe(200);
       const dataYearly = await resYearly.json();
       expect(dataYearly.success).toBe(true);
-      expect(dataYearly.data.value).toBe(1198.8);
+      expect(dataYearly.data.value).toBe(718.8);
       expect(dataYearly.data.invoiceUrl).toContain('https://sandbox.asaas.com/i/');
     });
   });

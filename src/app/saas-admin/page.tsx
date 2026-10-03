@@ -292,10 +292,10 @@ export default function SaasAdminPage() {
     }
   };
 
-  // Gera cobrança via Asaas (R$ 129,90) com link de fatura
+  // Gera cobrança via Asaas (R$ 79,90) com link de fatura
   const handleGenerateAsaasPayment = async (store: Tenant) => {
     try {
-      showFeedback(`Gerando fatura Asaas (R$ 129,90) para "${store.name}"...`);
+      showFeedback(`Gerando fatura Asaas (R$ 79,90) para "${store.name}"...`);
       const res = await fetch('/api/asaas/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -352,7 +352,7 @@ export default function SaasAdminPage() {
     if (store.subscriptionStatus === 'trial' || store.plan === 'trial_30d') {
       return {
         badgeClass: 'bg-blue-100 text-blue-800 border-blue-200',
-        text: 'Teste (30d)',
+        text: 'Teste (7d)',
         daysText: `Restam ${diffDays} dia(s)`,
         isCritical: diffDays <= 3,
       };
@@ -715,10 +715,10 @@ export default function SaasAdminPage() {
                       {/* Plano */}
                       <td className="py-3.5 px-4">
                         <span className="font-semibold text-slate-700 block">
-                          {store.plan === 'trial_30d' && 'Teste 30 Dias'}
-                          {store.plan === 'monthly' && 'Mensal (R$ 129,90)'}
+                          {store.plan === 'trial_30d' && 'Teste 7 Dias'}
+                          {store.plan === 'monthly' && 'Mensal (R$ 79,90)'}
                           {store.plan === 'yearly' && 'Anual (Legado)'}
-                          {!store.plan && 'Teste 30 Dias'}
+                          {!store.plan && 'Teste 7 Dias'}
                         </span>
                       </td>
 
@@ -752,7 +752,7 @@ export default function SaasAdminPage() {
                             type="button"
                             onClick={() => handleGenerateAsaasPayment(store)}
                             className="px-2 py-1 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg text-xs font-semibold border border-blue-200 transition-colors flex items-center gap-1"
-                            title="Gerar Cobrança Asaas (R$ 129,90)"
+                            title="Gerar Cobrança Asaas (R$ 79,90)"
                           >
                             <CreditCard className="w-3 h-3 text-blue-600" />
                             <span>Asaas</span>
@@ -876,10 +876,10 @@ export default function SaasAdminPage() {
                     <div>
                       <span className="text-[10px] text-slate-400 block">Plano:</span>
                       <span className="font-semibold">
-                        {store.plan === 'trial_30d' && 'Teste 30d'}
-                        {store.plan === 'monthly' && 'Mensal (R$ 129,90)'}
+                        {store.plan === 'trial_30d' && 'Teste 7d'}
+                        {store.plan === 'monthly' && 'Mensal (R$ 79,90)'}
                         {store.plan === 'yearly' && 'Anual (Legado)'}
-                        {!store.plan && 'Teste 30d'}
+                        {!store.plan && 'Teste 7d'}
                       </span>
                     </div>
                     <div>
@@ -1060,8 +1060,8 @@ export default function SaasAdminPage() {
                     onChange={(e) => setEditPlan(e.target.value as SubscriptionPlan)}
                     className="w-full px-3 py-2 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500"
                   >
-                    <option value="trial_30d">Teste 30 Dias Grátis</option>
-                    <option value="monthly">Plano Mensal (R$ 129,90)</option>
+                    <option value="trial_30d">Teste 7 Dias Grátis</option>
+                    <option value="monthly">Plano Mensal (R$ 79,90)</option>
                     {editPlan === 'yearly' && (
                       <option value="yearly">Anual (Legado - R$ 99,90/mês)</option>
                     )}
