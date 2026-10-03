@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import {
   createOrGetAsaasCustomer,
   createAsaasSubscription,
+  getAsaasSubscriptionInvoice,
   calculateTrialDueDate,
   ASAAS_MONTHLY_PRICE,
   ASAAS_YEARLY_PRICE,
@@ -55,8 +56,49 @@ export async function POST(request: NextRequest) {
     }
 
     const effectiveCpfCnpj = (cpfCnpj || tenant.cpfCnpj)?.replace(/\D/g, '');
+    const isYearly = plan ? plan === 'yearly' : tenant.plan === 'yearly';
+    const chargeValue = isYearly ? ASAAS_YEARLY_PRICE : ASAAS_MONTHLY_PRICE;
+    const planDesc = isYearly ? 'Anual' : 'Mensal';
+    const cycle = isYearly ? 'YEARLY' : 'MONTHLY';
+    const chosenBillingType =
+      billingType || (creditCard || creditCardToken ? 'CREDIT_CARD' : 'UNDEFINED');
 
-    // 1. Cadastra ou recupera cliente no Asaas
+    // 1. Reutilização de Assinatura Ativa (evita criação de faturas e clientes duplicados no Asaas)
+    // Só reutiliza se o plano requisitado for compatível com a assinatura atual
+    const isPlanMatch = !plan || (isYearly ? tenant.plan === 'yearly' : tenant.plan !== 'yearly');
+    if (tenant.asaasSubscriptionId && isPlanMatch && !creditCard && !creditCardToken) {
+      try {
+        const existingInvoice = await getAsaasSubscriptionInvoice(tenant.asaasSubscriptionId);
+        if (existingInvoice && existingInvoice.invoiceUrl) {
+          // Sincroniza o link no cadastro da loja caso estivesse desatualizado
+          if (tenant.asaasPaymentLink !== existingInvoice.invoiceUrl || cpfCnpj) {
+            await updateTenantSubscriptionAsync({
+              tenantId: tenant.tenantId,
+              asaasPaymentLink: existingInvoice.invoiceUrl,
+              cpfCnpj: cpfCnpj || tenant.cpfCnpj,
+            });
+          }
+
+          return NextResponse.json({
+            success: true,
+            data: {
+              subscriptionId: tenant.asaasSubscriptionId,
+              paymentId: existingInvoice.id,
+              invoiceUrl: existingInvoice.invoiceUrl,
+              value: existingInvoice.value || chargeValue,
+              nextDueDate: existingInvoice.dueDate || tenant.subscriptionExpiresAt,
+              dueDate: existingInvoice.dueDate || tenant.subscriptionExpiresAt,
+              cycle,
+              billingType: chosenBillingType,
+            },
+          });
+        }
+      } catch (checkErr) {
+        console.warn('Nota: Erro ao verificar fatura existente no Asaas:', checkErr);
+      }
+    }
+
+    // 2. Cadastra ou recupera cliente no Asaas
     const customer = await createOrGetAsaasCustomer({
       name: tenant.name || tenant.tenantId,
       email: tenant.ownerEmail,
@@ -72,17 +114,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 2. Data da primeira cobrança (exatamente 7 dias de trial gratuito após cadastro)
+    // 3. Data da primeira cobrança (exatamente 7 dias de trial gratuito após cadastro)
     const nextDueDate = calculateTrialDueDate(new Date(), 7);
 
-    const isYearly = plan === 'yearly' || tenant.plan === 'yearly';
-    const chargeValue = isYearly ? ASAAS_YEARLY_PRICE : ASAAS_MONTHLY_PRICE;
-    const planDesc = isYearly ? 'Anual' : 'Mensal';
-    const cycle = isYearly ? 'YEARLY' : 'MONTHLY';
-    const chosenBillingType =
-      billingType || (creditCard || creditCardToken ? 'CREDIT_CARD' : 'UNDEFINED');
-
-    // 3. Cria Assinatura Recorrente no Asaas
+    // 4. Cria Assinatura Recorrente no Asaas
     // Se o cartão for informado no onboarding, a primeira cobrança é agendada para após os 7 dias
     const subscription = await createAsaasSubscription({
       customerId: customer.id,
@@ -104,7 +139,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 4. Salva os dados de assinatura e faturamento no cadastro da loja
+    // 5. Salva os dados de assinatura e faturamento no cadastro da loja
     await updateTenantSubscriptionAsync({
       tenantId: tenant.tenantId,
       asaasCustomerId: customer.id,
@@ -118,7 +153,7 @@ export async function POST(request: NextRequest) {
       success: true,
       data: {
         subscriptionId: subscription.id,
-        paymentId: subscription.id,
+        paymentId: (subscription as any).paymentId || subscription.id,
         invoiceUrl: subscription.invoiceUrl,
         value: chargeValue,
         nextDueDate,

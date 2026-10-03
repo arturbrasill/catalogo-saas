@@ -19,7 +19,7 @@ import {
   updateCouponInSupabase,
   deleteCouponInSupabase,
 } from '@/lib/supabase';
-import { updateTenantSubscription, updateTenantSubscriptionAsync, findTenant, findTenantByAdminUsername } from '@/lib/tenantStore';
+import { updateTenantSubscription, updateTenantSubscriptionAsync, findTenant, findTenantAsync, findTenantByAdminUsername } from '@/lib/tenantStore';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -259,6 +259,9 @@ export async function GET(request: NextRequest) {
     );
   }
 
+  // Resolução enriquecida do tenant em tempo real (dados de faturas Asaas, plano e expiração)
+  const effectiveTenant = (tenantId ? await findTenantAsync(tenantId) : null) || tenant;
+
   const searchParams = request.nextUrl.searchParams;
   const action = searchParams.get('action') || 'store';
   const categoryId = searchParams.get('categoryId') || undefined;
@@ -268,7 +271,7 @@ export async function GET(request: NextRequest) {
     if (action === 'store') {
       const config = await fetchStoreConfigFromSupabase(tenantId);
       if (config) {
-        const localTenant = findTenant(tenantId);
+        const localTenant = effectiveTenant || findTenant(tenantId);
         const localEngineConfig = getLocalEngine(tenantId).getPublicStoreConfig();
         if (!config.catalog_layout) {
           config.catalog_layout = localTenant?.catalog_layout || localEngineConfig?.catalog_layout || 'grid';
@@ -302,21 +305,21 @@ export async function GET(request: NextRequest) {
             localEngineConfig?.announcement_text_color ||
             '#ffffff';
         }
-        return NextResponse.json(sanitizeStoreResponse({ success: true, data: config, error: null }, tenant), {
+        return NextResponse.json(sanitizeStoreResponse({ success: true, data: config, error: null }, effectiveTenant), {
           headers: NO_CACHE_HEADERS,
         });
       }
     } else if (action === 'categories') {
       const cats = await fetchCategoriesFromSupabase(tenantId);
       if (cats) {
-        return NextResponse.json(sanitizeStoreResponse({ success: true, data: cats, error: null }, tenant), {
+        return NextResponse.json(sanitizeStoreResponse({ success: true, data: cats, error: null }, effectiveTenant), {
           headers: NO_CACHE_HEADERS,
         });
       }
     } else if (action === 'products') {
       const prods = await fetchProductsFromSupabase(tenantId, categoryId);
       if (prods) {
-        return NextResponse.json(sanitizeStoreResponse({ success: true, data: prods, error: null }, tenant), {
+        return NextResponse.json(sanitizeStoreResponse({ success: true, data: prods, error: null }, effectiveTenant), {
           headers: NO_CACHE_HEADERS,
         });
       }
@@ -327,7 +330,7 @@ export async function GET(request: NextRequest) {
         fetchProductsFromSupabase(tenantId),
       ]);
       if (config && cats && prods) {
-        const localTenant = findTenant(tenantId);
+        const localTenant = effectiveTenant || findTenant(tenantId);
         const localEngineConfig = getLocalEngine(tenantId).getPublicStoreConfig();
         if (!config.catalog_layout) {
           config.catalog_layout = localTenant?.catalog_layout || localEngineConfig?.catalog_layout || 'grid';
@@ -372,7 +375,7 @@ export async function GET(request: NextRequest) {
               },
               error: null,
             },
-            tenant
+            effectiveTenant
           ),
           { headers: NO_CACHE_HEADERS }
         );
@@ -380,7 +383,7 @@ export async function GET(request: NextRequest) {
     } else if (action === 'coupons') {
       const coupons = await fetchCouponsFromSupabase(tenantId);
       if (coupons) {
-        return NextResponse.json(sanitizeStoreResponse({ success: true, data: coupons, error: null }, tenant));
+        return NextResponse.json(sanitizeStoreResponse({ success: true, data: coupons, error: null }, effectiveTenant));
       }
     }
   } catch (err) {
@@ -400,11 +403,11 @@ export async function GET(request: NextRequest) {
         redirect: 'follow',
       });
       const data = await response.json();
-      return NextResponse.json(sanitizeStoreResponse(data, tenant));
+      return NextResponse.json(sanitizeStoreResponse(data, effectiveTenant));
     } catch (err) {
       if (tenantId === 'loja_exemplo') {
         const localResult = getLocalEngine(tenantId).doGet({ action, categoryId });
-        return NextResponse.json(sanitizeStoreResponse(localResult, tenant));
+        return NextResponse.json(sanitizeStoreResponse(localResult, effectiveTenant));
       }
 
       return NextResponse.json(
@@ -423,11 +426,12 @@ export async function GET(request: NextRequest) {
 
   // 3. Fallback para engine local integrado (desenvolvimento / teste)
   const localResult = getLocalEngine(tenantId).doGet({ action, categoryId });
-  return NextResponse.json(sanitizeStoreResponse(localResult, tenant));
+  return NextResponse.json(sanitizeStoreResponse(localResult, effectiveTenant));
 }
 
 export async function POST(request: NextRequest) {
   const { tenant, tenantId, apiUrl, isAllowed } = resolveContextTenant(request);
+  const effectiveTenant = (tenantId ? await findTenantAsync(tenantId) : null) || tenant;
 
   if (!isAllowed) {
     return NextResponse.json(
@@ -479,7 +483,7 @@ export async function POST(request: NextRequest) {
         );
         if (loginRes) {
           const resp = NextResponse.json(
-            sanitizeStoreResponse({ success: true, data: loginRes, error: null }, tenant),
+            sanitizeStoreResponse({ success: true, data: loginRes, error: null }, effectiveTenant),
             { headers: NO_CACHE_HEADERS }
           );
           if (loginRes.tenantSlug) {
@@ -515,65 +519,65 @@ export async function POST(request: NextRequest) {
               console.warn('Erro ao sincronizar saveConfig com Google Apps Script:', err);
             }
           }
-          return NextResponse.json(sanitizeStoreResponse({ success: true, data: saved, error: null }, tenant), {
+          return NextResponse.json(sanitizeStoreResponse({ success: true, data: saved, error: null }, effectiveTenant), {
             headers: NO_CACHE_HEADERS,
           });
         }
         if (!apiUrl) {
           const localSaved = getLocalEngine(tenantId).getPublicStoreConfig();
-          return NextResponse.json(sanitizeStoreResponse({ success: true, data: localSaved, error: null }, tenant), {
+          return NextResponse.json(sanitizeStoreResponse({ success: true, data: localSaved, error: null }, effectiveTenant), {
             headers: NO_CACHE_HEADERS,
           });
         }
       } else if (payload.action === 'createProduct') {
         const prod = await createProductInSupabase(tenantId, payload.product);
         if (prod) {
-          return NextResponse.json(sanitizeStoreResponse({ success: true, data: prod, error: null }, tenant));
+          return NextResponse.json(sanitizeStoreResponse({ success: true, data: prod, error: null }, effectiveTenant));
         }
       } else if (payload.action === 'updateProduct') {
         const prod = await updateProductInSupabase(tenantId, payload.product);
         if (prod) {
-          return NextResponse.json(sanitizeStoreResponse({ success: true, data: prod, error: null }, tenant));
+          return NextResponse.json(sanitizeStoreResponse({ success: true, data: prod, error: null }, effectiveTenant));
         }
       } else if (payload.action === 'deleteProduct') {
         const deleted = await deleteProductInSupabase(tenantId, payload.id);
         if (deleted) {
           return NextResponse.json(
-            sanitizeStoreResponse({ success: true, data: { id: payload.id, deleted: true }, error: null }, tenant)
+            sanitizeStoreResponse({ success: true, data: { id: payload.id, deleted: true }, error: null }, effectiveTenant)
           );
         }
       } else if (payload.action === 'createCategory') {
         const cat = await createCategoryInSupabase(tenantId, payload.category);
         if (cat) {
-          return NextResponse.json(sanitizeStoreResponse({ success: true, data: cat, error: null }, tenant));
+          return NextResponse.json(sanitizeStoreResponse({ success: true, data: cat, error: null }, effectiveTenant));
         }
       } else if (payload.action === 'updateCategory') {
         const cat = await updateCategoryInSupabase(tenantId, payload.category);
         if (cat) {
-          return NextResponse.json(sanitizeStoreResponse({ success: true, data: cat, error: null }, tenant));
+          return NextResponse.json(sanitizeStoreResponse({ success: true, data: cat, error: null }, effectiveTenant));
         }
       } else if (payload.action === 'deleteCategory') {
         const deleted = await deleteCategoryInSupabase(tenantId, payload.id);
         if (deleted) {
           return NextResponse.json(
-            sanitizeStoreResponse({ success: true, data: { id: payload.id, deleted: true }, error: null }, tenant)
+            sanitizeStoreResponse({ success: true, data: { id: payload.id, deleted: true }, error: null }, effectiveTenant)
           );
         }
       } else if (payload.action === 'createCoupon') {
         const coup = await createCouponInSupabase(tenantId, payload.coupon);
         if (coup) {
-          return NextResponse.json(sanitizeStoreResponse({ success: true, data: coup, error: null }, tenant));
+          return NextResponse.json(sanitizeStoreResponse({ success: true, data: coup, error: null }, effectiveTenant));
         }
       } else if (payload.action === 'updateCoupon') {
         const coup = await updateCouponInSupabase(tenantId, payload.coupon);
         if (coup) {
-          return NextResponse.json(sanitizeStoreResponse({ success: true, data: coup, error: null }, tenant));
+          return NextResponse.json(sanitizeStoreResponse({ success: true, data: coup, error: null }, effectiveTenant));
         }
       } else if (payload.action === 'deleteCoupon') {
         const deleted = await deleteCouponInSupabase(tenantId, payload.id);
         if (deleted) {
           return NextResponse.json(
-            sanitizeStoreResponse({ success: true, data: { success: true, id: payload.id }, error: null }, tenant)
+            sanitizeStoreResponse({ success: true, data: { success: true, id: payload.id }, error: null }, effectiveTenant)
           );
         }
       } else if (payload.action === 'validateCoupon') {
@@ -718,7 +722,7 @@ export async function POST(request: NextRequest) {
         redirect: 'follow',
       });
       const data = await response.json();
-      return NextResponse.json(sanitizeStoreResponse(data, tenant), { headers: NO_CACHE_HEADERS });
+      return NextResponse.json(sanitizeStoreResponse(data, effectiveTenant), { headers: NO_CACHE_HEADERS });
     }
 
     // 3. Fallback para engine local integrado
@@ -730,7 +734,7 @@ export async function POST(request: NextRequest) {
       }
     }
     const localResult = getLocalEngine(effectiveTenantId).doPost(payload);
-    const resp = NextResponse.json(sanitizeStoreResponse(localResult, tenant), { headers: NO_CACHE_HEADERS });
+    const resp = NextResponse.json(sanitizeStoreResponse(localResult, effectiveTenant), { headers: NO_CACHE_HEADERS });
     if (localResult.success && payload.action === 'login') {
       const found = findTenant(effectiveTenantId);
       if (found?.slug) {

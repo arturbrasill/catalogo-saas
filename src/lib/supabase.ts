@@ -447,14 +447,16 @@ export async function fetchStoreConfigFromSupabase(tenantId: string): Promise<St
 
     if (error || !data) return null;
 
-    // Recupera configurações estendidas (anúncio e tema) persistidas com segurança nos notes do tenant
+    // Recupera configurações estendidas (anúncio, tema, assinatura e pagamento Asaas) nos dados do tenant
     let extraFromNotes: TenantStoreSettings | null = null;
+    let tenantRow: any = null;
     try {
       const { data: tenantData } = await supabase
         .from('tenants')
-        .select('notes')
+        .select('notes, plan, subscription_status, subscription_expires_at, asaas_payment_link, asaas_customer_id, asaas_subscription_id')
         .eq('tenant_id', tenantId)
         .maybeSingle();
+      tenantRow = tenantData;
       extraFromNotes = extractTenantSettings(tenantData?.notes);
     } catch {
       // ignore
@@ -504,6 +506,14 @@ export async function fetchStoreConfigFromSupabase(tenantId: string): Promise<St
           ? String(extraFromNotes.announcement_text_color)
           : undefined,
       cpf_cnpj: (data.cpf_cnpj as any) || extraFromNotes?.cpf_cnpj || undefined,
+      subscription_plan: tenantRow?.plan || undefined,
+      subscription_status: tenantRow?.subscription_status || undefined,
+      subscription_expires_at: tenantRow?.subscription_expires_at || undefined,
+      asaas_payment_link: tenantRow?.asaas_payment_link || undefined,
+      pending_payment: Boolean(
+        tenantRow?.subscription_status === 'blocked' ||
+        tenantRow?.subscription_status === 'expired'
+      ),
     };
   } catch (err) {
     console.warn('Erro em fetchStoreConfigFromSupabase:', err);

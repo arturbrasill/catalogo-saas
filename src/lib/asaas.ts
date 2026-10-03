@@ -189,7 +189,7 @@ export async function createAsaasPayment(
  */
 export async function createAsaasSubscription(
   input: AsaasSubscriptionInput
-): Promise<{ id: string; invoiceUrl?: string; nextDueDate?: string; error?: string }> {
+): Promise<{ id: string; invoiceUrl?: string; paymentId?: string; nextDueDate?: string; error?: string }> {
   const apiKey = getAsaasApiKey();
   const baseUrl = getAsaasBaseUrl();
   const valueToCharge = typeof input.value === 'number' ? input.value : ASAAS_MONTHLY_PRICE;
@@ -242,13 +242,146 @@ export async function createAsaasSubscription(
       return { id: '', error: errMsg };
     }
 
+    // Busca o primeiro pagamento gerado automaticamente pelo Asaas para esta assinatura
+    let paymentInvoiceUrl = data.invoiceUrl;
+    let paymentId: string | undefined = undefined;
+
+    try {
+      const paymentsRes = await fetch(`${baseUrl}/subscriptions/${data.id}/payments?limit=1`, {
+        headers: {
+          'Content-Type': 'application/json',
+          access_token: apiKey,
+        },
+      });
+      if (paymentsRes.ok) {
+        const paymentsData = await paymentsRes.json();
+        if (paymentsData.data && Array.isArray(paymentsData.data) && paymentsData.data.length > 0) {
+          const firstPay = paymentsData.data[0];
+          paymentId = firstPay.id;
+          paymentInvoiceUrl = firstPay.invoiceUrl || firstPay.bankSlipUrl;
+        }
+      }
+    } catch (pErr) {
+      console.warn('Nota: Erro ao buscar pagamentos da assinatura Asaas:', pErr);
+    }
+
+    const domainBase = getAsaasEnv() === 'production' ? 'https://www.asaas.com' : 'https://sandbox.asaas.com';
+    const fallbackInvoice = paymentInvoiceUrl || (paymentId ? `${domainBase}/i/${paymentId}` : `${domainBase}/s/${data.id}`);
+
     return {
       id: data.id,
-      invoiceUrl: data.invoiceUrl || `https://sandbox.asaas.com/s/${data.id}`,
+      invoiceUrl: fallbackInvoice,
+      paymentId,
       nextDueDate: data.nextDueDate || nextDueDate,
     };
   } catch (err) {
     return { id: '', error: String(err) };
+  }
+}
+
+/**
+ * Busca todos os pagamentos vinculados a uma assinatura no Asaas
+ */
+export async function getAsaasSubscriptionPayments(
+  subscriptionId: string
+): Promise<Array<Record<string, any>>> {
+  const apiKey = getAsaasApiKey();
+  const baseUrl = getAsaasBaseUrl();
+
+  if (!apiKey || apiKey.includes('exemplo')) {
+    return [];
+  }
+
+  try {
+    const res = await fetch(`${baseUrl}/subscriptions/${subscriptionId}/payments?limit=10`, {
+      headers: {
+        'Content-Type': 'application/json',
+        access_token: apiKey,
+      },
+    });
+
+    if (!res.ok) return [];
+    const data = await res.json();
+    return Array.isArray(data.data) ? data.data : [];
+  } catch (err) {
+    console.warn('Erro ao consultar pagamentos da assinatura Asaas:', err);
+    return [];
+  }
+}
+
+/**
+ * Obtém a fatura pendente ativa (ou a mais recente) de uma assinatura para envio ao cliente
+ */
+export async function getAsaasSubscriptionInvoice(
+  subscriptionId: string
+): Promise<{ id: string; invoiceUrl: string; dueDate?: string; value?: number; status?: string } | null> {
+  const payments = await getAsaasSubscriptionPayments(subscriptionId);
+  if (!payments || payments.length === 0) return null;
+
+  // Prioriza fatura pendente
+  const pendingPayment = payments.find((p) => p.status === 'PENDING') || payments[0];
+  if (!pendingPayment) return null;
+
+  const domainBase = getAsaasEnv() === 'production' ? 'https://www.asaas.com' : 'https://sandbox.asaas.com';
+  const invoiceUrl =
+    pendingPayment.invoiceUrl ||
+    pendingPayment.bankSlipUrl ||
+    `${domainBase}/i/${pendingPayment.id}`;
+
+  return {
+    id: pendingPayment.id,
+    invoiceUrl,
+    dueDate: pendingPayment.dueDate,
+    value: pendingPayment.value,
+    status: pendingPayment.status,
+  };
+}
+
+/**
+ * Consulta os dados do QR Code PIX (chave copia e cola + imagem base64) de uma cobrança Asaas
+ */
+export async function getAsaasPaymentPix(paymentId: string): Promise<{
+  success: boolean;
+  encodedImage?: string;
+  payload?: string;
+  expirationDate?: string;
+  error?: string;
+}> {
+  const apiKey = getAsaasApiKey();
+  const baseUrl = getAsaasBaseUrl();
+
+  if (!apiKey || apiKey.includes('exemplo')) {
+    return {
+      success: true,
+      payload: '00020101021226800014br.gov.bcb.pix...',
+      encodedImage: '',
+    };
+  }
+
+  try {
+    const res = await fetch(`${baseUrl}/payments/${paymentId}/pixQrCode`, {
+      headers: {
+        'Content-Type': 'application/json',
+        access_token: apiKey,
+      },
+    });
+
+    const data = await res.json();
+    if (!res.ok || !data.success) {
+      return {
+        success: false,
+        error: data.errors?.[0]?.description || 'QR Code Pix não disponível.',
+      };
+    }
+
+    return {
+      success: true,
+      encodedImage: data.encodedImage,
+      payload: data.payload,
+      expirationDate: data.expirationDate,
+    };
+  } catch (err) {
+    return { success: false, error: String(err) };
   }
 }
 

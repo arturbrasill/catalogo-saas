@@ -8,6 +8,9 @@ import {
   createOrGetAsaasCustomer,
   createAsaasPayment,
   createAsaasSubscription,
+  getAsaasSubscriptionPayments,
+  getAsaasSubscriptionInvoice,
+  getAsaasPaymentPix,
   calculateTrialDueDate,
   ASAAS_MONTHLY_PRICE,
   ASAAS_YEARLY_PRICE,
@@ -243,6 +246,83 @@ describe('Integração Asaas — Gateway de Pagamentos e Assinaturas', () => {
           body: expect.stringContaining('"value":79.9'),
         })
       );
+    });
+
+    it('deve consultar pagamentos de uma assinatura no Asaas', async () => {
+      process.env['ASAAS_API_KEY'] = '$aact_prod_mock';
+      process.env['ASAAS_ENVIRONMENT'] = 'production';
+
+      const mockFetch = vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({
+          data: [
+            {
+              id: 'pay_sub_1',
+              status: 'PENDING',
+              value: 79.9,
+              invoiceUrl: 'https://www.asaas.com/i/pay_sub_1',
+              dueDate: '2026-10-10',
+            },
+          ],
+        }),
+      });
+      global.fetch = mockFetch;
+
+      const payments = await getAsaasSubscriptionPayments('sub_test_123');
+      expect(payments).toHaveLength(1);
+      expect(payments[0]?.id).toBe('pay_sub_1');
+      expect(mockFetch).toHaveBeenCalledWith(
+        'https://api.asaas.com/v3/subscriptions/sub_test_123/payments?limit=10',
+        expect.any(Object)
+      );
+    });
+
+    it('deve obter a fatura pendente de uma assinatura existente', async () => {
+      process.env['ASAAS_API_KEY'] = '$aact_prod_mock';
+      process.env['ASAAS_ENVIRONMENT'] = 'production';
+
+      const mockFetch = vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({
+          data: [
+            {
+              id: 'pay_pending_99',
+              status: 'PENDING',
+              value: 79.9,
+              invoiceUrl: 'https://www.asaas.com/i/pay_pending_99',
+              dueDate: '2026-10-10',
+            },
+          ],
+        }),
+      });
+      global.fetch = mockFetch;
+
+      const invoice = await getAsaasSubscriptionInvoice('sub_test_123');
+      expect(invoice).not.toBeNull();
+      expect(invoice?.id).toBe('pay_pending_99');
+      expect(invoice?.invoiceUrl).toBe('https://www.asaas.com/i/pay_pending_99');
+      expect(invoice?.status).toBe('PENDING');
+    });
+
+    it('deve consultar dados do QR Code PIX de uma cobrança', async () => {
+      process.env['ASAAS_API_KEY'] = '$aact_prod_mock';
+      process.env['ASAAS_ENVIRONMENT'] = 'production';
+
+      const mockFetch = vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({
+          success: true,
+          encodedImage: 'base64image...',
+          payload: '00020101021226800014br.gov.bcb.pix...',
+          expirationDate: '2027-10-10 23:59:59',
+        }),
+      });
+      global.fetch = mockFetch;
+
+      const pix = await getAsaasPaymentPix('pay_123');
+      expect(pix.success).toBe(true);
+      expect(pix.payload).toContain('00020101021226800014br.gov.bcb.pix');
+      expect(pix.encodedImage).toBe('base64image...');
     });
   });
 

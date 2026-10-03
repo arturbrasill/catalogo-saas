@@ -1648,17 +1648,28 @@ export default function AdminConfiguracoesPage() {
                       </div>
 
                       <div className="pt-2 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-                        {rawStore?.asaas_payment_link ? (
-                          <a
-                            href={rawStore.asaas_payment_link}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs shadow-md transition text-center"
-                          >
-                            <CreditCard className="w-4 h-4" />
-                            <span>Acessar Fatura no Asaas (R$ 79,90)</span>
-                            <ExternalLink className="w-3.5 h-3.5" />
-                          </a>
+                        {rawStore?.asaas_payment_link && !rawStore.asaas_payment_link.includes('sandbox.asaas.com/s/') ? (
+                          <div className="flex flex-wrap items-center gap-2">
+                            <a
+                              href={rawStore.asaas_payment_link}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs shadow-md transition text-center"
+                            >
+                              <CreditCard className="w-4 h-4" />
+                              <span>Acessar Fatura no Asaas (R$ 79,90)</span>
+                              <ExternalLink className="w-3.5 h-3.5" />
+                            </a>
+                            <button
+                              type="button"
+                              onClick={handleGenerateInvoice}
+                              disabled={isGeneratingInvoice}
+                              className="inline-flex items-center justify-center gap-1.5 px-3.5 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs transition cursor-pointer"
+                              title="Sincronizar fatura ou emitir nova via"
+                            >
+                              <span>{isGeneratingInvoice ? 'Sincronizando...' : 'Atualizar Fatura'}</span>
+                            </button>
+                          </div>
                         ) : (
                           <button
                             type="button"
