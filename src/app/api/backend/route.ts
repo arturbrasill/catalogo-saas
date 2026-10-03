@@ -21,6 +21,15 @@ import {
 } from '@/lib/supabase';
 import { updateTenantSubscription, findTenant } from '@/lib/tenantStore';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
+const NO_CACHE_HEADERS: Record<string, string> = {
+  'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0',
+  Pragma: 'no-cache',
+  Expires: '0',
+};
+
 /**
  * Validação rigorosa de segurança para URLs remotas de API.
  * Previne SSRF (Server-Side Request Forgery) garantindo que chamadas externas
@@ -163,27 +172,50 @@ function sanitizeStoreResponse<T>(data: T, tenant?: Tenant | null): T {
         // Ex: lista de produtos retornada diretamente em data
         (data as any).data = raw.map(normalizeProduct);
       } else {
-        if ('whatsapp' in raw && raw['whatsapp'] !== undefined && raw['whatsapp'] !== null) {
-          raw['whatsapp'] = String(raw['whatsapp']).trim();
-        }
-        if (tenant) {
-          raw['subscription_status'] = tenant.subscriptionStatus || 'active';
-          if (tenant.subscriptionExpiresAt) {
-            raw['subscription_expires_at'] = tenant.subscriptionExpiresAt;
-          }
-        }
-        if ('store' in raw && raw['store'] && typeof raw['store'] === 'object') {
-          const store = raw['store'] as Record<string, unknown>;
-          if (store['whatsapp'] !== undefined && store['whatsapp'] !== null) {
-            store['whatsapp'] = String(store['whatsapp']).trim();
+        const applyStoreFields = (storeObj: Record<string, unknown>) => {
+          if (storeObj['whatsapp'] !== undefined && storeObj['whatsapp'] !== null) {
+            storeObj['whatsapp'] = String(storeObj['whatsapp']).trim();
           }
           if (tenant) {
-            store['subscription_status'] = tenant.subscriptionStatus || 'active';
+            storeObj['subscription_status'] = tenant.subscriptionStatus || 'active';
             if (tenant.subscriptionExpiresAt) {
-              store['subscription_expires_at'] = tenant.subscriptionExpiresAt;
+              storeObj['subscription_expires_at'] = tenant.subscriptionExpiresAt;
+            }
+            if (storeObj['catalog_layout'] === undefined && tenant.catalog_layout) {
+              storeObj['catalog_layout'] = tenant.catalog_layout;
+            }
+            if (storeObj['theme_preset'] === undefined && tenant.theme_preset) {
+              storeObj['theme_preset'] = tenant.theme_preset;
+            }
+            if (storeObj['announcement_enabled'] === undefined && tenant.announcement_enabled !== undefined) {
+              storeObj['announcement_enabled'] = tenant.announcement_enabled;
+            }
+            if (!storeObj['announcement_text'] && tenant.announcement_text) {
+              storeObj['announcement_text'] = tenant.announcement_text;
+            }
+            if (!storeObj['announcement_bg_color'] && tenant.announcement_bg_color) {
+              storeObj['announcement_bg_color'] = tenant.announcement_bg_color;
+            }
+            if (!storeObj['announcement_text_color'] && tenant.announcement_text_color) {
+              storeObj['announcement_text_color'] = tenant.announcement_text_color;
             }
           }
+          if (storeObj['announcement_enabled'] !== undefined && storeObj['announcement_enabled'] !== null) {
+            storeObj['announcement_enabled'] =
+              storeObj['announcement_enabled'] === true ||
+              String(storeObj['announcement_enabled']).trim().toLowerCase() === 'true' ||
+              (storeObj['announcement_enabled'] as any) === 1 ||
+              (storeObj['announcement_enabled'] as any) === '1';
+          }
+        };
+
+        if ('store_id' in raw || 'store_name' in raw) {
+          applyStoreFields(raw);
         }
+        if ('store' in raw && raw['store'] && typeof raw['store'] === 'object') {
+          applyStoreFields(raw['store'] as Record<string, unknown>);
+        }
+
         if ('products' in raw && Array.isArray(raw['products'])) {
           raw['products'] = raw['products'].map(normalizeProduct);
         }
@@ -230,17 +262,49 @@ export async function GET(request: NextRequest) {
         if (!config.theme_preset) {
           config.theme_preset = localTenant?.theme_preset || localEngineConfig?.theme_preset || 'modern';
         }
-        return NextResponse.json(sanitizeStoreResponse({ success: true, data: config, error: null }, tenant));
+        if (config.announcement_enabled === undefined) {
+          config.announcement_enabled =
+            localTenant?.announcement_enabled !== undefined
+              ? Boolean(localTenant.announcement_enabled)
+              : localEngineConfig?.announcement_enabled !== undefined
+              ? Boolean(localEngineConfig.announcement_enabled)
+              : true;
+        }
+        if (!config.announcement_text) {
+          config.announcement_text =
+            localTenant?.announcement_text ||
+            localEngineConfig?.announcement_text ||
+            'Compre online e receba em casa com frete seguro ou retire na loja física';
+        }
+        if (!config.announcement_bg_color) {
+          config.announcement_bg_color =
+            localTenant?.announcement_bg_color ||
+            localEngineConfig?.announcement_bg_color ||
+            '#0f172a';
+        }
+        if (!config.announcement_text_color) {
+          config.announcement_text_color =
+            localTenant?.announcement_text_color ||
+            localEngineConfig?.announcement_text_color ||
+            '#ffffff';
+        }
+        return NextResponse.json(sanitizeStoreResponse({ success: true, data: config, error: null }, tenant), {
+          headers: NO_CACHE_HEADERS,
+        });
       }
     } else if (action === 'categories') {
       const cats = await fetchCategoriesFromSupabase(tenantId);
       if (cats) {
-        return NextResponse.json(sanitizeStoreResponse({ success: true, data: cats, error: null }, tenant));
+        return NextResponse.json(sanitizeStoreResponse({ success: true, data: cats, error: null }, tenant), {
+          headers: NO_CACHE_HEADERS,
+        });
       }
     } else if (action === 'products') {
       const prods = await fetchProductsFromSupabase(tenantId, categoryId);
       if (prods) {
-        return NextResponse.json(sanitizeStoreResponse({ success: true, data: prods, error: null }, tenant));
+        return NextResponse.json(sanitizeStoreResponse({ success: true, data: prods, error: null }, tenant), {
+          headers: NO_CACHE_HEADERS,
+        });
       }
     } else if (action === 'all' || action === 'catalog' || action === 'getCatalog') {
       const [config, cats, prods] = await Promise.all([
@@ -257,6 +321,32 @@ export async function GET(request: NextRequest) {
         if (!config.theme_preset) {
           config.theme_preset = localTenant?.theme_preset || localEngineConfig?.theme_preset || 'modern';
         }
+        if (config.announcement_enabled === undefined) {
+          config.announcement_enabled =
+            localTenant?.announcement_enabled !== undefined
+              ? Boolean(localTenant.announcement_enabled)
+              : localEngineConfig?.announcement_enabled !== undefined
+              ? Boolean(localEngineConfig.announcement_enabled)
+              : true;
+        }
+        if (!config.announcement_text) {
+          config.announcement_text =
+            localTenant?.announcement_text ||
+            localEngineConfig?.announcement_text ||
+            'Compre online e receba em casa com frete seguro ou retire na loja física';
+        }
+        if (!config.announcement_bg_color) {
+          config.announcement_bg_color =
+            localTenant?.announcement_bg_color ||
+            localEngineConfig?.announcement_bg_color ||
+            '#0f172a';
+        }
+        if (!config.announcement_text_color) {
+          config.announcement_text_color =
+            localTenant?.announcement_text_color ||
+            localEngineConfig?.announcement_text_color ||
+            '#ffffff';
+        }
         return NextResponse.json(
           sanitizeStoreResponse(
             {
@@ -269,7 +359,8 @@ export async function GET(request: NextRequest) {
               error: null,
             },
             tenant
-          )
+          ),
+          { headers: NO_CACHE_HEADERS }
         );
       }
     } else if (action === 'coupons') {
@@ -375,10 +466,28 @@ export async function POST(request: NextRequest) {
         } catch {}
         const saved = await saveStoreConfigInSupabase(tenantId, payload.config);
         if (saved) {
-          return NextResponse.json(sanitizeStoreResponse({ success: true, data: saved, error: null }, tenant));
+          if (apiUrl) {
+            try {
+              await fetch(apiUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: JSON.stringify(payload),
+                redirect: 'follow',
+              });
+            } catch (err) {
+              console.warn('Erro ao sincronizar saveConfig com Google Apps Script:', err);
+            }
+          }
+          return NextResponse.json(sanitizeStoreResponse({ success: true, data: saved, error: null }, tenant), {
+            headers: NO_CACHE_HEADERS,
+          });
         }
-        const localSaved = getLocalEngine(tenantId).getPublicStoreConfig();
-        return NextResponse.json(sanitizeStoreResponse({ success: true, data: localSaved, error: null }, tenant));
+        if (!apiUrl) {
+          const localSaved = getLocalEngine(tenantId).getPublicStoreConfig();
+          return NextResponse.json(sanitizeStoreResponse({ success: true, data: localSaved, error: null }, tenant), {
+            headers: NO_CACHE_HEADERS,
+          });
+        }
       } else if (payload.action === 'createProduct') {
         const prod = await createProductInSupabase(tenantId, payload.product);
         if (prod) {
@@ -572,12 +681,12 @@ export async function POST(request: NextRequest) {
         redirect: 'follow',
       });
       const data = await response.json();
-      return NextResponse.json(sanitizeStoreResponse(data, tenant));
+      return NextResponse.json(sanitizeStoreResponse(data, tenant), { headers: NO_CACHE_HEADERS });
     }
 
     // 3. Fallback para engine local integrado
     const localResult = getLocalEngine(tenantId).doPost(payload);
-    return NextResponse.json(sanitizeStoreResponse(localResult, tenant));
+    return NextResponse.json(sanitizeStoreResponse(localResult, tenant), { headers: NO_CACHE_HEADERS });
   } catch (err) {
     return NextResponse.json(
       {

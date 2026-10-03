@@ -211,7 +211,7 @@ export default function SaasAdminPage() {
         ? new Date(store.subscriptionExpiresAt).toISOString().substring(0, 10)
         : ''
     );
-    setEditNotes(store.notes || '');
+    setEditNotes(store.notes ? store.notes.replace(/<!--STORE_SETTINGS:(.+?)-->/, '').trim() : '');
   };
 
   // Salva Edição do Modal

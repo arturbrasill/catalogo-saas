@@ -177,7 +177,11 @@ function initDatabase() {
       ['api_token', defaultApiToken],
       ['domain', 'localhost:3000'],
       ['currency', 'BRL'],
-      ['timezone', 'America/Sao_Paulo']
+      ['timezone', 'America/Sao_Paulo'],
+      ['announcement_enabled', 'true'],
+      ['announcement_text', 'Compre online e receba em casa com frete seguro ou retire na loja física'],
+      ['announcement_bg_color', '#0f172a'],
+      ['announcement_text_color', '#ffffff']
     ];
 
     for (var i = 0; i < defaultConfigs.length; i++) {
@@ -230,6 +234,19 @@ function getPublicStoreConfig() {
       }
     }
   }
+
+  if (publicConfig.announcement_enabled !== undefined) {
+    var rawBool = String(publicConfig.announcement_enabled).trim().toLowerCase();
+    publicConfig.announcement_enabled = (rawBool === 'true' || rawBool === '1');
+  } else {
+    publicConfig.announcement_enabled = true;
+  }
+
+  if (!publicConfig.announcement_text) {
+    publicConfig.announcement_text = 'Compre online e receba em casa com frete seguro ou retire na loja física';
+  }
+  if (!publicConfig.announcement_bg_color) publicConfig.announcement_bg_color = '#0f172a';
+  if (!publicConfig.announcement_text_color) publicConfig.announcement_text_color = '#ffffff';
 
   return publicConfig;
 }
@@ -825,7 +842,9 @@ function handleSaveConfig(newConfigs) {
       }
 
       var val = String(newConfigs[prop]).trim();
-      if (prop === 'whatsapp') {
+      if (prop === 'announcement_enabled') {
+        val = String(newConfigs[prop] === true || String(newConfigs[prop]).trim().toLowerCase() === 'true');
+      } else if (prop === 'whatsapp') {
         var digits = val.replace(/\D/g, '').replace(/^0+/, '');
         if ((digits.length === 10 || digits.length === 11) && !digits.startsWith('55')) {
           digits = '55' + digits;

@@ -51,6 +51,48 @@ export function hashPassword(password: string): string {
   return crypto.createHash('sha256').update(salt + password).digest('hex');
 }
 
+export interface TenantStoreSettings {
+  catalog_layout?: 'grid' | 'list' | 'editorial';
+  theme_preset?: 'modern' | 'editorial' | 'bold';
+  announcement_enabled?: boolean;
+  announcement_text?: string;
+  announcement_bg_color?: string;
+  announcement_text_color?: string;
+}
+
+const SETTINGS_TAG_REGEX = /<!--STORE_SETTINGS:(.+?)-->/;
+
+export function extractTenantSettings(notes: string | null | undefined): TenantStoreSettings | null {
+  if (!notes || typeof notes !== 'string') return null;
+  const match = notes.match(SETTINGS_TAG_REGEX);
+  if (!match || !match[1]) return null;
+  try {
+    return JSON.parse(match[1]);
+  } catch {
+    return null;
+  }
+}
+
+export function serializeTenantSettings(
+  notes: string | null | undefined,
+  newSettings: Partial<TenantStoreSettings>
+): string {
+  const currentNotes = notes || '';
+  const existingSettings = extractTenantSettings(currentNotes) || {};
+  const mergedSettings: TenantStoreSettings = {
+    ...existingSettings,
+    ...newSettings,
+  };
+  const baseNotes = currentNotes.replace(SETTINGS_TAG_REGEX, '').trim();
+  const serializedTag = `<!--STORE_SETTINGS:${JSON.stringify(mergedSettings)}-->`;
+  return baseNotes ? `${baseNotes} ${serializedTag}` : serializedTag;
+}
+
+export function cleanNotesForDisplay(notes: string | null | undefined): string {
+  if (!notes || typeof notes !== 'string') return '';
+  return notes.replace(SETTINGS_TAG_REGEX, '').trim();
+}
+
 // ============================================================
 // TENANTS (LOJISTAS)
 // ============================================================
@@ -70,24 +112,33 @@ export async function fetchAllTenantsFromSupabase(): Promise<Tenant[] | null> {
       return null;
     }
 
-    return data.map((row: any) => ({
-      tenantId: row.tenant_id,
-      apiUrl: row.api_url || `/api/backend?tenant=${row.tenant_id}`,
-      name: row.name,
-      slug: row.slug,
-      domain: row.domain,
-      whatsapp: row.whatsapp ? String(row.whatsapp) : '',
-      ownerEmail: row.owner_email,
-      plan: row.plan,
-      subscriptionStatus: row.subscription_status,
-      subscriptionExpiresAt: row.subscription_expires_at,
-      notes: row.notes,
-      niche: row.niche,
-      asaasCustomerId: row.asaas_customer_id,
-      asaasSubscriptionId: row.asaas_subscription_id,
-      asaasPaymentLink: row.asaas_payment_link,
-      createdAt: row.created_at,
-    }));
+    return data.map((row: any) => {
+      const extraSettings = extractTenantSettings(row.notes);
+      return {
+        tenantId: row.tenant_id,
+        apiUrl: row.api_url || `/api/backend?tenant=${row.tenant_id}`,
+        name: row.name,
+        slug: row.slug,
+        domain: row.domain,
+        whatsapp: row.whatsapp ? String(row.whatsapp) : '',
+        ownerEmail: row.owner_email,
+        plan: row.plan,
+        subscriptionStatus: row.subscription_status,
+        subscriptionExpiresAt: row.subscription_expires_at,
+        notes: row.notes,
+        niche: row.niche,
+        asaasCustomerId: row.asaas_customer_id,
+        asaasSubscriptionId: row.asaas_subscription_id,
+        asaasPaymentLink: row.asaas_payment_link,
+        createdAt: row.created_at,
+        catalog_layout: extraSettings?.catalog_layout,
+        theme_preset: extraSettings?.theme_preset,
+        announcement_enabled: extraSettings?.announcement_enabled,
+        announcement_text: extraSettings?.announcement_text,
+        announcement_bg_color: extraSettings?.announcement_bg_color,
+        announcement_text_color: extraSettings?.announcement_text_color,
+      };
+    });
   } catch (err) {
     console.warn('Erro inesperado em fetchAllTenantsFromSupabase:', err);
     return null;
@@ -109,6 +160,8 @@ export async function fetchTenantFromSupabase(identifier: string): Promise<Tenan
 
     if (error || !data) return null;
 
+    const extraSettings = extractTenantSettings(data.notes);
+
     return {
       tenantId: data.tenant_id,
       apiUrl: data.api_url || `/api/backend?tenant=${data.tenant_id}`,
@@ -126,6 +179,12 @@ export async function fetchTenantFromSupabase(identifier: string): Promise<Tenan
       asaasSubscriptionId: data.asaas_subscription_id,
       asaasPaymentLink: data.asaas_payment_link,
       createdAt: data.created_at,
+      catalog_layout: extraSettings?.catalog_layout,
+      theme_preset: extraSettings?.theme_preset,
+      announcement_enabled: extraSettings?.announcement_enabled,
+      announcement_text: extraSettings?.announcement_text,
+      announcement_bg_color: extraSettings?.announcement_bg_color,
+      announcement_text_color: extraSettings?.announcement_text_color,
     };
   } catch (err) {
     console.warn('Erro em fetchTenantFromSupabase:', err);
@@ -307,6 +366,19 @@ export async function fetchStoreConfigFromSupabase(tenantId: string): Promise<St
 
     if (error || !data) return null;
 
+    // Recupera configurações estendidas (anúncio e tema) persistidas com segurança nos notes do tenant
+    let extraFromNotes: TenantStoreSettings | null = null;
+    try {
+      const { data: tenantData } = await supabase
+        .from('tenants')
+        .select('notes')
+        .eq('tenant_id', tenantId)
+        .maybeSingle();
+      extraFromNotes = extractTenantSettings(tenantData?.notes);
+    } catch {
+      // ignore
+    }
+
     return {
       store_id: data.tenant_id,
       store_name: data.store_name,
@@ -324,15 +396,32 @@ export async function fetchStoreConfigFromSupabase(tenantId: string): Promise<St
       business_hours: data.business_hours,
       pix_key: data.pix_key,
       pix_key_type: data.pix_key_type,
-      catalog_layout: (data.catalog_layout as any) || undefined,
-      theme_preset: (data.theme_preset as any) || undefined,
+      catalog_layout: (data.catalog_layout as any) || extraFromNotes?.catalog_layout || undefined,
+      theme_preset: (data.theme_preset as any) || extraFromNotes?.theme_preset || undefined,
       announcement_enabled:
-        data.announcement_enabled !== undefined ? Boolean(data.announcement_enabled) : undefined,
-      announcement_text: data.announcement_text !== undefined ? String(data.announcement_text) : undefined,
+        data.announcement_enabled !== undefined
+          ? Boolean(data.announcement_enabled)
+          : extraFromNotes?.announcement_enabled !== undefined
+          ? Boolean(extraFromNotes.announcement_enabled)
+          : undefined,
+      announcement_text:
+        data.announcement_text !== undefined
+          ? String(data.announcement_text)
+          : extraFromNotes?.announcement_text !== undefined
+          ? String(extraFromNotes.announcement_text)
+          : undefined,
       announcement_bg_color:
-        data.announcement_bg_color !== undefined ? String(data.announcement_bg_color) : undefined,
+        data.announcement_bg_color !== undefined
+          ? String(data.announcement_bg_color)
+          : extraFromNotes?.announcement_bg_color !== undefined
+          ? String(extraFromNotes.announcement_bg_color)
+          : undefined,
       announcement_text_color:
-        data.announcement_text_color !== undefined ? String(data.announcement_text_color) : undefined,
+        data.announcement_text_color !== undefined
+          ? String(data.announcement_text_color)
+          : extraFromNotes?.announcement_text_color !== undefined
+          ? String(extraFromNotes.announcement_text_color)
+          : undefined,
     };
   } catch (err) {
     console.warn('Erro em fetchStoreConfigFromSupabase:', err);
@@ -404,19 +493,38 @@ export async function saveStoreConfigInSupabase(tenantId: string, config: SaveCo
 
     // SINCRONIZAÇÃO AUTOMÁTICA IMEDIATA:
     // Se o WhatsApp ou Nome da loja foram alterados pelo lojista,
-    // atualiza também na tabela 'tenants' para refletir no Painel Mestre SaaS!
+    // ou se configurações estendidas (anúncio, preset, layout) foram enviadas,
+    // atualizamos na tabela 'tenants' para persistência duradoura e reflexo no Painel Mestre SaaS!
     const tenantUpdates: Record<string, any> = {
       updated_at: new Date().toISOString(),
     };
     if (cleanPhone) tenantUpdates['whatsapp'] = cleanPhone;
     if (config.store_name) tenantUpdates['name'] = String(config.store_name).trim();
 
-    if (Object.keys(tenantUpdates).length > 1) {
-      await supabase
+    const newSettings: Partial<TenantStoreSettings> = {};
+    if (config.catalog_layout !== undefined) newSettings.catalog_layout = config.catalog_layout;
+    if (config.theme_preset !== undefined) newSettings.theme_preset = config.theme_preset;
+    if (config.announcement_enabled !== undefined) newSettings.announcement_enabled = Boolean(config.announcement_enabled);
+    if (config.announcement_text !== undefined) newSettings.announcement_text = String(config.announcement_text).trim();
+    if (config.announcement_bg_color !== undefined) newSettings.announcement_bg_color = String(config.announcement_bg_color).trim();
+    if (config.announcement_text_color !== undefined) newSettings.announcement_text_color = String(config.announcement_text_color).trim();
+
+    try {
+      const { data: currentTenant } = await supabase
         .from('tenants')
-        .update(tenantUpdates)
-        .eq('tenant_id', tenantId);
+        .select('notes')
+        .eq('tenant_id', tenantId)
+        .maybeSingle();
+
+      tenantUpdates['notes'] = serializeTenantSettings(currentTenant?.notes, newSettings);
+    } catch (err) {
+      console.warn('Erro ao serializar notas de tenant:', err);
     }
+
+    await supabase
+      .from('tenants')
+      .update(tenantUpdates)
+      .eq('tenant_id', tenantId);
 
     return {
       store_id: savedRecord.tenant_id || tenantId,

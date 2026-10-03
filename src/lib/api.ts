@@ -80,6 +80,7 @@ export class ApiClient {
     const targetUrl = this.appendTenant(endpoint, explicitTenant);
     try {
       const res = await fetch(targetUrl, {
+        cache: 'no-store',
         ...options,
         headers: {
           'Content-Type': 'application/json',
@@ -120,7 +121,8 @@ export class ApiClient {
   // ==========================================
 
   public async getStore(tenantId?: string): Promise<StoreConfig> {
-    return this.request<StoreConfig>(`${this.baseUrl}?action=store`, undefined, tenantId);
+    const data = await this.request<StoreConfig>(`${this.baseUrl}?action=store`, undefined, tenantId);
+    return normalizeCatalogInitialData({ store: data }).store || data;
   }
 
   public async getCategories(tenantId?: string): Promise<Category[]> {
@@ -222,15 +224,20 @@ export class ApiClient {
     });
   }
 
-  public async saveConfig(config: SaveConfigInput, token: string): Promise<StoreConfig> {
-    return this.request<StoreConfig>(this.baseUrl, {
-      method: 'POST',
-      body: JSON.stringify({
-        action: 'saveConfig',
-        token,
-        config,
-      }),
-    });
+  public async saveConfig(config: SaveConfigInput, token: string, tenantId?: string): Promise<StoreConfig> {
+    const data = await this.request<StoreConfig>(
+      this.baseUrl,
+      {
+        method: 'POST',
+        body: JSON.stringify({
+          action: 'saveConfig',
+          token,
+          config,
+        }),
+      },
+      tenantId
+    );
+    return normalizeCatalogInitialData({ store: data }).store || data;
   }
 
   // ==========================================

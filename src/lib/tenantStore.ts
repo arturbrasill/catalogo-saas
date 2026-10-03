@@ -16,6 +16,9 @@ import {
   insertTenantIntoSupabase,
   updateTenantInSupabase,
   deleteTenantFromSupabase,
+  extractTenantSettings,
+  serializeTenantSettings,
+  type TenantStoreSettings,
 } from '@/lib/supabase';
 
 // Caminho para persistência local de novos tenants criados dinamicamente
@@ -499,7 +502,14 @@ export function updateTenantSubscription(input: UpdateSubscriptionInput): Tenant
   if (input.plan) tenant.plan = input.plan;
   if (input.subscriptionStatus) tenant.subscriptionStatus = input.subscriptionStatus;
   if (input.subscriptionExpiresAt) tenant.subscriptionExpiresAt = input.subscriptionExpiresAt;
-  if (input.notes !== undefined) tenant.notes = input.notes;
+  if (input.notes !== undefined) {
+    const existingSettings = extractTenantSettings(tenant.notes);
+    if (existingSettings && !input.notes.includes('<!--STORE_SETTINGS:')) {
+      tenant.notes = serializeTenantSettings(input.notes, existingSettings);
+    } else {
+      tenant.notes = input.notes;
+    }
+  }
   if (input.apiUrl !== undefined) tenant.apiUrl = input.apiUrl;
   if (input.spreadsheetUrl !== undefined) tenant.spreadsheetUrl = input.spreadsheetUrl;
   if (input.whatsapp !== undefined) tenant.whatsapp = String(input.whatsapp || '').replace(/\D/g, '');
@@ -514,6 +524,19 @@ export function updateTenantSubscription(input: UpdateSubscriptionInput): Tenant
   if (input.announcement_text !== undefined) tenant.announcement_text = input.announcement_text;
   if (input.announcement_bg_color !== undefined) tenant.announcement_bg_color = input.announcement_bg_color;
   if (input.announcement_text_color !== undefined) tenant.announcement_text_color = input.announcement_text_color;
+
+  const settingsUpdate: Partial<TenantStoreSettings> = {};
+  if (input.catalog_layout !== undefined) settingsUpdate.catalog_layout = input.catalog_layout;
+  if (input.theme_preset !== undefined) settingsUpdate.theme_preset = input.theme_preset;
+  if (input.announcement_enabled !== undefined) settingsUpdate.announcement_enabled = input.announcement_enabled;
+  if (input.announcement_text !== undefined) settingsUpdate.announcement_text = input.announcement_text;
+  if (input.announcement_bg_color !== undefined) settingsUpdate.announcement_bg_color = input.announcement_bg_color;
+  if (input.announcement_text_color !== undefined) settingsUpdate.announcement_text_color = input.announcement_text_color;
+
+  if (Object.keys(settingsUpdate).length > 0) {
+    tenant.notes = serializeTenantSettings(tenant.notes, settingsUpdate);
+    input.notes = tenant.notes;
+  }
 
   // Atualiza referências no registro
   for (const [key, t] of Object.entries(inMemoryRegistry)) {

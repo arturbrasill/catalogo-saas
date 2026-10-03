@@ -12,12 +12,24 @@ export function TopAnnouncementBar({ store }: TopAnnouncementBarProps) {
   const [isVisible, setIsVisible] = useState(true);
 
   // Se o lojista desabilitou explicitamente ou não está visível
+  const isEnabled =
+    store?.announcement_enabled !== undefined && store?.announcement_enabled !== null
+      ? store.announcement_enabled === true ||
+        String(store.announcement_enabled).trim().toLowerCase() === 'true' ||
+        (store.announcement_enabled as any) === 1 ||
+        (store.announcement_enabled as any) === '1'
+      : true;
+
   if (!isVisible) return null;
-  if (store?.announcement_enabled === false) return null;
+  if (!isEnabled) return null;
 
   const defaultText =
     'Compre online e receba em casa com frete seguro ou retire na loja física';
-  const announcementText = (store?.announcement_text || defaultText).trim();
+  const rawText = store?.announcement_text;
+  const announcementText =
+    rawText !== undefined && rawText !== null && String(rawText).trim().length > 0
+      ? String(rawText).trim()
+      : defaultText;
 
   const customBg = store?.announcement_bg_color || 'var(--announcement-bg, #0f172a)';
   const customText = store?.announcement_text_color || 'var(--announcement-text, #ffffff)';

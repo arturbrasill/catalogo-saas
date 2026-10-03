@@ -363,18 +363,24 @@ export function normalizeCatalogInitialData(raw: any): CatalogInitialData {
         : 'grid',
     theme_preset: rawStore.theme_preset || 'modern',
     announcement_enabled:
-      rawStore.announcement_enabled !== undefined
-        ? Boolean(rawStore.announcement_enabled)
+      rawStore.announcement_enabled !== undefined && rawStore.announcement_enabled !== null
+        ? rawStore.announcement_enabled === true ||
+          String(rawStore.announcement_enabled).trim().toLowerCase() === 'true' ||
+          rawStore.announcement_enabled === 1 ||
+          rawStore.announcement_enabled === '1'
         : true,
-    announcement_text: rawStore.announcement_text
-      ? String(rawStore.announcement_text).trim()
-      : undefined,
-    announcement_bg_color: rawStore.announcement_bg_color
-      ? String(rawStore.announcement_bg_color).trim()
-      : undefined,
-    announcement_text_color: rawStore.announcement_text_color
-      ? String(rawStore.announcement_text_color).trim()
-      : undefined,
+    announcement_text:
+      rawStore.announcement_text !== undefined && rawStore.announcement_text !== null
+        ? String(rawStore.announcement_text).trim()
+        : undefined,
+    announcement_bg_color:
+      rawStore.announcement_bg_color !== undefined && rawStore.announcement_bg_color !== null
+        ? String(rawStore.announcement_bg_color).trim()
+        : undefined,
+    announcement_text_color:
+      rawStore.announcement_text_color !== undefined && rawStore.announcement_text_color !== null
+        ? String(rawStore.announcement_text_color).trim()
+        : undefined,
   };
 
   const rawCategories = Array.isArray(raw.categories) ? raw.categories : [];

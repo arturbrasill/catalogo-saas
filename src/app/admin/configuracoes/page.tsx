@@ -136,7 +136,7 @@ export default function AdminConfiguracoesPage() {
     'colors' | 'typography' | 'layout' | 'announcement'
   >('colors');
 
-  // Campos de Configuração
+  const [currentStoreId, setCurrentStoreId] = useState<string>('');
   const [storeName, setStoreName] = useState('');
   const [logoUrl, setLogoUrl] = useState('');
   const [primaryColor, setPrimaryColor] = useState('#10b981');
@@ -166,6 +166,9 @@ export default function AdminConfiguracoesPage() {
     setErrorMessage(null);
     try {
       const data = await api.getStore();
+      if (data.store_id) {
+        setCurrentStoreId(data.store_id);
+      }
       setStoreName(String(data.store_name ?? ''));
       setLogoUrl(String(data.logo_url ?? ''));
       setPrimaryColor(String(data.primary_color ?? '#10b981'));
@@ -182,11 +185,13 @@ export default function AdminConfiguracoesPage() {
       setThemePreset((data.theme_preset as ThemePreset) || 'modern');
       setCatalogLayout((data.catalog_layout as CatalogLayoutMode) || 'grid');
       setAnnouncementEnabled(
-        data.announcement_enabled !== undefined ? Boolean(data.announcement_enabled) : true
+        data.announcement_enabled !== undefined && data.announcement_enabled !== null
+          ? data.announcement_enabled === true || String(data.announcement_enabled).toLowerCase() === 'true'
+          : true
       );
       setAnnouncementText(
         String(
-          data.announcement_text ??
+          data.announcement_text ||
             'Compre online e receba em casa com frete seguro ou retire na loja física'
         )
       );
@@ -328,9 +333,13 @@ export default function AdminConfiguracoesPage() {
           announcement_bg_color: announcementBgColor.trim(),
           announcement_text_color: announcementTextColor.trim(),
         },
-        token
+        token,
+        currentStoreId || undefined
       );
 
+      if (updated.store_id) {
+        setCurrentStoreId(updated.store_id);
+      }
       setStoreName(String(updated.store_name ?? ''));
       setLogoUrl(String(updated.logo_url ?? ''));
       setPrimaryColor(String(updated.primary_color ?? '#10b981'));
@@ -347,11 +356,13 @@ export default function AdminConfiguracoesPage() {
       setThemePreset((updated.theme_preset as ThemePreset) || 'modern');
       setCatalogLayout((updated.catalog_layout as CatalogLayoutMode) || 'grid');
       setAnnouncementEnabled(
-        updated.announcement_enabled !== undefined ? Boolean(updated.announcement_enabled) : true
+        updated.announcement_enabled !== undefined && updated.announcement_enabled !== null
+          ? updated.announcement_enabled === true || String(updated.announcement_enabled).toLowerCase() === 'true'
+          : true
       );
       setAnnouncementText(
         String(
-          updated.announcement_text ??
+          updated.announcement_text ||
             'Compre online e receba em casa com frete seguro ou retire na loja física'
         )
       );
