@@ -27,6 +27,9 @@ import {
   Settings,
   X,
   Trash2,
+  LogIn,
+  KeyRound,
+  User,
 } from 'lucide-react';
 import type { Tenant, SaasMetrics, SubscriptionPlan, SubscriptionStatus } from '@/types';
 
@@ -52,6 +55,8 @@ export default function SaasAdminPage() {
   const [editName, setEditName] = useState('');
   const [editWhatsapp, setEditWhatsapp] = useState('');
   const [editOwnerEmail, setEditOwnerEmail] = useState('');
+  const [editAdminUsername, setEditAdminUsername] = useState('');
+  const [editPassword, setEditPassword] = useState('');
   const [editPlan, setEditPlan] = useState<SubscriptionPlan>('monthly');
   const [editStatus, setEditStatus] = useState<SubscriptionStatus>('active');
   const [editExpiry, setEditExpiry] = useState('');
@@ -204,6 +209,8 @@ export default function SaasAdminPage() {
     setEditName(store.name || '');
     setEditWhatsapp(store.whatsapp ? String(store.whatsapp) : '');
     setEditOwnerEmail(store.ownerEmail || '');
+    setEditAdminUsername(store.adminUsername || store.slug || 'admin');
+    setEditPassword('');
     setEditPlan(store.plan || 'monthly');
     setEditStatus(store.subscriptionStatus || 'active');
     setEditExpiry(
@@ -236,6 +243,8 @@ export default function SaasAdminPage() {
           name: editName.trim(),
           whatsapp: String(editWhatsapp || '').replace(/\D/g, ''),
           ownerEmail: editOwnerEmail.trim(),
+          adminUsername: editAdminUsername.trim() || undefined,
+          password: editPassword.trim() || undefined,
           plan: editPlan,
           subscriptionStatus: editStatus,
           subscriptionExpiresAt: expiryIso,
@@ -669,6 +678,10 @@ export default function SaasAdminPage() {
                         <div className="text-[11px] text-slate-400 font-mono flex items-center gap-1">
                           <span>/{store.slug || store.tenantId}</span>
                         </div>
+                        <div className="text-[11px] text-slate-600 font-mono flex items-center gap-1 mt-0.5" title="Usuário de acesso ao painel do lojista">
+                          <User className="w-3 h-3 text-slate-400" />
+                          <span>Login: <strong className="text-slate-800">{store.adminUsername || store.slug || 'admin'}</strong></span>
+                        </div>
                       </td>
 
                       {/* WhatsApp */}
@@ -780,6 +793,17 @@ export default function SaasAdminPage() {
                             <Eye className="w-3.5 h-3.5" />
                           </a>
 
+                          {/* Acessar Painel Lojista */}
+                          <a
+                            href={`/admin/login?tenant=${store.slug || store.tenantId}`}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="p-1.5 rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 transition-colors"
+                            title="Entrar no Painel do Lojista"
+                          >
+                            <LogIn className="w-3.5 h-3.5" />
+                          </a>
+
                           {/* Editar Assinatura Completa */}
                           <button
                             type="button"
@@ -825,6 +849,10 @@ export default function SaasAdminPage() {
                       <h4 className="font-bold text-slate-900 text-sm">{store.name}</h4>
                       <p className="text-[11px] font-mono text-slate-400">
                         /{store.slug || store.tenantId}
+                      </p>
+                      <p className="text-[11px] font-mono text-slate-600 flex items-center gap-1 mt-0.5">
+                        <User className="w-3 h-3 text-slate-400" />
+                        <span>Login: <strong className="text-slate-800">{store.adminUsername || store.slug || 'admin'}</strong></span>
                       </p>
                     </div>
                     <span
@@ -902,8 +930,18 @@ export default function SaasAdminPage() {
                         target="_blank"
                         rel="noreferrer"
                         className="p-1.5 rounded-lg bg-slate-50 text-slate-700 border border-slate-200"
+                        title="Ver Catálogo"
                       >
                         <Eye className="w-3.5 h-3.5" />
+                      </a>
+                      <a
+                        href={`/admin/login?tenant=${store.slug || store.tenantId}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="p-1.5 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200"
+                        title="Entrar no Painel do Lojista"
+                      >
+                        <LogIn className="w-3.5 h-3.5" />
                       </a>
                       <button
                         type="button"
@@ -1047,6 +1085,42 @@ export default function SaasAdminPage() {
                   onChange={(e) => setEditExpiry(e.target.value)}
                   className="w-full px-3 py-2 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500"
                 />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3 bg-slate-50/80 rounded-xl border border-slate-200/80">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1 flex items-center gap-1">
+                    <User className="w-3.5 h-3.5 text-slate-500" />
+                    <span>Usuário de Login (Lojista)</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={editAdminUsername}
+                    onChange={(e) => setEditAdminUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''))}
+                    className="w-full px-3 py-2 text-xs sm:text-sm bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 font-mono"
+                    placeholder="Ex: admin ou essenza"
+                  />
+                  <span className="text-[10px] text-slate-400 mt-1 block">
+                    Usado para entrar no painel /admin/login
+                  </span>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1 flex items-center gap-1">
+                    <KeyRound className="w-3.5 h-3.5 text-slate-500" />
+                    <span>Redefinir Senha</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={editPassword}
+                    onChange={(e) => setEditPassword(e.target.value)}
+                    className="w-full px-3 py-2 text-xs sm:text-sm bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 font-mono"
+                    placeholder="Nova senha (vazio p/ manter)"
+                  />
+                  <span className="text-[10px] text-slate-400 mt-1 block">
+                    Deixe em branco para não alterar
+                  </span>
+                </div>
               </div>
 
               <div>

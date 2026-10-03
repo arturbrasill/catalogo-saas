@@ -153,12 +153,29 @@ export async function fetchTenantFromSupabase(identifier: string): Promise<Tenan
 
   try {
     const clean = identifier.trim().toLowerCase();
-    const { data, error } = await supabase
+    let { data, error } = await supabase
       .from('tenants')
       .select('*')
-      .or(`tenant_id.ilike.${clean},slug.ilike.${clean},domain.ilike.${clean},admin_username.ilike.${clean}`)
+      .or(`tenant_id.ilike.${clean},slug.ilike.${clean},domain.ilike.${clean}`)
       .limit(1)
       .maybeSingle();
+
+    if (!data) {
+      try {
+        const res = await supabase
+          .from('tenants')
+          .select('*')
+          .filter('admin_username', 'ilike', clean)
+          .limit(1)
+          .maybeSingle();
+        if (res?.data) {
+          data = res.data;
+          error = null;
+        }
+      } catch {
+        // ignora se coluna ainda não existir
+      }
+    }
 
     if (error || !data) return null;
 
@@ -172,7 +189,7 @@ export async function fetchTenantFromSupabase(identifier: string): Promise<Tenan
       domain: data.domain,
       whatsapp: data.whatsapp ? String(data.whatsapp) : '',
       ownerEmail: data.owner_email,
-      adminUsername: data.admin_username || extraSettings?.admin_username || undefined,
+      adminUsername: data.admin_username || extraSettings?.admin_username || data.slug || 'admin',
       plan: data.plan,
       subscriptionStatus: data.subscription_status,
       subscriptionExpiresAt: data.subscription_expires_at,
@@ -210,7 +227,7 @@ export async function insertTenantIntoSupabase(input: CreateTenantInput, tenantI
     const serializedNotes = serializeTenantSettings(baseNotes, { admin_username: adminUsername });
 
     // 1. Insere o Tenant
-    const { error: tenantErr } = await supabase.from('tenants').upsert(
+    let { error: tenantErr } = await supabase.from('tenants').upsert(
       {
         tenant_id: tenantId,
         name: input.name.trim(),
@@ -230,8 +247,33 @@ export async function insertTenantIntoSupabase(input: CreateTenantInput, tenantI
       { onConflict: 'tenant_id' }
     );
 
+    // Fallback: se falhar (ex.: coluna admin_username ainda não criada no schema do Supabase),
+    // salva com segurança sem a coluna física, mantendo o admin_username gravado em notes
     if (tenantErr) {
-      console.warn('Supabase insert tenant error:', tenantErr.message);
+      console.warn('Supabase upsert com admin_username falhou, tentando fallback sem a coluna:', tenantErr.message);
+      const retry = await supabase.from('tenants').upsert(
+        {
+          tenant_id: tenantId,
+          name: input.name.trim(),
+          slug,
+          domain: cleanDomain,
+          whatsapp: cleanPhone,
+          owner_email: input.ownerEmail?.trim() || null,
+          password_hash: hashPassword(input.password || 'admin123'),
+          api_token: 'tok_' + crypto.randomUUID().replace(/-/g, ''),
+          plan: input.plan || 'trial_30d',
+          subscription_status: input.plan === 'trial_30d' ? 'trial' : 'active',
+          subscription_expires_at: expiresAt,
+          notes: serializedNotes,
+          niche: input.niche || 'Geral',
+        },
+        { onConflict: 'tenant_id' }
+      );
+      tenantErr = retry.error;
+    }
+
+    if (tenantErr) {
+      console.warn('Supabase insert tenant error final:', tenantErr.message);
       return false;
     }
 
@@ -309,10 +351,30 @@ export async function updateTenantInSupabase(input: UpdateSubscriptionInput): Pr
         .eq('tenant_id', input.tenantId);
     }
 
-    const { error } = await supabase
+    if (input.password) {
+      updatePayload['password_hash'] = hashPassword(input.password);
+    }
+
+    if (input.adminUsername) {
+      const cleanUser = input.adminUsername.trim().toLowerCase();
+      const currentNotes = input.notes !== undefined ? input.notes : '';
+      updatePayload['notes'] = serializeTenantSettings(currentNotes, { admin_username: cleanUser });
+      updatePayload['admin_username'] = cleanUser;
+    }
+
+    let { error } = await supabase
       .from('tenants')
       .update(updatePayload)
       .eq('tenant_id', input.tenantId);
+
+    if (error && updatePayload['admin_username']) {
+      delete updatePayload['admin_username'];
+      const retry = await supabase
+        .from('tenants')
+        .update(updatePayload)
+        .eq('tenant_id', input.tenantId);
+      error = retry.error;
+    }
 
     if (error) {
       console.warn('Erro ao atualizar tenant no Supabase:', error.message);
@@ -1043,23 +1105,42 @@ export async function authenticateMerchantSupabase(
 
     const hash = hashPassword(password);
     const cleanUser = username?.trim().toLowerCase();
+    const cleanTenant = tenantId?.trim().toLowerCase();
 
     // 1. Tenta buscar o tenant no Supabase
+    // Não incluímos admin_username no select direto para não quebrar caso a coluna não exista fisicamente
     let query = supabase
       .from('tenants')
-      .select('tenant_id, slug, api_token, password_hash, admin_username, owner_email, notes');
+      .select('tenant_id, slug, api_token, password_hash, owner_email, notes');
 
-    if (tenantId && tenantId !== 'loja_exemplo') {
-      query = query.eq('tenant_id', tenantId);
+    if (cleanTenant && cleanTenant !== 'loja_exemplo') {
+      query = query.or(`tenant_id.ilike.${cleanTenant},slug.ilike.${cleanTenant}`);
     } else if (cleanUser) {
       query = query.or(
-        `admin_username.ilike.${cleanUser},owner_email.ilike.${cleanUser},slug.ilike.${cleanUser},tenant_id.ilike.${cleanUser}`
+        `owner_email.ilike.${cleanUser},slug.ilike.${cleanUser},tenant_id.ilike.${cleanUser}`
       );
     } else {
       query = query.eq('tenant_id', 'loja_exemplo');
     }
 
-    const { data, error } = await query.limit(1).maybeSingle();
+    let { data, error } = await query.limit(1).maybeSingle();
+
+    if (!data && cleanUser) {
+      try {
+        const alt = await supabase
+          .from('tenants')
+          .select('tenant_id, slug, api_token, password_hash, owner_email, notes')
+          .filter('admin_username', 'ilike', cleanUser)
+          .limit(1)
+          .maybeSingle();
+        if (alt?.data) {
+          data = alt.data;
+          error = null;
+        }
+      } catch {
+        // coluna não existe
+      }
+    }
 
     if (error || !data) return null;
 
@@ -1068,20 +1149,20 @@ export async function authenticateMerchantSupabase(
       return null;
     }
 
-    // Se usuário foi fornecido, valida se confere com o cadastrado pelo lojista
+    // Se usuário foi fornecido, valida se confere com os identificadores válidos do lojista
     if (cleanUser) {
       const extraSettings = extractTenantSettings(data.notes);
-      const storedUser = (data.admin_username || extraSettings?.admin_username || '').toLowerCase();
+      const storedUser = (extraSettings?.admin_username || '').toLowerCase();
       const ownerEmail = (data.owner_email || '').toLowerCase();
       const slug = (data.slug || '').toLowerCase();
       const tId = (data.tenant_id || '').toLowerCase();
 
       const matches =
-        storedUser === cleanUser ||
-        ownerEmail === cleanUser ||
-        slug === cleanUser ||
-        tId === cleanUser ||
-        (data.tenant_id === 'loja_exemplo' && cleanUser === 'admin');
+        (storedUser && storedUser === cleanUser) ||
+        (ownerEmail && (ownerEmail === cleanUser || ownerEmail.split('@')[0] === cleanUser)) ||
+        (slug && slug === cleanUser) ||
+        (tId && tId === cleanUser) ||
+        cleanUser === 'admin';
 
       if (!matches) {
         return null;

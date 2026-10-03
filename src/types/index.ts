@@ -299,6 +299,8 @@ export interface UpdateSubscriptionInput {
   whatsapp?: string;
   name?: string;
   ownerEmail?: string;
+  adminUsername?: string;
+  password?: string;
   asaasCustomerId?: string;
   asaasSubscriptionId?: string;
   asaasPaymentLink?: string;

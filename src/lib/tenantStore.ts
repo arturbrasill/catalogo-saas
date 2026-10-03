@@ -553,7 +553,12 @@ export function updateTenantSubscription(input: UpdateSubscriptionInput): Tenant
   if (input.announcement_bg_color !== undefined) tenant.announcement_bg_color = input.announcement_bg_color;
   if (input.announcement_text_color !== undefined) tenant.announcement_text_color = input.announcement_text_color;
 
+  if (input.adminUsername !== undefined) {
+    tenant.adminUsername = input.adminUsername.trim().toLowerCase();
+  }
+
   const settingsUpdate: Partial<TenantStoreSettings> = {};
+  if (input.adminUsername !== undefined) settingsUpdate.admin_username = tenant.adminUsername;
   if (input.catalog_layout !== undefined) settingsUpdate.catalog_layout = input.catalog_layout;
   if (input.theme_preset !== undefined) settingsUpdate.theme_preset = input.theme_preset;
   if (input.announcement_enabled !== undefined) settingsUpdate.announcement_enabled = input.announcement_enabled;
