@@ -116,6 +116,7 @@ export async function syncTenantsFromRemote(): Promise<boolean> {
             apiUrl: t.apiUrl || '',
             whatsapp: String(t.whatsapp || ''),
             ownerEmail: t.ownerEmail || '',
+            adminUsername: t.adminUsername || (t as any).admin_username || undefined,
             niche: t.niche || 'Geral',
             plan: t.plan || 'trial_30d',
             subscriptionStatus: t.subscriptionStatus || 'active',
@@ -322,12 +323,34 @@ export function findTenant(identifier: string): Tenant | null {
     return inMemoryRegistry[clean]!;
   }
 
-  // 2. Busca por tenantId, slug ou domain
+  // 2. Busca por tenantId, slug, domain ou adminUsername
   for (const tenant of Object.values(inMemoryRegistry)) {
     if (
       tenant.tenantId.toLowerCase() === clean ||
       tenant.slug?.toLowerCase() === clean ||
-      tenant.domain?.toLowerCase() === clean
+      tenant.domain?.toLowerCase() === clean ||
+      tenant.adminUsername?.toLowerCase() === clean
+    ) {
+      return tenant;
+    }
+  }
+
+  return null;
+}
+
+/**
+ * Encontra um tenant pelo usuário do administrador (adminUsername ou email)
+ */
+export function findTenantByAdminUsername(username: string): Tenant | null {
+  if (!username) return null;
+  const clean = username.trim().toLowerCase();
+
+  for (const tenant of Object.values(inMemoryRegistry)) {
+    if (
+      tenant.adminUsername?.toLowerCase() === clean ||
+      tenant.ownerEmail?.toLowerCase() === clean ||
+      tenant.slug?.toLowerCase() === clean ||
+      tenant.tenantId.toLowerCase() === clean
     ) {
       return tenant;
     }
@@ -436,6 +459,8 @@ export async function registerTenant(input: CreateTenantInput): Promise<{
   }
 
   // Cria o registro do Tenant
+  const chosenUsername = (input.adminUsername || input.slug || input.name).toLowerCase().replace(/[^a-z0-9_]/g, '');
+
   const newTenant: Tenant = {
     tenantId,
     name: input.name.trim(),
@@ -443,6 +468,7 @@ export async function registerTenant(input: CreateTenantInput): Promise<{
     domain: `${finalSlug}.localhost`,
     apiUrl: process.env['APPS_SCRIPT_URL'] || '',
     whatsapp: String(input.whatsapp || '').replace(/\D/g, ''),
+    adminUsername: chosenUsername,
     plan,
     subscriptionStatus: status,
     subscriptionExpiresAt: expiresAt,
@@ -467,6 +493,7 @@ export async function registerTenant(input: CreateTenantInput): Promise<{
     secondary_color: input.secondaryColor || '#047857',
     background_color: input.backgroundColor || '#f8fafc',
     text_color: input.textColor || '#0f172a',
+    admin_username: chosenUsername,
     admin_password_hash: passwordHash,
     domain: newTenant.domain,
   });
@@ -480,6 +507,7 @@ export async function registerTenant(input: CreateTenantInput): Promise<{
 
   // Persiste no Supabase (Banco de Dados Oficial)
   try {
+    input.adminUsername = chosenUsername;
     await insertTenantIntoSupabase(input, tenantId, finalSlug);
   } catch (err) {
     console.warn('Nota: Falha ao inserir tenant no Supabase:', err);

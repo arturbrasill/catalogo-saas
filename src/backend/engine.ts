@@ -51,6 +51,7 @@ export class BackendEngine {
     this.configMap.set('whatsapp', initialConfig?.whatsapp || '5511999999999');
     this.configMap.set('admin_password_hash', defaultPasswordHash);
     this.configMap.set('api_token', defaultApiToken);
+    this.configMap.set('admin_username', initialConfig?.admin_username || 'admin');
     this.configMap.set('domain', initialConfig?.domain || 'loja-exemplo.com.br');
     this.configMap.set('currency', initialConfig?.currency || 'BRL');
     this.configMap.set('timezone', initialConfig?.timezone || 'America/Sao_Paulo');
@@ -173,7 +174,7 @@ export class BackendEngine {
       }
 
       if (payload.action === 'login') {
-        const result = this.handleLogin(payload.password);
+        const result = this.handleLogin(payload.password, payload.username);
         return { success: true, data: result, error: null };
       }
 
@@ -265,7 +266,7 @@ export class BackendEngine {
 
   public getPublicStoreConfig(): StoreConfig {
     const config: Partial<StoreConfig> = {};
-    const sensitiveKeys = ['admin_password_hash', 'api_token'];
+    const sensitiveKeys = ['admin_password_hash', 'api_token', 'admin_username'];
 
     this.configMap.forEach((val, key) => {
       if (!sensitiveKeys.includes(key)) {
@@ -342,16 +343,23 @@ export class BackendEngine {
     };
   }
 
-  public handleLogin(password: string) {
+  public handleLogin(password: string, username?: string) {
     if (!password || typeof password !== 'string') {
       throw new Error('MISSING_PASSWORD: A senha é obrigatória.');
     }
 
     const storedHash = this.configMap.get('admin_password_hash');
     const apiToken = this.configMap.get('api_token');
+    const storedUsername = this.configMap.get('admin_username') || 'admin';
 
     if (!storedHash) {
       throw new Error('CONFIG_ERROR: Senha administrativa não configurada.');
+    }
+
+    if (username !== undefined && username !== null && username.trim() !== '') {
+      if (username.trim().toLowerCase() !== storedUsername.trim().toLowerCase()) {
+        throw new Error('INVALID_CREDENTIALS: Usuário ou senha incorretos.');
+      }
     }
 
     const inputHash = this.hashPassword(password);
@@ -633,7 +641,7 @@ export class BackendEngine {
       throw new Error('VALIDATION_ERROR: Objeto de configuração inválido.');
     }
 
-    const immutableKeys = ['store_id', 'api_token', 'admin_password_hash'];
+    const immutableKeys = ['store_id', 'api_token', 'admin_password_hash', 'admin_username'];
     for (const forbiddenKey of immutableKeys) {
       if (Object.prototype.hasOwnProperty.call(newConfigs, forbiddenKey)) {
         throw new Error(`FORBIDDEN_MODIFICATION: A chave "${forbiddenKey}" não pode ser alterada via API.`);

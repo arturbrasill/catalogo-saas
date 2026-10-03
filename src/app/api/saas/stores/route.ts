@@ -78,10 +78,16 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const rawUsername = body.adminUsername || (body as any).username;
+    const cleanUsername = rawUsername
+      ? String(rawUsername).trim().toLowerCase().replace(/[^a-z0-9_]/g, '')
+      : undefined;
+
     const input: CreateTenantInput = {
       name: body.name.trim(),
       slug: body.slug ? body.slug.trim() : body.name.trim(),
       whatsapp: String(body.whatsapp).replace(/\D/g, ''),
+      adminUsername: cleanUsername,
       ownerEmail: body.ownerEmail?.trim(),
       password: body.password || 'admin123',
       plan: body.plan || 'trial_30d',

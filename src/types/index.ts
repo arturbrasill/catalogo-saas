@@ -48,6 +48,7 @@ export interface StoreConfig {
  * Utilizado exclusivamente no ambiente seguro do backend.
  */
 export interface StoreConfigInternal extends StoreConfig {
+  admin_username?: string;
   admin_password_hash: string;
   api_token: string;
 }
@@ -242,6 +243,7 @@ export interface Tenant {
   domain?: string;
   slug?: string;
   whatsapp?: string;
+  adminUsername?: string;
   plan?: SubscriptionPlan;
   subscriptionStatus?: SubscriptionStatus;
   subscriptionExpiresAt?: string; // ISO string
@@ -274,6 +276,7 @@ export interface CreateTenantInput {
   name: string;
   slug: string;
   whatsapp: string;
+  adminUsername?: string;
   ownerEmail?: string;
   cpfCnpj?: string;
   password?: string;
@@ -359,6 +362,7 @@ export interface MasterLoginResult {
 
 export interface LoginPayload {
   action: 'login';
+  username?: string;
   password: string;
 }
 
@@ -366,6 +370,8 @@ export interface LoginResult {
   authenticated: boolean;
   token: string;
   expiresAt?: string;
+  tenantSlug?: string;
+  tenantId?: string;
 }
 
 export interface CreateProductInput {

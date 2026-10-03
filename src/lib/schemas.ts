@@ -178,5 +178,6 @@ export const SaveConfigSchema = z.object({
  * Esquema de autenticação (Login)
  */
 export const LoginSchema = z.object({
+  username: z.string().trim().min(3, 'O usuário deve ter pelo menos 3 caracteres'),
   password: z.string().min(4, 'Senha deve ter pelo menos 4 caracteres'),
 });

@@ -16,6 +16,7 @@ CREATE TABLE IF NOT EXISTS public.tenants (
   domain TEXT,
   whatsapp TEXT NOT NULL,
   owner_email TEXT,
+  admin_username TEXT,
   password_hash TEXT,
   api_token TEXT,
   plan TEXT NOT NULL DEFAULT 'trial_30d',
@@ -60,6 +61,9 @@ CREATE TABLE IF NOT EXISTS public.store_configs (
 );
 
 -- Migrações idempotentes para tabelas existentes
+ALTER TABLE public.tenants ADD COLUMN IF NOT EXISTS admin_username TEXT;
+CREATE INDEX IF NOT EXISTS idx_tenants_admin_username ON public.tenants(admin_username);
+
 ALTER TABLE public.store_configs ADD COLUMN IF NOT EXISTS catalog_layout TEXT DEFAULT 'grid';
 ALTER TABLE public.store_configs ADD COLUMN IF NOT EXISTS theme_preset TEXT DEFAULT 'modern';
 ALTER TABLE public.store_configs ADD COLUMN IF NOT EXISTS announcement_enabled BOOLEAN DEFAULT true;
@@ -222,7 +226,7 @@ END $$;
 -- ============================================================
 -- SEED INICIAL (TENANTS PADRÃO)
 -- ============================================================
-INSERT INTO public.tenants (tenant_id, name, slug, domain, whatsapp, plan, subscription_status, subscription_expires_at, notes, password_hash, api_token)
+INSERT INTO public.tenants (tenant_id, name, slug, domain, whatsapp, admin_username, plan, subscription_status, subscription_expires_at, notes, password_hash, api_token)
 VALUES 
 (
   'loja_exemplo', 
@@ -230,6 +234,7 @@ VALUES
   'loja-exemplo', 
   'loja-exemplo.localhost', 
   '5511999999999', 
+  'admin',
   'monthly', 
   'active', 
   now() + interval '30 days', 

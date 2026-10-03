@@ -8,7 +8,7 @@ interface AuthContextType {
   token: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (password: string) => Promise<void>;
+  login: (usernameOrPassword: string, maybePassword?: string) => Promise<void>;
   logout: () => void;
 }
 
@@ -36,14 +36,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  const login = async (password: string): Promise<void> => {
+  const login = async (usernameOrPassword: string, maybePassword?: string): Promise<void> => {
     setIsLoading(true);
     try {
-      const result = await api.login(password);
+      const result = await api.login(usernameOrPassword, maybePassword);
       if (result.authenticated && result.token) {
         setToken(result.token);
         sessionStorage.setItem(TOKEN_KEY, result.token);
-        router.push('/admin');
+        if (result.tenantSlug) {
+          try {
+            document.cookie = `app_tenant=${encodeURIComponent(result.tenantSlug)}; path=/; max-age=2592000; SameSite=Lax`;
+          } catch {}
+          router.push(`/admin?tenant=${encodeURIComponent(result.tenantSlug)}`);
+        } else {
+          router.push('/admin');
+        }
       } else {
         throw new Error('Credenciais inválidas.');
       }

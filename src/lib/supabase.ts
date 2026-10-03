@@ -52,6 +52,7 @@ export function hashPassword(password: string): string {
 }
 
 export interface TenantStoreSettings {
+  admin_username?: string;
   catalog_layout?: 'grid' | 'list' | 'editorial';
   theme_preset?: 'modern' | 'editorial' | 'bold';
   announcement_enabled?: boolean;
@@ -122,6 +123,7 @@ export async function fetchAllTenantsFromSupabase(): Promise<Tenant[] | null> {
         domain: row.domain,
         whatsapp: row.whatsapp ? String(row.whatsapp) : '',
         ownerEmail: row.owner_email,
+        adminUsername: row.admin_username || extraSettings?.admin_username || undefined,
         plan: row.plan,
         subscriptionStatus: row.subscription_status,
         subscriptionExpiresAt: row.subscription_expires_at,
@@ -154,7 +156,7 @@ export async function fetchTenantFromSupabase(identifier: string): Promise<Tenan
     const { data, error } = await supabase
       .from('tenants')
       .select('*')
-      .or(`tenant_id.ilike.${clean},slug.ilike.${clean},domain.ilike.${clean}`)
+      .or(`tenant_id.ilike.${clean},slug.ilike.${clean},domain.ilike.${clean},admin_username.ilike.${clean}`)
       .limit(1)
       .maybeSingle();
 
@@ -170,6 +172,7 @@ export async function fetchTenantFromSupabase(identifier: string): Promise<Tenan
       domain: data.domain,
       whatsapp: data.whatsapp ? String(data.whatsapp) : '',
       ownerEmail: data.owner_email,
+      adminUsername: data.admin_username || extraSettings?.admin_username || undefined,
       plan: data.plan,
       subscriptionStatus: data.subscription_status,
       subscriptionExpiresAt: data.subscription_expires_at,
@@ -202,6 +205,10 @@ export async function insertTenantIntoSupabase(input: CreateTenantInput, tenantI
     const cleanPhone = String(input.whatsapp || '').replace(/\D/g, '');
     const cleanDomain = `${slug}.localhost`;
 
+    const adminUsername = (input.adminUsername || input.ownerEmail?.split('@')[0] || slug).trim().toLowerCase();
+    const baseNotes = `Loja criada via Onboarding (${input.niche || 'Geral'})`;
+    const serializedNotes = serializeTenantSettings(baseNotes, { admin_username: adminUsername });
+
     // 1. Insere o Tenant
     const { error: tenantErr } = await supabase.from('tenants').upsert(
       {
@@ -211,12 +218,13 @@ export async function insertTenantIntoSupabase(input: CreateTenantInput, tenantI
         domain: cleanDomain,
         whatsapp: cleanPhone,
         owner_email: input.ownerEmail?.trim() || null,
+        admin_username: adminUsername,
         password_hash: hashPassword(input.password || 'admin123'),
         api_token: 'tok_' + crypto.randomUUID().replace(/-/g, ''),
         plan: input.plan || 'trial_30d',
         subscription_status: input.plan === 'trial_30d' ? 'trial' : 'active',
         subscription_expires_at: expiresAt,
-        notes: `Loja criada via Onboarding (${input.niche || 'Geral'})`,
+        notes: serializedNotes,
         niche: input.niche || 'Geral',
       },
       { onConflict: 'tenant_id' }
@@ -1015,28 +1023,77 @@ export async function deleteCouponInSupabase(tenantId: string, id: string): Prom
 // AUTENTICAÇÃO DO LOJISTA (MERCHANT LOGIN)
 // ============================================================
 
-export async function authenticateMerchantSupabase(tenantId: string, password: string): Promise<LoginResult | null> {
+export async function authenticateMerchantSupabase(
+  tenantId: string,
+  param2: string,
+  param3?: string
+): Promise<LoginResult | null> {
   const supabase = getSupabaseClient();
   if (!supabase) return null;
 
   try {
+    let username: string | undefined;
+    let password = '';
+    if (param3 !== undefined) {
+      username = param2;
+      password = param3;
+    } else {
+      password = param2;
+    }
+
     const hash = hashPassword(password);
-    const { data, error } = await supabase
+    const cleanUser = username?.trim().toLowerCase();
+
+    // 1. Tenta buscar o tenant no Supabase
+    let query = supabase
       .from('tenants')
-      .select('tenant_id, api_token, password_hash')
-      .eq('tenant_id', tenantId)
-      .maybeSingle();
+      .select('tenant_id, slug, api_token, password_hash, admin_username, owner_email, notes');
+
+    if (tenantId && tenantId !== 'loja_exemplo') {
+      query = query.eq('tenant_id', tenantId);
+    } else if (cleanUser) {
+      query = query.or(
+        `admin_username.ilike.${cleanUser},owner_email.ilike.${cleanUser},slug.ilike.${cleanUser},tenant_id.ilike.${cleanUser}`
+      );
+    } else {
+      query = query.eq('tenant_id', 'loja_exemplo');
+    }
+
+    const { data, error } = await query.limit(1).maybeSingle();
 
     if (error || !data) return null;
 
-    if (data.password_hash === hash) {
-      return {
-        authenticated: true,
-        token: data.api_token || `tok_${tenantId}_authenticated`,
-      };
+    // Valida a senha criptografada (hash seguro)
+    if (data.password_hash !== hash) {
+      return null;
     }
 
-    return null;
+    // Se usuário foi fornecido, valida se confere com o cadastrado pelo lojista
+    if (cleanUser) {
+      const extraSettings = extractTenantSettings(data.notes);
+      const storedUser = (data.admin_username || extraSettings?.admin_username || '').toLowerCase();
+      const ownerEmail = (data.owner_email || '').toLowerCase();
+      const slug = (data.slug || '').toLowerCase();
+      const tId = (data.tenant_id || '').toLowerCase();
+
+      const matches =
+        storedUser === cleanUser ||
+        ownerEmail === cleanUser ||
+        slug === cleanUser ||
+        tId === cleanUser ||
+        (data.tenant_id === 'loja_exemplo' && cleanUser === 'admin');
+
+      if (!matches) {
+        return null;
+      }
+    }
+
+    return {
+      authenticated: true,
+      token: data.api_token || `tok_${data.tenant_id}_authenticated`,
+      tenantSlug: data.slug,
+      tenantId: data.tenant_id,
+    };
   } catch (err) {
     console.warn('Erro em authenticateMerchantSupabase:', err);
     return null;

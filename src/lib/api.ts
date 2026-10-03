@@ -146,11 +146,28 @@ export class ApiClient {
   // OPERAÇÕES ADMINISTRATIVAS (POST)
   // ==========================================
 
-  public async login(password: string): Promise<LoginResult> {
+  public async login(
+    usernameOrPassword: string | { username: string; password: string },
+    maybePassword?: string
+  ): Promise<LoginResult> {
+    let username: string | undefined;
+    let password = '';
+
+    if (typeof usernameOrPassword === 'object') {
+      username = usernameOrPassword.username;
+      password = usernameOrPassword.password;
+    } else if (maybePassword !== undefined) {
+      username = usernameOrPassword;
+      password = maybePassword;
+    } else {
+      password = usernameOrPassword;
+    }
+
     return this.request<LoginResult>(this.baseUrl, {
       method: 'POST',
       body: JSON.stringify({
         action: 'login',
+        username,
         password,
       }),
     });

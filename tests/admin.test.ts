@@ -21,9 +21,10 @@ describe('Módulo 2 — Painel Administrativo (/admin)', () => {
   // 1. AUTENTICAÇÃO E SESSÃO
   // ============================================================
   describe('Autenticação do Painel (/admin/login)', () => {
-    it('deve autenticar administrador com senha correta e gerar token de sessão', () => {
+    it('deve autenticar administrador com usuário e senha corretos e gerar token de sessão', () => {
       const res = engine.doPost({
         action: 'login',
+        username: 'admin',
         password: 'admin123',
       });
       expect(res.success).toBe(true);
@@ -31,13 +32,61 @@ describe('Módulo 2 — Painel Administrativo (/admin)', () => {
       expect((res.data as any).token).toBeDefined();
     });
 
+    it('deve rejeitar acesso com usuário incorreto', () => {
+      const res = engine.doPost({
+        action: 'login',
+        username: 'usuario_estranho',
+        password: 'admin123',
+      });
+      expect(res.success).toBe(false);
+      expect(res.error?.code).toBe('INVALID_CREDENTIALS');
+    });
+
     it('deve rejeitar acesso com senha incorreta', () => {
       const res = engine.doPost({
         action: 'login',
+        username: 'admin',
         password: 'senha_incorreta',
       });
       expect(res.success).toBe(false);
       expect(res.error?.code).toBe('INVALID_CREDENTIALS');
+    });
+
+    it('deve permitir autenticação com credenciais customizadas de loja criada pelo lojista', () => {
+      const customEngine = new BackendEngine({
+        store_id: 'loja_boutique',
+        store_name: 'Boutique Flor de Lis',
+        admin_username: 'gerente_flordelis',
+        admin_password_hash: engine.hashPassword('senhaSuperSegura2026'),
+      });
+
+      // Usuário errado
+      const wrongUser = customEngine.doPost({
+        action: 'login',
+        username: 'admin',
+        password: 'senhaSuperSegura2026',
+      });
+      expect(wrongUser.success).toBe(false);
+      expect(wrongUser.error?.code).toBe('INVALID_CREDENTIALS');
+
+      // Senha errada
+      const wrongPass = customEngine.doPost({
+        action: 'login',
+        username: 'gerente_flordelis',
+        password: 'senhaErrada',
+      });
+      expect(wrongPass.success).toBe(false);
+      expect(wrongPass.error?.code).toBe('INVALID_CREDENTIALS');
+
+      // Credenciais corretas escolhidas pelo dono da loja
+      const success = customEngine.doPost({
+        action: 'login',
+        username: 'gerente_flordelis',
+        password: 'senhaSuperSegura2026',
+      });
+      expect(success.success).toBe(true);
+      expect((success.data as any).authenticated).toBe(true);
+      expect((success.data as any).token).toBeDefined();
     });
 
     it('deve bloquear operações administrativas sem token de autorização', () => {

@@ -1,9 +1,10 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
+  User,
   Lock,
   Loader2,
   Store,
@@ -24,6 +25,15 @@ export default function AdminLoginPage() {
   const { login } = useAuth();
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
+  const [tenantSlug, setTenantSlug] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const t = params.get('tenant');
+      if (t) setTenantSlug(t.trim());
+    }
+  }, []);
 
   const {
     register,
@@ -32,6 +42,7 @@ export default function AdminLoginPage() {
   } = useForm<LoginFormData>({
     resolver: zodResolver(LoginSchema),
     defaultValues: {
+      username: '',
       password: '',
     },
   });
@@ -39,13 +50,15 @@ export default function AdminLoginPage() {
   const onSubmit = async (data: LoginFormData) => {
     setErrorMessage(null);
     try {
-      await login(data.password);
+      await login(data.username, data.password);
     } catch (err) {
       setErrorMessage(
-        err instanceof Error ? err.message : 'Falha na autenticação. Verifique a senha.'
+        err instanceof Error ? err.message : 'Falha na autenticação. Verifique seu usuário e senha.'
       );
     }
   };
+
+  const backUrl = tenantSlug ? `/${tenantSlug}` : '/';
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-slate-100 flex items-center justify-center p-4 sm:p-6 py-10 sm:py-16 relative overflow-hidden select-none">
@@ -63,13 +76,13 @@ export default function AdminLoginPage() {
           <div className="space-y-1">
             <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-50 border border-emerald-100/80 text-[11px] font-semibold text-emerald-700 mb-1">
               <Sparkles className="w-3 h-3 text-emerald-600" />
-              <span>Painel do Lojista</span>
+              <span>{tenantSlug ? `Loja: ${tenantSlug}` : 'Painel do Lojista'}</span>
             </div>
             <h1 className="text-2xl font-black text-slate-900 tracking-tight">
               Acesso Administrativo
             </h1>
             <p className="text-xs sm:text-sm text-slate-500 max-w-[280px] mx-auto leading-relaxed">
-              Gerencie seus produtos, estoque, pedidos e personalize a identidade do seu catálogo.
+              Entre com seu usuário e senha escolhidos no cadastro para gerenciar sua loja.
             </p>
           </div>
         </div>
@@ -86,7 +99,43 @@ export default function AdminLoginPage() {
         )}
 
         {/* Formulário de Acesso */}
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          {/* Campo de Usuário */}
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between">
+              <label
+                htmlFor="admin-username"
+                className="block text-xs font-bold uppercase tracking-wider text-slate-700"
+              >
+                Usuário do Lojista
+              </label>
+              <span className="text-[11px] text-slate-400">Login exclusivo</span>
+            </div>
+
+            <div className="relative">
+              <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5">
+                <User className="h-4 w-4 text-slate-400" />
+              </div>
+              <input
+                id="admin-username"
+                type="text"
+                placeholder="Seu usuário de acesso..."
+                autoComplete="username"
+                disabled={isSubmitting}
+                {...register('username')}
+                className="block w-full rounded-2xl border border-slate-200 bg-slate-50/60 pl-10 pr-4 py-3 text-sm text-slate-900 placeholder-slate-400 focus:bg-white focus:border-slate-800 focus:outline-none focus:ring-4 focus:ring-slate-900/5 transition font-mono tracking-wide lowercase"
+              />
+            </div>
+
+            {errors.username && (
+              <p className="mt-1 text-xs text-rose-600 font-semibold flex items-center gap-1">
+                <AlertCircle className="w-3.5 h-3.5 inline" />
+                {errors.username.message}
+              </p>
+            )}
+          </div>
+
+          {/* Campo de Senha */}
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
               <label
@@ -132,7 +181,7 @@ export default function AdminLoginPage() {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full inline-flex items-center justify-center gap-2 rounded-2xl bg-slate-900 py-3.5 px-4 text-xs sm:text-sm font-bold text-white shadow-md shadow-slate-900/10 hover:bg-slate-800 active:scale-[0.98] focus:outline-none focus:ring-4 focus:ring-slate-900/10 transition-all disabled:opacity-60 cursor-pointer"
+            className="w-full inline-flex items-center justify-center gap-2 rounded-2xl bg-slate-900 py-3.5 px-4 text-xs sm:text-sm font-bold text-white shadow-md shadow-slate-900/10 hover:bg-slate-800 active:scale-[0.98] focus:outline-none focus:ring-4 focus:ring-slate-900/10 transition-all disabled:opacity-60 cursor-pointer mt-2"
           >
             {isSubmitting ? (
               <>
@@ -152,11 +201,11 @@ export default function AdminLoginPage() {
         <div className="pt-2 border-t border-slate-100 flex flex-col items-center gap-2.5 text-xs text-slate-400 text-center">
           <div className="flex items-center gap-1.5 text-emerald-700 bg-emerald-50/70 border border-emerald-100/60 px-3 py-1 rounded-full text-[11px] font-medium">
             <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
-            <span>Ambiente seguro e isolado por tenant</span>
+            <span>Ambiente seguro com criptografia de ponta a ponta</span>
           </div>
 
           <a
-            href="/"
+            href={backUrl}
             className="text-slate-500 hover:text-slate-900 font-medium transition inline-flex items-center gap-1 mt-1 hover:underline underline-offset-4"
           >
             &larr; Voltar para a vitrine pública da loja

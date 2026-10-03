@@ -19,7 +19,7 @@ import {
   updateCouponInSupabase,
   deleteCouponInSupabase,
 } from '@/lib/supabase';
-import { updateTenantSubscription, findTenant } from '@/lib/tenantStore';
+import { updateTenantSubscription, findTenant, findTenantByAdminUsername } from '@/lib/tenantStore';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -456,9 +456,22 @@ export async function POST(request: NextRequest) {
     // 1. Tenta operações no Supabase (Banco de Dados Oficial)
     try {
       if (payload.action === 'login') {
-        const loginRes = await authenticateMerchantSupabase(tenantId, payload.password);
+        const password = String(payload.password || '');
+        const username = payload.username ? String(payload.username).trim() : undefined;
+        const loginRes = await authenticateMerchantSupabase(
+          tenantId,
+          username ? username : password,
+          username ? password : undefined
+        );
         if (loginRes) {
-          return NextResponse.json(sanitizeStoreResponse({ success: true, data: loginRes, error: null }, tenant));
+          const resp = NextResponse.json(
+            sanitizeStoreResponse({ success: true, data: loginRes, error: null }, tenant),
+            { headers: NO_CACHE_HEADERS }
+          );
+          if (loginRes.tenantSlug) {
+            resp.cookies.set('app_tenant', loginRes.tenantSlug, { path: '/', maxAge: 60 * 60 * 24 * 30 });
+          }
+          return resp;
         }
       } else if (payload.action === 'saveConfig') {
         try {
@@ -685,8 +698,22 @@ export async function POST(request: NextRequest) {
     }
 
     // 3. Fallback para engine local integrado
-    const localResult = getLocalEngine(tenantId).doPost(payload);
-    return NextResponse.json(sanitizeStoreResponse(localResult, tenant), { headers: NO_CACHE_HEADERS });
+    let effectiveTenantId = tenantId;
+    if (payload.action === 'login' && payload.username && (tenantId === 'loja_exemplo' || !tenantId)) {
+      const found = findTenantByAdminUsername(String(payload.username));
+      if (found) {
+        effectiveTenantId = found.tenantId;
+      }
+    }
+    const localResult = getLocalEngine(effectiveTenantId).doPost(payload);
+    const resp = NextResponse.json(sanitizeStoreResponse(localResult, tenant), { headers: NO_CACHE_HEADERS });
+    if (localResult.success && payload.action === 'login') {
+      const found = findTenant(effectiveTenantId);
+      if (found?.slug) {
+        resp.cookies.set('app_tenant', found.slug, { path: '/', maxAge: 60 * 60 * 24 * 30 });
+      }
+    }
+    return resp;
   } catch (err) {
     return NextResponse.json(
       {

@@ -16,6 +16,10 @@ import {
   Zap,
   Globe,
   CreditCard,
+  User,
+  Eye,
+  EyeOff,
+  Key,
 } from 'lucide-react';
 import type { SubscriptionPlan } from '@/types';
 
@@ -41,9 +45,13 @@ export default function CriarLojaPage() {
   const [storeName, setStoreName] = useState('');
   const [slug, setSlug] = useState('');
   const [whatsapp, setWhatsapp] = useState('');
+  const [adminUsername, setAdminUsername] = useState('');
   const [ownerEmail, setOwnerEmail] = useState('');
   const [cpfCnpj, setCpfCnpj] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [savedPassword, setSavedPassword] = useState('');
+  const [showCreatedPassword, setShowCreatedPassword] = useState(false);
   const [niche, setNiche] = useState(NICHES[0]);
   const [plan, setPlan] = useState<SubscriptionPlan>('trial_30d');
   const [selectedColor, setSelectedColor] = useState(COLOR_PRESETS[0]!);
@@ -86,7 +94,11 @@ export default function CriarLojaPage() {
       .replace(/[\u0300-\u036f]/g, '')
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/^-+|-+$/g, '');
+    const previousSuggested = slug.replace(/-/g, '_');
     setSlug(autoSlug);
+    if (!adminUsername || adminUsername === previousSuggested) {
+      setAdminUsername(autoSlug.replace(/-/g, '_'));
+    }
   };
 
   // Formata telefone (WhatsApp) com máscara brasileira
@@ -122,6 +134,12 @@ export default function CriarLojaPage() {
       return;
     }
 
+    const cleanUser = adminUsername.trim().toLowerCase().replace(/[^a-z0-9_]/g, '');
+    if (!cleanUser || cleanUser.length < 3) {
+      setError('Por favor, defina um usuário de acesso ao painel com pelo menos 3 caracteres (letras, números ou underline).');
+      return;
+    }
+
     if (!password || password.length < 6) {
       setError('A senha do painel admin deve ter pelo menos 6 caracteres.');
       return;
@@ -142,6 +160,7 @@ export default function CriarLojaPage() {
           name: storeName,
           slug,
           whatsapp: cleanPhone,
+          adminUsername: cleanUser,
           ownerEmail,
           cpfCnpj,
           password,
@@ -179,6 +198,7 @@ export default function CriarLojaPage() {
         }
       }
 
+      setSavedPassword(password);
       setCreatedData({
         ...json.data,
         asaasPaymentUrl: asaasUrl,
@@ -313,7 +333,7 @@ export default function CriarLojaPage() {
                 </div>
               </div>
 
-              {/* Seção 2: Contato e Senha Admin */}
+              {/* Seção 2: Contato e Acesso Administrativo */}
               <div className="space-y-4 pt-4 border-t border-slate-100">
                 <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
                   <Lock className="w-4 h-4 text-slate-600" />
@@ -341,30 +361,68 @@ export default function CriarLojaPage() {
 
                   <div>
                     <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                      Senha do Painel Admin *
+                      E-mail do Responsável (Opcional)
                     </label>
                     <input
-                      type="password"
-                      required
-                      placeholder="Mínimo 6 caracteres"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
+                      type="email"
+                      placeholder="seuemail@exemplo.com"
+                      value={ownerEmail}
+                      onChange={(e) => setOwnerEmail(e.target.value)}
                       className="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition-all"
                     />
                   </div>
                 </div>
 
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                    E-mail do Responsável (Opcional)
-                  </label>
-                  <input
-                    type="email"
-                    placeholder="seuemail@exemplo.com"
-                    value={ownerEmail}
-                    onChange={(e) => setOwnerEmail(e.target.value)}
-                    className="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition-all"
-                  />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1.5 flex items-center justify-between">
+                      <span>Usuário do Painel Admin *</span>
+                      <span className="text-[10px] text-slate-400 font-normal">Login exclusivo</span>
+                    </label>
+                    <div className="relative">
+                      <User className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
+                      <input
+                        type="text"
+                        required
+                        placeholder="Ex: lojista ou seu_usuario"
+                        value={adminUsername}
+                        onChange={(e) => setAdminUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''))}
+                        className="w-full pl-10 pr-3.5 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition-all font-mono lowercase"
+                      />
+                    </div>
+                    <p className="text-[10px] text-slate-400 mt-1">
+                      Você usará este usuário para entrar na administração da loja.
+                    </p>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1.5 flex items-center justify-between">
+                      <span>Senha do Painel Admin *</span>
+                      <span className="text-[10px] text-slate-400 font-normal">Mín. 6 caracteres</span>
+                    </label>
+                    <div className="relative">
+                      <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
+                      <input
+                        type={showPassword ? 'text' : 'password'}
+                        required
+                        placeholder="Crie sua senha segura"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        className="w-full pl-10 pr-10 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition-all font-mono"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3 top-3 text-slate-400 hover:text-slate-600 transition cursor-pointer"
+                        title={showPassword ? 'Ocultar senha' : 'Exibir senha'}
+                      >
+                        {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      </button>
+                    </div>
+                    <p className="text-[10px] text-slate-400 mt-1">
+                      Armazenada com criptografia de hash seguro no banco de dados.
+                    </p>
+                  </div>
                 </div>
               </div>
 
@@ -635,6 +693,67 @@ export default function CriarLojaPage() {
                     <ExternalLink className="w-4 h-4" />
                   </a>
                 </div>
+              </div>
+
+              {/* Credenciais de Acesso Exclusivas do Lojista */}
+              <div className="p-4 bg-emerald-50/80 border border-emerald-200/90 rounded-xl space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-emerald-900 uppercase tracking-wider flex items-center gap-1.5">
+                    <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                    Suas Credenciais de Acesso ao Painel Admin
+                  </span>
+                  <span className="text-[10px] text-emerald-700 bg-emerald-100 font-semibold px-2 py-0.5 rounded-full">
+                    Anotação Importante
+                  </span>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                  <div className="bg-white p-3 rounded-lg border border-emerald-200/80 flex items-center justify-between">
+                    <div>
+                      <span className="text-[10px] text-slate-400 block font-medium">Usuário:</span>
+                      <span className="font-mono font-bold text-slate-800 text-sm">
+                        {adminUsername || createdData.tenant.slug}
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => handleCopy(adminUsername || createdData.tenant.slug, 'user_cred')}
+                      className="p-1.5 text-slate-400 hover:text-slate-700 transition cursor-pointer"
+                      title="Copiar usuário"
+                    >
+                      {copiedLink === 'user_cred' ? <CheckCircle2 className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4" />}
+                    </button>
+                  </div>
+
+                  <div className="bg-white p-3 rounded-lg border border-emerald-200/80 flex items-center justify-between">
+                    <div>
+                      <span className="text-[10px] text-slate-400 block font-medium">Senha:</span>
+                      <span className="font-mono font-bold text-slate-800 text-sm">
+                        {showCreatedPassword ? savedPassword || '••••••••' : '••••••••'}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <button
+                        type="button"
+                        onClick={() => setShowCreatedPassword(!showCreatedPassword)}
+                        className="p-1.5 text-slate-400 hover:text-slate-700 transition cursor-pointer"
+                        title={showCreatedPassword ? 'Ocultar senha' : 'Exibir senha'}
+                      >
+                        {showCreatedPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleCopy(savedPassword, 'pass_cred')}
+                        className="p-1.5 text-slate-400 hover:text-slate-700 transition cursor-pointer"
+                        title="Copiar senha"
+                      >
+                        {copiedLink === 'pass_cred' ? <CheckCircle2 className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4" />}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                <p className="text-[11px] text-slate-600 leading-relaxed">
+                  Guarde estas credenciais em local seguro. Por motivos de segurança, a senha é protegida por hash criptográfico e jamais será exposta no catálogo público.
+                </p>
               </div>
 
               {/* Fatura Asaas (se plano mensal) */}

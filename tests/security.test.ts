@@ -161,11 +161,12 @@ describe('MÓDULO DE SEGURANÇA — TESTES DE BLINDAGEM E AUDITORIA', () => {
       expect((resGood.data as { whatsapp: string }).whatsapp).toBe('5511988887777');
     });
 
-    it('NUNCA permite alteração de chaves protegidas (store_id, api_token, admin_password_hash)', () => {
+    it('NUNCA permite alteração de chaves protegidas (store_id, api_token, admin_password_hash, admin_username)', () => {
       const forbiddenAttempts = [
         { store_id: 'loja_trocada' },
         { api_token: 'token_hacker' },
         { admin_password_hash: 'hash_trocado' },
+        { admin_username: 'novo_hacker_admin' },
       ];
 
       for (const attempt of forbiddenAttempts) {
@@ -184,18 +185,22 @@ describe('MÓDULO DE SEGURANÇA — TESTES DE BLINDAGEM E AUDITORIA', () => {
   // 4. PREVENÇÃO DE VAZAMENTO DE SEGREDOS
   // ============================================================
   describe('Vazamento de Segredos e Privacidade (SEC-04)', () => {
-    it('Respostas públicas de store e all NUNCA incluem hashes ou tokens', () => {
-      const engine = new BackendEngine();
+    it('Respostas públicas de store e all NUNCA incluem hashes, tokens ou usuário administrativo', () => {
+      const engine = new BackendEngine({
+        admin_username: 'gerente_secreto',
+      });
 
       const storeRes = engine.doGet({ action: 'store' });
       const storeData = storeRes.data as Record<string, unknown>;
       expect(storeData['admin_password_hash']).toBeUndefined();
       expect(storeData['api_token']).toBeUndefined();
+      expect(storeData['admin_username']).toBeUndefined();
 
       const allRes = engine.doGet({ action: 'all' });
       const allData = allRes.data as { store: Record<string, unknown> };
       expect(allData.store['admin_password_hash']).toBeUndefined();
       expect(allData.store['api_token']).toBeUndefined();
+      expect(allData.store['admin_username']).toBeUndefined();
     });
   });
 });
