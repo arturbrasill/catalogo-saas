@@ -45,6 +45,7 @@ export interface StoreConfig {
   subscription_plan?: SubscriptionPlan;
   pending_payment?: boolean;
   asaas_payment_link?: string;
+  cpf_cnpj?: string;
 }
 
 /**
@@ -257,6 +258,7 @@ export interface Tenant {
   spreadsheetUrl?: string;
   notes?: string;
   niche?: string;
+  cpfCnpj?: string;
   // Campos de Integração com Asaas
   asaasCustomerId?: string;
   asaasSubscriptionId?: string;
@@ -318,6 +320,7 @@ export interface UpdateSubscriptionInput {
   announcement_text?: string;
   announcement_bg_color?: string;
   announcement_text_color?: string;
+  cpfCnpj?: string;
 }
 
 export interface AsaasCustomerInput {
@@ -459,6 +462,7 @@ export interface SaveConfigInput {
   announcement_text?: string;
   announcement_bg_color?: string;
   announcement_text_color?: string;
+  cpf_cnpj?: string;
 }
 
 export interface CatalogInitialData {

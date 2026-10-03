@@ -59,6 +59,7 @@ export interface TenantStoreSettings {
   announcement_text?: string;
   announcement_bg_color?: string;
   announcement_text_color?: string;
+  cpf_cnpj?: string;
 }
 
 const SETTINGS_TAG_REGEX = /<!--STORE_SETTINGS:(.+?)-->/;
@@ -205,6 +206,7 @@ export async function fetchTenantFromSupabase(identifier: string): Promise<Tenan
       announcement_text: extraSettings?.announcement_text,
       announcement_bg_color: extraSettings?.announcement_bg_color,
       announcement_text_color: extraSettings?.announcement_text_color,
+      cpfCnpj: extraSettings?.cpf_cnpj || data.cpf_cnpj || undefined,
     };
   } catch (err) {
     console.warn('Erro em fetchTenantFromSupabase:', err);
@@ -224,7 +226,10 @@ export async function insertTenantIntoSupabase(input: CreateTenantInput, tenantI
 
     const adminUsername = (input.adminUsername || input.ownerEmail?.split('@')[0] || slug).trim().toLowerCase();
     const baseNotes = `Loja criada via Onboarding (${input.niche || 'Geral'})`;
-    const serializedNotes = serializeTenantSettings(baseNotes, { admin_username: adminUsername });
+    const serializedNotes = serializeTenantSettings(baseNotes, {
+      admin_username: adminUsername,
+      cpf_cnpj: input.cpfCnpj ? input.cpfCnpj.trim() : undefined,
+    });
 
     // 1. Insere o Tenant
     let { error: tenantErr } = await supabase.from('tenants').upsert(
@@ -362,6 +367,12 @@ export async function updateTenantInSupabase(input: UpdateSubscriptionInput): Pr
       updatePayload['admin_username'] = cleanUser;
     }
 
+    if (input.cpfCnpj !== undefined) {
+      const cleanDoc = input.cpfCnpj ? input.cpfCnpj.trim() : '';
+      const currentNotes = updatePayload['notes'] !== undefined ? updatePayload['notes'] : (input.notes || '');
+      updatePayload['notes'] = serializeTenantSettings(currentNotes, { cpf_cnpj: cleanDoc });
+    }
+
     let { error } = await supabase
       .from('tenants')
       .update(updatePayload)
@@ -492,6 +503,7 @@ export async function fetchStoreConfigFromSupabase(tenantId: string): Promise<St
           : extraFromNotes?.announcement_text_color !== undefined
           ? String(extraFromNotes.announcement_text_color)
           : undefined,
+      cpf_cnpj: (data.cpf_cnpj as any) || extraFromNotes?.cpf_cnpj || undefined,
     };
   } catch (err) {
     console.warn('Erro em fetchStoreConfigFromSupabase:', err);

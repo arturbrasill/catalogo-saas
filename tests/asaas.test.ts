@@ -588,5 +588,67 @@ describe('Integração Asaas — Gateway de Pagamentos e Assinaturas', () => {
       expect(customer.id).toBe('cus_recuperado_123');
       expect(mockFetch).toHaveBeenCalledTimes(2);
     });
+
+    it('deve cadastrar e persistir CPF/CNPJ da loja no registerTenant e utilizá-lo no checkout do Asaas', async () => {
+      const { POST: handleCheckout } = await import('../src/app/api/asaas/checkout/route');
+
+      const lojaDocTenantId = 'loja_com_documento_cpf';
+      await registerTenant({
+        slug: lojaDocTenantId,
+        name: 'Loja com Documento',
+        plan: 'trial_30d',
+        ownerEmail: 'doc@loja.com',
+        whatsapp: '5511977776666',
+        cpfCnpj: '529.982.247-25',
+      });
+
+      const tenant = findTenant(lojaDocTenantId);
+      expect(tenant?.cpfCnpj).toBe('529.982.247-25');
+
+      // Checkout sem passar CPF no body deve herdar o CPF salvo na loja
+      const reqInherit = new NextRequest('http://localhost:3000/api/asaas/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          tenantId: lojaDocTenantId,
+          plan: 'monthly',
+        }),
+      });
+
+      const resInherit = await handleCheckout(reqInherit);
+      expect(resInherit.status).toBe(200);
+      const dataInherit = await resInherit.json();
+      expect(dataInherit.success).toBe(true);
+      expect(dataInherit.data.invoiceUrl).toBeDefined();
+    });
+
+    it('deve atualizar e salvar o CPF/CNPJ no cadastro da loja quando fornecido durante o checkout', async () => {
+      const { POST: handleCheckout } = await import('../src/app/api/asaas/checkout/route');
+
+      const lojaSemDoc = 'loja_sem_documento_inicial';
+      await registerTenant({
+        slug: lojaSemDoc,
+        name: 'Loja Sem Doc Inicial',
+        plan: 'trial_30d',
+        ownerEmail: 'semdoc@loja.com',
+        whatsapp: '5511966665555',
+      });
+
+      const reqAddDoc = new NextRequest('http://localhost:3000/api/asaas/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          tenantId: lojaSemDoc,
+          cpfCnpj: '00.000.000/0001-91',
+          plan: 'monthly',
+        }),
+      });
+
+      const resAddDoc = await handleCheckout(reqAddDoc);
+      expect(resAddDoc.status).toBe(200);
+
+      const updatedTenant = findTenant(lojaSemDoc);
+      expect(updatedTenant?.cpfCnpj).toBe('00.000.000/0001-91');
+    });
   });
 });

@@ -54,12 +54,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const effectiveCpfCnpj = (cpfCnpj || tenant.cpfCnpj)?.replace(/\D/g, '');
+
     // 1. Cadastra ou recupera cliente no Asaas
     const customer = await createOrGetAsaasCustomer({
       name: tenant.name || tenant.tenantId,
       email: tenant.ownerEmail,
       mobilePhone: tenant.whatsapp,
-      cpfCnpj: cpfCnpj?.replace(/\D/g, ''),
+      cpfCnpj: effectiveCpfCnpj,
       externalReference: tenant.tenantId,
     });
 
@@ -108,6 +110,7 @@ export async function POST(request: NextRequest) {
       asaasCustomerId: customer.id,
       asaasSubscriptionId: subscription.id,
       asaasPaymentLink: subscription.invoiceUrl,
+      cpfCnpj: cpfCnpj || tenant.cpfCnpj,
       plan: isYearly ? 'yearly' : 'monthly',
     });
 

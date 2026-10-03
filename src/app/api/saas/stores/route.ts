@@ -96,6 +96,7 @@ export async function POST(request: NextRequest) {
       backgroundColor: body.backgroundColor || '#f8fafc',
       textColor: body.textColor || '#0f172a',
       niche: body.niche || 'Geral',
+      cpfCnpj: body.cpfCnpj ? String(body.cpfCnpj).trim() : undefined,
     };
 
     // Auto-provisiona a loja e seu catálogo digital

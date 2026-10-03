@@ -295,6 +295,16 @@ export default function SaasAdminPage() {
   // Gera cobrança via Asaas (R$ 79,90) com link de fatura
   const handleGenerateAsaasPayment = async (store: Tenant) => {
     try {
+      let docToUse = store.cpfCnpj;
+      if (!docToUse) {
+        const promptDoc = prompt(`A loja "${store.name}" não possui CPF/CNPJ cadastrado. Informe o CPF ou CNPJ para emissão da fatura no Asaas:`);
+        if (!promptDoc || !promptDoc.trim()) {
+          showFeedback('Operação cancelada: CPF ou CNPJ obrigatório para o Asaas.', 'error');
+          return;
+        }
+        docToUse = promptDoc.trim();
+      }
+
       showFeedback(`Gerando fatura Asaas (R$ 79,90) para "${store.name}"...`);
       const res = await fetch('/api/asaas/checkout', {
         method: 'POST',
@@ -302,6 +312,7 @@ export default function SaasAdminPage() {
         body: JSON.stringify({
           tenantId: store.tenantId,
           slug: store.slug,
+          cpfCnpj: docToUse,
           plan: store.plan === 'yearly' ? 'yearly' : 'monthly',
         }),
       });

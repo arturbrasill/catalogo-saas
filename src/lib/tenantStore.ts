@@ -127,6 +127,7 @@ export async function syncTenantsFromRemote(): Promise<boolean> {
             asaasCustomerId: t.asaasCustomerId,
             asaasSubscriptionId: t.asaasSubscriptionId,
             asaasPaymentLink: t.asaasPaymentLink,
+            cpfCnpj: t.cpfCnpj || (t as any).cpf_cnpj || undefined,
           };
           newRegistry[domain] = tenantObj;
           if (t.slug) newRegistry[t.slug] = tenantObj;
@@ -422,6 +423,7 @@ export async function findTenantAsync(identifier: string): Promise<Tenant | null
         announcement_text: supabaseTenant.announcement_text,
         announcement_bg_color: supabaseTenant.announcement_bg_color,
         announcement_text_color: supabaseTenant.announcement_text_color,
+        cpfCnpj: supabaseTenant.cpfCnpj,
       };
 
       // Hidrata memória da instância atual
@@ -587,6 +589,7 @@ export async function registerTenant(input: CreateTenantInput): Promise<{
     spreadsheetId: generatedSheetId,
     spreadsheetUrl,
     niche: input.niche || 'Geral',
+    cpfCnpj: input.cpfCnpj ? input.cpfCnpj.trim() : undefined,
     notes: `Loja criada automaticamente via Onboarding (${input.niche || 'Geral'})`,
   };
 
@@ -663,6 +666,9 @@ export function updateTenantSubscription(input: UpdateSubscriptionInput): Tenant
   if (input.announcement_text !== undefined) tenant.announcement_text = input.announcement_text;
   if (input.announcement_bg_color !== undefined) tenant.announcement_bg_color = input.announcement_bg_color;
   if (input.announcement_text_color !== undefined) tenant.announcement_text_color = input.announcement_text_color;
+  if (input.cpfCnpj !== undefined) {
+    tenant.cpfCnpj = input.cpfCnpj ? input.cpfCnpj.trim() : undefined;
+  }
 
   if (input.adminUsername !== undefined) {
     tenant.adminUsername = input.adminUsername.trim().toLowerCase();
@@ -676,6 +682,7 @@ export function updateTenantSubscription(input: UpdateSubscriptionInput): Tenant
   if (input.announcement_text !== undefined) settingsUpdate.announcement_text = input.announcement_text;
   if (input.announcement_bg_color !== undefined) settingsUpdate.announcement_bg_color = input.announcement_bg_color;
   if (input.announcement_text_color !== undefined) settingsUpdate.announcement_text_color = input.announcement_text_color;
+  if (input.cpfCnpj !== undefined) settingsUpdate.cpf_cnpj = tenant.cpfCnpj;
 
   if (Object.keys(settingsUpdate).length > 0) {
     tenant.notes = serializeTenantSettings(tenant.notes, settingsUpdate);

@@ -4,6 +4,8 @@ import {
   unmaskCurrency,
   maskWhatsApp,
   normalizeWhatsAppToApi,
+  maskCpfCnpj,
+  validateCpfCnpj,
 } from '@/lib/masks';
 
 describe('Mask Utilities', () => {
@@ -71,6 +73,39 @@ describe('Mask Utilities', () => {
     it('deve retornar vazio se não houver dígitos', () => {
       expect(normalizeWhatsAppToApi('')).toBe('');
       expect(normalizeWhatsAppToApi('abc')).toBe('');
+    });
+  });
+
+  describe('maskCpfCnpj', () => {
+    it('deve aplicar máscara de CPF para até 11 dígitos', () => {
+      expect(maskCpfCnpj('12345678909')).toBe('123.456.789-09');
+      expect(maskCpfCnpj('123')).toBe('123');
+      expect(maskCpfCnpj('1234')).toBe('123.4');
+      expect(maskCpfCnpj('1234567')).toBe('123.456.7');
+    });
+
+    it('deve aplicar máscara de CNPJ para 14 dígitos', () => {
+      expect(maskCpfCnpj('12345678000195')).toBe('12.345.678/0001-95');
+    });
+
+    it('deve retornar vazio para entrada vazia', () => {
+      expect(maskCpfCnpj('')).toBe('');
+    });
+  });
+
+  describe('validateCpfCnpj', () => {
+    it('deve validar CPF com dígitos verificadores corretos', () => {
+      // CPF gerado válido matematicamente: 52998224725
+      expect(validateCpfCnpj('529.982.247-25')).toBe(true);
+      expect(validateCpfCnpj('11111111111')).toBe(false);
+      expect(validateCpfCnpj('12345678900')).toBe(false);
+    });
+
+    it('deve validar CNPJ com dígitos verificadores corretos', () => {
+      // CNPJ Banco do Brasil: 00.000.000/0001-91
+      expect(validateCpfCnpj('00.000.000/0001-91')).toBe(true);
+      expect(validateCpfCnpj('00000000000000')).toBe(false);
+      expect(validateCpfCnpj('12345678000100')).toBe(false);
     });
   });
 });

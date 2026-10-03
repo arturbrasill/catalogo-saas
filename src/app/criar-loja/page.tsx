@@ -22,6 +22,7 @@ import {
   Key,
 } from 'lucide-react';
 import type { SubscriptionPlan } from '@/types';
+import { maskCpfCnpj, validateCpfCnpj } from '@/lib/masks';
 
 const COLOR_PRESETS = [
   { name: 'Esmeralda', primary: '#10b981', secondary: '#047857', bg: '#f8fafc' },
@@ -142,6 +143,12 @@ export default function CriarLojaPage() {
 
     if (!password || password.length < 6) {
       setError('A senha do painel admin deve ter pelo menos 6 caracteres.');
+      return;
+    }
+
+    const cleanDoc = cpfCnpj.replace(/\D/g, '');
+    if (cleanDoc.length > 0 && !validateCpfCnpj(cpfCnpj)) {
+      setError('Por favor, informe um CPF (11 dígitos) ou CNPJ (14 dígitos) com dígitos verificadores válidos para o Asaas.');
       return;
     }
 
@@ -551,24 +558,52 @@ export default function CriarLojaPage() {
                   </label>
                 </div>
 
-                {/* Campo de CPF/CNPJ caso escolha mensal com Asaas */}
-                {plan === 'monthly' && (
-                  <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-xl space-y-1.5 animate-in fade-in">
-                    <label className="block text-xs font-semibold text-slate-700">
-                      CPF ou CNPJ para emissão da Fatura Asaas
+                {/* Campo de CPF/CNPJ para Faturamento Asaas (Sempre Visível) */}
+                <div className="p-4 bg-slate-50 border border-slate-200/90 rounded-2xl space-y-2">
+                  <div className="flex items-center justify-between">
+                    <label className="block text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                      <CreditCard className="w-3.5 h-3.5 text-emerald-600" />
+                      <span>CPF ou CNPJ do Titular (Cobrança Asaas)</span>
+                      <span className="text-emerald-600 font-semibold">*</span>
                     </label>
+                    {cpfCnpj && validateCpfCnpj(cpfCnpj) ? (
+                      <span className="text-[11px] font-bold text-emerald-700 bg-emerald-100/90 px-2 py-0.5 rounded-full flex items-center gap-1">
+                        <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                        Válido
+                      </span>
+                    ) : cpfCnpj && !validateCpfCnpj(cpfCnpj) && (cpfCnpj.replace(/\D/g, '').length === 11 || cpfCnpj.replace(/\D/g, '').length === 14) ? (
+                      <span className="text-[10px] font-semibold text-rose-600 bg-rose-50 px-2 py-0.5 rounded-full">
+                        Dígitos inválidos
+                      </span>
+                    ) : null}
+                  </div>
+
+                  <div className="relative">
                     <input
                       type="text"
+                      required
                       placeholder="000.000.000-00 ou 00.000.000/0000-00"
                       value={cpfCnpj}
-                      onChange={(e) => setCpfCnpj(e.target.value)}
-                      className="w-full px-3.5 py-2 text-xs sm:text-sm bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 font-mono"
+                      onChange={(e) => setCpfCnpj(maskCpfCnpj(e.target.value))}
+                      className={`w-full px-3.5 py-2.5 text-xs sm:text-sm bg-white border rounded-xl focus:outline-none focus:ring-2 font-mono transition-all ${
+                        cpfCnpj && !validateCpfCnpj(cpfCnpj) && (cpfCnpj.replace(/\D/g, '').length === 11 || cpfCnpj.replace(/\D/g, '').length === 14)
+                          ? 'border-rose-400 focus:ring-rose-500'
+                          : cpfCnpj && validateCpfCnpj(cpfCnpj)
+                          ? 'border-emerald-500 focus:ring-emerald-500'
+                          : 'border-slate-200 focus:ring-emerald-500'
+                      }`}
                     />
-                    <p className="text-[10px] text-slate-400">
-                      Utilizado exclusivamente para gerar o QR Code Pix e fatura segura no Asaas.
-                    </p>
                   </div>
-                )}
+
+                  <p className="text-[11px] text-slate-500 leading-relaxed flex items-start gap-1.5">
+                    <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
+                    <span>
+                      {plan === 'monthly'
+                        ? 'Exigência do Banco Central e do Asaas para emissão da sua fatura recorrente via PIX, Cartão ou Boleto.'
+                        : 'Seus 7 dias continuam 100% gratuitos. O documento é uma exigência do Banco Central e do Asaas para liberar a emissão das faturas após o período de teste.'}
+                    </span>
+                  </p>
+                </div>
               </div>
 
               {/* Botão de Submissão com Estado de Loading */}

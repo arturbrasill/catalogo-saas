@@ -19,7 +19,7 @@ import {
   updateCouponInSupabase,
   deleteCouponInSupabase,
 } from '@/lib/supabase';
-import { updateTenantSubscription, findTenant, findTenantByAdminUsername } from '@/lib/tenantStore';
+import { updateTenantSubscription, updateTenantSubscriptionAsync, findTenant, findTenantByAdminUsername } from '@/lib/tenantStore';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -209,6 +209,9 @@ function sanitizeStoreResponse<T>(data: T, tenant?: Tenant | null): T {
             }
             if (!storeObj['announcement_text_color'] && tenant.announcement_text_color) {
               storeObj['announcement_text_color'] = tenant.announcement_text_color;
+            }
+            if (!storeObj['cpf_cnpj'] && tenant.cpfCnpj) {
+              storeObj['cpf_cnpj'] = tenant.cpfCnpj;
             }
           }
           if (storeObj['announcement_enabled'] !== undefined && storeObj['announcement_enabled'] !== null) {
@@ -488,6 +491,16 @@ export async function POST(request: NextRequest) {
         try {
           getLocalEngine(tenantId).handleSaveConfig(payload.config);
         } catch {}
+        if (payload.config && payload.config.cpf_cnpj !== undefined) {
+          try {
+            await updateTenantSubscriptionAsync({
+              tenantId,
+              cpfCnpj: String(payload.config.cpf_cnpj).trim(),
+            });
+          } catch (err) {
+            console.warn('Erro ao sincronizar cpf_cnpj do tenant:', err);
+          }
+        }
         const saved = await saveStoreConfigInSupabase(tenantId, payload.config);
         if (saved) {
           if (apiUrl) {

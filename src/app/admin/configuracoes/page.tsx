@@ -5,7 +5,7 @@ import { AdminLayout } from '@/components/admin/AdminLayout';
 import { api } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
 import { imageUploadService } from '@/lib/imageUploadService';
-import { maskWhatsApp, normalizeWhatsAppToApi } from '@/lib/masks';
+import { maskWhatsApp, normalizeWhatsAppToApi, maskCpfCnpj, validateCpfCnpj } from '@/lib/masks';
 import { THEME_PRESET_LIST, applyThemeToDocument } from '@/lib/themePresets';
 import type { StoreConfig, ThemePreset, CatalogLayoutMode } from '@/types';
 import {
@@ -166,6 +166,7 @@ export default function AdminConfiguracoesPage() {
   );
   const [announcementBgColor, setAnnouncementBgColor] = useState('#0f172a');
   const [announcementTextColor, setAnnouncementTextColor] = useState('#ffffff');
+  const [cpfCnpj, setCpfCnpj] = useState('');
 
   const loadConfig = async () => {
     setIsLoading(true);
@@ -204,6 +205,7 @@ export default function AdminConfiguracoesPage() {
       );
       setAnnouncementBgColor(String(data.announcement_bg_color ?? '#0f172a'));
       setAnnouncementTextColor(String(data.announcement_text_color ?? '#ffffff'));
+      setCpfCnpj(data.cpf_cnpj ? maskCpfCnpj(String(data.cpf_cnpj)) : '');
     } catch (err) {
       setErrorMessage(err instanceof Error ? err.message : 'Erro ao carregar configurações.');
     } finally {
@@ -232,11 +234,23 @@ export default function AdminConfiguracoesPage() {
             document.cookie.match(/(?:^|;\s*)app_tenant=([^;]+)/)?.[1]
           : null);
 
+      let effectiveDoc = cpfCnpj.trim() || String(rawStore?.cpf_cnpj || '').trim();
+      if (!effectiveDoc) {
+        const promptDoc = prompt('Para gerar a fatura no Asaas, é obrigatório informar o CPF ou CNPJ do titular:');
+        if (!promptDoc || !promptDoc.trim()) {
+          setIsGeneratingInvoice(false);
+          return;
+        }
+        effectiveDoc = promptDoc.trim();
+        setCpfCnpj(maskCpfCnpj(effectiveDoc));
+      }
+
       const res = await fetch('/api/asaas/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           tenantId: resolvedTenant,
+          cpfCnpj: effectiveDoc,
           plan: 'monthly',
         }),
       });
@@ -412,6 +426,7 @@ export default function AdminConfiguracoesPage() {
           announcement_text: announcementText.trim(),
           announcement_bg_color: announcementBgColor.trim(),
           announcement_text_color: announcementTextColor.trim(),
+          cpf_cnpj: cpfCnpj.trim() || undefined,
         },
         token,
         currentStoreId || undefined
@@ -1367,6 +1382,33 @@ export default function AdminConfiguracoesPage() {
                       />
                     </div>
 
+                    {/* CPF ou CNPJ para Faturamento Asaas */}
+                    <div className="pt-3 border-t border-slate-100">
+                      <div className="flex items-center justify-between mb-1.5">
+                        <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
+                          <CreditCard className="w-4 h-4 text-emerald-600" />
+                          <span>CPF ou CNPJ do Titular (Cobrança Asaas)</span>
+                        </label>
+                        {cpfCnpj && validateCpfCnpj(cpfCnpj) ? (
+                          <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full flex items-center gap-1">
+                            <Check className="w-3 h-3 text-emerald-600" />
+                            Válido
+                          </span>
+                        ) : null}
+                      </div>
+                      <input
+                        type="text"
+                        value={cpfCnpj}
+                        onChange={(e) => setCpfCnpj(maskCpfCnpj(e.target.value))}
+                        placeholder="000.000.000-00 ou 00.000.000/0000-00"
+                        maxLength={18}
+                        className="w-full rounded-2xl border border-slate-200 px-3.5 py-2.5 text-xs sm:text-sm font-semibold text-slate-900 focus:border-slate-800 focus:outline-none focus:ring-4 focus:ring-slate-900/5 font-mono"
+                      />
+                      <p className="text-[11px] text-slate-400 mt-1">
+                        Utilizado pelo gateway Asaas para emissão de faturas e QR Code Pix oficial de R$ 79,90/mês.
+                      </p>
+                    </div>
+
                     {/* Domínio Customizado */}
                     <div className="pt-3 border-t border-slate-100">
                       <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5 flex items-center gap-1.5">
@@ -1539,6 +1581,50 @@ export default function AdminConfiguracoesPage() {
                         </span>
                         <span className="text-[11px] text-slate-500 block">Fatura Asaas</span>
                       </div>
+                    </div>
+
+                    {/* Card de Documento de Cobrança (CPF/CNPJ) */}
+                    <div className="p-4 sm:p-5 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-2.5">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5">
+                        <label className="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
+                          <CreditCard className="w-4 h-4 text-emerald-600" />
+                          <span>CPF ou CNPJ para Faturamento Asaas</span>
+                        </label>
+                        {cpfCnpj && validateCpfCnpj(cpfCnpj) ? (
+                          <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2.5 py-0.5 rounded-full inline-flex items-center gap-1 w-fit">
+                            <Check className="w-3 h-3 text-emerald-600" />
+                            Documento Válido
+                          </span>
+                        ) : !cpfCnpj ? (
+                          <span className="text-[10px] font-bold text-amber-700 bg-amber-100 px-2.5 py-0.5 rounded-full w-fit">
+                            Obrigatório para emissão de faturas
+                          </span>
+                        ) : (
+                          <span className="text-[10px] font-semibold text-rose-600 bg-rose-50 px-2 py-0.5 rounded-full w-fit">
+                            Dígitos verificadores incorretos
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex flex-col sm:flex-row gap-2.5">
+                        <input
+                          type="text"
+                          value={cpfCnpj}
+                          onChange={(e) => setCpfCnpj(maskCpfCnpj(e.target.value))}
+                          placeholder="Informe seu CPF ou CNPJ"
+                          className="flex-1 rounded-xl border border-slate-200 px-3.5 py-2.5 text-xs sm:text-sm font-semibold text-slate-900 focus:border-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-900/5 font-mono bg-white"
+                        />
+                        <button
+                          type="button"
+                          onClick={handleSave}
+                          disabled={isSubmitting}
+                          className="px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs transition cursor-pointer disabled:opacity-60 whitespace-nowrap"
+                        >
+                          {isSubmitting ? 'Salvando...' : 'Salvar Documento'}
+                        </button>
+                      </div>
+                      <p className="text-[11px] text-slate-500">
+                        Obrigatório para registrar a assinatura mensal e gerar faturas seguras com QR Code Pix no Asaas.
+                      </p>
                     </div>
 
                     {/* Detalhes de Fatura e Gateway Asaas */}
