@@ -58,7 +58,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
         {/* Sidebar Desktop (Modern Dark SaaS Theme) */}
         <aside className="hidden lg:flex flex-col w-64 bg-slate-950 text-slate-300 border-r border-slate-900 shadow-xl select-none">
           {/* Brand Header */}
-          <div className="h-18 flex items-center px-6 border-b border-slate-900/80 gap-3">
+          <div className="h-16 sm:h-20 flex items-center px-6 border-b border-slate-900/80 gap-3">
             <div className="h-10 w-10 rounded-xl bg-gradient-to-tr from-brand-primary to-brand-primary-hover flex items-center justify-center text-white font-black shadow-lg shadow-black/40 flex-shrink-0">
               <Store className="w-5 h-5" />
             </div>
@@ -168,7 +168,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
         {/* Conteúdo Principal */}
         <div className="flex-1 flex flex-col min-w-0">
           {/* Top Bar Desktop / Header */}
-          <header className="h-18 bg-white border-b border-slate-200/80 px-4 sm:px-8 flex items-center justify-between sticky top-0 z-20 shadow-2xs">
+          <header className="h-16 sm:h-20 bg-white border-b border-slate-200/80 px-4 sm:px-8 py-3.5 sm:py-4 flex items-center justify-between sticky top-0 z-20 shadow-xs">
             <div className="flex items-center gap-3">
               {/* Hamburger Mobile */}
               <button
@@ -181,12 +181,12 @@ export function AdminLayout({ children }: AdminLayoutProps) {
               </button>
 
               <div>
-                <div className="hidden sm:flex items-center gap-1.5 text-xs text-slate-400 font-medium mb-0.5">
+                <div className="hidden sm:flex items-center gap-1.5 text-xs text-slate-400 font-medium mb-1">
                   <span>Administração</span>
                   <ChevronRight className="w-3.5 h-3.5" />
                   <span className="text-slate-600">{getPageTitle()}</span>
                 </div>
-                <h2 className="text-base sm:text-lg font-bold text-slate-900 leading-none">
+                <h2 className="text-base sm:text-lg font-bold text-slate-900 leading-tight">
                   {getPageTitle()}
                 </h2>
               </div>
@@ -225,7 +225,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                 onClick={() => setMobileMenuOpen(false)}
               />
               <div className="relative w-72 max-w-[80vw] bg-slate-950 text-slate-300 flex flex-col z-10 shadow-2xl">
-                <div className="h-16 flex items-center justify-between px-5 border-b border-slate-900">
+                <div className="h-16 sm:h-20 flex items-center justify-between px-5 border-b border-slate-900">
                   <div className="flex items-center gap-2.5">
                     <div className="h-8 w-8 rounded-lg bg-brand-primary flex items-center justify-center text-white font-bold">
                       <Store className="w-4 h-4" />
@@ -288,7 +288,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
           )}
 
           {/* Área de Visualização da Página */}
-          <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto animate-fade-in">
+          <main className="flex-1 px-4 sm:px-8 py-6 sm:py-8 lg:py-10 max-w-7xl w-full mx-auto animate-fade-in">
             {children}
           </main>
         </div>

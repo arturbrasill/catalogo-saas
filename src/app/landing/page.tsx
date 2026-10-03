@@ -225,7 +225,7 @@ export default function SaaSCommercialLandingPage() {
       {/* 1. NAVBAR MINIMALISTA & ELEGANTE (Linear / Raycast Style)   */}
       {/* ============================================================ */}
       <header className="sticky top-0 z-40 bg-white/85 backdrop-blur-md border-b border-slate-200/80 transition-all">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 sm:h-18 flex items-center justify-between gap-4">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 sm:h-20 flex items-center justify-between gap-4">
           {/* Logo Minimalista */}
           <Link href="/landing" className="flex items-center gap-2.5 group">
             <div className="h-9 w-9 rounded-xl bg-slate-900 flex items-center justify-center text-white shadow-xs group-hover:bg-slate-800 transition-colors">

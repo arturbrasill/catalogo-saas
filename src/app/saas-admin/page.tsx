@@ -398,7 +398,7 @@ export default function SaasAdminPage() {
   // Se não estiver logado, exibe tela de login do SuperAdmin
   if (!token) {
     return (
-      <div className="min-h-screen bg-slate-900 text-slate-100 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-slate-900 text-slate-100 flex items-center justify-center p-4 sm:p-6 py-12 sm:py-16">
         <div className="max-w-md w-full bg-slate-800/90 border border-slate-700/80 rounded-2xl p-6 sm:p-8 shadow-2xl backdrop-blur-md">
           <div className="text-center mb-6">
             <div className="w-12 h-12 rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center mx-auto mb-3">
@@ -458,8 +458,8 @@ export default function SaasAdminPage() {
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col justify-between selection:bg-emerald-500 selection:text-white">
       {/* Header do Painel Master */}
-      <header className="bg-white border-b border-slate-200 sticky top-0 z-30 px-4 py-3 sm:px-6 shadow-2xs">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
+      <header className="h-16 sm:h-20 bg-white border-b border-slate-200 sticky top-0 z-30 px-4 sm:px-8 flex items-center shadow-xs">
+        <div className="max-w-7xl w-full mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-xl bg-slate-900 text-white flex items-center justify-center font-bold text-sm">
               <ShieldCheck className="w-4 h-4 text-emerald-400" />
@@ -525,7 +525,7 @@ export default function SaasAdminPage() {
       )}
 
       {/* Conteúdo Central */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 py-6 sm:py-8 space-y-6">
+      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-8 py-6 sm:py-8 lg:py-10 space-y-6">
         {/* Banner de Status do Banco de Dados Supabase Oficial */}
         <div className="p-4 bg-gradient-to-r from-slate-900 to-slate-800 text-slate-100 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3.5 text-xs shadow-md border border-slate-700/80">
           <div className="flex items-start sm:items-center gap-3">
