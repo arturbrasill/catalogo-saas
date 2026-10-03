@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { updateTenantSubscription, findTenant } from '@/lib/tenantStore';
+import { updateTenantSubscriptionAsync, findTenantAsync } from '@/lib/tenantStore';
 import type { UpdateSubscriptionInput } from '@/types';
 
 const MASTER_SECRET = process.env['SAAS_MASTER_KEY'] || 'master_saas_antigravity_2026';
@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const currentTenant = findTenant(tenantId);
+    const currentTenant = await findTenantAsync(tenantId);
     if (!currentTenant) {
       return NextResponse.json(
         { success: false, error: 'Loja não encontrada.' },
@@ -61,7 +61,7 @@ export async function POST(request: NextRequest) {
       password: body.password,
     };
 
-    const updated = updateTenantSubscription(input);
+    const updated = await updateTenantSubscriptionAsync(input);
 
     return NextResponse.json({
       success: true,

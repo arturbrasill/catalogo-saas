@@ -6,28 +6,47 @@ import {
   ASAAS_MONTHLY_PRICE,
   ASAAS_YEARLY_PRICE,
 } from '@/lib/asaas';
-import { findTenant, updateTenantSubscription } from '@/lib/tenantStore';
+import { findTenantAsync, updateTenantSubscriptionAsync } from '@/lib/tenantStore';
 
 export async function POST(request: NextRequest) {
   try {
+    let body: any = {};
+    try {
+      body = await request.json();
+    } catch {
+      body = {};
+    }
+
     const {
-      tenantId,
       cpfCnpj,
       plan,
       billingType,
       creditCard,
       creditCardHolderInfo,
       creditCardToken,
-    } = await request.json();
+    } = body;
 
-    if (!tenantId) {
+    // Resolução resiliente do identificador da loja (suporte a tenantId, slug, storeId, headers e cookies)
+    const rawTenantIdentifier =
+      body.tenantId ||
+      body.slug ||
+      body.storeId ||
+      body.store_id ||
+      body.tenant ||
+      request.headers.get('x-tenant-id') ||
+      request.headers.get('x-tenant') ||
+      request.cookies.get('app_tenant')?.value ||
+      request.nextUrl.searchParams.get('tenant') ||
+      request.nextUrl.searchParams.get('tenantId');
+
+    if (!rawTenantIdentifier || !String(rawTenantIdentifier).trim()) {
       return NextResponse.json(
         { success: false, error: 'Identificador da loja (tenantId) obrigatório.' },
         { status: 400 }
       );
     }
 
-    const tenant = findTenant(tenantId);
+    const tenant = await findTenantAsync(String(rawTenantIdentifier).trim());
     if (!tenant) {
       return NextResponse.json(
         { success: false, error: 'Loja não encontrada.' },
@@ -84,7 +103,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 4. Salva os dados de assinatura e faturamento no cadastro da loja
-    updateTenantSubscription({
+    await updateTenantSubscriptionAsync({
       tenantId: tenant.tenantId,
       asaasCustomerId: customer.id,
       asaasSubscriptionId: subscription.id,

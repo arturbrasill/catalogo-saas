@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyAsaasWebhookToken } from '@/lib/asaas';
-import { findTenant, updateTenantSubscription } from '@/lib/tenantStore';
+import { findTenantAsync, updateTenantSubscriptionAsync } from '@/lib/tenantStore';
 import type { AsaasWebhookEvent } from '@/types';
 
 export async function POST(request: NextRequest) {
@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
     }
 
     const tenantIdentifier = payment.externalReference;
-    const tenant = tenantIdentifier ? findTenant(tenantIdentifier) : null;
+    const tenant = tenantIdentifier ? await findTenantAsync(tenantIdentifier) : null;
 
     if (!tenant) {
       console.warn(`Webhook Asaas: Loja não encontrada para externalReference "${tenantIdentifier}"`);
@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
       const baseTime = Math.max(currentExpiry, Date.now());
       const newExpiry = new Date(baseTime + 30 * 24 * 60 * 60 * 1000).toISOString();
 
-      updateTenantSubscription({
+      await updateTenantSubscriptionAsync({
         tenantId: tenant.tenantId,
         plan: 'monthly',
         subscriptionStatus: 'active',
@@ -57,7 +57,7 @@ export async function POST(request: NextRequest) {
 
     // 2. Pagamento Vencido após os 7 dias de trial -> Bloqueio e Aviso de Pagamento Pendente
     if (event === 'PAYMENT_OVERDUE') {
-      updateTenantSubscription({
+      await updateTenantSubscriptionAsync({
         tenantId: tenant.tenantId,
         subscriptionStatus: 'blocked',
         pendingPayment: true,
@@ -73,7 +73,7 @@ export async function POST(request: NextRequest) {
 
     // 3. Assinatura Cancelada
     if (event === 'SUBSCRIPTION_CANCELLED' || event === 'PAYMENT_DELETED') {
-      updateTenantSubscription({
+      await updateTenantSubscriptionAsync({
         tenantId: tenant.tenantId,
         subscriptionStatus: 'cancelled',
         notes: `Assinatura cancelada no Asaas em ${new Date().toLocaleDateString('pt-BR')}`,

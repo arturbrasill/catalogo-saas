@@ -54,14 +54,18 @@ export async function createOrGetAsaasCustomer(
     return { id: mockId, name: input.name };
   }
 
+  const cleanCpfCnpj = input.cpfCnpj?.replace(/\D/g, '') || undefined;
+  const cleanEmail = input.email?.trim().toLowerCase() || undefined;
+  const extRef = input.externalReference?.trim() || undefined;
+
   try {
     const payload = {
       name: input.name.trim(),
-      email: input.email?.trim() || undefined,
+      email: cleanEmail,
       phone: input.phone || undefined,
       mobilePhone: input.mobilePhone || input.phone || undefined,
-      cpfCnpj: input.cpfCnpj?.replace(/\D/g, '') || undefined,
-      externalReference: input.externalReference,
+      cpfCnpj: cleanCpfCnpj,
+      externalReference: extRef,
       notificationDisabled: false,
     };
 
@@ -80,6 +84,41 @@ export async function createOrGetAsaasCustomer(
         data.errors && data.errors[0]
           ? data.errors[0].description
           : 'Erro ao cadastrar cliente no Asaas.';
+
+      // Recuperação resiliente: Se o cliente já existir no Asaas (por CPF, externalReference ou e-mail),
+      // busca o ID já cadastrado em vez de falhar
+      if (
+        cleanCpfCnpj ||
+        extRef ||
+        cleanEmail ||
+        (errMsg && (errMsg.toLowerCase().includes('já pertence') || errMsg.toLowerCase().includes('já existe')))
+      ) {
+        try {
+          const queries = [
+            extRef ? `externalReference=${encodeURIComponent(extRef)}` : null,
+            cleanCpfCnpj ? `cpfCnpj=${cleanCpfCnpj}` : null,
+            cleanEmail ? `email=${encodeURIComponent(cleanEmail)}` : null,
+          ].filter(Boolean);
+
+          for (const query of queries) {
+            const searchRes = await fetch(`${baseUrl}/customers?${query}`, {
+              headers: {
+                'Content-Type': 'application/json',
+                access_token: apiKey,
+              },
+            });
+            if (searchRes.ok) {
+              const searchData = await searchRes.json();
+              if (searchData.data && Array.isArray(searchData.data) && searchData.data.length > 0) {
+                return { id: searchData.data[0].id, name: searchData.data[0].name || input.name };
+              }
+            }
+          }
+        } catch (searchErr) {
+          console.warn('Nota: Erro na busca de recuperação de cliente Asaas:', searchErr);
+        }
+      }
+
       return { id: '', name: input.name, error: errMsg };
     }
 

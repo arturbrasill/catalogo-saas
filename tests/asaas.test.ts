@@ -14,6 +14,7 @@ import {
 } from '../src/lib/asaas';
 import {
   findTenant,
+  findTenantAsync,
   updateTenantSubscription,
   registerTenant,
 } from '../src/lib/tenantStore';
@@ -468,6 +469,124 @@ describe('Integração Asaas — Gateway de Pagamentos e Assinaturas', () => {
       expect(dataCard.success).toBe(true);
       expect(dataCard.data.billingType).toBe('CREDIT_CARD');
       expect(dataCard.data.nextDueDate).toBeDefined();
+    });
+
+    it('deve localizar a loja por slug com traço (ex: loja-checkout-test) mesmo se o tenantId for com underline', async () => {
+      const { POST: handleCheckout } = await import('../src/app/api/asaas/checkout/route');
+
+      const reqSlug = new NextRequest('http://localhost:3000/api/asaas/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          slug: 'loja-checkout-test',
+          plan: 'monthly',
+        }),
+      });
+
+      const resSlug = await handleCheckout(reqSlug);
+      expect(resSlug.status).toBe(200);
+      const dataSlug = await resSlug.json();
+      expect(dataSlug.success).toBe(true);
+      expect(dataSlug.data.invoiceUrl).toBeDefined();
+    });
+
+    it('deve resolver loja a partir do header x-tenant-id ou cookies se não enviado no body', async () => {
+      const { POST: handleCheckout } = await import('../src/app/api/asaas/checkout/route');
+
+      const reqHeader = new NextRequest('http://localhost:3000/api/asaas/checkout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-tenant-id': 'loja_checkout_test',
+        },
+        body: JSON.stringify({
+          plan: 'monthly',
+        }),
+      });
+
+      const resHeader = await handleCheckout(reqHeader);
+      expect(resHeader.status).toBe(200);
+      const dataHeader = await resHeader.json();
+      expect(dataHeader.success).toBe(true);
+    });
+
+    it('deve retornar erro 404 amigável se a loja não existir em nenhuma fonte', async () => {
+      const { POST: handleCheckout } = await import('../src/app/api/asaas/checkout/route');
+
+      const reqNotFound = new NextRequest('http://localhost:3000/api/asaas/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          tenantId: 'loja_inexistente_99999',
+          plan: 'monthly',
+        }),
+      });
+
+      const resNotFound = await handleCheckout(reqNotFound);
+      expect(resNotFound.status).toBe(404);
+      const dataNotFound = await resNotFound.json();
+      expect(dataNotFound.success).toBe(false);
+      expect(dataNotFound.error).toContain('Loja não encontrada');
+    });
+
+    it('deve retornar erro 400 se nenhum identificador for fornecido', async () => {
+      const { POST: handleCheckout } = await import('../src/app/api/asaas/checkout/route');
+
+      const reqEmpty = new NextRequest('http://localhost:3000/api/asaas/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          plan: 'monthly',
+        }),
+      });
+
+      const resEmpty = await handleCheckout(reqEmpty);
+      expect(resEmpty.status).toBe(400);
+      const dataEmpty = await resEmpty.json();
+      expect(dataEmpty.success).toBe(false);
+    });
+  });
+
+  describe('Resolução Resiliente e Recuperação de Cliente Asaas', () => {
+    it('findTenantAsync deve resolver loja por slug, tenantId e normalização de traços', async () => {
+      const tenant = await findTenantAsync('loja-checkout-test');
+      expect(tenant).not.toBeNull();
+      expect(tenant?.tenantId).toBe('loja_checkout_test');
+    });
+
+    it('deve recuperar cliente existente no Asaas quando a criação POST falhar por duplicidade', async () => {
+      process.env['ASAAS_API_KEY'] = '$aact_prod_mock';
+      process.env['ASAAS_ENVIRONMENT'] = 'production';
+
+      const mockFetch = vi
+        .fn()
+        // Primeira chamada (POST): Asaas avisa que CPF já pertence a outro cliente
+        .mockResolvedValueOnce({
+          ok: false,
+          status: 400,
+          json: async () => ({
+            errors: [{ description: 'O CPF/CNPJ informado já pertence a outro cliente.' }],
+          }),
+        })
+        // Segunda chamada (GET de busca por externalReference ou CPF): recupera cliente existente
+        .mockResolvedValueOnce({
+          ok: true,
+          status: 200,
+          json: async () => ({
+            data: [{ id: 'cus_recuperado_123', name: 'Maria Loja Recuperada' }],
+          }),
+        });
+
+      global.fetch = mockFetch;
+
+      const customer = await createOrGetAsaasCustomer({
+        name: 'Maria Loja',
+        cpfCnpj: '99988877766',
+        externalReference: 'maria_loja',
+      });
+
+      expect(customer.id).toBe('cus_recuperado_123');
+      expect(mockFetch).toHaveBeenCalledTimes(2);
     });
   });
 });

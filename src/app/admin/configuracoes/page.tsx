@@ -224,11 +224,19 @@ export default function AdminConfiguracoesPage() {
   const handleGenerateInvoice = async () => {
     setIsGeneratingInvoice(true);
     try {
+      const resolvedTenant =
+        currentStoreId ||
+        rawStore?.store_id ||
+        (typeof window !== 'undefined'
+          ? new URLSearchParams(window.location.search).get('tenant') ||
+            document.cookie.match(/(?:^|;\s*)app_tenant=([^;]+)/)?.[1]
+          : null);
+
       const res = await fetch('/api/asaas/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          tenantId: currentStoreId || rawStore?.store_id,
+          tenantId: resolvedTenant,
           plan: 'monthly',
         }),
       });

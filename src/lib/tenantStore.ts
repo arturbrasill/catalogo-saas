@@ -13,6 +13,7 @@ import defaultTenants from './tenants.json';
 import { getLocalEngine } from '@/backend/engine';
 import {
   fetchAllTenantsFromSupabase,
+  fetchTenantFromSupabase,
   insertTenantIntoSupabase,
   updateTenantInSupabase,
   deleteTenantFromSupabase,
@@ -312,27 +313,135 @@ export function getTenantRegistry(): TenantRegistry {
 }
 
 /**
+ * Normaliza um identificador de loja (remove porta, protocolo, subdomínio extra, formata)
+ */
+export function normalizeTenantIdentifier(raw: string): string {
+  if (!raw) return '';
+  let clean = raw.trim().toLowerCase();
+  clean = clean.replace(/^https?:\/\//, '');
+  clean = clean.split('/')[0] || '';
+  clean = clean.split(':')[0] || '';
+  return clean.trim();
+}
+
+/**
  * Encontra um tenant por hostname, domínio, slug ou tenantId
  */
 export function findTenant(identifier: string): Tenant | null {
   if (!identifier) return null;
-  const clean = identifier.trim().toLowerCase();
+  const clean = normalizeTenantIdentifier(identifier);
+  if (!clean) return null;
 
-  // 1. Busca direta por chave
+  const cleanAlt = clean.includes('-')
+    ? clean.replace(/-/g, '_')
+    : clean.includes('_')
+    ? clean.replace(/_/g, '-')
+    : clean;
+
+  // 1. Busca direta por chave no registro
   if (inMemoryRegistry[clean]) {
     return inMemoryRegistry[clean]!;
   }
+  if (cleanAlt !== clean && inMemoryRegistry[cleanAlt]) {
+    return inMemoryRegistry[cleanAlt]!;
+  }
 
-  // 2. Busca por tenantId, slug, domain ou adminUsername
+  // 2. Busca iterativa por tenantId, slug, domain ou adminUsername
   for (const tenant of Object.values(inMemoryRegistry)) {
+    const tId = tenant.tenantId.toLowerCase();
+    const tSlug = tenant.slug?.toLowerCase();
+    const tDomain = tenant.domain?.toLowerCase();
+    const tAdmin = tenant.adminUsername?.toLowerCase();
+
     if (
-      tenant.tenantId.toLowerCase() === clean ||
-      tenant.slug?.toLowerCase() === clean ||
-      tenant.domain?.toLowerCase() === clean ||
-      tenant.adminUsername?.toLowerCase() === clean
+      tId === clean ||
+      tId === cleanAlt ||
+      tSlug === clean ||
+      tSlug === cleanAlt ||
+      tDomain === clean ||
+      tDomain === cleanAlt ||
+      tAdmin === clean
     ) {
       return tenant;
     }
+  }
+
+  return null;
+}
+
+/**
+ * Encontra um tenant de forma resiliente e assíncrona.
+ * Consulta o cache em memória, o banco de dados oficial (Supabase) e a sincronização remota (KV/Google).
+ * Hidrata a memória da instância atual para leituras subsequentes nesta lambda.
+ */
+export async function findTenantAsync(identifier: string): Promise<Tenant | null> {
+  if (!identifier) return null;
+  const clean = normalizeTenantIdentifier(identifier);
+  if (!clean) return null;
+
+  // 1. Memória rápida
+  const inMemory = findTenant(clean);
+  if (inMemory) return inMemory;
+
+  const cleanAlt = clean.includes('-')
+    ? clean.replace(/-/g, '_')
+    : clean.includes('_')
+    ? clean.replace(/_/g, '-')
+    : clean;
+
+  // 2. Consulta direta ao Supabase (fonte da verdade de dados em produção Vercel)
+  try {
+    let supabaseTenant = await fetchTenantFromSupabase(clean);
+    if (!supabaseTenant && cleanAlt !== clean) {
+      supabaseTenant = await fetchTenantFromSupabase(cleanAlt);
+    }
+
+    if (supabaseTenant) {
+      const domain = supabaseTenant.domain || `${supabaseTenant.slug || supabaseTenant.tenantId}.localhost`;
+      const tenantObj: Tenant = {
+        tenantId: supabaseTenant.tenantId,
+        name: supabaseTenant.name,
+        slug: supabaseTenant.slug || supabaseTenant.tenantId.replace(/_/g, '-'),
+        domain,
+        apiUrl: supabaseTenant.apiUrl || '',
+        whatsapp: String(supabaseTenant.whatsapp || ''),
+        ownerEmail: supabaseTenant.ownerEmail || '',
+        adminUsername: supabaseTenant.adminUsername || (supabaseTenant as any).admin_username || undefined,
+        niche: supabaseTenant.niche || 'Geral',
+        plan: supabaseTenant.plan || 'trial_30d',
+        subscriptionStatus: supabaseTenant.subscriptionStatus || 'active',
+        subscriptionExpiresAt: supabaseTenant.subscriptionExpiresAt,
+        createdAt: supabaseTenant.createdAt,
+        notes: supabaseTenant.notes,
+        asaasCustomerId: supabaseTenant.asaasCustomerId,
+        asaasSubscriptionId: supabaseTenant.asaasSubscriptionId,
+        asaasPaymentLink: supabaseTenant.asaasPaymentLink,
+        catalog_layout: supabaseTenant.catalog_layout,
+        theme_preset: supabaseTenant.theme_preset,
+        announcement_enabled: supabaseTenant.announcement_enabled,
+        announcement_text: supabaseTenant.announcement_text,
+        announcement_bg_color: supabaseTenant.announcement_bg_color,
+        announcement_text_color: supabaseTenant.announcement_text_color,
+      };
+
+      // Hidrata memória da instância atual
+      inMemoryRegistry[tenantObj.tenantId] = tenantObj;
+      if (tenantObj.slug) inMemoryRegistry[tenantObj.slug] = tenantObj;
+      inMemoryRegistry[domain] = tenantObj;
+
+      return tenantObj;
+    }
+  } catch (err) {
+    console.warn('Nota: Erro ao consultar Supabase em findTenantAsync:', err);
+  }
+
+  // 3. Fallback: Sincronização remota global (KV / Master Sheet)
+  try {
+    await syncTenantsFromRemote();
+    const afterSync = findTenant(clean);
+    if (afterSync) return afterSync;
+  } catch (err) {
+    console.warn('Nota: Erro na sincronização remota em findTenantAsync:', err);
   }
 
   return null;
@@ -592,6 +701,18 @@ export function updateTenantSubscription(input: UpdateSubscriptionInput): Tenant
   }
 
   return tenant;
+}
+
+/**
+ * Atualiza assinatura de forma assíncrona, garantindo resolução do tenant mesmo em cold start Vercel
+ */
+export async function updateTenantSubscriptionAsync(input: UpdateSubscriptionInput): Promise<Tenant | null> {
+  let tenant = findTenant(input.tenantId);
+  if (!tenant) {
+    tenant = await findTenantAsync(input.tenantId);
+  }
+  if (!tenant) return null;
+  return updateTenantSubscription(input);
 }
 
 /**

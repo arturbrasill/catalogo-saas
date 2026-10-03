@@ -299,7 +299,11 @@ export default function SaasAdminPage() {
       const res = await fetch('/api/asaas/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tenantId: store.tenantId }),
+        body: JSON.stringify({
+          tenantId: store.tenantId,
+          slug: store.slug,
+          plan: store.plan === 'yearly' ? 'yearly' : 'monthly',
+        }),
       });
 
       const json = await res.json();
