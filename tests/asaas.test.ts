@@ -8,6 +8,7 @@ import {
   createOrGetAsaasCustomer,
   createAsaasPayment,
   createAsaasSubscription,
+  calculateTrialDueDate,
   ASAAS_MONTHLY_PRICE,
   ASAAS_YEARLY_PRICE,
 } from '../src/lib/asaas';
@@ -34,6 +35,12 @@ describe('Integração Asaas — Gateway de Pagamentos e Assinaturas', () => {
     it('deve identificar o valor do plano mensal fixo de R$ 79,90 e anual de R$ 718,80', () => {
       expect(ASAAS_MONTHLY_PRICE).toBe(79.9);
       expect(ASAAS_YEARLY_PRICE).toBe(718.8);
+    });
+
+    it('deve calcular a data de vencimento da primeira cobrança do trial de 7 dias no formato YYYY-MM-DD', () => {
+      const fixedDate = new Date('2026-10-03T12:00:00Z');
+      const trialDueDate = calculateTrialDueDate(fixedDate, 7);
+      expect(trialDueDate).toBe('2026-10-10');
     });
 
     it('deve ler chave de API dinamicamente', () => {
@@ -90,15 +97,16 @@ describe('Integração Asaas — Gateway de Pagamentos e Assinaturas', () => {
       expect(res.invoiceUrl).toContain('https://sandbox.asaas.com/i/');
     });
 
-    it('deve gerar assinatura mock quando a chave não estiver configurada', async () => {
+    it('deve gerar assinatura mock quando a chave não estiver configurada com trial de 7 dias', async () => {
       delete process.env['ASAAS_API_KEY'];
       const res = await createAsaasSubscription({
         customerId: 'cus_123',
-        nextDueDate: '2026-10-30',
+        nextDueDate: '2026-10-10',
         externalReference: 'loja_teste_123',
       });
       expect(res.id).toContain('sub_mock_');
       expect(res.invoiceUrl).toContain('https://sandbox.asaas.com/s/');
+      expect(res.nextDueDate).toBe('2026-10-10');
     });
   });
 
@@ -131,6 +139,80 @@ describe('Integração Asaas — Gateway de Pagamentos e Assinaturas', () => {
           }),
         })
       );
+    });
+
+    it('deve criar assinatura recorrente com valor padrão 79.90, ciclo MONTHLY e vencimento pós-trial', async () => {
+      process.env['ASAAS_API_KEY'] = '$aact_prod_mock';
+      process.env['ASAAS_ENVIRONMENT'] = 'production';
+
+      const mockFetch = vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({
+          id: 'sub_asaas_real_456',
+          invoiceUrl: 'https://www.asaas.com/s/sub_asaas_real_456',
+          nextDueDate: '2026-10-10',
+        }),
+      });
+      global.fetch = mockFetch;
+
+      const res = await createAsaasSubscription({
+        customerId: 'cus_asaas_real_999',
+        nextDueDate: '2026-10-10',
+        externalReference: 'joao_calcados',
+      });
+
+      expect(res.id).toBe('sub_asaas_real_456');
+      expect(mockFetch).toHaveBeenCalledWith(
+        'https://api.asaas.com/v3/subscriptions',
+        expect.objectContaining({
+          method: 'POST',
+          body: JSON.stringify({
+            customer: 'cus_asaas_real_999',
+            billingType: 'UNDEFINED',
+            value: 79.9,
+            nextDueDate: '2026-10-10',
+            cycle: 'MONTHLY',
+            description: 'Assinatura Recorrente Mensal Catálogo Digital NumClick (R$ 79,90)',
+            externalReference: 'joao_calcados',
+          }),
+        })
+      );
+    });
+
+    it('deve agendar cobrança de cartão de crédito para após os 7 dias de trial gratuito', async () => {
+      process.env['ASAAS_API_KEY'] = '$aact_prod_mock';
+      process.env['ASAAS_ENVIRONMENT'] = 'production';
+
+      const mockFetch = vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({
+          id: 'sub_cartao_789',
+          invoiceUrl: 'https://www.asaas.com/s/sub_cartao_789',
+          nextDueDate: '2026-10-10',
+        }),
+      });
+      global.fetch = mockFetch;
+
+      const res = await createAsaasSubscription({
+        customerId: 'cus_asaas_real_999',
+        nextDueDate: '2026-10-10',
+        externalReference: 'joao_calcados',
+        creditCard: {
+          holderName: 'JOAO SILVA',
+          number: '4111111111111111',
+          expiryMonth: '12',
+          expiryYear: '2028',
+          ccv: '123',
+        },
+      });
+
+      expect(res.id).toBe('sub_cartao_789');
+      const calledBody = JSON.parse(mockFetch.mock.calls[0]![1]!.body as string);
+      expect(calledBody.billingType).toBe('CREDIT_CARD');
+      expect(calledBody.cycle).toBe('MONTHLY');
+      expect(calledBody.value).toBe(79.9);
+      expect(calledBody.nextDueDate).toBe('2026-10-10');
+      expect(calledBody.creditCard.holderName).toBe('JOAO SILVA');
     });
 
     it('deve criar cobrança de R$ 79,90 com vencimento especificado', async () => {
@@ -231,7 +313,34 @@ describe('Integração Asaas — Gateway de Pagamentos e Assinaturas', () => {
       expect(expiry).toBeGreaterThan(Date.now() + 25 * 24 * 60 * 60 * 1000);
     });
 
-    it('deve suspender/expirar loja quando evento for PAYMENT_OVERDUE', async () => {
+    it('deve processar PAYMENT_RECEIVED e manter status ATIVO da loja', async () => {
+      process.env['ASAAS_WEBHOOK_SECRET'] = 'secret_correto';
+
+      const req = new NextRequest('http://localhost:3000/api/asaas/webhook', {
+        method: 'POST',
+        headers: {
+          'asaas-access-token': 'secret_correto',
+        },
+        body: JSON.stringify({
+          event: 'PAYMENT_RECEIVED',
+          payment: {
+            id: 'pay_recebido_777',
+            customer: 'cus_456',
+            externalReference: testTenantId,
+            invoiceUrl: 'https://asaas.com/i/pay_recebido_777',
+          },
+        }),
+      });
+
+      const res = await handleWebhook(req);
+      expect(res.status).toBe(200);
+
+      const updatedTenant = findTenant(testTenantId);
+      expect(updatedTenant?.subscriptionStatus).toBe('active');
+      expect(updatedTenant?.pendingPayment).toBe(false);
+    });
+
+    it('deve suspender e bloquear loja quando evento for PAYMENT_OVERDUE, ativando aviso de pendência', async () => {
       process.env['ASAAS_WEBHOOK_SECRET'] = 'secret_correto';
 
       const req = new NextRequest('http://localhost:3000/api/asaas/webhook', {
@@ -252,7 +361,8 @@ describe('Integração Asaas — Gateway de Pagamentos e Assinaturas', () => {
       expect(res.status).toBe(200);
 
       const updatedTenant = findTenant(testTenantId);
-      expect(updatedTenant?.subscriptionStatus).toBe('expired');
+      expect(updatedTenant?.subscriptionStatus).toBe('blocked');
+      expect(updatedTenant?.pendingPayment).toBe(true);
     });
 
     it('deve cancelar loja quando evento for SUBSCRIPTION_CANCELLED', async () => {
@@ -281,7 +391,7 @@ describe('Integração Asaas — Gateway de Pagamentos e Assinaturas', () => {
   });
 
   describe('Checkout Endpoint (/api/asaas/checkout)', () => {
-    it('deve gerar fatura mensal (R$ 79,90) e anual corretamente', async () => {
+    it('deve gerar assinatura mensal (R$ 79,90) e anual com trial de 7 dias', async () => {
       const { POST: handleCheckout } = await import('../src/app/api/asaas/checkout/route');
 
       // Tenant de teste
@@ -294,7 +404,7 @@ describe('Integração Asaas — Gateway de Pagamentos e Assinaturas', () => {
         whatsapp: '5511988887777',
       });
 
-      // 1. Checkout Plano Mensal
+      // 1. Checkout Plano Mensal Recorrente
       const reqMonthly = new NextRequest('http://localhost:3000/api/asaas/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -310,7 +420,9 @@ describe('Integração Asaas — Gateway de Pagamentos e Assinaturas', () => {
       const dataMonthly = await resMonthly.json();
       expect(dataMonthly.success).toBe(true);
       expect(dataMonthly.data.value).toBe(79.9);
-      expect(dataMonthly.data.invoiceUrl).toContain('https://sandbox.asaas.com/i/');
+      expect(dataMonthly.data.cycle).toBe('MONTHLY');
+      expect(dataMonthly.data.nextDueDate).toBeDefined();
+      expect(dataMonthly.data.invoiceUrl).toMatch(/https:\/\/sandbox\.asaas\.com\/(i|s)\//);
 
       // 2. Checkout Plano Anual
       const reqYearly = new NextRequest('http://localhost:3000/api/asaas/checkout', {
@@ -328,7 +440,34 @@ describe('Integração Asaas — Gateway de Pagamentos e Assinaturas', () => {
       const dataYearly = await resYearly.json();
       expect(dataYearly.success).toBe(true);
       expect(dataYearly.data.value).toBe(718.8);
-      expect(dataYearly.data.invoiceUrl).toContain('https://sandbox.asaas.com/i/');
+      expect(dataYearly.data.cycle).toBe('YEARLY');
+      expect(dataYearly.data.nextDueDate).toBeDefined();
+      expect(dataYearly.data.invoiceUrl).toMatch(/https:\/\/sandbox\.asaas\.com\/(i|s)\//);
+
+      // 3. Checkout com Cartão de Crédito (cobrança agendada para pós-trial)
+      const reqCard = new NextRequest('http://localhost:3000/api/asaas/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          tenantId: checkoutTenantId,
+          cpfCnpj: '12345678901',
+          plan: 'monthly',
+          creditCard: {
+            holderName: 'MARIA SILVA',
+            number: '5555444433332222',
+            expiryMonth: '11',
+            expiryYear: '2029',
+            ccv: '999',
+          },
+        }),
+      });
+
+      const resCard = await handleCheckout(reqCard);
+      expect(resCard.status).toBe(200);
+      const dataCard = await resCard.json();
+      expect(dataCard.success).toBe(true);
+      expect(dataCard.data.billingType).toBe('CREDIT_CARD');
+      expect(dataCard.data.nextDueDate).toBeDefined();
     });
   });
 });

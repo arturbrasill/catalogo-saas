@@ -41,6 +41,9 @@ export interface StoreConfig {
   announcement_text_color?: string;
   // Layout da Vitrine
   catalog_layout?: CatalogLayoutMode;
+  // Status de Pagamento Asaas
+  pending_payment?: boolean;
+  asaas_payment_link?: string;
 }
 
 /**
@@ -233,7 +236,7 @@ export type APIResponse<T> = APIResponseSuccess<T> | APIResponseError;
 // 6. MULTI-TENANCY & SAAS SUBSCRIPTIONS
 // ============================================================
 
-export type SubscriptionPlan = 'trial_30d' | 'monthly' | 'yearly';
+export type SubscriptionPlan = 'trial_7d' | 'trial_30d' | 'monthly' | 'yearly';
 export type SubscriptionStatus = 'active' | 'trial' | 'expired' | 'blocked' | 'cancelled';
 
 export interface Tenant {
@@ -257,6 +260,7 @@ export interface Tenant {
   asaasCustomerId?: string;
   asaasSubscriptionId?: string;
   asaasPaymentLink?: string;
+  pendingPayment?: boolean;
   // Campos visuais de tema e anúncio
   logo_url?: string;
   logoUrl?: string;
@@ -306,6 +310,7 @@ export interface UpdateSubscriptionInput {
   asaasCustomerId?: string;
   asaasSubscriptionId?: string;
   asaasPaymentLink?: string;
+  pendingPayment?: boolean;
   catalog_layout?: CatalogLayoutMode;
   theme_preset?: ThemePreset;
   announcement_enabled?: boolean;
@@ -321,6 +326,37 @@ export interface AsaasCustomerInput {
   mobilePhone?: string;
   cpfCnpj?: string;
   externalReference?: string;
+}
+
+export interface AsaasCreditCardInput {
+  holderName: string;
+  number: string;
+  expiryMonth: string;
+  expiryYear: string;
+  ccv: string;
+}
+
+export interface AsaasCreditCardHolderInfo {
+  name: string;
+  email: string;
+  cpfCnpj: string;
+  postalCode?: string;
+  addressNumber?: string;
+  phone?: string;
+  mobilePhone?: string;
+}
+
+export interface AsaasSubscriptionInput {
+  customerId: string;
+  value?: number;
+  nextDueDate?: string;
+  cycle?: 'MONTHLY' | 'YEARLY' | 'WEEKLY' | 'BIWEEKLY' | 'QUARTERLY' | 'SEMIANNUALLY';
+  billingType?: 'UNDEFINED' | 'PIX' | 'CREDIT_CARD' | 'BOLETO';
+  description?: string;
+  externalReference: string;
+  creditCard?: AsaasCreditCardInput;
+  creditCardHolderInfo?: AsaasCreditCardHolderInfo;
+  creditCardToken?: string;
 }
 
 export interface AsaasPaymentInput {

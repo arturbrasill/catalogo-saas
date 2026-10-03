@@ -111,6 +111,36 @@ export default function AdminDashboardPage() {
           </div>
         )}
 
+        {/* Alerta de Pagamento Pendente / Bloqueio Asaas */}
+        {(store?.pending_payment || store?.subscription_status === 'blocked' || store?.subscription_status === 'expired') && (
+          <div className="rounded-3xl bg-amber-500/10 border-2 border-amber-500/30 p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 text-amber-950 shadow-xs">
+            <div className="flex items-start sm:items-center gap-3.5">
+              <div className="w-10 h-10 rounded-2xl bg-amber-500 text-white flex items-center justify-center shrink-0 shadow-xs">
+                <AlertTriangle className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="font-extrabold text-sm sm:text-base text-amber-950">
+                  {store?.subscription_status === 'blocked' ? 'Acesso ao Catálogo Bloqueado' : 'Aviso de Pagamento Pendente'}
+                </h3>
+                <p className="text-xs sm:text-sm text-amber-800/90 mt-0.5">
+                  A cobrança da assinatura mensal recorrente (R$ 79,90) após o término dos 7 dias gratuitos está pendente ou não foi processada no Asaas. Regularize sua assinatura para garantir o funcionamento contínuo do seu catálogo.
+                </p>
+              </div>
+            </div>
+            {store?.asaas_payment_link && (
+              <a
+                href={store.asaas_payment_link}
+                target="_blank"
+                rel="noreferrer"
+                className="shrink-0 inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold shadow-xs transition-colors"
+              >
+                Pagar Fatura Pendente
+                <ExternalLink className="w-3.5 h-3.5" />
+              </a>
+            )}
+          </div>
+        )}
+
         {/* Bento Grid de Métricas (Modern SaaS KPI Cards) */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {/* Card 1: Total Produtos */}

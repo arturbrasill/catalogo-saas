@@ -1,7 +1,25 @@
-import type { AsaasCustomerInput, AsaasPaymentInput } from '@/types';
+import type {
+  AsaasCustomerInput,
+  AsaasPaymentInput,
+  AsaasSubscriptionInput,
+  AsaasCreditCardInput,
+  AsaasCreditCardHolderInfo,
+} from '@/types';
 
 export const ASAAS_MONTHLY_PRICE = 79.9;
 export const ASAAS_YEARLY_PRICE = 718.8; // R$ 59,90/mês cobrado anualmente
+
+/**
+ * Calcula a data da primeira cobrança exatamente 7 dias após o cadastro (Trial/Degustação)
+ * Retorna no formato YYYY-MM-DD exigido pela API do Asaas.
+ */
+export function calculateTrialDueDate(startDate: Date = new Date(), trialDays: number = 7): string {
+  const target = new Date(startDate.getTime() + trialDays * 24 * 60 * 60 * 1000);
+  const year = target.getFullYear();
+  const month = String(target.getMonth() + 1).padStart(2, '0');
+  const day = String(target.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
 
 export function getAsaasApiKey(): string {
   return process.env['ASAAS_API_KEY'] || '';
@@ -123,43 +141,57 @@ export async function createAsaasPayment(
 }
 
 /**
- * Cria uma assinatura mensal recorrente de R$ 79,90 no Asaas
+ * Cria uma assinatura mensal recorrente (padrão R$ 79,90) no Asaas
+ * - Valor padrão: 79.90
+ * - Ciclo: 'MONTHLY'
+ * - billingType: 'UNDEFINED' (ou 'CREDIT_CARD', 'PIX', 'BOLETO')
+ * - Trial de 7 dias: primeira cobrança agendada para dataAtual + 7 dias (YYYY-MM-DD)
+ * - Se cartão fornecido, cadastra no Asaas com cobrança postergada para o fim dos 7 dias gratuitos
  */
-export async function createAsaasSubscription(input: {
-  customerId: string;
-  value?: number;
-  nextDueDate: string;
-  externalReference: string;
-  description?: string;
-}): Promise<{ id: string; invoiceUrl?: string; error?: string }> {
+export async function createAsaasSubscription(
+  input: AsaasSubscriptionInput
+): Promise<{ id: string; invoiceUrl?: string; nextDueDate?: string; error?: string }> {
   const apiKey = getAsaasApiKey();
   const baseUrl = getAsaasBaseUrl();
-  const valueToCharge = input.value || ASAAS_MONTHLY_PRICE;
+  const valueToCharge = typeof input.value === 'number' ? input.value : ASAAS_MONTHLY_PRICE;
+  const nextDueDate = input.nextDueDate || calculateTrialDueDate(new Date(), 7);
+  const cycle = input.cycle || 'MONTHLY';
+  const billingType =
+    input.billingType || (input.creditCard || input.creditCardToken ? 'CREDIT_CARD' : 'UNDEFINED');
 
   if (!apiKey || apiKey.includes('exemplo')) {
     const mockSubId = 'sub_mock_' + Math.random().toString(36).substring(2, 12);
     return {
       id: mockSubId,
       invoiceUrl: `https://sandbox.asaas.com/s/${mockSubId}`,
+      nextDueDate,
     };
   }
 
   try {
+    const payload: Record<string, unknown> = {
+      customer: input.customerId,
+      billingType,
+      value: valueToCharge,
+      nextDueDate,
+      cycle,
+      description: input.description || 'Assinatura Recorrente Mensal Catálogo Digital NumClick (R$ 79,90)',
+      externalReference: input.externalReference,
+    };
+
+    if (billingType === 'CREDIT_CARD') {
+      if (input.creditCard) payload['creditCard'] = input.creditCard;
+      if (input.creditCardHolderInfo) payload['creditCardHolderInfo'] = input.creditCardHolderInfo;
+      if (input.creditCardToken) payload['creditCardToken'] = input.creditCardToken;
+    }
+
     const res = await fetch(`${baseUrl}/subscriptions`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         access_token: apiKey,
       },
-      body: JSON.stringify({
-        customer: input.customerId,
-        billingType: 'UNDEFINED',
-        value: valueToCharge,
-        nextDueDate: input.nextDueDate,
-        cycle: 'MONTHLY',
-        description: input.description || 'Assinatura Recorrente Mensal Catálogo SaaS (R$ 79,90)',
-        externalReference: input.externalReference,
-      }),
+      body: JSON.stringify(payload),
     });
 
     const data = await res.json();
@@ -174,6 +206,7 @@ export async function createAsaasSubscription(input: {
     return {
       id: data.id,
       invoiceUrl: data.invoiceUrl || `https://sandbox.asaas.com/s/${data.id}`,
+      nextDueDate: data.nextDueDate || nextDueDate,
     };
   } catch (err) {
     return { id: '', error: String(err) };

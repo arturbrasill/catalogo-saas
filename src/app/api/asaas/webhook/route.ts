@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: true, message: 'Loja não vinculada.' });
     }
 
-    // 1. Pagamento Confirmado ou Recebido -> Ativação e Renovação Automática (+30 dias)
+    // 1. Pagamento Confirmado ou Recebido -> Status ATIVO e Renovação Automática (+30 dias)
     if (event === 'PAYMENT_CONFIRMED' || event === 'PAYMENT_RECEIVED') {
       const currentExpiry = tenant.subscriptionExpiresAt
         ? new Date(tenant.subscriptionExpiresAt).getTime()
@@ -45,26 +45,29 @@ export async function POST(request: NextRequest) {
         subscriptionExpiresAt: newExpiry,
         asaasCustomerId: payment.customer,
         asaasPaymentLink: payment.invoiceUrl || tenant.asaasPaymentLink,
-        notes: `Pagamento de R$ 79,90 confirmado via Asaas em ${new Date().toLocaleDateString('pt-BR')} (ID: ${payment.id})`,
+        pendingPayment: false,
+        notes: `Pagamento de R$ 79,90 confirmado via Asaas em ${new Date().toLocaleDateString('pt-BR')} (ID: ${payment.id}). Status mantido como ATIVO.`,
       });
 
       return NextResponse.json({
         success: true,
-        message: `Assinatura da loja ${tenant.name} ativada/renovada com sucesso até ${newExpiry}.`,
+        message: `Assinatura da loja ${tenant.name} mantida como ATIVO até ${newExpiry}.`,
       });
     }
 
-    // 2. Pagamento Vencido -> Cancela/Expira Acesso Automaticamente
+    // 2. Pagamento Vencido após os 7 dias de trial -> Bloqueio e Aviso de Pagamento Pendente
     if (event === 'PAYMENT_OVERDUE') {
       updateTenantSubscription({
         tenantId: tenant.tenantId,
-        subscriptionStatus: 'expired',
-        notes: `Cobrança vencida no Asaas em ${new Date().toLocaleDateString('pt-BR')} (ID: ${payment.id})`,
+        subscriptionStatus: 'blocked',
+        pendingPayment: true,
+        asaasPaymentLink: payment.invoiceUrl || tenant.asaasPaymentLink,
+        notes: `Cobrança de R$ 79,90 vencida após os 7 dias de degustação no Asaas em ${new Date().toLocaleDateString('pt-BR')} (ID: ${payment.id}). Loja bloqueada com aviso de pagamento pendente.`,
       });
 
       return NextResponse.json({
         success: true,
-        message: `Loja ${tenant.name} marcada como expirada por falta de pagamento.`,
+        message: `Loja ${tenant.name} marcada para bloqueio por falta de pagamento (Cobrança pós-trial vencida).`,
       });
     }
 

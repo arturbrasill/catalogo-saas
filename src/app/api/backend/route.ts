@@ -181,6 +181,14 @@ function sanitizeStoreResponse<T>(data: T, tenant?: Tenant | null): T {
             if (tenant.subscriptionExpiresAt) {
               storeObj['subscription_expires_at'] = tenant.subscriptionExpiresAt;
             }
+            storeObj['pending_payment'] = Boolean(
+              tenant.pendingPayment ||
+                tenant.subscriptionStatus === 'blocked' ||
+                tenant.subscriptionStatus === 'expired'
+            );
+            if (tenant.asaasPaymentLink) {
+              storeObj['asaas_payment_link'] = tenant.asaasPaymentLink;
+            }
             if (storeObj['catalog_layout'] === undefined && tenant.catalog_layout) {
               storeObj['catalog_layout'] = tenant.catalog_layout;
             }

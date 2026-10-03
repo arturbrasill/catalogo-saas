@@ -413,11 +413,12 @@ export async function registerTenant(input: CreateTenantInput): Promise<{
 
   const finalSlug = tenantId.replace(/_/g, '-');
   const now = new Date();
-  const plan: SubscriptionPlan = input.plan || 'trial_30d';
+  const plan: SubscriptionPlan = input.plan || 'trial_7d';
 
-  // 30 dias de teste grátis ou 30 dias da mensalidade
-  const durationDays = 30;
-  const status: SubscriptionStatus = plan === 'trial_30d' ? 'trial' : 'active';
+  // 7 dias de degustação (trial gratuito) ou 30 dias de mensalidade
+  const isTrial = plan === 'trial_7d' || plan === 'trial_30d';
+  const durationDays = isTrial ? 7 : 30;
+  const status: SubscriptionStatus = isTrial ? 'trial' : 'active';
   const expiresAt = new Date(now.getTime() + durationDays * 24 * 60 * 60 * 1000).toISOString();
 
   // 1. Tenta auto-provisionar via Master Provisioner caso configurado
@@ -546,6 +547,7 @@ export function updateTenantSubscription(input: UpdateSubscriptionInput): Tenant
   if (input.asaasCustomerId !== undefined) tenant.asaasCustomerId = input.asaasCustomerId;
   if (input.asaasSubscriptionId !== undefined) tenant.asaasSubscriptionId = input.asaasSubscriptionId;
   if (input.asaasPaymentLink !== undefined) tenant.asaasPaymentLink = input.asaasPaymentLink;
+  if (input.pendingPayment !== undefined) tenant.pendingPayment = input.pendingPayment;
   if (input.catalog_layout !== undefined) tenant.catalog_layout = input.catalog_layout;
   if (input.theme_preset !== undefined) tenant.theme_preset = input.theme_preset;
   if (input.announcement_enabled !== undefined) tenant.announcement_enabled = input.announcement_enabled;
@@ -641,7 +643,7 @@ export function getSaasMetrics(): SaasMetrics {
 
     if (!status.active) {
       expiredOrBlockedStores++;
-    } else if (tenant.plan === 'trial_30d') {
+    } else if (tenant.plan === 'trial_7d' || tenant.plan === 'trial_30d' || tenant.subscriptionStatus === 'trial') {
       trialStores++;
     } else {
       activeStores++;

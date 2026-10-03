@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import {
   createOrGetAsaasCustomer,
-  createAsaasPayment,
+  createAsaasSubscription,
+  calculateTrialDueDate,
   ASAAS_MONTHLY_PRICE,
   ASAAS_YEARLY_PRICE,
 } from '@/lib/asaas';
@@ -9,7 +10,15 @@ import { findTenant, updateTenantSubscription } from '@/lib/tenantStore';
 
 export async function POST(request: NextRequest) {
   try {
-    const { tenantId, cpfCnpj, plan } = await request.json();
+    const {
+      tenantId,
+      cpfCnpj,
+      plan,
+      billingType,
+      creditCard,
+      creditCardHolderInfo,
+      creditCardToken,
+    } = await request.json();
 
     if (!tenantId) {
       return NextResponse.json(
@@ -42,51 +51,63 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 2. Data de vencimento da fatura (3 dias a partir de hoje)
-    const dueDate = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000)
-      .toISOString()
-      .substring(0, 10);
+    // 2. Data da primeira cobrança (exatamente 7 dias de trial gratuito após cadastro)
+    const nextDueDate = calculateTrialDueDate(new Date(), 7);
 
     const isYearly = plan === 'yearly' || tenant.plan === 'yearly';
     const chargeValue = isYearly ? ASAAS_YEARLY_PRICE : ASAAS_MONTHLY_PRICE;
     const planDesc = isYearly ? 'Anual' : 'Mensal';
+    const cycle = isYearly ? 'YEARLY' : 'MONTHLY';
+    const chosenBillingType =
+      billingType || (creditCard || creditCardToken ? 'CREDIT_CARD' : 'UNDEFINED');
 
-    // 3. Cria cobrança no Asaas
-    const payment = await createAsaasPayment({
-      customer: customer.id,
-      billingType: 'UNDEFINED', // Permite PIX, Cartão e Boleto na mesma fatura
+    // 3. Cria Assinatura Recorrente no Asaas
+    // Se o cartão for informado no onboarding, a primeira cobrança é agendada para após os 7 dias
+    const subscription = await createAsaasSubscription({
+      customerId: customer.id,
+      billingType: chosenBillingType,
       value: chargeValue,
-      dueDate,
-      description: `Assinatura ${planDesc} Catálogo Digital — Loja ${tenant.name}`,
+      nextDueDate,
+      cycle,
+      description: `Assinatura Recorrente ${planDesc} NumClick — Loja ${tenant.name}`,
       externalReference: tenant.tenantId,
+      creditCard,
+      creditCardHolderInfo,
+      creditCardToken,
     });
 
-    if (!payment.invoiceUrl) {
+    if (!subscription.id || !subscription.invoiceUrl) {
       return NextResponse.json(
-        { success: false, error: payment.error || 'Falha ao gerar cobrança no Asaas.' },
+        { success: false, error: subscription.error || 'Falha ao gerar assinatura no Asaas.' },
         { status: 400 }
       );
     }
 
-    // Salva o link de pagamento gerado na loja
+    // 4. Salva os dados de assinatura e faturamento no cadastro da loja
     updateTenantSubscription({
       tenantId: tenant.tenantId,
       asaasCustomerId: customer.id,
-      asaasPaymentLink: payment.invoiceUrl,
+      asaasSubscriptionId: subscription.id,
+      asaasPaymentLink: subscription.invoiceUrl,
+      plan: isYearly ? 'yearly' : 'monthly',
     });
 
     return NextResponse.json({
       success: true,
       data: {
-        paymentId: payment.id,
-        invoiceUrl: payment.invoiceUrl,
+        subscriptionId: subscription.id,
+        paymentId: subscription.id,
+        invoiceUrl: subscription.invoiceUrl,
         value: chargeValue,
-        dueDate,
+        nextDueDate,
+        dueDate: nextDueDate,
+        cycle,
+        billingType: chosenBillingType,
       },
     });
   } catch (err) {
     return NextResponse.json(
-      { success: false, error: 'Erro ao gerar fatura: ' + String(err) },
+      { success: false, error: 'Erro ao gerar fatura/assinatura: ' + String(err) },
       { status: 500 }
     );
   }
