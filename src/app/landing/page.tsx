@@ -1,13 +1,11 @@
 'use client';
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
 import {
   Sparkles,
-  ShoppingBag,
   ArrowRight,
   Check,
-  QrCode,
   Smartphone,
   Store,
   DollarSign,
@@ -18,8 +16,6 @@ import {
   Sliders,
   Star,
   ShieldCheck,
-  Truck,
-  Copy,
   Globe,
   Lock,
   X,
@@ -42,92 +38,37 @@ function getSanitizedWhatsappUrl(rawPhone: string | undefined, message: string):
   return `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`;
 }
 
-// Mock de nichos para demonstração interativa no Test Drive Instantâneo
-interface NicheData {
+// Configuração das lojas de exemplo para demonstração
+// Atualize os links (url) e nomes (name) conforme as lojas forem criadas
+interface DemoStore {
   id: string;
-  tabLabel: string;
-  storeName: string;
-  storeCategory: string;
+  name: string;
   badge: string;
-  productName: string;
-  productDescription: string;
-  price: number;
-  oldPrice: number;
-  deliveryFee: number;
-  image: string;
-  options: string;
-  deliveryTime: string;
-  primaryColor: string;
-  primaryBgLight: string;
-  primaryTextColor: string;
-  primaryBorderColor: string;
-  logoMonogram: string;
-  paletteName: string;
+  description: string;
+  url: string;
 }
 
-const DEMO_NICHES: NicheData[] = [
+const DEMO_STORES: DemoStore[] = [
   {
-    id: 'fashion',
-    tabLabel: 'Moda & Roupas',
-    storeName: 'Bella Flor Boutique',
-    storeCategory: 'Vestuário Feminino & Coleção',
-    badge: 'Lançamento',
-    productName: 'Vestido Midi Floral Elegance',
-    productDescription: 'Tecido leve premium com caimento fluido, amarração na cintura e estampa botânica exclusiva.',
-    price: 189.9,
-    oldPrice: 229.9,
-    deliveryFee: 0.0, // Frete grátis
-    image: 'https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?w=600&auto=format&fit=crop&q=80',
-    options: 'Tamanho: M • Cor: Terracota',
-    deliveryTime: 'Envio Imediato / Retirada',
-    primaryColor: '#BE185D', // rose-700
-    primaryBgLight: '#FDF2F8', // pink-50
-    primaryTextColor: '#9D174D', // pink-800
-    primaryBorderColor: '#FBCFE8', // pink-200
-    logoMonogram: 'BF',
-    paletteName: 'Terracota & Rosa Elegance',
+    id: 'loja-1',
+    name: 'Loja de Exemplo 01',
+    badge: 'Modelo 1',
+    description: 'Catálogo demonstrativo em tempo real',
+    url: '#', // Substituir pela URL da primeira loja
   },
   {
-    id: 'food',
-    tabLabel: 'Hamburgueria / Lanches',
-    storeName: 'Artesanal Burger & Beer',
-    storeCategory: 'Hamburgueria & Porções',
-    badge: 'Mais Pedido',
-    productName: 'Double Smash Bacon Especial',
-    productDescription: '2 carnes smash 110g, queijo cheddar inglês, bacon crocante e molho da casa no pão brioche.',
-    price: 38.9,
-    oldPrice: 44.9,
-    deliveryFee: 6.0,
-    image: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=600&auto=format&fit=crop&q=80',
-    options: 'Ponto: Ao ponto • Molho da Casa',
-    deliveryTime: '30-40 min',
-    primaryColor: '#D97706', // amber-600
-    primaryBgLight: '#FFFBEB', // amber-50
-    primaryTextColor: '#B45309', // amber-700
-    primaryBorderColor: '#FDE68A', // amber-200
-    logoMonogram: 'AB',
-    paletteName: 'Amber Burger & Warm Gold',
+    id: 'loja-2',
+    name: 'Loja de Exemplo 02',
+    badge: 'Modelo 2',
+    description: 'Catálogo demonstrativo em tempo real',
+    url: '#', // Substituir pela URL da segunda loja
   },
   {
-    id: 'beauty',
-    tabLabel: 'Cosméticos',
-    storeName: 'Glow Natural Skincare',
-    storeCategory: 'Cosméticos Naturais & Skincare',
-    badge: '100% Vegano',
-    productName: 'Sérum Facial Vitamina C 15%',
-    productDescription: 'Fórmula antioxidante pura com ácido hialurônico de triplo peso molecular e toque seco.',
-    price: 89.9,
-    oldPrice: 119.9,
-    deliveryFee: 0.0, // Retirada / Frete Grátis
-    image: 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=600&auto=format&fit=crop&q=80',
-    options: 'Frasco: 30ml • Toque Seco',
-    deliveryTime: 'Pronta Entrega',
-    primaryColor: '#059669', // emerald-600
-    primaryBgLight: '#ECFDF5', // emerald-50
-    primaryTextColor: '#047857', // emerald-700
-    primaryBorderColor: '#A7F3D0', // emerald-200
-    logoMonogram: 'GN',
-    paletteName: 'Botanical Emerald & Pure Sage',
+    id: 'loja-3',
+    name: 'Loja de Exemplo 03',
+    badge: 'Modelo 3',
+    description: 'Catálogo demonstrativo em tempo real',
+    url: '#', // Substituir pela URL da terceira loja
   },
 ];
 
@@ -166,39 +107,15 @@ const FAQ_ITEMS = [
 ];
 
 export default function SaaSCommercialLandingPage() {
-  const [selectedNiche, setSelectedNiche] = useState<NicheData>(DEMO_NICHES[0]!);
   const [monthlyRevenue, setMonthlyRevenue] = useState<number>(15000);
   const [marketplaceFee, setMarketplaceFee] = useState<number>(18);
   const [openFaq, setOpenFaq] = useState<number | null>(0);
-  const [copiedPix, setCopiedPix] = useState(false);
 
   // Cálculos da calculadora de economia baseada no plano mensal único
   const monthlyFeeAmount = (monthlyRevenue * marketplaceFee) / 100;
   const yearlyMarketplaceLoss = monthlyFeeAmount * 12;
   const saasYearlyCost = 79.9 * 12; // R$ 79,90/mês
   const yearlySavings = Math.max(0, yearlyMarketplaceLoss - saasYearlyCost);
-
-  // Precarrega imagens dos nichos em segundo plano para troca 100% instantânea sem flicker
-  useEffect(() => {
-    DEMO_NICHES.forEach((niche) => {
-      if (typeof window !== 'undefined' && niche.image) {
-        const img = new window.Image();
-        img.src = niche.image;
-      }
-    });
-  }, []);
-
-  const handleCopyPix = () => {
-    try {
-      if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
-        navigator.clipboard.writeText('11999999999').catch(() => {});
-      }
-    } catch {
-      // fallback gracioso se clipboard estiver restrito
-    }
-    setCopiedPix(true);
-    setTimeout(() => setCopiedPix(false), 2000);
-  };
 
   // Mensagem para contratação direta via WhatsApp com sanitização rigorosa de número
   const commercialHireMessage = 'Olá! Tenho interesse em implantar o catálogo na minha loja.';
@@ -248,8 +165,8 @@ export default function SaaSCommercialLandingPage() {
 
           {/* Navegação Desktop */}
           <nav className="hidden md:flex items-center gap-6 text-xs font-medium text-slate-600">
-            <a href="#test-drive" className="hover:text-slate-900 transition-colors">
-              Test Drive
+            <a href="#exemplos" className="hover:text-slate-900 transition-colors">
+              Exemplos
             </a>
             <a href="#comparativo" className="hover:text-slate-900 transition-colors">
               Antes & Depois
@@ -327,10 +244,8 @@ export default function SaaSCommercialLandingPage() {
 
             {/* Botão 2 (Secundário Outline): 'Ver Demonstração ao Vivo' */}
             <Link
-              href="/loja_exemplo"
-              target="_blank"
-              rel="noopener noreferrer"
-              title="Abrir catálogo demonstrativo em nova aba"
+              href="#exemplos"
+              title="Conhecer lojas de exemplo"
               className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl text-sm font-semibold text-slate-700 bg-white hover:bg-slate-50 border border-slate-200/90 shadow-2xs hover:border-slate-300 active:scale-[0.98] transition-all cursor-pointer"
             >
               <span>Ver Demonstração ao Vivo</span>
@@ -360,299 +275,59 @@ export default function SaaSCommercialLandingPage() {
           </div>
         </div>
 
-        {/* BLOCO: 'TEST DRIVE INSTANTÂNEO' COM 3 NICHOS E MOCKUP */}
-        <div id="test-drive" className="mt-12 sm:mt-16 max-w-5xl mx-auto px-3 sm:px-6 overflow-x-hidden">
-          {/* Cabeçalho do Test Drive */}
+        {/* BLOCO: LOJAS DE EXEMPLO (3 BOTÕES DE REDIRECIONAMENTO) */}
+        <div id="exemplos" className="mt-12 sm:mt-16 max-w-4xl mx-auto px-4 sm:px-6">
+          {/* Cabeçalho Compacto das Lojas de Exemplo */}
           <div className="text-center max-w-xl mx-auto mb-6 sm:mb-8 space-y-2 px-2">
             <span className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200/80">
-              <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
-              Test Drive Instantâneo
+              <Store className="w-3.5 h-3.5 text-emerald-600" />
+              Lojas de Exemplo
             </span>
             <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-slate-900 tracking-tight">
-              Veja a vitrine se adaptar à identidade do seu negócio
+              Veja modelos de catálogos prontos
             </h2>
             <p className="text-xs sm:text-sm text-slate-500">
-              Clique nos 3 botões abaixo para alternar a logo, cores primárias e produtos em tempo real:
+              Acesse os exemplos abaixo e veja na prática como a navegação e a experiência de compra são rápidas:
             </p>
           </div>
 
-          {/* Barra Interativa com 3 Botões de Nichos Específicos */}
-          <div className="flex items-center justify-start sm:justify-center gap-2 sm:gap-3 mb-6 sm:mb-8 overflow-x-auto py-1 px-2 no-scrollbar">
-            {DEMO_NICHES.map((niche) => {
-              const active = selectedNiche.id === niche.id;
+          {/* 3 Botões de Redirecionamento para Páginas de Exemplo */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 sm:gap-4 max-w-3xl mx-auto">
+            {DEMO_STORES.map((store) => {
+              const isExternalOrInternalLink =
+                store.url.startsWith('http') || (store.url.startsWith('/') && store.url !== '#');
+
               return (
-                <button
-                  key={niche.id}
-                  type="button"
-                  onClick={() => setSelectedNiche(niche)}
-                  className={`px-3.5 sm:px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold whitespace-nowrap transition-all duration-200 cursor-pointer flex items-center gap-2 ${
-                    active
-                      ? 'bg-slate-900 text-white shadow-md ring-2 ring-slate-900/10 scale-102'
-                      : 'bg-slate-100 text-slate-600 hover:text-slate-900 hover:bg-slate-200/80'
-                  }`}
+                <a
+                  key={store.id}
+                  href={store.url}
+                  target={isExternalOrInternalLink ? '_blank' : undefined}
+                  rel={isExternalOrInternalLink ? 'noopener noreferrer' : undefined}
+                  className="group flex flex-col justify-between p-5 rounded-2xl bg-white border border-slate-200/90 hover:border-emerald-500/60 hover:shadow-md active:scale-[0.98] transition-all duration-200 text-left shadow-xs"
                 >
-                  <span
-                    className="w-2.5 h-2.5 rounded-full flex-shrink-0"
-                    style={{ backgroundColor: niche.primaryColor }}
-                  />
-                  <span>{niche.tabLabel}</span>
-                  {active && (
-                    <span className="text-[10px] font-semibold opacity-75 hidden sm:inline">
-                      • Ativo
+                  <div className="flex items-start justify-between gap-3 mb-3">
+                    <div className="w-10 h-10 rounded-xl bg-slate-100 group-hover:bg-emerald-50 text-slate-700 group-hover:text-emerald-700 flex items-center justify-center transition-colors flex-shrink-0">
+                      <Store className="w-5 h-5" />
+                    </div>
+                    <span className="inline-flex items-center text-[10px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200/70 px-2 py-0.5 rounded-full flex-shrink-0">
+                      {store.badge}
                     </span>
-                  )}
-                </button>
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-bold text-slate-900 group-hover:text-emerald-700 transition-colors">
+                      {store.name}
+                    </h3>
+                    <p className="text-xs text-slate-500 mt-1 line-clamp-1">
+                      {store.description}
+                    </p>
+                  </div>
+                  <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-semibold text-slate-600 group-hover:text-emerald-700 transition-colors">
+                    <span>Acessar vitrine</span>
+                    <ArrowRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-emerald-600 group-hover:translate-x-1 transition-all" />
+                  </div>
+                </a>
               );
             })}
-          </div>
-
-          {/* Container Centralizado com Sombra Difusa (shadow-2xl) */}
-          <div className="relative rounded-3xl sm:rounded-[36px] bg-slate-50/80 border border-slate-200/80 p-3 sm:p-8 lg:p-10 shadow-2xl shadow-slate-900/10 overflow-hidden">
-            {/* Glow difuso que assume a cor do nicho selecionado */}
-            <div
-              className="absolute inset-x-8 top-10 bottom-10 rounded-full blur-3xl -z-10 opacity-20 pointer-events-none transition-colors duration-300"
-              style={{ backgroundColor: selectedNiche.primaryColor }}
-            />
-
-            {/* Mockup Responsivo de Smartphone */}
-            <div className="w-full max-w-[310px] xs:max-w-[335px] sm:max-w-[360px] mx-auto bg-slate-950 rounded-[40px] sm:rounded-[48px] p-2 xs:p-2.5 sm:p-3 ring-1 ring-slate-800 shadow-[0_20px_50px_-10px_rgba(15,23,42,0.35)]">
-              {/* Dynamic Island / Alto-falante */}
-              <div className="w-20 sm:w-28 h-3.5 sm:h-4 bg-slate-950 rounded-full mx-auto mb-2 flex items-center justify-center gap-1.5">
-                <span className="w-1.5 sm:w-2 h-1.5 sm:h-2 rounded-full bg-slate-800" />
-                <span className="w-2 sm:w-2.5 h-2 sm:h-2.5 rounded-full bg-slate-900 ring-1 ring-slate-800/80" />
-              </div>
-
-              {/* Tela do Celular com Vitrine e Sacola Aberta */}
-              <div className="bg-white rounded-[32px] sm:rounded-[38px] overflow-hidden text-slate-900 flex flex-col border border-slate-100 relative select-none font-sans min-h-[560px]">
-                {/* Header do Catálogo na Tela (Logo Monograma + Cores Adaptadas) */}
-                <div className="bg-white px-3 py-2.5 sm:px-3.5 sm:py-3 border-b border-slate-100 flex items-center justify-between">
-                  <div className="flex items-center gap-2 min-w-0">
-                    <div
-                      className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center font-extrabold text-xs shadow-2xs border flex-shrink-0 transition-all duration-200"
-                      style={{
-                        backgroundColor: selectedNiche.primaryBgLight,
-                        color: selectedNiche.primaryColor,
-                        borderColor: selectedNiche.primaryBorderColor,
-                      }}
-                    >
-                      {selectedNiche.logoMonogram}
-                    </div>
-                    <div className="min-w-0">
-                      <h4 className="text-xs font-bold text-slate-900 leading-tight truncate">
-                        {selectedNiche.storeName}
-                      </h4>
-                      <div className="flex items-center gap-1 mt-0.5 truncate">
-                        <span
-                          className="h-1.5 w-1.5 rounded-full animate-pulse flex-shrink-0"
-                          style={{ backgroundColor: selectedNiche.primaryColor }}
-                        />
-                        <span
-                          className="text-[10px] font-semibold truncate"
-                          style={{ color: selectedNiche.primaryTextColor }}
-                        >
-                          Aberto agora • {selectedNiche.deliveryTime}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Botão da Sacola com Cor do Tema */}
-                  <div
-                    className="h-7 px-2.5 rounded-lg text-white flex items-center gap-1 text-[11px] font-bold shadow-2xs transition-colors duration-200 flex-shrink-0"
-                    style={{ backgroundColor: selectedNiche.primaryColor }}
-                  >
-                    <ShoppingBag className="w-3.5 h-3.5" />
-                    <span>1</span>
-                  </div>
-                </div>
-
-                {/* Vitrine Real com Produto (Background do Mockup) */}
-                <div className="p-3 sm:p-3.5 space-y-2 sm:space-y-2.5 bg-slate-50/70 flex-1">
-                  <div className="bg-white rounded-2xl border border-slate-200/70 p-2.5 shadow-2xs space-y-2">
-                    <div className="relative rounded-xl overflow-hidden aspect-[16/10] bg-slate-100">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={selectedNiche.image}
-                        alt={selectedNiche.productName}
-                        className="w-full h-full object-cover"
-                      />
-                      <span
-                        className="absolute top-2 left-2 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-xs transition-colors duration-200"
-                        style={{ backgroundColor: selectedNiche.primaryColor }}
-                      >
-                        {selectedNiche.badge}
-                      </span>
-                    </div>
-
-                    <div>
-                      <span className="text-[9px] uppercase tracking-wider font-bold text-slate-400 block truncate">
-                        {selectedNiche.storeCategory}
-                      </span>
-                      <h4 className="text-xs font-bold text-slate-900 leading-snug truncate">
-                        {selectedNiche.productName}
-                      </h4>
-                      <p className="text-[10px] text-slate-500 line-clamp-1 mt-0.5">
-                        {selectedNiche.productDescription}
-                      </p>
-                      <div className="flex items-center gap-2 mt-1.5">
-                        <span className="text-xs font-extrabold text-slate-900">
-                          {formatCurrency(selectedNiche.price, 'BRL')}
-                        </span>
-                        <span className="text-[10px] text-slate-400 line-through">
-                          {formatCurrency(selectedNiche.oldPrice, 'BRL')}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* SACOLA ABERTA (Bottom Sheet Drawer / Cart Overlay) */}
-                <div className="bg-white border-t border-slate-200/90 rounded-t-3xl shadow-[0_-12px_28px_rgba(15,23,42,0.08)] p-3 sm:p-3.5 space-y-2.5 sm:space-y-3 relative z-20">
-                  <div className="w-8 h-1 bg-slate-300 rounded-full mx-auto -mt-1 mb-1" />
-
-                  {/* Cabeçalho da Sacola */}
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-xs font-extrabold text-slate-900">Sua Sacola</span>
-                      <span
-                        className="text-[10px] font-bold px-1.5 py-0.2 rounded-full border transition-colors duration-200"
-                        style={{
-                          backgroundColor: selectedNiche.primaryBgLight,
-                          color: selectedNiche.primaryTextColor,
-                          borderColor: selectedNiche.primaryBorderColor,
-                        }}
-                      >
-                        1 item
-                      </span>
-                    </div>
-                    <span className="text-[10px] text-slate-400 truncate max-w-[120px]">{selectedNiche.deliveryTime}</span>
-                  </div>
-
-                  {/* Item Selecionado */}
-                  <div className="flex items-center gap-2 p-2 rounded-xl bg-slate-50 border border-slate-100">
-                    <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-lg overflow-hidden flex-shrink-0 bg-slate-200">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={selectedNiche.image}
-                        alt={selectedNiche.productName}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <h5 className="text-[11px] font-bold text-slate-900 truncate leading-tight">
-                        {selectedNiche.productName}
-                      </h5>
-                      <p className="text-[9px] text-slate-500 truncate mt-0.5">
-                        {selectedNiche.options}
-                      </p>
-                      <span className="text-[11px] font-extrabold text-slate-900 block mt-0.5">
-                        {formatCurrency(selectedNiche.price, 'BRL')}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-1 bg-white border border-slate-200 px-1.5 py-0.5 rounded-lg text-[10px] font-bold text-slate-700 shadow-2xs flex-shrink-0">
-                      <span>1 un</span>
-                    </div>
-                  </div>
-
-                  {/* Resumo Financeiro */}
-                  <div className="space-y-1 text-[11px] pt-0.5">
-                    <div className="flex justify-between text-slate-500">
-                      <span>Subtotal</span>
-                      <span>{formatCurrency(selectedNiche.price, 'BRL')}</span>
-                    </div>
-                    <div className="flex justify-between text-slate-500">
-                      <span className="flex items-center gap-1">
-                        <Truck className="w-3 h-3 text-slate-400" />
-                        <span>Taxa de Entrega</span>
-                      </span>
-                      <span>
-                        {selectedNiche.deliveryFee > 0
-                          ? formatCurrency(selectedNiche.deliveryFee, 'BRL')
-                          : 'Grátis'}
-                      </span>
-                    </div>
-                    <div className="flex justify-between text-xs font-extrabold text-slate-900 pt-1 border-t border-slate-100">
-                      <span>Total do Pedido</span>
-                      <span style={{ color: selectedNiche.primaryColor }}>
-                        {formatCurrency(selectedNiche.price + selectedNiche.deliveryFee, 'BRL')}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Pílula de Chave PIX Rápida */}
-                  <div
-                    role="button"
-                    tabIndex={0}
-                    aria-label="Copiar chave PIX oficial demonstrativa"
-                    onClick={handleCopyPix}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' || e.key === ' ') {
-                        e.preventDefault();
-                        handleCopyPix();
-                      }
-                    }}
-                    className="p-2 rounded-xl border flex items-center justify-between text-[10px] cursor-pointer transition-colors focus:outline-none focus:ring-1 focus:ring-slate-400"
-                    style={{
-                      backgroundColor: selectedNiche.primaryBgLight,
-                      borderColor: selectedNiche.primaryBorderColor,
-                    }}
-                  >
-                    <div className="flex items-center gap-1.5 font-semibold truncate" style={{ color: selectedNiche.primaryTextColor }}>
-                      <QrCode className="w-3.5 h-3.5 flex-shrink-0" />
-                      <span className="truncate">PIX oficial: 11999999999</span>
-                    </div>
-                    <span
-                      className="flex items-center gap-1 font-bold bg-white px-1.5 py-0.5 rounded shadow-2xs flex-shrink-0"
-                      style={{ color: selectedNiche.primaryColor }}
-                    >
-                      {copiedPix ? (
-                        <>
-                          <Check className="w-3 h-3" />
-                          <span>Copiado</span>
-                        </>
-                      ) : (
-                        <>
-                          <Copy className="w-3 h-3 text-slate-400" />
-                          <span>Copiar</span>
-                        </>
-                      )}
-                    </span>
-                  </div>
-
-                  {/* Botão de Finalização no WhatsApp com Cor do Tema */}
-                  <div className="pt-0.5">
-                    <Link
-                      href="/loja_exemplo"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      title="Abrir catálogo demonstrativo em nova aba"
-                      className="w-full py-2.5 rounded-xl text-white font-bold text-xs flex items-center justify-center gap-2 shadow-sm transition-all duration-200 cursor-pointer hover:brightness-105 active:scale-[0.99]"
-                      style={{ backgroundColor: selectedNiche.primaryColor }}
-                    >
-                      <MessageCircle className="w-3.5 h-3.5" />
-                      <span className="truncate">
-                        Enviar no WhatsApp •{' '}
-                        {formatCurrency(selectedNiche.price + selectedNiche.deliveryFee, 'BRL')}
-                      </span>
-                    </Link>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Legenda Informativa com Detalhes da Adaptação Visual */}
-            <div className="mt-5 text-center text-xs text-slate-500 max-w-lg mx-auto space-y-1 px-2">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white border border-slate-200 text-slate-700 font-semibold shadow-2xs">
-                <span
-                  className="w-2 h-2 rounded-full flex-shrink-0"
-                  style={{ backgroundColor: selectedNiche.primaryColor }}
-                />
-                <span className="truncate">Paleta ativa: {selectedNiche.paletteName}</span>
-              </div>
-              <p className="text-[11px] text-slate-500 pt-1">
-                Logo personalizada, cores primárias, banners e dados sincronizados em tempo real via Painel Admin.
-              </p>
-            </div>
           </div>
         </div>
       </section>
