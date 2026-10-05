@@ -90,8 +90,10 @@ export function filterAndSortProducts(
       return false;
     }
 
-    // Apenas com estoque
-    if (filters.onlyInStock && p.estoque === 0) {
+    // Apenas com estoque (estoque -1 é ilimitado e considerado com estoque)
+    const stockNum = typeof p.estoque === 'number' ? p.estoque : parseInt(String(p.estoque), 10);
+    const isOut = stockNum !== -1 && (stockNum <= 0 || isNaN(stockNum));
+    if (filters.onlyInStock && isOut) {
       return false;
     }
 
@@ -149,11 +151,16 @@ export function filterAndSortProducts(
       case 'name_asc':
         return a.nome.localeCompare(b.nome);
       case 'featured':
-      default:
-        // Mantém ordem padrão ou prioriza produtos em estoque
-        if (a.estoque === 0 && b.estoque !== 0) return 1;
-        if (a.estoque !== 0 && b.estoque === 0) return -1;
+      default: {
+        // Mantém ordem padrão ou prioriza produtos em estoque (estoque -1 é ilimitado)
+        const stockA = typeof a.estoque === 'number' ? a.estoque : parseInt(String(a.estoque), 10);
+        const stockB = typeof b.estoque === 'number' ? b.estoque : parseInt(String(b.estoque), 10);
+        const isOutA = stockA !== -1 && (stockA <= 0 || isNaN(stockA));
+        const isOutB = stockB !== -1 && (stockB <= 0 || isNaN(stockB));
+        if (isOutA && !isOutB) return 1;
+        if (!isOutA && isOutB) return -1;
         return 0;
+      }
     }
   });
 }

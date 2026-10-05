@@ -95,6 +95,8 @@ CREATE TABLE IF NOT EXISTS public.products (
   descricao TEXT,
   imagens JSONB NOT NULL DEFAULT '[]'::jsonb,
   em_estoque BOOLEAN NOT NULL DEFAULT true,
+  estoque INTEGER DEFAULT -1,
+  badge TEXT,
   destaque BOOLEAN NOT NULL DEFAULT false,
   ordem INTEGER NOT NULL DEFAULT 0,
   variacoes JSONB NOT NULL DEFAULT '[]'::jsonb,
@@ -103,6 +105,9 @@ CREATE TABLE IF NOT EXISTS public.products (
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   deleted_at TIMESTAMPTZ
 );
+
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS estoque INTEGER DEFAULT -1;
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS badge TEXT;
 
 -- 5. TABELA DE CUPONS DE DESCONTO
 CREATE TABLE IF NOT EXISTS public.coupons (

@@ -336,7 +336,7 @@ function getActiveProducts(filterCategoryId) {
     var imagens = parseImagesSafe(row[7]);
     var variacoes = parseVariationsSafe(row[8]);
     var estoque = parseInt(row[9], 10);
-    if (isNaN(estoque)) estoque = 0;
+    if (isNaN(estoque)) estoque = -1;
 
     products.push({
       id: id,

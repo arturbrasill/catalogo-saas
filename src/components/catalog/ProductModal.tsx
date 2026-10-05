@@ -117,7 +117,10 @@ export function ProductModal({
   if (!product) return null;
 
   const currentImage = images[selectedImageIndex] || null;
-  const isOutOfStock = product.estoque === 0;
+  const rawStock = product.estoque;
+  const stockNum = typeof rawStock === 'number' ? rawStock : parseInt(String(rawStock), 10);
+  const isUnlimited = stockNum === -1;
+  const isOutOfStock = !isUnlimited && (stockNum === 0 || stockNum < 0 || isNaN(stockNum));
   const favorite = isFavorite(product.id);
 
   // Cálculo de preços dinâmicos conforme variações selecionadas
@@ -431,10 +434,10 @@ export function ProductModal({
                         <span className="h-1.5 w-1.5 rounded-full bg-rose-500" />
                         Esgotado
                       </span>
-                    ) : product.estoque <= 3 && product.estoque > 0 ? (
+                    ) : !isUnlimited && stockNum <= 3 && stockNum > 0 ? (
                       <span className="inline-flex items-center gap-1 text-xs font-semibold text-amber-700 bg-amber-50 px-2.5 py-1 rounded-full border border-amber-200">
                         <span className="h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse" />
-                        Apenas {product.estoque} restantes
+                        Apenas {stockNum} restantes
                       </span>
                     ) : (
                       <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-brand-primary bg-brand-primary/10 px-2.5 py-1 rounded-full border border-brand-primary/20">
@@ -682,13 +685,13 @@ export function ProductModal({
                     <button
                       type="button"
                       onClick={() => {
-                        if (product.estoque === -1 || quantity < product.estoque) {
+                        if (isUnlimited || quantity < stockNum) {
                           setQuantity((q) => q + 1);
                         }
                       }}
                       disabled={
                         isOutOfStock ||
-                        (product.estoque !== -1 && quantity >= product.estoque)
+                        (!isUnlimited && quantity >= stockNum)
                       }
                       className="p-2 text-slate-600 hover:bg-slate-200/80 active:scale-90 disabled:opacity-30 disabled:hover:bg-transparent transition cursor-pointer"
                       aria-label="Aumentar quantidade"

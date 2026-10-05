@@ -290,6 +290,9 @@ export function normalizeProduct(raw: any): Product {
   if (raw.estoque !== undefined && raw.estoque !== null && raw.estoque !== '') {
     const parsedEstoque = parseInt(String(raw.estoque), 10);
     estoque = isNaN(parsedEstoque) ? 0 : parsedEstoque;
+  } else if (raw.em_estoque !== undefined || raw.emEstoque !== undefined) {
+    const inStock = raw.em_estoque !== undefined ? Boolean(raw.em_estoque) : Boolean(raw.emEstoque);
+    estoque = inStock ? -1 : 0;
   }
 
   const ativo = raw.ativo === undefined ? true : Boolean(raw.ativo);

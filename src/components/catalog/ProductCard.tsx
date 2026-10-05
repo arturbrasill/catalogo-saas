@@ -88,7 +88,10 @@ export function ProductCard({
   const hasDiscount =
     product.precoPromocional && product.precoPromocional < product.preco;
 
-  const isOutOfStock = product.estoque === 0;
+  const rawStock = product.estoque;
+  const stockNum = typeof rawStock === 'number' ? rawStock : parseInt(String(rawStock), 10);
+  const isUnlimited = stockNum === -1;
+  const isOutOfStock = !isUnlimited && (stockNum === 0 || stockNum < 0 || isNaN(stockNum));
 
   const discountPercent = hasDiscount
     ? Math.round(((product.preco - product.precoPromocional!) / product.preco) * 100)
@@ -160,6 +163,15 @@ export function ProductCard({
                 -{discountPercent}%
               </span>
             )}
+            {isOutOfStock ? (
+              <span className="bg-rose-500/95 backdrop-blur-xs text-white text-[8px] font-black px-1.5 py-0.5 rounded-full shadow-xs uppercase">
+                Esgotado
+              </span>
+            ) : !isUnlimited && stockNum <= 3 && stockNum > 0 ? (
+              <span className="bg-amber-500/95 backdrop-blur-xs text-white text-[8px] font-black px-1.5 py-0.5 rounded-full shadow-xs uppercase">
+                Últimas {stockNum} un
+              </span>
+            ) : null}
           </div>
         </div>
 
@@ -247,9 +259,12 @@ export function ProductCard({
 
             <button
               type="button"
-              className="h-9 w-9 sm:h-9 sm:w-9 rounded-btn flex items-center justify-center text-brand-contrast bg-brand-primary hover:bg-brand-primary-hover shadow-xs group-hover:scale-105 active:scale-95 transition-all flex-shrink-0 cursor-pointer"
+              disabled={isOutOfStock}
+              className={`h-9 w-9 sm:h-9 sm:w-9 rounded-btn flex items-center justify-center text-brand-contrast bg-brand-primary hover:bg-brand-primary-hover shadow-xs group-hover:scale-105 active:scale-95 transition-all flex-shrink-0 cursor-pointer ${
+                isOutOfStock ? 'opacity-40 cursor-not-allowed' : ''
+              }`}
               style={{ backgroundColor: store.primary_color }}
-              aria-label={`Ver ou adicionar ${product.nome}`}
+              aria-label={isOutOfStock ? `${product.nome} (Esgotado)` : `Ver ou adicionar ${product.nome}`}
             >
               {hasVariations ? (
                 <Eye className="w-4 h-4" />
@@ -325,9 +340,9 @@ export function ProductCard({
               <span className="bg-rose-500/95 backdrop-blur-xs text-white text-xs font-bold px-3 py-1 rounded-full shadow-xs uppercase">
                 Esgotado
               </span>
-            ) : product.estoque <= 3 && product.estoque > 0 ? (
+            ) : !isUnlimited && stockNum <= 3 && stockNum > 0 ? (
               <span className="bg-amber-500/95 backdrop-blur-xs text-white text-xs font-bold px-3 py-1 rounded-full shadow-xs uppercase">
-                Últimas {product.estoque} un
+                Últimas {stockNum} un
               </span>
             ) : null}
           </div>
@@ -505,9 +520,9 @@ export function ProductCard({
             <span className="bg-rose-500/95 backdrop-blur-xs text-white text-[10px] font-bold px-2.5 py-0.5 rounded-full shadow-xs uppercase">
               Esgotado
             </span>
-          ) : product.estoque <= 3 && product.estoque > 0 ? (
+          ) : !isUnlimited && stockNum <= 3 && stockNum > 0 ? (
             <span className="bg-amber-500/95 backdrop-blur-xs text-white text-[10px] font-bold px-2.5 py-0.5 rounded-full shadow-xs uppercase">
-              Últimas {product.estoque} un
+              Últimas {stockNum} un
             </span>
           ) : null}
         </div>

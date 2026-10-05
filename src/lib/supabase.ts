@@ -820,9 +820,10 @@ export async function fetchProductsFromSupabase(tenantId: string, categoryId?: s
       categoriaId: row.categoria_id,
       descricao: row.descricao || '',
       imagens: Array.isArray(row.imagens) ? row.imagens : [],
-      estoque: typeof row.estoque === 'number' ? row.estoque : (row.em_estoque === false ? 0 : 100),
+      estoque: typeof row.estoque === 'number' ? row.estoque : (row.em_estoque === false ? 0 : -1),
       variacoes: Array.isArray(row.variacoes) ? row.variacoes : [],
       ativo: row.ativo !== false,
+      badge: row.badge || null,
       createdAt: row.created_at,
       updatedAt: row.updated_at,
       deletedAt: row.deleted_at || null,
@@ -842,11 +843,17 @@ export async function createProductInSupabase(tenantId: string, input: CreatePro
     const slug = input.slug || input.nome.toLowerCase().replace(/[^a-z0-9]+/g, '-');
     const now = new Date().toISOString();
 
+    const estNum = typeof input.estoque === 'number'
+      ? input.estoque
+      : (input.estoque !== undefined && input.estoque !== null && input.estoque !== ''
+          ? parseInt(String(input.estoque), 10)
+          : undefined);
+
     const emEstoque = (input as any).emEstoque !== undefined
       ? Boolean((input as any).emEstoque)
-      : (typeof input.estoque === 'number' ? input.estoque > 0 : true);
+      : (typeof estNum === 'number' ? (estNum === -1 || estNum > 0) : true);
 
-    const row = {
+    const row: Record<string, any> = {
       id,
       tenant_id: tenantId,
       nome: input.nome.trim(),
@@ -865,7 +872,22 @@ export async function createProductInSupabase(tenantId: string, input: CreatePro
       updated_at: now,
     };
 
-    const { data, error } = await supabase.from('products').insert(row).select().single();
+    if (typeof estNum === 'number' && !isNaN(estNum)) {
+      row.estoque = estNum;
+    }
+    if (input.badge !== undefined) {
+      row.badge = input.badge ? String(input.badge).trim() : null;
+    }
+
+    let { data, error } = await supabase.from('products').insert(row).select().single();
+    if (error && (error.message?.includes('estoque') || error.message?.includes('badge'))) {
+      delete row.estoque;
+      delete row.badge;
+      const retry = await supabase.from('products').insert(row).select().single();
+      data = retry.data;
+      error = retry.error;
+    }
+
     if (error || !data) return null;
 
     return {
@@ -877,9 +899,12 @@ export async function createProductInSupabase(tenantId: string, input: CreatePro
       categoriaId: data.categoria_id,
       descricao: data.descricao || '',
       imagens: Array.isArray(data.imagens) ? data.imagens : [],
-      estoque: typeof input.estoque === 'number' ? input.estoque : (data.em_estoque === false ? 0 : 100),
+      estoque: typeof estNum === 'number' && !isNaN(estNum)
+        ? estNum
+        : (typeof data.estoque === 'number' ? data.estoque : (data.em_estoque === false ? 0 : -1)),
       variacoes: Array.isArray(data.variacoes) ? data.variacoes : [],
       ativo: data.ativo !== false,
+      badge: input.badge !== undefined ? (input.badge ? String(input.badge).trim() : null) : (data.badge || null),
       createdAt: data.created_at,
       updatedAt: data.updated_at,
       deletedAt: data.deleted_at || null,
@@ -910,15 +935,27 @@ export async function updateProductInSupabase(tenantId: string, input: UpdatePro
     if (input.imagens !== undefined) payload['imagens'] = Array.isArray(input.imagens) ? input.imagens : [];
     if ((input as any).emEstoque !== undefined) {
       payload['em_estoque'] = Boolean((input as any).emEstoque);
-    } else if (input.estoque !== undefined) {
-      payload['em_estoque'] = Number(input.estoque) > 0;
+    }
+    if (input.estoque !== undefined) {
+      const estNum = typeof input.estoque === 'number'
+        ? input.estoque
+        : parseInt(String(input.estoque), 10);
+      if (!isNaN(estNum)) {
+        payload['estoque'] = estNum;
+        if ((input as any).emEstoque === undefined) {
+          payload['em_estoque'] = estNum === -1 || estNum > 0;
+        }
+      }
+    }
+    if (input.badge !== undefined) {
+      payload['badge'] = input.badge ? String(input.badge).trim() : null;
     }
     if ((input as any).destaque !== undefined) payload['destaque'] = Boolean((input as any).destaque);
     if ((input as any).ordem !== undefined) payload['ordem'] = Number((input as any).ordem) || 0;
     if (input.variacoes !== undefined) payload['variacoes'] = Array.isArray(input.variacoes) ? input.variacoes : [];
     if (input.ativo !== undefined) payload['ativo'] = Boolean(input.ativo);
 
-    const { data, error } = await supabase
+    let { data, error } = await supabase
       .from('products')
       .update(payload)
       .eq('tenant_id', tenantId)
@@ -926,7 +963,25 @@ export async function updateProductInSupabase(tenantId: string, input: UpdatePro
       .select()
       .single();
 
+    if (error && (error.message?.includes('estoque') || error.message?.includes('badge'))) {
+      delete payload.estoque;
+      delete payload.badge;
+      const retry = await supabase
+        .from('products')
+        .update(payload)
+        .eq('tenant_id', tenantId)
+        .eq('id', input.id)
+        .select()
+        .single();
+      data = retry.data;
+      error = retry.error;
+    }
+
     if (error || !data) return null;
+
+    const resolvedEstoque = typeof input.estoque === 'number'
+      ? input.estoque
+      : (typeof data.estoque === 'number' ? data.estoque : (data.em_estoque === false ? 0 : -1));
 
     return {
       id: data.id,
@@ -937,9 +992,10 @@ export async function updateProductInSupabase(tenantId: string, input: UpdatePro
       categoriaId: data.categoria_id,
       descricao: data.descricao || '',
       imagens: Array.isArray(data.imagens) ? data.imagens : [],
-      estoque: typeof input.estoque === 'number' ? input.estoque : (data.em_estoque === false ? 0 : 100),
+      estoque: resolvedEstoque,
       variacoes: Array.isArray(data.variacoes) ? data.variacoes : [],
       ativo: data.ativo !== false,
+      badge: input.badge !== undefined ? (input.badge ? String(input.badge).trim() : null) : (data.badge || null),
       createdAt: data.created_at,
       updatedAt: data.updated_at,
       deletedAt: data.deleted_at || null,

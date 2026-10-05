@@ -154,5 +154,39 @@ describe('Sheet Normalization QA & Resilience', () => {
       expect(product.variacoes).toEqual([{ tipo: 'Tamanho', opcoes: ['M', 'G'] }]);
       expect(product.ativo).toBe(true);
     });
+
+    it('deve preservar estoque -1 como ilimitado e converter em_estoque', () => {
+      const rawUnlimited = {
+        nome: 'Serviço Digital',
+        preco: 100,
+        estoque: -1,
+      };
+      const p1 = normalizeProduct(rawUnlimited);
+      expect(p1.estoque).toBe(-1);
+
+      const rawStringUnlimited = {
+        nome: 'Serviço Digital 2',
+        preco: 100,
+        estoque: '-1',
+      };
+      const p2 = normalizeProduct(rawStringUnlimited);
+      expect(p2.estoque).toBe(-1);
+
+      const rawWithFlagTrue = {
+        nome: 'Item Sem Quantidade Explícita',
+        preco: 50,
+        em_estoque: true,
+      };
+      const p3 = normalizeProduct(rawWithFlagTrue);
+      expect(p3.estoque).toBe(-1);
+
+      const rawWithFlagFalse = {
+        nome: 'Item Esgotado Por Flag',
+        preco: 50,
+        em_estoque: false,
+      };
+      const p4 = normalizeProduct(rawWithFlagFalse);
+      expect(p4.estoque).toBe(0);
+    });
   });
 });

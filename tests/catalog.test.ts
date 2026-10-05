@@ -485,18 +485,38 @@ describe('Módulo 3 — Vitrine Pública & Catálogo (tests/catalog.test.ts)', (
       expect(result[0]?.id).toBe('p2');
     });
 
-    it('deve filtrar produtos apenas com estoque quando ativado', async () => {
+    it('deve filtrar produtos apenas com estoque quando ativado e manter produtos com estoque -1 (ilimitado)', async () => {
       const { filterAndSortProducts, DEFAULT_FILTERS } = await import(
         '../src/lib/catalogFilters'
       );
 
-      const result = filterAndSortProducts(mockProducts, {
+      const productsWithUnlimited = [
+        ...mockProducts,
+        {
+          id: 'p_unlimited',
+          categoriaId: 'cat_geral',
+          nome: 'Produto Ilimitado',
+          slug: 'produto-ilimitado',
+          descricao: 'Estoque sem limite',
+          preco: 50.0,
+          precoPromocional: null,
+          imagens: [],
+          variacoes: [],
+          estoque: -1, // Ilimitado
+          ativo: true,
+          createdAt: '2026-01-20T10:00:00Z',
+          updatedAt: '2026-01-20T10:00:00Z',
+          deletedAt: null,
+        },
+      ];
+
+      const result = filterAndSortProducts(productsWithUnlimited, {
         ...DEFAULT_FILTERS,
         onlyInStock: true,
       });
 
-      expect(result).toHaveLength(2);
-      expect(result.map((p) => p.id)).not.toContain('p3'); // p3 está esgotado
+      expect(result.map((p) => p.id)).toContain('p_unlimited');
+      expect(result.map((p) => p.id)).not.toContain('p3'); // p3 está esgotado (estoque 0)
     });
 
     it('deve filtrar produtos em promoção com desconto ativo', async () => {
