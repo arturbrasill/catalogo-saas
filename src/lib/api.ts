@@ -58,6 +58,17 @@ export class ApiClient {
       return first;
     }
 
+    try {
+      const storedTenant =
+        sessionStorage.getItem('catalogo_admin_tenant') ||
+        localStorage.getItem('catalogo_admin_tenant');
+      if (storedTenant && storedTenant.trim()) {
+        return storedTenant.trim();
+      }
+    } catch {
+      // ignore storage access error
+    }
+
     const match = document.cookie.match(/(?:^|;\s*)app_tenant=([^;]+)/);
     if (match && match[1]) {
       return decodeURIComponent(match[1]);
@@ -77,17 +88,23 @@ export class ApiClient {
   }
 
   private async request<T>(endpoint: string, options?: RequestInit, explicitTenant?: string): Promise<T> {
-    const targetUrl = this.appendTenant(endpoint, explicitTenant);
+    const tenant = explicitTenant || this.detectTenant();
+    const targetUrl = this.appendTenant(endpoint, tenant || undefined);
     try {
+      const requestHeaders: Record<string, string> = {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+        ...this.defaultHeaders,
+        ...((options?.headers as Record<string, string>) || {}),
+      };
+      if (tenant) {
+        requestHeaders['x-tenant-id'] = tenant;
+      }
+
       const res = await fetch(targetUrl, {
         cache: 'no-store',
         ...options,
-        headers: {
-          'Content-Type': 'application/json',
-          Accept: 'application/json',
-          ...this.defaultHeaders,
-          ...(options?.headers || {}),
-        },
+        headers: requestHeaders,
       });
 
       if (!res.ok) {

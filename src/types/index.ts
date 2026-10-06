@@ -259,6 +259,7 @@ export interface Tenant {
   notes?: string;
   niche?: string;
   cpfCnpj?: string;
+  apiToken?: string;
   // Campos de Integração com Asaas
   asaasCustomerId?: string;
   asaasSubscriptionId?: string;

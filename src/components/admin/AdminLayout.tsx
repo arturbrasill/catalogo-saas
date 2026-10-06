@@ -70,7 +70,18 @@ export function AdminLayout({ children }: AdminLayoutProps) {
       const urlTenant = params.get('tenant');
       if (urlTenant) {
         setStoreSlug(urlTenant);
+        try {
+          sessionStorage.setItem('catalogo_admin_tenant', urlTenant);
+        } catch {}
       } else {
+        try {
+          const stored =
+            sessionStorage.getItem('catalogo_admin_tenant') ||
+            localStorage.getItem('catalogo_admin_tenant');
+          if (stored) {
+            setStoreSlug(stored);
+          }
+        } catch {}
         const match = document.cookie.match(/(?:^|;\s*)app_tenant=([^;]+)/);
         if (match && match[1]) {
           setStoreSlug(decodeURIComponent(match[1]));
@@ -156,10 +167,13 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                 {navigation.map((item) => {
                   const active = isActive(item.href);
                   const Icon = item.icon;
+                  const itemHref = storeSlug
+                    ? `${item.href}?tenant=${encodeURIComponent(storeSlug)}`
+                    : item.href;
                   return (
                     <a
                       key={item.name}
-                      href={item.href}
+                      href={itemHref}
                       className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all duration-200 group ${
                         active
                           ? 'bg-brand-primary/15 text-brand-primary border border-brand-primary/20 shadow-xs'
@@ -361,10 +375,13 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                   {navigation.map((item) => {
                     const active = isActive(item.href);
                     const Icon = item.icon;
+                    const itemHref = storeSlug
+                      ? `${item.href}?tenant=${encodeURIComponent(storeSlug)}`
+                      : item.href;
                     return (
                       <a
                         key={item.name}
-                        href={item.href}
+                        href={itemHref}
                         onClick={() => setMobileMenuOpen(false)}
                         className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-semibold transition ${
                           active

@@ -139,6 +139,38 @@ describe('Módulo 2 — Painel Administrativo (/admin)', () => {
       expect(prod.variacoes[0]?.opcoes).toEqual(['P', 'M', 'G']);
     });
 
+    it('deve aceitar criação de camisa com variação de cor na loja Lunara usando token autenticado do tenant', () => {
+      const lunaraEngine = new BackendEngine({
+        store_id: 'lunara',
+        store_name: 'Lunara',
+        admin_username: 'lunara',
+        api_token: 'tok_3490359550b749f9af668f083a0964c0',
+      });
+
+      const res = lunaraEngine.doPost({
+        action: 'createProduct',
+        token: 'tok_3490359550b749f9af668f083a0964c0',
+        product: {
+          categoriaId: 'cat_geral',
+          nome: 'Camisa Linho Fino',
+          descricao: 'Camisa sofisticada com acabamento nobre',
+          preco: 149.9,
+          estoque: 15,
+          ativo: true,
+          variacoes: [
+            { tipo: 'Cor', opcoes: ['Azul Marinho', 'Branco Neve', 'Areia'] },
+          ],
+        },
+      });
+
+      expect(res.success).toBe(true);
+      const prod = res.data as Product;
+      expect(prod.nome).toBe('Camisa Linho Fino');
+      expect(prod.variacoes).toHaveLength(1);
+      expect(prod.variacoes[0]?.tipo).toBe('Cor');
+      expect(prod.variacoes[0]?.opcoes).toContain('Azul Marinho');
+    });
+
     it('deve editar produto existente atualizando campos e timestamp', () => {
       const createRes = engine.doPost({
         action: 'createProduct',

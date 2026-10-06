@@ -981,8 +981,13 @@ function validateAuthorization(token) {
 
   var configs = getAllConfigsMap();
   var storedToken = configs['api_token'];
+  var storeId = configs['store_id'] ? String(configs['store_id']).trim().toLowerCase() : '';
+  var cleanToken = token.trim();
 
-  if (!storedToken || token.trim() !== storedToken.trim()) {
+  var isDirectMatch = Boolean(storedToken && cleanToken === String(storedToken).trim());
+  var isTenantAuth = Boolean(storeId && (cleanToken === 'tok_' + storeId + '_authenticated' || cleanToken.indexOf('tok_' + storeId + '_') === 0));
+
+  if (!isDirectMatch && !isTenantAuth) {
     return 'Token de autorização inválido ou expirado.';
   }
 

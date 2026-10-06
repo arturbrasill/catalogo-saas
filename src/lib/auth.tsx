@@ -43,11 +43,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (result.authenticated && result.token) {
         setToken(result.token);
         sessionStorage.setItem(TOKEN_KEY, result.token);
-        if (result.tenantSlug) {
+        const tenantIdentifier = result.tenantSlug || (result as any).tenantId || '';
+        if (tenantIdentifier) {
           try {
-            document.cookie = `app_tenant=${encodeURIComponent(result.tenantSlug)}; path=/; max-age=2592000; SameSite=Lax`;
+            sessionStorage.setItem('catalogo_admin_tenant', tenantIdentifier);
+            localStorage.setItem('catalogo_admin_tenant', tenantIdentifier);
+            document.cookie = `app_tenant=${encodeURIComponent(tenantIdentifier)}; path=/; max-age=2592000; SameSite=Lax`;
           } catch {}
-          router.push(`/admin?tenant=${encodeURIComponent(result.tenantSlug)}`);
+          router.push(`/admin?tenant=${encodeURIComponent(tenantIdentifier)}`);
         } else {
           router.push('/admin');
         }
@@ -63,6 +66,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setToken(null);
     try {
       sessionStorage.removeItem(TOKEN_KEY);
+      sessionStorage.removeItem('catalogo_admin_tenant');
+      localStorage.removeItem('catalogo_admin_tenant');
     } catch {
       // ignore
     }

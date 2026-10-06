@@ -140,6 +140,7 @@ export async function fetchAllTenantsFromSupabase(): Promise<Tenant[] | null> {
         announcement_text: extraSettings?.announcement_text,
         announcement_bg_color: extraSettings?.announcement_bg_color,
         announcement_text_color: extraSettings?.announcement_text_color,
+        apiToken: row.api_token || undefined,
       };
     });
   } catch (err) {
@@ -207,6 +208,7 @@ export async function fetchTenantFromSupabase(identifier: string): Promise<Tenan
       announcement_bg_color: extraSettings?.announcement_bg_color,
       announcement_text_color: extraSettings?.announcement_text_color,
       cpfCnpj: extraSettings?.cpf_cnpj || data.cpf_cnpj || undefined,
+      apiToken: data.api_token || undefined,
     };
   } catch (err) {
     console.warn('Erro em fetchTenantFromSupabase:', err);
@@ -840,7 +842,16 @@ export async function createProductInSupabase(tenantId: string, input: CreatePro
 
   try {
     const id = 'prod_' + crypto.randomUUID().replace(/-/g, '').substring(0, 10);
-    const slug = input.slug || input.nome.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+    const rawName = (input.nome || '').trim();
+    const cleanSlug = input.slug
+      ? String(input.slug).trim()
+      : rawName
+          .toLowerCase()
+          .normalize('NFD')
+          .replace(/[\u0300-\u036f]/g, '')
+          .replace(/[^a-z0-9]+/g, '-')
+          .replace(/^-+|-+$/g, '') || ('prod-' + Math.random().toString(36).substring(2, 7));
+    const slug = cleanSlug;
     const now = new Date().toISOString();
 
     const estNum = typeof input.estoque === 'number'
@@ -888,7 +899,12 @@ export async function createProductInSupabase(tenantId: string, input: CreatePro
       error = retry.error;
     }
 
-    if (error || !data) return null;
+    if (error || !data) {
+      if (error) {
+        console.error('Erro ao cadastrar produto no Supabase:', error.message, error.details || error);
+      }
+      return null;
+    }
 
     return {
       id: data.id,

@@ -19,6 +19,7 @@ import {
   deleteTenantFromSupabase,
   extractTenantSettings,
   serializeTenantSettings,
+  getSupabaseClient,
   type TenantStoreSettings,
 } from '@/lib/supabase';
 
@@ -128,6 +129,7 @@ export async function syncTenantsFromRemote(): Promise<boolean> {
             asaasSubscriptionId: t.asaasSubscriptionId,
             asaasPaymentLink: t.asaasPaymentLink,
             cpfCnpj: t.cpfCnpj || (t as any).cpf_cnpj || undefined,
+            apiToken: t.apiToken || (t as any).api_token || undefined,
           };
           newRegistry[domain] = tenantObj;
           if (t.slug) newRegistry[t.slug] = tenantObj;
@@ -424,6 +426,7 @@ export async function findTenantAsync(identifier: string): Promise<Tenant | null
         announcement_bg_color: supabaseTenant.announcement_bg_color,
         announcement_text_color: supabaseTenant.announcement_text_color,
         cpfCnpj: supabaseTenant.cpfCnpj,
+        apiToken: supabaseTenant.apiToken || (supabaseTenant as any).api_token || undefined,
       };
 
       // Hidrata memória da instância atual
@@ -465,6 +468,97 @@ export function findTenantByAdminUsername(username: string): Tenant | null {
     ) {
       return tenant;
     }
+  }
+
+  return null;
+}
+
+/**
+ * Encontra um tenant a partir de seu token de autorização administrativo.
+ */
+export function findTenantByToken(token: string): Tenant | null {
+  if (!token || typeof token !== 'string') return null;
+  const clean = token.trim();
+
+  // Suporte a token autenticado formatado
+  if (clean.startsWith('tok_') && clean.endsWith('_authenticated')) {
+    const rawId = clean.slice(4, -14);
+    const found = findTenant(rawId);
+    if (found) return found;
+  }
+
+  for (const tenant of Object.values(inMemoryRegistry)) {
+    if (
+      tenant.apiToken === clean ||
+      (tenant as any).api_token === clean ||
+      (tenant as any).token === clean
+    ) {
+      return tenant;
+    }
+  }
+
+  return null;
+}
+
+/**
+ * Encontra um tenant por token de forma assíncrona consultando também o Supabase.
+ */
+export async function findTenantByTokenAsync(token: string): Promise<Tenant | null> {
+  if (!token || typeof token !== 'string') return null;
+  const clean = token.trim();
+
+  const inMem = findTenantByToken(clean);
+  if (inMem) return inMem;
+
+  try {
+    const supabase = getSupabaseClient();
+    if (supabase) {
+      const { data } = await supabase
+        .from('tenants')
+        .select('*')
+        .eq('api_token', clean)
+        .limit(1)
+        .maybeSingle();
+
+      if (data && data.tenant_id) {
+        const domain = data.domain || `${data.slug || data.tenant_id}.localhost`;
+        const extraSettings = extractTenantSettings(data.notes);
+        const tenantObj: Tenant = {
+          tenantId: data.tenant_id,
+          name: data.name,
+          slug: data.slug || data.tenant_id.replace(/_/g, '-'),
+          domain,
+          apiUrl: data.api_url || `/api/backend?tenant=${data.tenant_id}`,
+          whatsapp: String(data.whatsapp || ''),
+          ownerEmail: data.owner_email || '',
+          adminUsername: data.admin_username || extraSettings?.admin_username || undefined,
+          niche: data.niche || 'Geral',
+          plan: data.plan || 'trial_30d',
+          subscriptionStatus: data.subscription_status || 'active',
+          subscriptionExpiresAt: data.subscription_expires_at,
+          createdAt: data.created_at,
+          notes: data.notes,
+          asaasCustomerId: data.asaas_customer_id,
+          asaasSubscriptionId: data.asaas_subscription_id,
+          asaasPaymentLink: data.asaas_payment_link,
+          apiToken: data.api_token,
+          catalog_layout: extraSettings?.catalog_layout,
+          theme_preset: extraSettings?.theme_preset,
+          announcement_enabled: extraSettings?.announcement_enabled,
+          announcement_text: extraSettings?.announcement_text,
+          announcement_bg_color: extraSettings?.announcement_bg_color,
+          announcement_text_color: extraSettings?.announcement_text_color,
+          cpfCnpj: extraSettings?.cpf_cnpj || data.cpf_cnpj || undefined,
+        };
+
+        inMemoryRegistry[domain] = tenantObj;
+        if (tenantObj.slug) inMemoryRegistry[tenantObj.slug] = tenantObj;
+        inMemoryRegistry[tenantObj.tenantId] = tenantObj;
+        return tenantObj;
+      }
+    }
+  } catch (err) {
+    console.warn('Nota: Erro ao buscar tenant por token no Supabase:', err);
   }
 
   return null;
@@ -572,6 +666,7 @@ export async function registerTenant(input: CreateTenantInput): Promise<{
 
   // Cria o registro do Tenant
   const chosenUsername = (input.adminUsername || input.slug || input.name).toLowerCase().replace(/[^a-z0-9_]/g, '');
+  const generatedApiToken = 'tok_' + Math.random().toString(36).substring(2) + Math.random().toString(36).substring(2);
 
   const newTenant: Tenant = {
     tenantId,
@@ -591,6 +686,7 @@ export async function registerTenant(input: CreateTenantInput): Promise<{
     niche: input.niche || 'Geral',
     cpfCnpj: input.cpfCnpj ? input.cpfCnpj.trim() : undefined,
     notes: `Loja criada automaticamente via Onboarding (${input.niche || 'Geral'})`,
+    apiToken: generatedApiToken,
   };
 
   // Inicializa o engine de dados da loja com seus dados iniciais e senha
@@ -608,6 +704,7 @@ export async function registerTenant(input: CreateTenantInput): Promise<{
     text_color: input.textColor || '#0f172a',
     admin_username: chosenUsername,
     admin_password_hash: passwordHash,
+    api_token: generatedApiToken,
     domain: newTenant.domain,
   });
 

@@ -958,8 +958,18 @@ export class BackendEngine {
       return 'Token de autorização ausente ou inválido.';
     }
 
-    const storedToken = this.configMap.get('api_token');
-    if (!storedToken || token.trim() !== storedToken.trim()) {
+    const cleanToken = token.trim();
+    const storedToken = (this.configMap.get('api_token') || '').trim();
+    const storeId = (this.configMap.get('store_id') || '').trim().toLowerCase();
+
+    const isDirectMatch = Boolean(storedToken && cleanToken === storedToken);
+    const isTenantAuthenticated = Boolean(
+      storeId &&
+        (cleanToken === `tok_${storeId}_authenticated` ||
+          cleanToken.startsWith(`tok_${storeId}_`))
+    );
+
+    if (!isDirectMatch && !isTenantAuthenticated) {
       return 'Token de autorização inválido ou expirado.';
     }
 

@@ -18,8 +18,17 @@ import {
   createCouponInSupabase,
   updateCouponInSupabase,
   deleteCouponInSupabase,
+  getSupabaseClient,
 } from '@/lib/supabase';
-import { updateTenantSubscription, updateTenantSubscriptionAsync, findTenant, findTenantAsync, findTenantByAdminUsername } from '@/lib/tenantStore';
+import {
+  updateTenantSubscription,
+  updateTenantSubscriptionAsync,
+  findTenant,
+  findTenantAsync,
+  findTenantByAdminUsername,
+  findTenantByToken,
+  findTenantByTokenAsync,
+} from '@/lib/tenantStore';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -430,25 +439,52 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const { tenant, tenantId, apiUrl, isAllowed } = resolveContextTenant(request);
-  const effectiveTenant = (tenantId ? await findTenantAsync(tenantId) : null) || tenant;
-
-  if (!isAllowed) {
-    return NextResponse.json(
-      {
-        success: false,
-        data: null,
-        error: {
-          code: 'TENANT_NOT_FOUND',
-          message: 'Loja não cadastrada para o domínio informado.',
-        },
-      },
-      { status: 404 }
-    );
-  }
+  let { tenant, tenantId, apiUrl, isAllowed } = resolveContextTenant(request);
 
   try {
     const payload = await request.json();
+
+    // 0. RESOLUÇÃO DE IDENTIDADE DE TENANT POR TOKEN (AUTENTICAÇÃO RIGOROSA)
+    if (payload.token && typeof payload.token === 'string') {
+      const cleanToken = payload.token.trim();
+      let tokenTenantId: string | null = null;
+
+      if (cleanToken.startsWith('tok_') && cleanToken.endsWith('_authenticated')) {
+        tokenTenantId = cleanToken.slice(4, -14);
+      }
+
+      if (!tokenTenantId) {
+        const foundByTok = await findTenantByTokenAsync(cleanToken);
+        if (foundByTok) {
+          tokenTenantId = foundByTok.tenantId;
+        }
+      }
+
+      if (tokenTenantId) {
+        tenantId = tokenTenantId;
+        const fresh = (await findTenantAsync(tokenTenantId)) || findTenant(tokenTenantId);
+        if (fresh) {
+          tenant = fresh;
+          isAllowed = true;
+        }
+      }
+    }
+
+    const effectiveTenant = (tenantId ? await findTenantAsync(tenantId) : null) || tenant;
+
+    if (!isAllowed) {
+      return NextResponse.json(
+        {
+          success: false,
+          data: null,
+          error: {
+            code: 'TENANT_NOT_FOUND',
+            message: 'Loja não cadastrada para o domínio informado.',
+          },
+        },
+        { status: 404 }
+      );
+    }
 
     // SINCRONIZAÇÃO AUTOMÁTICA UNIVERSAL:
     // Sempre que o lojista salvar configurações (como o WhatsApp de atendimento ou Nome da Loja),
@@ -711,9 +747,11 @@ export async function POST(request: NextRequest) {
       console.warn('Nota: Fallback Supabase em POST /api/backend:', err);
     }
 
-    // 2. Se houver apiUrl externa
-    if (apiUrl) {
-      const response = await fetch(apiUrl, {
+    // 2. Se houver apiUrl externa EXPLICITAMENTE vinculada a esta loja ou se for loja_exemplo
+    const hasDedicatedGasApi = Boolean(tenant?.apiUrl && isValidGasApiUrl(tenant.apiUrl));
+    if (hasDedicatedGasApi || (tenantId === 'loja_exemplo' && apiUrl)) {
+      const targetApiUrl = hasDedicatedGasApi ? tenant!.apiUrl : apiUrl!;
+      const response = await fetch(targetApiUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'text/plain;charset=utf-8',
@@ -733,7 +771,11 @@ export async function POST(request: NextRequest) {
         effectiveTenantId = found.tenantId;
       }
     }
-    const localResult = getLocalEngine(effectiveTenantId).doPost(payload);
+    const engine = getLocalEngine(effectiveTenantId);
+    if (effectiveTenant?.apiToken) {
+      (engine as any).configMap?.set('api_token', effectiveTenant.apiToken);
+    }
+    const localResult = engine.doPost(payload);
     const resp = NextResponse.json(sanitizeStoreResponse(localResult, effectiveTenant), { headers: NO_CACHE_HEADERS });
     if (localResult.success && payload.action === 'login') {
       const found = findTenant(effectiveTenantId);
