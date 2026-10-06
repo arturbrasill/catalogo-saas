@@ -51,10 +51,10 @@ interface DemoStore {
 const DEMO_STORES: DemoStore[] = [
   {
     id: 'loja-1',
-    name: 'Loja de Exemplo 01',
+    name: 'Essenza',
     badge: 'Modelo 1',
     description: 'Catálogo demonstrativo em tempo real',
-    url: '#', // Substituir pela URL da primeira loja
+    url: 'https://numclick-app.vercel.app/essenza',
   },
   {
     id: 'loja-2',
