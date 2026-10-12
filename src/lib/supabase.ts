@@ -697,7 +697,14 @@ export async function createCategoryInSupabase(tenantId: string, input: CreateCa
 
   try {
     const id = 'cat_' + crypto.randomUUID().replace(/-/g, '').substring(0, 8);
-    const slug = input.slug || input.nome.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+    const slug =
+      input.slug ||
+      input.nome
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '');
     const now = new Date().toISOString();
 
     const categoryRow = {

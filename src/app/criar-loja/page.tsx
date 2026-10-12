@@ -169,7 +169,7 @@ export default function CriarLojaPage() {
           whatsapp: cleanPhone,
           adminUsername: cleanUser,
           ownerEmail,
-          cpfCnpj,
+          cpfCnpj: cleanDoc || cpfCnpj,
           password,
           niche,
           plan,
@@ -192,7 +192,7 @@ export default function CriarLojaPage() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               tenantId: json.data.tenant.tenantId,
-              cpfCnpj,
+              cpfCnpj: cleanDoc || cpfCnpj,
               plan,
             }),
           });

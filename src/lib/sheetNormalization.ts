@@ -273,7 +273,14 @@ export function normalizeProduct(raw: any): Product {
 
   const id = String(raw.id || '').trim() || 'prod_' + Math.random().toString(36).substring(2, 9);
   const nome = String(raw.nome || raw.title || 'Produto sem nome').trim();
-  const slug = String(raw.slug || '').trim() || nome.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+  const slug =
+    String(raw.slug || '').trim() ||
+    nome
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '');
   const categoriaId = String(raw.categoriaId || raw.categoria_id || 'geral').trim();
   const descricao = String(raw.descricao || raw.description || '').trim();
 
@@ -384,13 +391,26 @@ export function normalizeCatalogInitialData(raw: any): CatalogInitialData {
       rawStore.announcement_text_color !== undefined && rawStore.announcement_text_color !== null
         ? String(rawStore.announcement_text_color).trim()
         : undefined,
+    subscription_status: rawStore.subscription_status,
+    subscription_plan: rawStore.subscription_plan,
+    subscription_expires_at: rawStore.subscription_expires_at,
+    asaas_payment_link: rawStore.asaas_payment_link,
+    pending_payment: rawStore.pending_payment,
+    cpf_cnpj: rawStore.cpf_cnpj ? String(rawStore.cpf_cnpj).trim() : undefined,
   };
 
   const rawCategories = Array.isArray(raw.categories) ? raw.categories : [];
   const categories: Category[] = rawCategories.map((c: any, index: number) => ({
     id: String(c.id || `cat_${index}`).trim(),
     nome: String(c.nome || 'Categoria').trim(),
-    slug: String(c.slug || '').trim() || String(c.nome || 'categoria').toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+    slug:
+      String(c.slug || '').trim() ||
+      String(c.nome || 'categoria')
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, ''),
     ativo: c.ativo !== undefined ? Boolean(c.ativo) : true,
     ordem: typeof c.ordem === 'number' ? c.ordem : index,
     createdAt: c.createdAt ? String(c.createdAt) : new Date().toISOString(),
