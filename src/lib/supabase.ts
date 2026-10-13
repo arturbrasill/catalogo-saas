@@ -14,6 +14,10 @@ import type {
   UpdateCategoryInput,
   CreateCouponInput,
   UpdateCouponInput,
+  Campaign,
+  CreateCampaignInput,
+  UpdateCampaignInput,
+  StoreSeller,
   LoginResult,
 } from '@/types';
 import crypto from 'crypto';
@@ -455,7 +459,7 @@ export async function fetchStoreConfigFromSupabase(tenantId: string): Promise<St
     try {
       const { data: tenantData } = await supabase
         .from('tenants')
-        .select('notes, plan, subscription_status, subscription_expires_at, asaas_payment_link, asaas_customer_id, asaas_subscription_id')
+        .select('slug, notes, plan, subscription_status, subscription_expires_at, asaas_payment_link, asaas_customer_id, asaas_subscription_id, allow_seller_choice, sellers')
         .eq('tenant_id', tenantId)
         .maybeSingle();
       tenantRow = tenantData;
@@ -516,6 +520,9 @@ export async function fetchStoreConfigFromSupabase(tenantId: string): Promise<St
         tenantRow?.subscription_status === 'blocked' ||
         tenantRow?.subscription_status === 'expired'
       ),
+      allow_seller_choice: Boolean(data.allow_seller_choice ?? tenantRow?.allow_seller_choice),
+      sellers: Array.isArray(data.sellers) ? data.sellers : Array.isArray(tenantRow?.sellers) ? tenantRow.sellers : [],
+      slug: tenantRow?.slug || data.domain?.replace('.localhost', '') || tenantId,
     };
   } catch (err) {
     console.warn('Erro em fetchStoreConfigFromSupabase:', err);
@@ -559,6 +566,8 @@ export async function saveStoreConfigInSupabase(tenantId: string, config: SaveCo
     if (config.announcement_text !== undefined) payload['announcement_text'] = String(config.announcement_text).trim();
     if (config.announcement_bg_color !== undefined) payload['announcement_bg_color'] = String(config.announcement_bg_color).trim();
     if (config.announcement_text_color !== undefined) payload['announcement_text_color'] = String(config.announcement_text_color).trim();
+    if (config.allow_seller_choice !== undefined) payload['allow_seller_choice'] = Boolean(config.allow_seller_choice);
+    if (config.sellers !== undefined) payload['sellers'] = Array.isArray(config.sellers) ? config.sellers : [];
 
     let res = await supabase
       .from('store_configs')
@@ -575,6 +584,8 @@ export async function saveStoreConfigInSupabase(tenantId: string, config: SaveCo
       delete basePayload['announcement_text'];
       delete basePayload['announcement_bg_color'];
       delete basePayload['announcement_text_color'];
+      delete basePayload['allow_seller_choice'];
+      delete basePayload['sellers'];
 
       res = await supabase
         .from('store_configs')
@@ -583,17 +594,23 @@ export async function saveStoreConfigInSupabase(tenantId: string, config: SaveCo
         .maybeSingle();
     }
 
-    const savedRecord = res.data || payload;
-
-    // SINCRONIZAÇÃO AUTOMÁTICA IMEDIATA:
-    // Se o WhatsApp ou Nome da loja foram alterados pelo lojista,
-    // ou se configurações estendidas (anúncio, preset, layout) foram enviadas,
-    // atualizamos na tabela 'tenants' para persistência duradoura e reflexo no Painel Mestre SaaS!
     const tenantUpdates: Record<string, any> = {
       updated_at: new Date().toISOString(),
     };
     if (cleanPhone) tenantUpdates['whatsapp'] = cleanPhone;
     if (config.store_name) tenantUpdates['name'] = String(config.store_name).trim();
+    if (config.allow_seller_choice !== undefined) tenantUpdates['allow_seller_choice'] = Boolean(config.allow_seller_choice);
+    if (config.sellers !== undefined) tenantUpdates['sellers'] = Array.isArray(config.sellers) ? config.sellers : [];
+
+    if (config.slug !== undefined) {
+      const cleanSlug = config.slug.trim().toLowerCase().replace(/[^a-z0-9-]/g, '');
+      if (cleanSlug) {
+        const available = await isSlugAvailableInSupabase(cleanSlug, tenantId);
+        if (available) {
+          tenantUpdates['slug'] = cleanSlug;
+        }
+      }
+    }
 
     const newSettings: Partial<TenantStoreSettings> = {};
     if (config.catalog_layout !== undefined) newSettings.catalog_layout = config.catalog_layout;
@@ -619,6 +636,8 @@ export async function saveStoreConfigInSupabase(tenantId: string, config: SaveCo
       .from('tenants')
       .update(tenantUpdates)
       .eq('tenant_id', tenantId);
+
+    const savedRecord = (res?.data || payload) as Record<string, any>;
 
     return {
       store_id: savedRecord.tenant_id || tenantId,
@@ -651,6 +670,20 @@ export async function saveStoreConfigInSupabase(tenantId: string, config: SaveCo
         config.announcement_bg_color !== undefined ? String(config.announcement_bg_color) : savedRecord.announcement_bg_color,
       announcement_text_color:
         config.announcement_text_color !== undefined ? String(config.announcement_text_color) : savedRecord.announcement_text_color,
+      allow_seller_choice:
+        config.allow_seller_choice !== undefined
+          ? Boolean(config.allow_seller_choice)
+          : Boolean(savedRecord.allow_seller_choice),
+      sellers:
+        config.sellers !== undefined
+          ? config.sellers
+          : Array.isArray(savedRecord.sellers)
+          ? savedRecord.sellers
+          : [],
+      slug:
+        config.slug !== undefined
+          ? config.slug
+          : savedRecord.slug,
     };
   } catch (err) {
     console.warn('Erro em saveStoreConfigInSupabase:', err);
@@ -1280,4 +1313,322 @@ export async function authenticateMerchantSupabase(
     console.warn('Erro em authenticateMerchantSupabase:', err);
     return null;
   }
+}
+
+// ============================================================
+// 6. GESTÃO DE SLUG ÚNICO (SUPABASE)
+// ============================================================
+
+export async function isSlugAvailableInSupabase(slug: string, currentTenantId: string): Promise<boolean> {
+  const supabase = getSupabaseClient();
+  if (!supabase) return true;
+
+  try {
+    const cleanSlug = slug.trim().toLowerCase().replace(/[^a-z0-9-]/g, '');
+    if (!cleanSlug) return false;
+
+    const { data, error } = await supabase
+      .from('tenants')
+      .select('tenant_id')
+      .eq('slug', cleanSlug)
+      .limit(1)
+      .maybeSingle();
+
+    if (error || !data) return true;
+    return data.tenant_id === currentTenantId;
+  } catch {
+    return true;
+  }
+}
+
+export async function updateTenantSlugInSupabase(
+  tenantId: string,
+  newSlug: string
+): Promise<{ success: boolean; error?: string }> {
+  const supabase = getSupabaseClient();
+  if (!supabase) return { success: false, error: 'Banco de dados não disponível' };
+
+  try {
+    const cleanSlug = newSlug.trim().toLowerCase().replace(/[^a-z0-9-]/g, '');
+    if (!cleanSlug || cleanSlug.length < 2) {
+      return { success: false, error: 'O slug deve conter pelo menos 2 caracteres válidos (letras minúsculas e números).' };
+    }
+
+    const available = await isSlugAvailableInSupabase(cleanSlug, tenantId);
+    if (!available) {
+      return { success: false, error: 'Este slug já está em uso por outro catálogo. Escolha outro.' };
+    }
+
+    const { error: tenantErr } = await supabase
+      .from('tenants')
+      .update({ slug: cleanSlug, updated_at: new Date().toISOString() })
+      .eq('tenant_id', tenantId);
+
+    if (tenantErr) {
+      return { success: false, error: tenantErr.message };
+    }
+
+    return { success: true };
+  } catch (err) {
+    return { success: false, error: err instanceof Error ? err.message : 'Erro ao atualizar slug.' };
+  }
+}
+
+// ============================================================
+// 7. CAMPANHAS COM DESCONTOS TEMPORAIS (SUPABASE)
+// ============================================================
+
+export async function fetchCampaignsFromSupabase(tenantId: string): Promise<Campaign[] | null> {
+  const supabase = getSupabaseClient();
+  if (!supabase) return null;
+
+  try {
+    const { data, error } = await supabase
+      .from('campaigns')
+      .select('*')
+      .eq('tenant_id', tenantId)
+      .order('created_at', { ascending: false });
+
+    if (error || !data) {
+      console.warn('Supabase fetchCampaigns error:', error?.message);
+      return null;
+    }
+
+    return data.map((row: any) => ({
+      id: row.id,
+      tenant_id: row.tenant_id,
+      name: row.name,
+      start_date: row.start_date,
+      end_date: row.end_date,
+      discount_type: row.discount_type,
+      discount_value: Number(row.discount_value) || 0,
+      scope: row.scope,
+      category_ids: Array.isArray(row.category_ids) ? row.category_ids : [],
+      product_ids: Array.isArray(row.product_ids) ? row.product_ids : [],
+      is_active: Boolean(row.is_active),
+      created_at: row.created_at,
+      updated_at: row.updated_at,
+    }));
+  } catch (err) {
+    console.warn('Erro inesperado em fetchCampaignsFromSupabase:', err);
+    return null;
+  }
+}
+
+export async function createCampaignInSupabase(
+  tenantId: string,
+  input: CreateCampaignInput
+): Promise<Campaign | null> {
+  const supabase = getSupabaseClient();
+  if (!supabase) return null;
+
+  try {
+    const payload = {
+      tenant_id: tenantId,
+      name: input.name.trim(),
+      start_date: input.start_date,
+      end_date: input.end_date,
+      discount_type: input.discount_type,
+      discount_value: Number(input.discount_value) || 0,
+      scope: input.scope,
+      category_ids: Array.isArray(input.category_ids) ? input.category_ids : [],
+      product_ids: Array.isArray(input.product_ids) ? input.product_ids : [],
+      is_active: input.is_active !== undefined ? Boolean(input.is_active) : true,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+
+    const { data, error } = await supabase
+      .from('campaigns')
+      .insert(payload)
+      .select()
+      .maybeSingle();
+
+    if (error || !data) {
+      console.warn('Supabase createCampaign error:', error?.message);
+      return null;
+    }
+
+    return {
+      id: data.id,
+      tenant_id: data.tenant_id,
+      name: data.name,
+      start_date: data.start_date,
+      end_date: data.end_date,
+      discount_type: data.discount_type,
+      discount_value: Number(data.discount_value) || 0,
+      scope: data.scope,
+      category_ids: Array.isArray(data.category_ids) ? data.category_ids : [],
+      product_ids: Array.isArray(data.product_ids) ? data.product_ids : [],
+      is_active: Boolean(data.is_active),
+      created_at: data.created_at,
+      updated_at: data.updated_at,
+    };
+  } catch (err) {
+    console.warn('Erro em createCampaignInSupabase:', err);
+    return null;
+  }
+}
+
+export async function updateCampaignInSupabase(
+  tenantId: string,
+  input: UpdateCampaignInput
+): Promise<Campaign | null> {
+  const supabase = getSupabaseClient();
+  if (!supabase) return null;
+
+  try {
+    const payload: Record<string, any> = {
+      updated_at: new Date().toISOString(),
+    };
+
+    if (input.name !== undefined) payload['name'] = input.name.trim();
+    if (input.start_date !== undefined) payload['start_date'] = input.start_date;
+    if (input.end_date !== undefined) payload['end_date'] = input.end_date;
+    if (input.discount_type !== undefined) payload['discount_type'] = input.discount_type;
+    if (input.discount_value !== undefined) payload['discount_value'] = Number(input.discount_value) || 0;
+    if (input.scope !== undefined) payload['scope'] = input.scope;
+    if (input.category_ids !== undefined) payload['category_ids'] = Array.isArray(input.category_ids) ? input.category_ids : [];
+    if (input.product_ids !== undefined) payload['product_ids'] = Array.isArray(input.product_ids) ? input.product_ids : [];
+    if (input.is_active !== undefined) payload['is_active'] = Boolean(input.is_active);
+
+    const { data, error } = await supabase
+      .from('campaigns')
+      .update(payload)
+      .eq('id', input.id)
+      .eq('tenant_id', tenantId)
+      .select()
+      .maybeSingle();
+
+    if (error || !data) {
+      console.warn('Supabase updateCampaign error:', error?.message);
+      return null;
+    }
+
+    return {
+      id: data.id,
+      tenant_id: data.tenant_id,
+      name: data.name,
+      start_date: data.start_date,
+      end_date: data.end_date,
+      discount_type: data.discount_type,
+      discount_value: Number(data.discount_value) || 0,
+      scope: data.scope,
+      category_ids: Array.isArray(data.category_ids) ? data.category_ids : [],
+      product_ids: Array.isArray(data.product_ids) ? data.product_ids : [],
+      is_active: Boolean(data.is_active),
+      created_at: data.created_at,
+      updated_at: data.updated_at,
+    };
+  } catch (err) {
+    console.warn('Erro em updateCampaignInSupabase:', err);
+    return null;
+  }
+}
+
+export async function deleteCampaignInSupabase(tenantId: string, id: string): Promise<boolean> {
+  const supabase = getSupabaseClient();
+  if (!supabase) return false;
+
+  try {
+    const { error } = await supabase
+      .from('campaigns')
+      .delete()
+      .eq('id', id)
+      .eq('tenant_id', tenantId);
+
+    if (error) {
+      console.warn('Supabase deleteCampaign error:', error.message);
+      return false;
+    }
+    return true;
+  } catch (err) {
+    console.warn('Erro em deleteCampaignInSupabase:', err);
+    return false;
+  }
+}
+
+/**
+ * Aplica os descontos de campanhas ativas nos produtos em tempo real.
+ * Considera new Date() entre start_date e end_date e o escopo ('all', 'categories', 'products').
+ */
+export function applyCampaignDiscounts(
+  products: Product[],
+  campaigns: Campaign[],
+  targetDate: Date = new Date()
+): Product[] {
+  if (!Array.isArray(products) || products.length === 0) return products;
+  if (!Array.isArray(campaigns) || campaigns.length === 0) return products;
+
+  const nowMs = targetDate.getTime();
+
+  // Filtra campanhas ativas cujo intervalo cubra a data atual
+  const activeCampaigns = campaigns.filter((c) => {
+    if (!c.is_active) return false;
+    const startMs = new Date(c.start_date).getTime();
+    const endMs = new Date(c.end_date).getTime();
+    return nowMs >= startMs && nowMs <= endMs;
+  });
+
+  if (activeCampaigns.length === 0) {
+    return products;
+  }
+
+  return products.map((product) => {
+    let bestDiscountedPrice: number | null = null;
+    let appliedCampaign: Campaign | null = null;
+
+    for (const campaign of activeCampaigns) {
+      let applies = false;
+      if (campaign.scope === 'all') {
+        applies = true;
+      } else if (campaign.scope === 'categories') {
+        const prodCat = product.categoriaId || (product as any).categoria;
+        applies =
+          Array.isArray(campaign.category_ids) &&
+          Boolean(prodCat && campaign.category_ids.includes(prodCat));
+      } else if (campaign.scope === 'products') {
+        applies =
+          Array.isArray(campaign.product_ids) &&
+          (Boolean(product.id && campaign.product_ids.includes(product.id)) ||
+           Boolean(product.slug && campaign.product_ids.includes(product.slug)));
+      }
+
+      if (applies) {
+        let discount = 0;
+        if (campaign.discount_type === 'percentage') {
+          discount = (product.preco * campaign.discount_value) / 100;
+        } else {
+          discount = campaign.discount_value;
+        }
+
+        const candidatePrice = Math.max(0, Math.round((product.preco - discount) * 100) / 100);
+        if (bestDiscountedPrice === null || candidatePrice < bestDiscountedPrice) {
+          bestDiscountedPrice = candidatePrice;
+          appliedCampaign = campaign;
+        }
+      }
+    }
+
+    if (bestDiscountedPrice !== null && appliedCampaign !== null && bestDiscountedPrice < product.preco) {
+      const finalPromo =
+        product.precoPromocional && product.precoPromocional < bestDiscountedPrice
+          ? product.precoPromocional
+          : bestDiscountedPrice;
+
+      const promoBadge =
+        product.badge ||
+        (appliedCampaign.discount_type === 'percentage'
+          ? `${appliedCampaign.discount_value}% OFF`
+          : `R$ ${appliedCampaign.discount_value} OFF`);
+
+      return {
+        ...product,
+        precoPromocional: finalPromo,
+        badge: promoBadge,
+      };
+    }
+
+    return product;
+  });
 }

@@ -123,6 +123,29 @@ CREATE TABLE IF NOT EXISTS public.coupons (
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
+-- 6. TABELA DE CAMPANHAS COM DESCONTOS TEMPORAIS
+CREATE TABLE IF NOT EXISTS public.campaigns (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  tenant_id TEXT NOT NULL REFERENCES public.tenants(tenant_id) ON DELETE CASCADE,
+  name TEXT NOT NULL,
+  start_date TIMESTAMPTZ NOT NULL,
+  end_date TIMESTAMPTZ NOT NULL,
+  discount_type TEXT NOT NULL CHECK (discount_type IN ('percentage', 'fixed')),
+  discount_value NUMERIC(10, 2) NOT NULL DEFAULT 0.00,
+  scope TEXT NOT NULL CHECK (scope IN ('all', 'categories', 'products')),
+  category_ids JSONB NOT NULL DEFAULT '[]'::jsonb,
+  product_ids JSONB NOT NULL DEFAULT '[]'::jsonb,
+  is_active BOOLEAN NOT NULL DEFAULT true,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+-- 7. ATUALIZAÇÕES PARA ROTEAMENTO MULTI-WHATSAPP (SELEÇÃO DE VENDEDOR)
+ALTER TABLE public.store_configs ADD COLUMN IF NOT EXISTS allow_seller_choice BOOLEAN NOT NULL DEFAULT false;
+ALTER TABLE public.store_configs ADD COLUMN IF NOT EXISTS sellers JSONB NOT NULL DEFAULT '[]'::jsonb;
+ALTER TABLE public.tenants ADD COLUMN IF NOT EXISTS allow_seller_choice BOOLEAN NOT NULL DEFAULT false;
+ALTER TABLE public.tenants ADD COLUMN IF NOT EXISTS sellers JSONB NOT NULL DEFAULT '[]'::jsonb;
+
 -- ============================================================
 -- ÍNDICES DE ALTA PERFORMANCE PARA MULTI-TENANCY
 -- ============================================================
@@ -134,6 +157,7 @@ CREATE INDEX IF NOT EXISTS idx_categories_tenant ON public.categories(tenant_id,
 CREATE INDEX IF NOT EXISTS idx_products_tenant ON public.products(tenant_id, ativo);
 CREATE INDEX IF NOT EXISTS idx_products_category ON public.products(tenant_id, categoria_id);
 CREATE INDEX IF NOT EXISTS idx_coupons_tenant ON public.coupons(tenant_id, ativo);
+CREATE INDEX IF NOT EXISTS idx_campaigns_tenant ON public.campaigns(tenant_id, is_active);
 
 -- ============================================================
 -- TRIGGERS DE SINCRONIZAÇÃO AUTOMÁTICA (TELEFONE E NOME)
@@ -190,6 +214,7 @@ ALTER TABLE public.store_configs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.categories ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.products ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.coupons ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.campaigns ENABLE ROW LEVEL SECURITY;
 
 -- Políticas públicas de leitura para a vitrine
 DO $$
@@ -209,6 +234,9 @@ BEGIN
   IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'Allow public read coupons') THEN
     CREATE POLICY "Allow public read coupons" ON public.coupons FOR SELECT USING (true);
   END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'Allow public read campaigns') THEN
+    CREATE POLICY "Allow public read campaigns" ON public.campaigns FOR SELECT USING (true);
+  END IF;
 
   -- Políticas de escrita e gerenciamento
   IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'Allow all ops tenants') THEN
@@ -225,6 +253,9 @@ BEGIN
   END IF;
   IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'Allow all ops coupons') THEN
     CREATE POLICY "Allow all ops coupons" ON public.coupons FOR ALL USING (true) WITH CHECK (true);
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'Allow all ops campaigns') THEN
+    CREATE POLICY "Allow all ops campaigns" ON public.campaigns FOR ALL USING (true) WITH CHECK (true);
   END IF;
 END $$;
 

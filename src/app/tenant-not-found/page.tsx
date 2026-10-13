@@ -37,10 +37,10 @@ function TenantNotFoundContent() {
         </p>
       </div>
 
-      {/* Domínio Consultado */}
+      {/* Endereço Consultado */}
       <div className="bg-gray-50 rounded-xl p-3 border border-gray-200/80 font-mono text-xs text-gray-700 break-all">
         <span className="text-gray-400 block text-[10px] uppercase font-sans font-semibold mb-1">
-          Host Solicitado
+          Endereço Solicitado
         </span>
         {host}
       </div>
@@ -49,12 +49,12 @@ function TenantNotFoundContent() {
       <div className="text-left bg-blue-50/50 rounded-xl p-4 border border-blue-100 text-xs text-blue-900 space-y-1.5">
         <div className="font-semibold flex items-center gap-1.5 text-blue-800">
           <HelpCircle className="w-4 h-4" />
-          Você é o lojista deste domínio?
+          Você é o lojista?
         </div>
         <p className="text-blue-700/90 leading-relaxed">
-          1. Verifique se o domínio foi registrado no painel administrativo do SaaS.
+          1. Verifique se o slug da vitrine está digitado corretamente no navegador.
           <br />
-          2. Se alterou o DNS recentemente, a propagação pode levar até algumas horas.
+          2. Confira o link oficial da sua loja no Painel Administrativo em Configurações.
         </p>
       </div>
 

@@ -25,6 +25,7 @@ import {
   FileText,
   Copy,
   Clock,
+  Users,
 } from 'lucide-react';
 
 interface CartDrawerProps {
@@ -69,6 +70,7 @@ export function CartDrawer({ store }: CartDrawerProps) {
   const [changeFor, setChangeFor] = useState('');
   const [notes, setNotes] = useState('');
   const [copiedPix, setCopiedPix] = useState(false);
+  const [isSellerModalOpen, setIsSellerModalOpen] = useState(false);
 
   // Carrega dados salvos do cliente para agilizar recompra
   useEffect(() => {
@@ -145,22 +147,10 @@ export function CartDrawer({ store }: CartDrawerProps) {
     setStep('checkout');
   };
 
-  const handleCheckoutWhatsApp = () => {
-    if (items.length === 0) return;
-    setCheckoutError(null);
-
-    // Validação de dados do cliente
-    if (!customerName.trim() || customerName.trim().length < 2) {
-      setCheckoutError('Por favor, informe seu nome para identificação do pedido.');
-      return;
-    }
-
-    const rawPhone =
-      store?.whatsapp !== undefined && store?.whatsapp !== null
-        ? String(store.whatsapp).trim()
-        : '';
-    if (!rawPhone) {
-      setCheckoutError('Número de WhatsApp ainda não cadastrado para esta loja.');
+  const dispatchToWhatsApp = (targetPhone: string) => {
+    const cleanPhone = targetPhone.trim();
+    if (!cleanPhone) {
+      setCheckoutError('Número de WhatsApp inválido ou não cadastrado.');
       return;
     }
 
@@ -192,7 +182,7 @@ export function CartDrawer({ store }: CartDrawerProps) {
       const url = buildWhatsAppUrl(
         {
           store_name: store.store_name,
-          whatsapp: rawPhone,
+          whatsapp: cleanPhone,
           currency: store.currency,
         },
         {
@@ -213,11 +203,47 @@ export function CartDrawer({ store }: CartDrawerProps) {
           window.location.href = url;
         }
       }
+      setIsSellerModalOpen(false);
     } catch (err) {
       setCheckoutError(
         err instanceof Error ? err.message : 'Erro ao gerar pedido no WhatsApp.'
       );
     }
+  };
+
+  const handleCheckoutWhatsApp = () => {
+    if (items.length === 0) return;
+    setCheckoutError(null);
+
+    // Validação de dados do cliente
+    if (!customerName.trim() || customerName.trim().length < 2) {
+      setCheckoutError('Por favor, informe seu nome para identificação do pedido.');
+      return;
+    }
+
+    const rawPhone =
+      store?.whatsapp !== undefined && store?.whatsapp !== null
+        ? String(store.whatsapp).trim()
+        : '';
+
+    const activeSellers = Array.isArray(store?.sellers)
+      ? store.sellers.filter((s) => s.name?.trim() && s.whatsapp?.trim())
+      : [];
+
+    const canChooseSeller = Boolean(store?.allow_seller_choice) && activeSellers.length >= 2;
+
+    if (canChooseSeller) {
+      setIsSellerModalOpen(true);
+      return;
+    }
+
+    const destinationPhone = rawPhone || (activeSellers[0]?.whatsapp ?? '');
+    if (!destinationPhone) {
+      setCheckoutError('Número de WhatsApp ainda não cadastrado para esta loja.');
+      return;
+    }
+
+    dispatchToWhatsApp(destinationPhone);
   };
 
   return (
@@ -873,6 +899,72 @@ export function CartDrawer({ store }: CartDrawerProps) {
           )}
         </div>
       </div>
+
+      {/* Modal de Seleção de Vendedor */}
+      {isSellerModalOpen && (
+        <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-slate-100 flex flex-col gap-4 relative">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center">
+                  <Users className="w-4 h-4" />
+                </div>
+                <h3 className="font-bold text-slate-900 text-base">
+                  Selecione o vendedor
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsSellerModalOpen(false)}
+                className="p-1.5 rounded-full text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition cursor-pointer"
+                aria-label="Fechar"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <p className="text-xs text-slate-500 leading-relaxed">
+              Selecione o vendedor para atendê-lo e concluir seu pedido com atenção exclusiva:
+            </p>
+
+            <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
+              {(Array.isArray(store?.sellers) ? store.sellers : [])
+                .filter((s) => s.name?.trim() && s.whatsapp?.trim())
+                .map((seller) => (
+                  <button
+                    key={seller.id || seller.name}
+                    type="button"
+                    onClick={() => dispatchToWhatsApp(seller.whatsapp)}
+                    className="w-full flex items-center justify-between p-3.5 rounded-2xl border border-slate-200 hover:border-emerald-500 hover:bg-emerald-50/40 text-left transition group cursor-pointer"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-slate-100 text-slate-700 group-hover:bg-emerald-100 group-hover:text-emerald-700 font-bold text-sm flex items-center justify-center transition">
+                        {seller.name.charAt(0).toUpperCase()}
+                      </div>
+                      <div>
+                        <p className="font-semibold text-sm text-slate-800 group-hover:text-emerald-950">
+                          {seller.name}
+                        </p>
+                        <p className="text-[11px] text-slate-400">
+                          {seller.whatsapp}
+                        </p>
+                      </div>
+                    </div>
+                    <MessageCircle className="w-4 h-4 text-slate-300 group-hover:text-emerald-600 transition" />
+                  </button>
+                ))}
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setIsSellerModalOpen(false)}
+              className="w-full py-2.5 text-xs font-semibold text-slate-500 hover:text-slate-800 transition cursor-pointer"
+            >
+              Cancelar
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -16,6 +16,7 @@ import {
   Shield,
   Sparkles,
   TicketPercent,
+  Flame,
 } from 'lucide-react';
 import { useAuth, ProtectedRoute } from '@/lib/auth';
 import { api } from '@/lib/api';
@@ -37,6 +38,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
     { name: 'Dashboard', href: '/admin', icon: LayoutDashboard, badge: null },
     { name: 'Produtos', href: '/admin/produtos', icon: Package, badge: 'Inventário' },
     { name: 'Categorias', href: '/admin/categorias', icon: FolderTree, badge: null },
+    { name: 'Campanhas', href: '/admin/campanhas', icon: Flame, badge: 'Descontos' },
     { name: 'Cupons', href: '/admin/cupons', icon: TicketPercent, badge: 'Promoções' },
     { name: 'Configurações', href: '/admin/configuracoes', icon: Settings, badge: 'Tema & Assinatura' },
   ];

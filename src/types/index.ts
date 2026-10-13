@@ -46,6 +46,16 @@ export interface StoreConfig {
   pending_payment?: boolean;
   asaas_payment_link?: string;
   cpf_cnpj?: string;
+  // Roteamento Multi-WhatsApp (Seleção de Vendedor)
+  allow_seller_choice?: boolean;
+  sellers?: StoreSeller[];
+  slug?: string;
+}
+
+export interface StoreSeller {
+  id: string;
+  name: string;
+  whatsapp: string;
 }
 
 /**
@@ -166,6 +176,45 @@ export interface ValidateCouponResult {
 }
 
 // ============================================================
+// 3.2 CAMPANHAS COM DESCONTOS TEMPORAIS (CAMPAIGNS)
+// ============================================================
+
+export type CampaignDiscountType = 'percentage' | 'fixed';
+export type CampaignScope = 'all' | 'categories' | 'products';
+
+export interface Campaign {
+  id: string;
+  tenant_id?: string;
+  name: string;
+  start_date: string;
+  end_date: string;
+  discount_type: CampaignDiscountType;
+  discount_value: number;
+  scope: CampaignScope;
+  category_ids: string[];
+  product_ids: string[];
+  is_active: boolean;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface CreateCampaignInput {
+  name: string;
+  start_date: string;
+  end_date: string;
+  discount_type: CampaignDiscountType;
+  discount_value: number;
+  scope: CampaignScope;
+  category_ids?: string[];
+  product_ids?: string[];
+  is_active?: boolean;
+}
+
+export interface UpdateCampaignInput extends Partial<CreateCampaignInput> {
+  id: string;
+}
+
+// ============================================================
 // 4. SACOLA DE COMPRAS (CART)
 // ============================================================
 
@@ -278,6 +327,9 @@ export interface Tenant {
   announcement_text?: string;
   announcement_bg_color?: string;
   announcement_text_color?: string;
+  // Roteamento Multi-WhatsApp
+  allow_seller_choice?: boolean;
+  sellers?: StoreSeller[];
 }
 
 export type TenantRegistry = Record<string, Tenant>;
@@ -464,10 +516,14 @@ export interface SaveConfigInput {
   announcement_bg_color?: string;
   announcement_text_color?: string;
   cpf_cnpj?: string;
+  allow_seller_choice?: boolean;
+  sellers?: StoreSeller[];
+  slug?: string;
 }
 
 export interface CatalogInitialData {
   store: StoreConfig;
   categories: Category[];
   products: Product[];
+  campaigns?: Campaign[];
 }

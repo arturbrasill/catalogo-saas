@@ -18,6 +18,12 @@ import {
   createCouponInSupabase,
   updateCouponInSupabase,
   deleteCouponInSupabase,
+  fetchCampaignsFromSupabase,
+  createCampaignInSupabase,
+  updateCampaignInSupabase,
+  deleteCampaignInSupabase,
+  applyCampaignDiscounts,
+  isSlugAvailableInSupabase,
   getSupabaseClient,
 } from '@/lib/supabase';
 import {
@@ -333,10 +339,11 @@ export async function GET(request: NextRequest) {
         });
       }
     } else if (action === 'all' || action === 'catalog' || action === 'getCatalog') {
-      const [config, cats, prods] = await Promise.all([
+      const [config, cats, prods, camps] = await Promise.all([
         fetchStoreConfigFromSupabase(tenantId),
         fetchCategoriesFromSupabase(tenantId),
         fetchProductsFromSupabase(tenantId),
+        fetchCampaignsFromSupabase(tenantId),
       ]);
       if (config && cats && prods) {
         const localTenant = effectiveTenant || findTenant(tenantId);
@@ -373,6 +380,10 @@ export async function GET(request: NextRequest) {
             localEngineConfig?.announcement_text_color ||
             '#ffffff';
         }
+
+        const campaignsList = camps || [];
+        const discountedProducts = applyCampaignDiscounts(prods, campaignsList);
+
         return NextResponse.json(
           sanitizeStoreResponse(
             {
@@ -380,7 +391,8 @@ export async function GET(request: NextRequest) {
               data: {
                 store: config,
                 categories: cats,
-                products: prods,
+                products: discountedProducts,
+                campaigns: campaignsList,
               },
               error: null,
             },
@@ -393,6 +405,11 @@ export async function GET(request: NextRequest) {
       const coupons = await fetchCouponsFromSupabase(tenantId);
       if (coupons) {
         return NextResponse.json(sanitizeStoreResponse({ success: true, data: coupons, error: null }, effectiveTenant));
+      }
+    } else if (action === 'campaigns') {
+      const campaigns = await fetchCampaignsFromSupabase(tenantId);
+      if (campaigns) {
+        return NextResponse.json(sanitizeStoreResponse({ success: true, data: campaigns, error: null }, effectiveTenant));
       }
     }
   } catch (err) {
@@ -616,6 +633,40 @@ export async function POST(request: NextRequest) {
             sanitizeStoreResponse({ success: true, data: { success: true, id: payload.id }, error: null }, effectiveTenant)
           );
         }
+      } else if (payload.action === 'createCampaign') {
+        const camp = await createCampaignInSupabase(tenantId, payload.campaign);
+        if (camp) {
+          return NextResponse.json(sanitizeStoreResponse({ success: true, data: camp, error: null }, effectiveTenant));
+        }
+      } else if (payload.action === 'updateCampaign') {
+        const camp = await updateCampaignInSupabase(tenantId, payload.campaign);
+        if (camp) {
+          return NextResponse.json(sanitizeStoreResponse({ success: true, data: camp, error: null }, effectiveTenant));
+        }
+      } else if (payload.action === 'deleteCampaign') {
+        const deleted = await deleteCampaignInSupabase(tenantId, payload.id);
+        if (deleted) {
+          return NextResponse.json(
+            sanitizeStoreResponse({ success: true, data: { success: true, id: payload.id }, error: null }, effectiveTenant)
+          );
+        }
+      } else if (payload.action === 'checkSlug') {
+        const rawSlug = String(payload.slug || '').trim();
+        const available = await isSlugAvailableInSupabase(rawSlug, tenantId);
+        return NextResponse.json(
+          sanitizeStoreResponse(
+            {
+              success: true,
+              data: {
+                slug: rawSlug,
+                available,
+                message: available ? 'Slug disponível!' : 'Este link já está em uso por outra loja.',
+              },
+              error: null,
+            },
+            effectiveTenant
+          )
+        );
       } else if (payload.action === 'validateCoupon') {
         const coupons = await fetchCouponsFromSupabase(tenantId);
         if (coupons) {

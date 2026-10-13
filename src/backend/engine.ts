@@ -12,6 +12,9 @@ import type {
   CreateCouponInput,
   UpdateCouponInput,
   ValidateCouponResult,
+  Campaign,
+  CreateCampaignInput,
+  UpdateCampaignInput,
 } from '../types';
 import { formatCurrency } from '../lib/whatsapp';
 import {
@@ -20,12 +23,14 @@ import {
   normalizeImages,
   normalizeVariations,
 } from '../lib/sheetNormalization';
+import { applyCampaignDiscounts } from '../lib/supabase';
 
 export class BackendEngine {
   private configMap: Map<string, string> = new Map();
   private categories: Category[] = [];
   private products: Product[] = [];
   private coupons: Coupon[] = [];
+  private campaigns: Campaign[] = [];
 
   constructor(initialConfig?: Partial<StoreConfigInternal>) {
     this.initDatabase(initialConfig);
@@ -61,6 +66,9 @@ export class BackendEngine {
     this.configMap.set('announcement_text', initialConfig?.announcement_text || 'Compre online e receba em casa com frete seguro ou retire na loja física');
     this.configMap.set('announcement_bg_color', initialConfig?.announcement_bg_color || '#0f172a');
     this.configMap.set('announcement_text_color', initialConfig?.announcement_text_color || '#ffffff');
+    this.configMap.set('allow_seller_choice', String(initialConfig?.allow_seller_choice ?? false));
+    this.configMap.set('sellers', JSON.stringify(initialConfig?.sellers || []));
+    this.configMap.set('slug', initialConfig?.slug || initialConfig?.store_id || 'loja-exemplo');
 
     const now = new Date().toISOString();
     this.categories = [
@@ -129,6 +137,8 @@ export class BackendEngine {
           return { success: true, data: this.getInitialCatalogData(), error: null };
         case 'coupons':
           return { success: true, data: this.getAllCoupons(), error: null };
+        case 'campaigns':
+          return { success: true, data: this.getCampaigns(), error: null };
         case 'validateCoupon':
           return {
             success: true,
@@ -210,6 +220,18 @@ export class BackendEngine {
         }
         case 'deleteCoupon': {
           const deleted = this.handleDeleteCoupon(payload.id);
+          return { success: true, data: deleted, error: null };
+        }
+        case 'createCampaign': {
+          const campaign = this.handleCreateCampaign(payload.campaign);
+          return { success: true, data: campaign, error: null };
+        }
+        case 'updateCampaign': {
+          const updated = this.handleUpdateCampaign(payload.campaign);
+          return { success: true, data: updated, error: null };
+        }
+        case 'deleteCampaign': {
+          const deleted = this.handleDeleteCampaign(payload.id);
           return { success: true, data: deleted, error: null };
         }
         case 'createProduct': {
@@ -315,6 +337,20 @@ export class BackendEngine {
     if (!config.announcement_bg_color) config.announcement_bg_color = '#0f172a';
     if (!config.announcement_text_color) config.announcement_text_color = '#ffffff';
 
+    const allowSellerChoiceRaw = this.configMap.get('allow_seller_choice');
+    if (allowSellerChoiceRaw !== undefined) {
+      config.allow_seller_choice = allowSellerChoiceRaw === 'true';
+    }
+    const sellersRaw = this.configMap.get('sellers');
+    if (sellersRaw) {
+      try {
+        config.sellers = JSON.parse(sellersRaw);
+      } catch {
+        config.sellers = [];
+      }
+    }
+    config.slug = this.configMap.get('slug') || this.configMap.get('store_id') || 'loja-exemplo';
+
     return config as StoreConfig;
   }
 
@@ -336,10 +372,13 @@ export class BackendEngine {
   }
 
   public getInitialCatalogData() {
+    const rawProducts = this.getActiveProducts();
+    const discountedProducts = applyCampaignDiscounts(rawProducts, this.campaigns);
     return {
       store: this.getPublicStoreConfig(),
       categories: this.getActiveCategories(),
-      products: this.getActiveProducts(),
+      products: discountedProducts,
+      campaigns: this.getCampaigns(),
     };
   }
 
@@ -670,6 +709,9 @@ export class BackendEngine {
       'announcement_text',
       'announcement_bg_color',
       'announcement_text_color',
+      'allow_seller_choice',
+      'sellers',
+      'slug',
     ];
 
     for (const [key, value] of Object.entries(newConfigs)) {
@@ -677,6 +719,23 @@ export class BackendEngine {
         if (key === 'banners') {
           const bannerArr = Array.isArray(value) ? value.slice(0, 3) : [];
           this.configMap.set('banners', JSON.stringify(bannerArr));
+          continue;
+        }
+
+        if (key === 'allow_seller_choice') {
+          this.configMap.set('allow_seller_choice', String(value === true || String(value) === 'true'));
+          continue;
+        }
+
+        if (key === 'sellers') {
+          const sellersArr = Array.isArray(value) ? value : [];
+          this.configMap.set('sellers', JSON.stringify(sellersArr));
+          continue;
+        }
+
+        if (key === 'slug') {
+          const cleanSlug = String(value).trim().toLowerCase().replace(/[^a-z0-9-]/g, '');
+          this.configMap.set('slug', cleanSlug);
           continue;
         }
 
@@ -983,6 +1042,93 @@ export class BackendEngine {
       .replace(/[\u0300-\u036f]/g, '')
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/^-+|-+$/g, '');
+  }
+
+  public getCampaigns(): Campaign[] {
+    return [...this.campaigns].sort(
+      (a, b) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime()
+    );
+  }
+
+  public handleCreateCampaign(input: any): Campaign {
+    if (!input || typeof input !== 'object') {
+      throw new Error('VALIDATION_ERROR: Dados da campanha inválidos.');
+    }
+    if (!input.name || !String(input.name).trim()) {
+      throw new Error('VALIDATION_ERROR: O nome da campanha é obrigatório.');
+    }
+    if (!input.start_date || !input.end_date) {
+      throw new Error('VALIDATION_ERROR: As datas de início e fim da campanha são obrigatórias.');
+    }
+    if (new Date(input.end_date).getTime() <= new Date(input.start_date).getTime()) {
+      throw new Error('VALIDATION_ERROR: A data de término deve ser posterior à data de início.');
+    }
+    const discountVal = Number(input.discount_value);
+    if (isNaN(discountVal) || discountVal <= 0) {
+      throw new Error('VALIDATION_ERROR: O valor de desconto deve ser maior que zero.');
+    }
+    if (input.discount_type === 'percentage' && discountVal > 100) {
+      throw new Error('VALIDATION_ERROR: O desconto em porcentagem não pode exceder 100%.');
+    }
+
+    const nowIso = new Date().toISOString();
+    const campaign: Campaign = {
+      id: 'camp_' + crypto.randomUUID().replace(/-/g, ''),
+      tenant_id: this.configMap.get('store_id') || 'loja_exemplo',
+      name: String(input.name).trim(),
+      start_date: input.start_date,
+      end_date: input.end_date,
+      discount_type: input.discount_type === 'fixed' ? 'fixed' : 'percentage',
+      discount_value: discountVal,
+      scope: ['all', 'categories', 'products'].includes(input.scope) ? input.scope : 'all',
+      category_ids: Array.isArray(input.category_ids) ? input.category_ids : [],
+      product_ids: Array.isArray(input.product_ids) ? input.product_ids : [],
+      is_active: input.is_active !== undefined ? Boolean(input.is_active) : true,
+      created_at: nowIso,
+      updated_at: nowIso,
+    };
+
+    this.campaigns.unshift(campaign);
+    return campaign;
+  }
+
+  public handleUpdateCampaign(input: any): Campaign {
+    if (!input || !input.id) {
+      throw new Error('VALIDATION_ERROR: ID da campanha obrigatório.');
+    }
+    const idx = this.campaigns.findIndex((c) => c.id === input.id);
+    if (idx === -1) {
+      throw new Error('NOT_FOUND: Campanha não encontrada.');
+    }
+
+    const current = this.campaigns[idx]!;
+    const nowIso = new Date().toISOString();
+
+    const updated: Campaign = {
+      ...current,
+      name: input.name !== undefined ? String(input.name).trim() : current.name,
+      start_date: input.start_date !== undefined ? input.start_date : current.start_date,
+      end_date: input.end_date !== undefined ? input.end_date : current.end_date,
+      discount_type: input.discount_type !== undefined ? input.discount_type : current.discount_type,
+      discount_value: input.discount_value !== undefined ? Number(input.discount_value) : current.discount_value,
+      scope: input.scope !== undefined ? input.scope : current.scope,
+      category_ids: input.category_ids !== undefined ? (Array.isArray(input.category_ids) ? input.category_ids : []) : current.category_ids,
+      product_ids: input.product_ids !== undefined ? (Array.isArray(input.product_ids) ? input.product_ids : []) : current.product_ids,
+      is_active: input.is_active !== undefined ? Boolean(input.is_active) : current.is_active,
+      updated_at: nowIso,
+    };
+
+    this.campaigns[idx] = updated;
+    return updated;
+  }
+
+  public handleDeleteCampaign(id: string): boolean {
+    const idx = this.campaigns.findIndex((c) => c.id === id);
+    if (idx === -1) {
+      throw new Error('NOT_FOUND: Campanha não encontrada.');
+    }
+    this.campaigns.splice(idx, 1);
+    return true;
   }
 }
 

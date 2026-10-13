@@ -38,39 +38,7 @@ function getSanitizedWhatsappUrl(rawPhone: string | undefined, message: string):
   return `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`;
 }
 
-// Configuração das lojas de exemplo para demonstração
-// Atualize os links (url) e nomes (name) conforme as lojas forem criadas
-interface DemoStore {
-  id: string;
-  name: string;
-  badge: string;
-  description: string;
-  url: string;
-}
-
-const DEMO_STORES: DemoStore[] = [
-  {
-    id: 'loja-1',
-    name: 'Essenza',
-    badge: 'Modelo 1',
-    description: 'Catálogo demonstrativo em tempo real',
-    url: 'https://numclick-app.vercel.app/essenza',
-  },
-  {
-    id: 'loja-2',
-    name: 'Loja de Exemplo 02',
-    badge: 'Modelo 2',
-    description: 'Catálogo demonstrativo em tempo real',
-    url: '#', // Substituir pela URL da segunda loja
-  },
-  {
-    id: 'loja-3',
-    name: 'Loja de Exemplo 03',
-    badge: 'Modelo 3',
-    description: 'Catálogo demonstrativo em tempo real',
-    url: '#', // Substituir pela URL da terceira loja
-  },
-];
+import { DEMO_STORES } from '@/lib/demoStores';
 
 // Perguntas frequentes
 const FAQ_ITEMS = [
@@ -95,9 +63,9 @@ const FAQ_ITEMS = [
       'Nenhum conhecimento técnico é necessário. O sistema foi desenvolvido para ser gerenciado 100% pelo smartphone. Em menos de 2 minutos sua loja já está no ar pronta para vender.',
   },
   {
-    question: 'Posso usar meu próprio domínio (ex: www.minhaloja.com.br)?',
+    question: 'Como funciona o link da minha vitrine?',
     answer:
-      'Sim! O sistema suporta domínio personalizado próprio (ex: suaempresa.com.br) ou subdomínios automáticos prontos para colocar no link da bio do Instagram.',
+      'Sua loja recebe um link exclusivo e seguro (ex: numclick-app.vercel.app/sualoja) com certificado SSL gratuito. Basta colar o link na bio do Instagram ou compartilhar no WhatsApp para seus clientes comprarem instantaneamente.',
   },
   {
     question: 'Como funciona o teste grátis de 7 dias?',
@@ -227,7 +195,7 @@ export default function SaaSCommercialLandingPage() {
 
           {/* Subtítulo direto */}
           <p className="text-sm xs:text-base sm:text-lg md:text-xl text-slate-600 font-normal leading-relaxed max-w-2xl mx-auto">
-            Substitua PDFs pesados e conversas confusas por um catálogo rápido com seu domínio próprio, cores da sua marca e pedido detalhado direto no seu Zap.
+            Substitua PDFs pesados e conversas confusas por um catálogo rápido com seu link exclusivo, cores da sua marca e pedido detalhado direto no seu Zap.
           </p>
 
           {/* Grupo de CTAs de Alta Conversão */}
@@ -275,53 +243,94 @@ export default function SaaSCommercialLandingPage() {
           </div>
         </div>
 
-        {/* BLOCO: LOJAS DE EXEMPLO (3 BOTÕES DE REDIRECIONAMENTO) */}
+        {/* BLOCO: LOJAS DE EXEMPLO (EXATAMENTE 2 SLOTS EXCLUSIVOS) */}
         <div id="exemplos" className="mt-12 sm:mt-16 max-w-4xl mx-auto px-4 sm:px-6">
           {/* Cabeçalho Compacto das Lojas de Exemplo */}
           <div className="text-center max-w-xl mx-auto mb-6 sm:mb-8 space-y-2 px-2">
             <span className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200/80">
               <Store className="w-3.5 h-3.5 text-emerald-600" />
-              Lojas de Exemplo
+              Lojas Modelo
             </span>
             <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-slate-900 tracking-tight">
               Veja modelos de catálogos prontos
             </h2>
             <p className="text-xs sm:text-sm text-slate-500">
-              Acesse os exemplos abaixo e veja na prática como a navegação e a experiência de compra são rápidas:
+              Acesse os modelos abaixo e veja na prática como a navegação e a experiência de compra são rápidas:
             </p>
           </div>
 
-          {/* 3 Botões de Redirecionamento para Páginas de Exemplo */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 sm:gap-4 max-w-3xl mx-auto">
+          {/* 2 Cards de Demonstração */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-2xl mx-auto">
             {DEMO_STORES.map((store) => {
-              const isExternalOrInternalLink =
-                store.url.startsWith('http') || (store.url.startsWith('/') && store.url !== '#');
+              const isAvailable = store.isAvailable && store.url !== '#';
+
+              if (!isAvailable) {
+                return (
+                  <div
+                    key={store.id}
+                    className="relative flex flex-col justify-between p-5 rounded-2xl bg-slate-50/80 border border-dashed border-slate-300 text-left opacity-90 select-none shadow-xs"
+                  >
+                    <div>
+                      <div className="flex items-start justify-between gap-3 mb-3">
+                        <div className="w-10 h-10 rounded-xl bg-slate-200/80 text-slate-500 flex items-center justify-center flex-shrink-0">
+                          <Store className="w-5 h-5" />
+                        </div>
+                        <span className="inline-flex items-center text-[10px] font-bold text-amber-800 bg-amber-50 border border-amber-200/80 px-2.5 py-0.5 rounded-full flex-shrink-0">
+                          {store.badge}
+                        </span>
+                      </div>
+                      <div>
+                        <h3 className="text-sm font-bold text-slate-700">
+                          {store.name}
+                        </h3>
+                        <p className="text-[11px] font-medium text-slate-400 mt-0.5">
+                          {store.category}
+                        </p>
+                        <p className="text-xs text-slate-500 mt-2">
+                          {store.description}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="mt-5 pt-3 border-t border-slate-200/80 flex items-center justify-between text-xs font-semibold text-slate-400">
+                      <span>Em breve no ar</span>
+                      <span className="text-[10px] bg-slate-200/70 px-2 py-0.5 rounded text-slate-500 font-mono">
+                        Slot 2
+                      </span>
+                    </div>
+                  </div>
+                );
+              }
 
               return (
                 <a
                   key={store.id}
                   href={store.url}
-                  target={isExternalOrInternalLink ? '_blank' : undefined}
-                  rel={isExternalOrInternalLink ? 'noopener noreferrer' : undefined}
-                  className="group flex flex-col justify-between p-5 rounded-2xl bg-white border border-slate-200/90 hover:border-emerald-500/60 hover:shadow-md active:scale-[0.98] transition-all duration-200 text-left shadow-xs"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group flex flex-col justify-between p-5 rounded-2xl bg-white border border-slate-200/90 hover:border-emerald-500/60 hover:shadow-md active:scale-[0.98] transition-all duration-200 text-left shadow-xs cursor-pointer"
                 >
-                  <div className="flex items-start justify-between gap-3 mb-3">
-                    <div className="w-10 h-10 rounded-xl bg-slate-100 group-hover:bg-emerald-50 text-slate-700 group-hover:text-emerald-700 flex items-center justify-center transition-colors flex-shrink-0">
-                      <Store className="w-5 h-5" />
-                    </div>
-                    <span className="inline-flex items-center text-[10px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200/70 px-2 py-0.5 rounded-full flex-shrink-0">
-                      {store.badge}
-                    </span>
-                  </div>
                   <div>
-                    <h3 className="text-sm font-bold text-slate-900 group-hover:text-emerald-700 transition-colors">
-                      {store.name}
-                    </h3>
-                    <p className="text-xs text-slate-500 mt-1 line-clamp-1">
-                      {store.description}
-                    </p>
+                    <div className="flex items-start justify-between gap-3 mb-3">
+                      <div className="w-10 h-10 rounded-xl bg-slate-100 group-hover:bg-emerald-50 text-slate-700 group-hover:text-emerald-700 flex items-center justify-center transition-colors flex-shrink-0">
+                        <Store className="w-5 h-5" />
+                      </div>
+                      <span className="inline-flex items-center text-[10px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200/70 px-2.5 py-0.5 rounded-full flex-shrink-0">
+                        {store.badge}
+                      </span>
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-bold text-slate-900 group-hover:text-emerald-700 transition-colors">
+                        {store.name}
+                      </h3>
+                      <p className="text-[11px] font-medium text-emerald-600 mt-0.5">
+                        {store.category}
+                      </p>
+                      <p className="text-xs text-slate-500 mt-2 line-clamp-2">
+                        {store.description}
+                      </p>
+                    </div>
                   </div>
-                  <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-semibold text-slate-600 group-hover:text-emerald-700 transition-colors">
+                  <div className="mt-5 pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-semibold text-slate-600 group-hover:text-emerald-700 transition-colors">
                     <span>Acessar vitrine</span>
                     <ArrowRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-emerald-600 group-hover:translate-x-1 transition-all" />
                   </div>
@@ -514,17 +523,17 @@ export default function SaaSCommercialLandingPage() {
 
           {/* Grid Assimétrico 4 Blocos */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 sm:gap-8">
-            {/* Bloco 1 (Largo - col-span-12 lg:col-span-7): 'Sua Marca, Seu Domínio' */}
+            {/* Bloco 1 (Largo - col-span-12 lg:col-span-7): 'Sua Vitrine Instantânea na Web' */}
             <div className="lg:col-span-7 bg-slate-50/80 border border-slate-200/80 rounded-3xl p-5 sm:p-8 space-y-6 flex flex-col justify-between shadow-2xs hover:border-slate-300 transition-all">
               <div className="space-y-2.5">
                 <div className="h-9 w-9 rounded-xl bg-slate-900 text-white flex items-center justify-center shadow-xs">
                   <Globe className="w-4 h-4 text-emerald-400" />
                 </div>
                 <h3 className="text-lg sm:text-xl font-bold text-slate-900 tracking-tight">
-                  Sua Marca, Seu Domínio
+                  Sua Vitrine Instantânea na Web
                 </h3>
                 <p className="text-xs sm:text-sm text-slate-600 leading-relaxed max-w-xl">
-                  Tenha presença profissional no mercado. Use seu próprio domínio personalizado (ex: <code className="text-slate-800 font-mono text-xs bg-slate-200/70 px-1 py-0.5 rounded">sualoja.com.br</code>) ou subdomínio instantâneo, com conexão segura e otimização para carregamento mobile.
+                  Tenha presença profissional no mercado. Cada loja recebe um link exclusivo e otimizado (ex: <code className="text-slate-800 font-mono text-xs bg-slate-200/70 px-1 py-0.5 rounded">numclick-app.vercel.app/sualoja</code>) pronto para colocar na bio do Instagram e compartilhar no WhatsApp, com conexão ultrarrápida e certificado SSL.
                 </p>
               </div>
 
@@ -542,7 +551,7 @@ export default function SaaSCommercialLandingPage() {
                     <Lock className="w-3.5 h-3.5 text-emerald-600 flex-shrink-0" />
                     <span className="text-slate-400 text-[11px] hidden sm:inline">https://</span>
                     <span className="text-slate-900 font-semibold text-xs truncate">
-                      loja.seudominio.com.br
+                      numclick-app.vercel.app/sualoja
                     </span>
                   </div>
                   <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200/80 flex-shrink-0">

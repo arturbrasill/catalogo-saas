@@ -14,6 +14,9 @@ import type {
   CreateCouponInput,
   UpdateCouponInput,
   ValidateCouponResult,
+  Campaign,
+  CreateCampaignInput,
+  UpdateCampaignInput,
 } from '@/types';
 
 import {
@@ -324,6 +327,77 @@ export class ApiClient {
         id,
       }),
     });
+  }
+
+  // ==========================================
+  // CAMPANHAS COM DESCONTOS TEMPORAIS
+  // ==========================================
+
+  public async getCampaigns(explicitTenant?: string): Promise<Campaign[]> {
+    return this.request<Campaign[]>(`${this.baseUrl}?action=campaigns`, undefined, explicitTenant);
+  }
+
+  public async createCampaign(campaign: CreateCampaignInput, token: string, explicitTenant?: string): Promise<Campaign> {
+    return this.request<Campaign>(
+      this.baseUrl,
+      {
+        method: 'POST',
+        body: JSON.stringify({
+          action: 'createCampaign',
+          token,
+          campaign,
+        }),
+      },
+      explicitTenant
+    );
+  }
+
+  public async updateCampaign(campaign: UpdateCampaignInput, token: string, explicitTenant?: string): Promise<Campaign> {
+    return this.request<Campaign>(
+      this.baseUrl,
+      {
+        method: 'POST',
+        body: JSON.stringify({
+          action: 'updateCampaign',
+          token,
+          campaign,
+        }),
+      },
+      explicitTenant
+    );
+  }
+
+  public async deleteCampaign(id: string, token: string, explicitTenant?: string): Promise<{ success: true; id: string }> {
+    return this.request<{ success: true; id: string }>(
+      this.baseUrl,
+      {
+        method: 'POST',
+        body: JSON.stringify({
+          action: 'deleteCampaign',
+          token,
+          id,
+        }),
+      },
+      explicitTenant
+    );
+  }
+
+  // ==========================================
+  // VALIDAÇÃO DE SLUG
+  // ==========================================
+
+  public async checkSlugAvailability(slug: string, explicitTenant?: string): Promise<{ slug: string; available: boolean; message: string }> {
+    return this.request<{ slug: string; available: boolean; message: string }>(
+      this.baseUrl,
+      {
+        method: 'POST',
+        body: JSON.stringify({
+          action: 'checkSlug',
+          slug,
+        }),
+      },
+      explicitTenant
+    );
   }
 }
 
