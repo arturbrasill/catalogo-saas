@@ -151,3 +151,41 @@ body {
   );
   animation: shimmer 1.8s infinite linear;
 }
+
+/* ============================================================ */
+/* BLINDAGEM ESTÁTICA: TEXTOS DA SIDEBAR DO PAINEL ADMIN (/ADMIN) */
+/* ============================================================ */
+[data-admin-sidebar],
+[data-admin-mobile-drawer] {
+  color: #ffffff !important;
+}
+
+[data-admin-sidebar] a,
+[data-admin-sidebar] a span,
+[data-admin-sidebar] a svg,
+[data-admin-mobile-drawer] a,
+[data-admin-mobile-drawer] a span,
+[data-admin-mobile-drawer] a svg {
+  color: #ffffff !important;
+}
+
+[data-admin-sidebar] a svg,
+[data-admin-mobile-drawer] a svg {
+  stroke: currentColor !important;
+}
+
+/* Garante que o hover e active preservem o texto 100% branco */
+[data-admin-sidebar] a:hover,
+[data-admin-sidebar] a:hover span,
+[data-admin-sidebar] a:hover svg,
+[data-admin-sidebar] a:active,
+[data-admin-sidebar] a:active span,
+[data-admin-sidebar] a:active svg,
+[data-admin-mobile-drawer] a:hover,
+[data-admin-mobile-drawer] a:hover span,
+[data-admin-mobile-drawer] a:hover svg,
+[data-admin-mobile-drawer] a:active,
+[data-admin-mobile-drawer] a:active span,
+[data-admin-mobile-drawer] a:active svg {
+  color: #ffffff !important;
+}

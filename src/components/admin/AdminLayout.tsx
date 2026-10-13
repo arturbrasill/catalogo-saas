@@ -137,7 +137,12 @@ export function AdminLayout({ children }: AdminLayoutProps) {
     <ProtectedRoute>
       <div className="min-h-screen bg-slate-100/70 flex">
         {/* Sidebar Desktop (Modern Dark SaaS Theme) */}
-        <aside className="hidden lg:flex flex-col w-64 bg-slate-950 text-slate-300 border-r border-slate-900 shadow-xl select-none">
+        {/* Sidebar Desktop (Modern Dark SaaS Theme - Blindagem de Cor Estática Branca) */}
+        <aside
+          data-admin-sidebar="true"
+          className="hidden lg:flex flex-col w-64 bg-slate-950 !text-white border-r border-slate-900 shadow-xl select-none"
+          style={{ color: '#ffffff' }}
+        >
           {/* Brand Header */}
           <div className="h-16 sm:h-20 flex items-center px-6 border-b border-slate-900/80 gap-3">
             <div className="h-10 w-10 rounded-xl overflow-hidden flex items-center justify-center text-white font-black shadow-lg shadow-black/40 flex-shrink-0 bg-slate-900 border border-slate-800">
@@ -149,11 +154,17 @@ export function AdminLayout({ children }: AdminLayoutProps) {
               />
             </div>
             <div className="min-w-0">
-              <span className="font-extrabold text-white block leading-tight text-sm tracking-tight truncate">
+              <span
+                className="font-extrabold !text-white block leading-tight text-sm tracking-tight truncate"
+                style={{ color: '#ffffff' }}
+              >
                 NumClick
               </span>
-              <span className="text-[11px] text-brand-primary font-semibold flex items-center gap-1 mt-0.5">
-                <span className="h-1.5 w-1.5 rounded-full bg-brand-primary animate-pulse" />
+              <span
+                className="text-[11px] !text-emerald-400 font-semibold flex items-center gap-1 mt-0.5"
+                style={{ color: '#34d399' }}
+              >
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
                 Painel do Lojista
               </span>
             </div>
@@ -162,7 +173,10 @@ export function AdminLayout({ children }: AdminLayoutProps) {
           {/* Links de Navegação */}
           <div className="flex-1 px-3 py-6 space-y-6 overflow-y-auto no-scrollbar">
             <div>
-              <p className="px-3 text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-2">
+              <p
+                className="px-3 text-[10px] font-bold uppercase tracking-wider !text-slate-400 mb-2"
+                style={{ color: '#94a3b8' }}
+              >
                 Menu Principal
               </p>
               <nav className="space-y-1">
@@ -176,22 +190,36 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                     <a
                       key={item.name}
                       href={itemHref}
-                      className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all duration-200 group ${
+                      className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all duration-150 group !text-white ${
                         active
-                          ? 'bg-brand-primary/15 text-brand-primary border border-brand-primary/20 shadow-xs'
-                          : 'text-slate-400 hover:text-white hover:bg-slate-900/80'
+                          ? 'bg-white/10 border border-white/15 shadow-xs'
+                          : 'hover:bg-white/5 active:bg-white/10 border border-transparent'
                       }`}
+                      style={{ color: '#ffffff' }}
                     >
                       <div className="flex items-center gap-3 min-w-0">
                         <Icon
-                          className={`w-4 h-4 transition-transform group-hover:scale-110 ${
-                            active ? 'text-brand-primary' : 'text-slate-500 group-hover:text-slate-300'
+                          className={`w-4 h-4 transition-transform group-hover:scale-105 !text-white ${
+                            active ? 'opacity-100' : 'opacity-90 group-hover:opacity-100'
                           }`}
+                          style={{ color: '#ffffff' }}
                         />
-                        <span className="truncate">{item.name}</span>
+                        <span
+                          className="truncate !text-white font-medium tracking-tight"
+                          style={{ color: '#ffffff' }}
+                        >
+                          {item.name}
+                        </span>
                       </div>
                       {item.badge && (
-                        <span className="text-[9px] font-semibold px-2 py-0.5 rounded-md bg-slate-900 text-slate-400 border border-slate-800">
+                        <span
+                          className={`text-[9px] font-semibold px-2 py-0.5 rounded-md !text-white border ${
+                            active
+                              ? 'bg-white/20 border-white/25'
+                              : 'bg-white/10 border-white/15'
+                          }`}
+                          style={{ color: '#ffffff' }}
+                        >
                           {item.badge}
                         </span>
                       )}
@@ -203,11 +231,17 @@ export function AdminLayout({ children }: AdminLayoutProps) {
 
             {/* Banner de Ajuda / Dica */}
             <div className="p-4 rounded-2xl bg-gradient-to-b from-slate-900 to-slate-950 border border-slate-800/80 space-y-2 text-xs">
-              <div className="flex items-center gap-1.5 text-brand-primary font-bold text-[11px]">
-                <Sparkles className="w-3.5 h-3.5" />
-                <span>Dica de Conversão</span>
+              <div
+                className="flex items-center gap-1.5 !text-amber-400 font-bold text-[11px]"
+                style={{ color: '#fbbf24' }}
+              >
+                <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                <span style={{ color: '#fbbf24' }}>Dica de Conversão</span>
               </div>
-              <p className="text-slate-400 text-[11px] leading-relaxed">
+              <p
+                className="!text-slate-400 text-[11px] leading-relaxed"
+                style={{ color: '#94a3b8' }}
+              >
                 Mantenha suas fotos em boa resolução e configure o WhatsApp para receber os pedidos instantaneamente.
               </p>
             </div>
@@ -219,32 +253,41 @@ export function AdminLayout({ children }: AdminLayoutProps) {
               href={catalogHref}
               target="_blank"
               rel="noreferrer"
-              className="flex items-center justify-between w-full px-3.5 py-2.5 text-xs font-semibold text-slate-300 hover:text-white hover:bg-slate-900 rounded-xl transition border border-slate-800/60"
+              className="flex items-center justify-between w-full px-3.5 py-2.5 text-xs font-semibold !text-white hover:bg-white/10 active:bg-white/15 rounded-xl transition border border-white/10"
+              style={{ color: '#ffffff' }}
             >
-              <span className="flex items-center gap-2">
-                <ExternalLink className="w-4 h-4 text-brand-primary" />
+              <span className="flex items-center gap-2 !text-white" style={{ color: '#ffffff' }}>
+                <ExternalLink className="w-4 h-4 !text-white" style={{ color: '#ffffff' }} />
                 Ver Catálogo Público
               </span>
-              <ChevronRight className="w-3.5 h-3.5 text-slate-500" />
+              <ChevronRight className="w-3.5 h-3.5 !text-white opacity-70" style={{ color: '#ffffff' }} />
             </a>
 
             <div className="flex items-center justify-between pt-2 px-1">
               <div className="flex items-center gap-2 min-w-0">
-                <div className="h-8 w-8 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-300 font-bold text-xs">
-                  <Shield className="w-4 h-4 text-brand-primary" />
+                <div className="h-8 w-8 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center !text-white font-bold text-xs">
+                  <Shield className="w-4 h-4 !text-emerald-400" style={{ color: '#34d399' }} />
                 </div>
                 <div className="truncate">
-                  <span className="text-xs font-bold text-white block truncate leading-tight">
+                  <span
+                    className="text-xs font-bold !text-white block truncate leading-tight"
+                    style={{ color: '#ffffff' }}
+                  >
                     Administrador
                   </span>
-                  <span className="text-[10px] text-slate-500 block">Sessão Segura</span>
+                  <span
+                    className="text-[10px] !text-slate-400 block"
+                    style={{ color: '#94a3b8' }}
+                  >
+                    Sessão Segura
+                  </span>
                 </div>
               </div>
 
               <button
                 type="button"
                 onClick={logout}
-                className="p-2 text-slate-400 hover:text-rose-400 hover:bg-slate-900 rounded-lg transition cursor-pointer"
+                className="p-2 !text-slate-400 hover:!text-rose-400 hover:bg-white/10 rounded-lg transition cursor-pointer"
                 title="Sair do painel administrativo"
                 aria-label="Sair da conta"
               >
@@ -350,7 +393,11 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                 className="fixed inset-0 bg-slate-950/60 backdrop-blur-xs"
                 onClick={() => setMobileMenuOpen(false)}
               />
-              <div className="relative w-72 max-w-[80vw] bg-slate-950 text-slate-300 flex flex-col z-10 shadow-2xl">
+              <div
+                data-admin-mobile-drawer="true"
+                className="relative w-72 max-w-[80vw] bg-slate-950 !text-white flex flex-col z-10 shadow-2xl select-none"
+                style={{ color: '#ffffff' }}
+              >
                 <div className="h-16 sm:h-20 flex items-center justify-between px-5 border-b border-slate-900">
                   <div className="flex items-center gap-2.5">
                     <div className="h-8 w-8 rounded-lg overflow-hidden flex items-center justify-center bg-slate-900 border border-slate-800">
@@ -361,12 +408,17 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                         className="w-full h-full object-cover"
                       />
                     </div>
-                    <span className="font-extrabold text-white text-sm">NumClick • Lojista</span>
+                    <span
+                      className="font-extrabold !text-white text-sm"
+                      style={{ color: '#ffffff' }}
+                    >
+                      NumClick • Lojista
+                    </span>
                   </div>
                   <button
                     type="button"
                     onClick={() => setMobileMenuOpen(false)}
-                    className="p-1.5 text-slate-400 hover:text-white rounded-lg"
+                    className="p-1.5 !text-slate-400 hover:!text-white hover:bg-white/10 rounded-lg transition"
                     aria-label="Fechar menu"
                   >
                     <X className="w-5 h-5" />
@@ -385,14 +437,39 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                         key={item.name}
                         href={itemHref}
                         onClick={() => setMobileMenuOpen(false)}
-                        className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-semibold transition ${
+                        className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-semibold transition !text-white ${
                           active
-                            ? 'bg-brand-primary/20 text-brand-primary border border-brand-primary/20'
-                            : 'text-slate-400 hover:text-white hover:bg-slate-900'
+                            ? 'bg-white/10 border border-white/15 shadow-xs'
+                            : 'hover:bg-white/5 active:bg-white/10 border border-transparent'
                         }`}
+                        style={{ color: '#ffffff' }}
                       >
-                        <Icon className="w-4 h-4" />
-                        {item.name}
+                        <div className="flex items-center gap-3 min-w-0">
+                          <Icon
+                            className={`w-4 h-4 !text-white ${
+                              active ? 'opacity-100' : 'opacity-90'
+                            }`}
+                            style={{ color: '#ffffff' }}
+                          />
+                          <span
+                            className="!text-white truncate font-medium"
+                            style={{ color: '#ffffff' }}
+                          >
+                            {item.name}
+                          </span>
+                        </div>
+                        {item.badge && (
+                          <span
+                            className={`text-[9px] font-semibold px-2 py-0.5 rounded-md !text-white border ${
+                              active
+                                ? 'bg-white/20 border-white/25'
+                                : 'bg-white/10 border-white/15'
+                            }`}
+                            style={{ color: '#ffffff' }}
+                          >
+                            {item.badge}
+                          </span>
+                        )}
                       </a>
                     );
                   })}
@@ -403,15 +480,16 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                     href={catalogHref}
                     target="_blank"
                     rel="noreferrer"
-                    className="flex items-center justify-center gap-2 w-full px-3 py-2 text-xs font-bold text-slate-300 bg-slate-900 rounded-xl"
+                    className="flex items-center justify-center gap-2 w-full px-3 py-2 text-xs font-bold !text-white bg-slate-900 hover:bg-white/10 rounded-xl border border-white/10 transition"
+                    style={{ color: '#ffffff' }}
                   >
-                    <ExternalLink className="w-3.5 h-3.5" />
-                    Ver Catálogo Público
+                    <ExternalLink className="w-3.5 h-3.5 !text-white" style={{ color: '#ffffff' }} />
+                    <span style={{ color: '#ffffff' }}>Ver Catálogo Público</span>
                   </a>
                   <button
                     type="button"
                     onClick={logout}
-                    className="flex items-center justify-center gap-2 w-full px-3 py-2 text-xs font-bold text-rose-400 hover:bg-slate-900 rounded-xl"
+                    className="flex items-center justify-center gap-2 w-full px-3 py-2 text-xs font-bold !text-rose-400 hover:bg-white/10 rounded-xl transition"
                   >
                     <LogOut className="w-3.5 h-3.5" />
                     Sair da Conta

@@ -191,8 +191,8 @@ export interface Campaign {
   discount_type: CampaignDiscountType;
   discount_value: number;
   scope: CampaignScope;
-  category_ids: string[];
-  product_ids: string[];
+  category_ids?: string[];
+  product_ids?: string[];
   is_active: boolean;
   created_at?: string;
   updated_at?: string;

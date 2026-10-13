@@ -68,6 +68,8 @@ describe('Surgical Supabase Updates — 4 Novas Funcionalidades', () => {
           discount_type: 'percentage',
           discount_value: 20, // 20% OFF
           scope: 'all',
+          category_ids: [],
+          product_ids: [],
           is_active: true,
           created_at: '2026-10-01T00:00:00Z',
         },
@@ -75,16 +77,16 @@ describe('Surgical Supabase Updates — 4 Novas Funcionalidades', () => {
 
       const result = applyCampaignDiscounts(baseProducts, campaigns, now);
 
-      expect(result[0].precoPromocional).toBe(80);
-      expect(result[0].preco).toBe(100);
-      expect(result[0].badge).toBe('20% OFF');
+      expect(result[0]?.precoPromocional).toBe(80);
+      expect(result[0]?.preco).toBe(100);
+      expect(result[0]?.badge).toBe('20% OFF');
 
-      expect(result[1].precoPromocional).toBe(40);
-      expect(result[1].preco).toBe(50);
-      expect(result[1].badge).toBe('20% OFF');
+      expect(result[1]?.precoPromocional).toBe(40);
+      expect(result[1]?.preco).toBe(50);
+      expect(result[1]?.badge).toBe('20% OFF');
 
-      expect(result[2].precoPromocional).toBe(24);
-      expect(result[2].preco).toBe(30);
+      expect(result[2]?.precoPromocional).toBe(24);
+      expect(result[2]?.preco).toBe(30);
     });
 
     it('NÃO deve aplicar desconto de campanha expirada ou futura', () => {
@@ -97,6 +99,8 @@ describe('Surgical Supabase Updates — 4 Novas Funcionalidades', () => {
         discount_type: 'percentage',
         discount_value: 50,
         scope: 'all',
+        category_ids: [],
+        product_ids: [],
         is_active: true,
         created_at: '2026-10-01T00:00:00Z',
       };
@@ -110,15 +114,17 @@ describe('Surgical Supabase Updates — 4 Novas Funcionalidades', () => {
         discount_type: 'percentage',
         discount_value: 50,
         scope: 'all',
+        category_ids: [],
+        product_ids: [],
         is_active: true,
         created_at: '2026-10-01T00:00:00Z',
       };
 
       const result = applyCampaignDiscounts(baseProducts, [expiredCampaign, futureCampaign], now);
 
-      expect(result[0].precoPromocional).toBeUndefined();
-      expect(result[0].badge).toBeUndefined();
-      expect(result[1].precoPromocional).toBeUndefined();
+      expect(result[0]?.precoPromocional).toBeFalsy();
+      expect(result[0]?.badge).toBeFalsy();
+      expect(result[1]?.precoPromocional).toBeFalsy();
     });
 
     it('NÃO deve aplicar desconto quando is_active === false', () => {
@@ -131,12 +137,14 @@ describe('Surgical Supabase Updates — 4 Novas Funcionalidades', () => {
         discount_type: 'percentage',
         discount_value: 30,
         scope: 'all',
+        category_ids: [],
+        product_ids: [],
         is_active: false,
         created_at: '2026-10-01T00:00:00Z',
       };
 
       const result = applyCampaignDiscounts(baseProducts, [pausedCampaign], now);
-      expect(result[0].precoPromocional).toBeUndefined();
+      expect(result[0]?.precoPromocional).toBeFalsy();
     });
 
     it('deve aplicar desconto fixo em R$ apenas para categoria específica', () => {
@@ -150,6 +158,7 @@ describe('Surgical Supabase Updates — 4 Novas Funcionalidades', () => {
         discount_value: 25, // R$ 25 OFF
         scope: 'categories',
         category_ids: ['Perfumes'],
+        product_ids: [],
         is_active: true,
         created_at: '2026-10-01T00:00:00Z',
       };
@@ -157,12 +166,12 @@ describe('Surgical Supabase Updates — 4 Novas Funcionalidades', () => {
       const result = applyCampaignDiscounts(baseProducts, [categoryCampaign], now);
 
       // Perfume: 100 - 25 = 75
-      expect(result[0].precoPromocional).toBe(75);
-      expect(result[0].badge).toBe('R$ 25 OFF');
+      expect(result[0]?.precoPromocional).toBe(75);
+      expect(result[0]?.badge).toBe('R$ 25 OFF');
 
       // Outras categorias permanecem com preço regular
-      expect(result[1].precoPromocional).toBeUndefined();
-      expect(result[2].precoPromocional).toBeUndefined();
+      expect(result[1]?.precoPromocional).toBeFalsy();
+      expect(result[2]?.precoPromocional).toBeFalsy();
     });
 
     it('deve aplicar desconto apenas para produtos específicos selecionados', () => {
@@ -175,6 +184,7 @@ describe('Surgical Supabase Updates — 4 Novas Funcionalidades', () => {
         discount_type: 'fixed',
         discount_value: 10,
         scope: 'products',
+        category_ids: [],
         product_ids: ['prod-3'],
         is_active: true,
         created_at: '2026-10-01T00:00:00Z',
@@ -182,11 +192,11 @@ describe('Surgical Supabase Updates — 4 Novas Funcionalidades', () => {
 
       const result = applyCampaignDiscounts(baseProducts, [productCampaign], now);
 
-      expect(result[0].precoPromocional).toBeUndefined();
-      expect(result[1].precoPromocional).toBeUndefined();
+      expect(result[0]?.precoPromocional).toBeFalsy();
+      expect(result[1]?.precoPromocional).toBeFalsy();
       // Batom: 30 - 10 = 20
-      expect(result[2].precoPromocional).toBe(20);
-      expect(result[2].badge).toBe('R$ 10 OFF');
+      expect(result[2]?.precoPromocional).toBe(20);
+      expect(result[2]?.badge).toBe('R$ 10 OFF');
     });
 
     it('quando múltiplas campanhas forem elegíveis, deve escolher o maior desconto (menor preço promocional)', () => {
@@ -199,6 +209,8 @@ describe('Surgical Supabase Updates — 4 Novas Funcionalidades', () => {
         discount_type: 'percentage',
         discount_value: 10, // 100 -> 90
         scope: 'all',
+        category_ids: [],
+        product_ids: [],
         is_active: true,
         created_at: '2026-10-01T00:00:00Z',
       };
@@ -213,14 +225,15 @@ describe('Surgical Supabase Updates — 4 Novas Funcionalidades', () => {
         discount_value: 30, // 100 -> 70
         scope: 'categories',
         category_ids: ['Perfumes'],
+        product_ids: [],
         is_active: true,
         created_at: '2026-10-01T00:00:00Z',
       };
 
       const result = applyCampaignDiscounts(baseProducts, [campaign1, campaign2], now);
       // Perfume deve receber R$ 70 (o maior desconto entre 90 e 70)
-      expect(result[0].precoPromocional).toBe(70);
-      expect(result[0].badge).toBe('R$ 30 OFF');
+      expect(result[0]?.precoPromocional).toBe(70);
+      expect(result[0]?.badge).toBe('R$ 30 OFF');
     });
   });
 
@@ -256,7 +269,7 @@ describe('Surgical Supabase Updates — 4 Novas Funcionalidades', () => {
 
       const validSellers = sellers.filter((s) => s.name?.trim() && s.whatsapp?.trim());
       expect(validSellers.length).toBe(1);
-      expect(validSellers[0].name).toBe('Ana');
+      expect(validSellers[0]?.name).toBe('Ana');
     });
   });
 
@@ -269,14 +282,16 @@ describe('Surgical Supabase Updates — 4 Novas Funcionalidades', () => {
 
       // Slot 1: Essenza
       const slot1 = DEMO_STORES[0];
-      expect(slot1.name).toBe('Essenza');
-      expect(slot1.url).toBe('https://numclick-app.vercel.app/essenza');
-      expect(slot1.isAvailable).toBe(true);
+      expect(slot1).toBeDefined();
+      expect(slot1?.name).toBe('Essenza');
+      expect(slot1?.url).toBe('https://numclick-app.vercel.app/essenza');
+      expect(slot1?.isAvailable).toBe(true);
 
       // Slot 2: Loja Parceira (preparada e mockada)
       const slot2 = DEMO_STORES[1];
-      expect(slot2.badge).toContain('Loja Parceira');
-      expect(slot2.isAvailable).toBe(false);
+      expect(slot2).toBeDefined();
+      expect(slot2?.badge).toContain('Loja Parceira');
+      expect(slot2?.isAvailable).toBe(false);
     });
   });
 
