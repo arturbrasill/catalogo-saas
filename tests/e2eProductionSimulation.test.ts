@@ -3,7 +3,7 @@ import {
   normalizeProduct,
   normalizePrice,
   DEFAULT_PRODUCT_IMAGE_FALLBACK,
-} from '@/lib/sheetNormalization';
+} from '@/lib/productNormalization';
 import {
   formatCurrency,
   formatCartItem,

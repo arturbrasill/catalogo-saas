@@ -6,8 +6,6 @@ import {
   getSaasMetrics,
   findTenant,
   syncTenantsFromRemote,
-  getCachedMasterSheetUrl,
-  getMasterProvisionerUrl,
 } from '@/lib/tenantStore';
 import type { CreateTenantInput } from '@/types';
 
@@ -38,8 +36,6 @@ export async function GET(request: NextRequest) {
   const registry = getTenantRegistry();
   const stores = Object.values(registry);
   const metrics = getSaasMetrics();
-  const masterSheetUrl = getCachedMasterSheetUrl();
-  const hasGoogleProvisioner = Boolean(getMasterProvisionerUrl());
 
   // Remove dados duplicados por chaves diferentes (mantém um por tenantId)
   const uniqueStoresMap = new Map();
@@ -54,8 +50,8 @@ export async function GET(request: NextRequest) {
     data: {
       stores: Array.from(uniqueStoresMap.values()),
       metrics,
-      masterSheetUrl,
-      hasGoogleProvisioner,
+      masterSheetUrl: null,
+      hasGoogleProvisioner: false,
     },
   });
 }

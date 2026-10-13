@@ -22,7 +22,7 @@ import type {
 import {
   normalizeProduct,
   normalizeCatalogInitialData,
-} from '@/lib/sheetNormalization';
+} from '@/lib/productNormalization';
 
 export class ApiClient {
   private baseUrl: string;

@@ -7,9 +7,9 @@ import {
   normalizeVariations,
   normalizeProduct,
   DEFAULT_PRODUCT_IMAGE_FALLBACK,
-} from '@/lib/sheetNormalization';
+} from '@/lib/productNormalization';
 
-describe('Sheet Normalization QA & Resilience', () => {
+describe('Product & Catalog Normalization QA & Resilience', () => {
   describe('normalizePrice', () => {
     it('deve converter string com formato brasileiro R$ 19,90 para 19.9', () => {
       expect(normalizePrice('R$ 19,90')).toBe(19.9);

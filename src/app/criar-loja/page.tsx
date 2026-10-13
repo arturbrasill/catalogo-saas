@@ -70,12 +70,12 @@ export default function CriarLojaPage() {
   } | null>(null);
   const [copiedLink, setCopiedLink] = useState<string | null>(null);
 
-  const [hostDomain, setHostDomain] = useState('numclick-app.vercel.app');
+  const [hostDomain, setHostDomain] = useState('numclick.app');
 
   // Lê plano pré-selecionado da URL (?plan=monthly ou ?plan=trial_30d) e hostname atual
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      setHostDomain(window.location.host || 'numclick-app.vercel.app');
+      setHostDomain(window.location.host || 'numclick.app');
       const params = new URLSearchParams(window.location.search);
       const p = params.get('plan');
       if (p === 'monthly' || p === 'trial_30d') {

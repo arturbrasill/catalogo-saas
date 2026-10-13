@@ -65,7 +65,7 @@ const FAQ_ITEMS = [
   {
     question: 'Como funciona o link da minha vitrine?',
     answer:
-      'Sua loja recebe um link exclusivo e seguro (ex: numclick-app.vercel.app/sualoja) com certificado SSL gratuito. Basta colar o link na bio do Instagram ou compartilhar no WhatsApp para seus clientes comprarem instantaneamente.',
+      'Sua loja recebe um link exclusivo e seguro (ex: numclick.app/sualoja) com certificado SSL gratuito. Basta colar o link na bio do Instagram ou compartilhar no WhatsApp para seus clientes comprarem instantaneamente.',
   },
   {
     question: 'Como funciona o teste grátis de 7 dias?',
@@ -533,7 +533,7 @@ export default function SaaSCommercialLandingPage() {
                   Sua Vitrine Instantânea na Web
                 </h3>
                 <p className="text-xs sm:text-sm text-slate-600 leading-relaxed max-w-xl">
-                  Tenha presença profissional no mercado. Cada loja recebe um link exclusivo e otimizado (ex: <code className="text-slate-800 font-mono text-xs bg-slate-200/70 px-1 py-0.5 rounded">numclick-app.vercel.app/sualoja</code>) pronto para colocar na bio do Instagram e compartilhar no WhatsApp, com conexão ultrarrápida e certificado SSL.
+                  Tenha presença profissional no mercado. Cada loja recebe um link exclusivo e otimizado (ex: <code className="text-slate-800 font-mono text-xs bg-slate-200/70 px-1 py-0.5 rounded">numclick.app/sualoja</code>) pronto para colocar na bio do Instagram e compartilhar no WhatsApp, com conexão ultrarrápida e certificado SSL.
                 </p>
               </div>
 
@@ -551,7 +551,7 @@ export default function SaaSCommercialLandingPage() {
                     <Lock className="w-3.5 h-3.5 text-emerald-600 flex-shrink-0" />
                     <span className="text-slate-400 text-[11px] hidden sm:inline">https://</span>
                     <span className="text-slate-900 font-semibold text-xs truncate">
-                      numclick-app.vercel.app/sualoja
+                      numclick.app/sualoja
                     </span>
                   </div>
                   <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200/80 flex-shrink-0">

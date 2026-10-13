@@ -23,7 +23,7 @@ export const DEMO_STORES: DemoStore[] = [
     category: 'Perfumaria e Cosméticos',
     badge: 'Modelo Oficial',
     description: 'Catálogo demonstrativo interativo com variações, sacola dinâmica e WhatsApp.',
-    url: 'https://numclick-app.vercel.app/essenza',
+    url: 'https://numclick.app/essenza',
     isAvailable: true,
   },
   {
@@ -32,7 +32,7 @@ export const DEMO_STORES: DemoStore[] = [
     category: 'Moda & Acessórios',
     badge: 'Em Breve / Loja Parceira',
     description: 'Espaço reservado para vitrine homologada de lojista parceiro.',
-    url: '#', // Alterar futuramente para: 'https://numclick-app.vercel.app/[slug-da-loja]'
+    url: '#', // Alterar futuramente para: 'https://numclick.app/[slug-da-loja]'
     isAvailable: false,
   },
 ];

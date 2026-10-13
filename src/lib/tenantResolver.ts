@@ -37,11 +37,13 @@ export function getTenantByHostname(
     return activeRegistry[normalized]!;
   }
 
-  // 2. Tratamento para desenvolvimento local (localhost e 127.0.0.1) e domínios padrão Vercel (*.vercel.app)
+  // 2. Tratamento para desenvolvimento local (localhost e 127.0.0.1), Vercel (*.vercel.app) e domínio oficial numclick.app
   if (
     normalized === 'localhost' ||
     normalized === '127.0.0.1' ||
-    normalized.endsWith('.vercel.app')
+    normalized.endsWith('.vercel.app') ||
+    normalized === 'numclick.app' ||
+    normalized.endsWith('.numclick.app')
   ) {
     const defaultTenantKey = process.env['NEXT_PUBLIC_DEFAULT_TENANT'] || 'loja_exemplo';
 

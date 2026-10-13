@@ -5,7 +5,7 @@ import type { Product, StoreConfig, SelectedVariation } from '@/types';
 import { useCart } from '@/lib/cart';
 import { useWishlist } from '@/lib/wishlist';
 import { formatCurrency, calculateSubtotal } from '@/lib/whatsapp';
-import { extractProductImages, DEFAULT_PRODUCT_IMAGE_FALLBACK } from '@/lib/sheetNormalization';
+import { extractProductImages, DEFAULT_PRODUCT_IMAGE_FALLBACK } from '@/lib/productNormalization';
 import {
   calculateEffectiveProductPrice,
   parseVariationOption,

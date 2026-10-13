@@ -78,7 +78,7 @@ describe('Layout Modes e Selos Promocionais (Vitrine Configurável)', () => {
     });
   });
 
-  describe('2. AppsScriptBackendEngine - Configuração do Layout da Loja', () => {
+  describe('2. BackendEngine - Configuração do Layout da Loja', () => {
     it('deve iniciar com catalog_layout "grid" por padrão', () => {
       const config = engine.getPublicStoreConfig();
       expect(config.catalog_layout).toBe('grid');
@@ -140,7 +140,7 @@ describe('Layout Modes e Selos Promocionais (Vitrine Configurável)', () => {
     });
   });
 
-  describe('3. AppsScriptBackendEngine - Produtos com Selo Promocional (Badge)', () => {
+  describe('3. BackendEngine - Produtos com Selo Promocional (Badge)', () => {
     it('deve criar produto com selo promocional (ex: "Mais Vendido")', () => {
       const prodRes = engine.doPost({
         action: 'createProduct',
@@ -250,7 +250,7 @@ describe('Layout Modes e Selos Promocionais (Vitrine Configurável)', () => {
 
   describe('4. Normalização do Catálogo Inicial (normalizeCatalogInitialData)', () => {
     it('deve preservar os modos de layout (grid, list, editorial) na carga inicial do catálogo', async () => {
-      const { normalizeCatalogInitialData } = await import('@/lib/sheetNormalization');
+      const { normalizeCatalogInitialData } = await import('@/lib/productNormalization');
 
       const modes: CatalogLayoutMode[] = ['grid', 'list', 'editorial'];
       for (const mode of modes) {
@@ -269,7 +269,7 @@ describe('Layout Modes e Selos Promocionais (Vitrine Configurável)', () => {
     });
 
     it('deve adotar "grid" como fallback caso catalog_layout seja inválido ou não informado', async () => {
-      const { normalizeCatalogInitialData } = await import('@/lib/sheetNormalization');
+      const { normalizeCatalogInitialData } = await import('@/lib/productNormalization');
 
       const rawInvalid = {
         store: {

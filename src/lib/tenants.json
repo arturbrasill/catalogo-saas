@@ -1,67 +1,67 @@
 {
+  "numclick.app": {
+    "tenantId": "loja_exemplo",
+    "apiUrl": "",
+    "name": "Minha Loja Digital",
+    "domain": "numclick.app"
+  },
+  "www.numclick.app": {
+    "tenantId": "loja_exemplo",
+    "apiUrl": "",
+    "name": "Minha Loja Digital",
+    "domain": "numclick.app"
+  },
   "localhost": {
     "tenantId": "loja_exemplo",
-    "apiUrl": "https://script.google.com/macros/s/AKfycbxU2ES26LBjR7tTw_NuwXzFZCEklvW1v312n-8NC_gkblaapGEWeI5kKg9bUOR2BriC/exec",
+    "apiUrl": "",
     "name": "Minha Loja Digital",
     "domain": "localhost"
   },
   "loja-exemplo.com.br": {
     "tenantId": "loja_exemplo",
-    "apiUrl": "https://script.google.com/macros/s/AKfycbxU2ES26LBjR7tTw_NuwXzFZCEklvW1v312n-8NC_gkblaapGEWeI5kKg9bUOR2BriC/exec",
+    "apiUrl": "",
     "name": "Minha Loja Digital",
     "domain": "loja-exemplo.com.br"
   },
   "saasnumclick.vercel.app": {
     "tenantId": "loja_exemplo",
-    "apiUrl": "https://script.google.com/macros/s/AKfycbxU2ES26LBjR7tTw_NuwXzFZCEklvW1v312n-8NC_gkblaapGEWeI5kKg9bUOR2BriC/exec",
+    "apiUrl": "",
     "name": "Minha Loja Digital",
     "domain": "saasnumclick.vercel.app"
   },
-  "numclik.vercel.app": {
-    "tenantId": "loja_exemplo",
-    "apiUrl": "https://script.google.com/macros/s/AKfycbxU2ES26LBjR7tTw_NuwXzFZCEklvW1v312n-8NC_gkblaapGEWeI5kKg9bUOR2BriC/exec",
-    "name": "Minha Loja Digital",
-    "domain": "numclik.vercel.app"
-  },
   "numclick.vercel.app": {
     "tenantId": "loja_exemplo",
-    "apiUrl": "https://script.google.com/macros/s/AKfycbxU2ES26LBjR7tTw_NuwXzFZCEklvW1v312n-8NC_gkblaapGEWeI5kKg9bUOR2BriC/exec",
+    "apiUrl": "",
     "name": "Minha Loja Digital",
-    "domain": "numclick.vercel.app"
+    "domain": "numclick.app"
   },
   "numclick-app.vercel.app": {
     "tenantId": "loja_exemplo",
-    "apiUrl": "https://script.google.com/macros/s/AKfycbxU2ES26LBjR7tTw_NuwXzFZCEklvW1v312n-8NC_gkblaapGEWeI5kKg9bUOR2BriC/exec",
+    "apiUrl": "",
     "name": "Minha Loja Digital",
-    "domain": "numclick-app.vercel.app"
-  },
-  "numclick-app.vercell.app": {
-    "tenantId": "loja_exemplo",
-    "apiUrl": "https://script.google.com/macros/s/AKfycbxU2ES26LBjR7tTw_NuwXzFZCEklvW1v312n-8NC_gkblaapGEWeI5kKg9bUOR2BriC/exec",
-    "name": "Minha Loja Digital",
-    "domain": "numclick-app.vercell.app"
+    "domain": "numclick.app"
   },
   "moda-style.com.br": {
     "tenantId": "moda_style",
-    "apiUrl": "https://script.google.com/macros/s/MODA_STYLE_ID/exec",
+    "apiUrl": "",
     "name": "Moda & Estilo Store",
     "domain": "moda-style.com.br"
   },
   "calcados-express.com.br": {
     "tenantId": "calcados_express",
-    "apiUrl": "https://script.google.com/macros/s/CALCADOS_ID/exec",
+    "apiUrl": "",
     "name": "Calçados Express",
     "domain": "calcados-express.com.br"
   },
   "loja-a.localhost": {
     "tenantId": "loja_a",
-    "apiUrl": "https://script.google.com/macros/s/LOJA_A_ID/exec",
+    "apiUrl": "",
     "name": "Boutique Local A",
     "domain": "loja-a.localhost"
   },
   "loja-b.localhost": {
     "tenantId": "loja_b",
-    "apiUrl": "https://script.google.com/macros/s/LOJA_B_ID/exec",
+    "apiUrl": "",
     "name": "Esportes Local B",
     "domain": "loja-b.localhost"
   }

@@ -284,7 +284,7 @@ describe('Surgical Supabase Updates — 4 Novas Funcionalidades', () => {
       const slot1 = DEMO_STORES[0];
       expect(slot1).toBeDefined();
       expect(slot1?.name).toBe('Essenza');
-      expect(slot1?.url).toBe('https://numclick-app.vercel.app/essenza');
+      expect(slot1?.url).toBe('https://numclick.app/essenza');
       expect(slot1?.isAvailable).toBe(true);
 
       // Slot 2: Loja Parceira (preparada e mockada)

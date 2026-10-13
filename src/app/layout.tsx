@@ -47,6 +47,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const iconUrl = tenant?.logo_url || '/favicon.ico';
 
   return {
+    metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://numclick.app'),
     title,
     description,
     icons: {

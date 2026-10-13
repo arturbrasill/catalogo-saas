@@ -35,6 +35,7 @@ import {
   findTenantByToken,
   findTenantByTokenAsync,
 } from '@/lib/tenantStore';
+import { normalizeProduct } from '@/lib/productNormalization';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -46,42 +47,12 @@ const NO_CACHE_HEADERS: Record<string, string> = {
 };
 
 /**
- * Validação rigorosa de segurança para URLs remotas de API.
- * Previne SSRF (Server-Side Request Forgery) garantindo que chamadas externas
- * sejam feitas estritamente para o domínio oficial do Google Apps Script.
- */
-function isValidGasApiUrl(urlStr: string): boolean {
-  try {
-    const parsed = new URL(urlStr);
-    const isValidStructure =
-      parsed.protocol === 'https:' &&
-      parsed.hostname === 'script.google.com' &&
-      parsed.pathname.startsWith('/macros/s/');
-
-    // Em ambiente de teste ou desenvolvimento local, URLs com placeholders não devem realizar chamadas de rede reais
-    const isPlaceholder =
-      urlStr.includes('EXEMPLO') ||
-      urlStr.includes('_ID/') ||
-      urlStr.includes('_ID/exec');
-
-    if (process.env.NODE_ENV === 'test') {
-      return false;
-    }
-
-    return isValidStructure;
-  } catch {
-    return false;
-  }
-}
-
-/**
  * Resolve o tenant a partir do hostname canônico da requisição.
- * NUNCA confia em cabeçalhos arbitrários 'x-tenant-api-url' ou 'x-tenant-id' enviados pelo cliente.
+ * NUNCA confia em cabeçalhos arbitrários enviados pelo cliente.
  */
 function resolveContextTenant(request: NextRequest): {
   tenant: Tenant | null;
   tenantId: string;
-  apiUrl: string | null;
   isAllowed: boolean;
 } {
   const rawHost =
@@ -91,7 +62,7 @@ function resolveContextTenant(request: NextRequest): {
   // Prioridade canônica para o Host registrado (previne header injection)
   let tenant = getTenantByHostname(rawHost);
 
-  // Se estiver em ambiente compartilhado (localhost ou vercel.app), permite query param ?tenant=, header x-tenant-id, cookie ou referer
+  // Se estiver em ambiente compartilhado (localhost, vercel.app ou numclick.app), permite query param ?tenant=, header x-tenant-id, cookie ou referer
   let queryTenant =
     request.nextUrl.searchParams.get('tenant') ||
     request.headers.get('x-tenant-id') ||
@@ -123,7 +94,14 @@ function resolveContextTenant(request: NextRequest): {
     }
   }
 
-  if (queryTenant && (normalized === 'localhost' || normalized === '127.0.0.1' || normalized.endsWith('.vercel.app') || !tenant)) {
+  const isSharedDomain =
+    normalized === 'localhost' ||
+    normalized === '127.0.0.1' ||
+    normalized.endsWith('.vercel.app') ||
+    normalized === 'numclick.app' ||
+    normalized.endsWith('.numclick.app');
+
+  if (queryTenant && (isSharedDomain || !tenant)) {
     const resolvedFromQuery = resolveTenant(rawHost, queryTenant);
     if (resolvedFromQuery) {
       tenant = resolvedFromQuery;
@@ -131,16 +109,11 @@ function resolveContextTenant(request: NextRequest): {
   }
 
   if (!tenant) {
-    // Se não for localhost ou vercel.app e o domínio for desconhecido, bloqueia
-    if (
-      normalized !== 'localhost' &&
-      normalized !== '127.0.0.1' &&
-      !normalized.endsWith('.vercel.app')
-    ) {
+    // Se não for domínio compartilhado e o domínio for desconhecido, bloqueia
+    if (!isSharedDomain) {
       return {
         tenant: null,
         tenantId: '',
-        apiUrl: null,
         isAllowed: false,
       };
     }
@@ -148,32 +121,16 @@ function resolveContextTenant(request: NextRequest): {
     return {
       tenant: null,
       tenantId: 'loja_exemplo',
-      apiUrl: process.env['APPS_SCRIPT_URL'] || null,
       isAllowed: true,
     };
-  }
-
-  let validApiUrl: string | null = null;
-  if (tenant.apiUrl && tenant.apiUrl.trim().length > 0) {
-    if (isValidGasApiUrl(tenant.apiUrl)) {
-      validApiUrl = tenant.apiUrl.trim();
-    }
-  } else if (process.env['APPS_SCRIPT_URL']) {
-    const envUrl = process.env['APPS_SCRIPT_URL'].trim();
-    if (isValidGasApiUrl(envUrl)) {
-      validApiUrl = envUrl;
-    }
   }
 
   return {
     tenant,
     tenantId: tenant.tenantId,
-    apiUrl: validApiUrl,
     isAllowed: true,
   };
 }
-
-import { normalizeProduct } from '@/lib/sheetNormalization';
 
 /**
  * Assegura que o campo whatsapp e outros campos sensíveis retornados da API
@@ -258,7 +215,7 @@ function sanitizeStoreResponse<T>(data: T, tenant?: Tenant | null): T {
 }
 
 export async function GET(request: NextRequest) {
-  const { tenant, tenantId, apiUrl, isAllowed } = resolveContextTenant(request);
+  const { tenant, tenantId, isAllowed } = resolveContextTenant(request);
 
   if (!isAllowed) {
     return NextResponse.json(
@@ -416,47 +373,13 @@ export async function GET(request: NextRequest) {
     console.warn('Nota: Fallback Supabase em GET /api/backend:', err);
   }
 
-  // 2. Se houver URL de Web App validada, despacha chamada remota
-  if (apiUrl) {
-    try {
-      const url = new URL(apiUrl);
-      url.searchParams.set('action', action);
-      if (categoryId) url.searchParams.set('categoryId', categoryId);
-
-      const response = await fetch(url.toString(), {
-        method: 'GET',
-        headers: { Accept: 'application/json' },
-        redirect: 'follow',
-      });
-      const data = await response.json();
-      return NextResponse.json(sanitizeStoreResponse(data, effectiveTenant));
-    } catch (err) {
-      if (tenantId === 'loja_exemplo') {
-        const localResult = getLocalEngine(tenantId).doGet({ action, categoryId });
-        return NextResponse.json(sanitizeStoreResponse(localResult, effectiveTenant));
-      }
-
-      return NextResponse.json(
-        {
-          success: false,
-          data: null,
-          error: {
-            code: 'GATEWAY_ERROR',
-            message: 'Falha na comunicação com a API do tenant: ' + String(err),
-          },
-        },
-        { status: 502 }
-      );
-    }
-  }
-
-  // 3. Fallback para engine local integrado (desenvolvimento / teste)
+  // 2. Fallback para engine local integrado (desenvolvimento / teste)
   const localResult = getLocalEngine(tenantId).doGet({ action, categoryId });
   return NextResponse.json(sanitizeStoreResponse(localResult, effectiveTenant));
 }
 
 export async function POST(request: NextRequest) {
-  let { tenant, tenantId, apiUrl, isAllowed } = resolveContextTenant(request);
+  let { tenant, tenantId, isAllowed } = resolveContextTenant(request);
 
   try {
     const payload = await request.json();
@@ -560,28 +483,14 @@ export async function POST(request: NextRequest) {
         }
         const saved = await saveStoreConfigInSupabase(tenantId, payload.config);
         if (saved) {
-          if (apiUrl) {
-            try {
-              await fetch(apiUrl, {
-                method: 'POST',
-                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                body: JSON.stringify(payload),
-                redirect: 'follow',
-              });
-            } catch (err) {
-              console.warn('Erro ao sincronizar saveConfig com Google Apps Script:', err);
-            }
-          }
           return NextResponse.json(sanitizeStoreResponse({ success: true, data: saved, error: null }, effectiveTenant), {
             headers: NO_CACHE_HEADERS,
           });
         }
-        if (!apiUrl) {
-          const localSaved = getLocalEngine(tenantId).getPublicStoreConfig();
-          return NextResponse.json(sanitizeStoreResponse({ success: true, data: localSaved, error: null }, effectiveTenant), {
-            headers: NO_CACHE_HEADERS,
-          });
-        }
+        const localSaved = getLocalEngine(tenantId).getPublicStoreConfig();
+        return NextResponse.json(sanitizeStoreResponse({ success: true, data: localSaved, error: null }, effectiveTenant), {
+          headers: NO_CACHE_HEADERS,
+        });
       } else if (payload.action === 'createProduct') {
         const prod = await createProductInSupabase(tenantId, payload.product);
         if (prod) {
@@ -798,23 +707,7 @@ export async function POST(request: NextRequest) {
       console.warn('Nota: Fallback Supabase em POST /api/backend:', err);
     }
 
-    // 2. Se houver apiUrl externa EXPLICITAMENTE vinculada a esta loja ou se for loja_exemplo
-    const hasDedicatedGasApi = Boolean(tenant?.apiUrl && isValidGasApiUrl(tenant.apiUrl));
-    if (hasDedicatedGasApi || (tenantId === 'loja_exemplo' && apiUrl)) {
-      const targetApiUrl = hasDedicatedGasApi ? tenant!.apiUrl : apiUrl!;
-      const response = await fetch(targetApiUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'text/plain;charset=utf-8',
-        },
-        body: JSON.stringify(payload),
-        redirect: 'follow',
-      });
-      const data = await response.json();
-      return NextResponse.json(sanitizeStoreResponse(data, effectiveTenant), { headers: NO_CACHE_HEADERS });
-    }
-
-    // 3. Fallback para engine local integrado
+    // 2. Fallback para engine local integrado (desenvolvimento / teste)
     let effectiveTenantId = tenantId;
     if (payload.action === 'login' && payload.username && (tenantId === 'loja_exemplo' || !tenantId)) {
       const found = findTenantByAdminUsername(String(payload.username));

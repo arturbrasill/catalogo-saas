@@ -1,5 +1,3 @@
-import fs from 'fs';
-import path from 'path';
 import type {
   Tenant,
   TenantRegistry,
@@ -22,9 +20,6 @@ import {
   getSupabaseClient,
   type TenantStoreSettings,
 } from '@/lib/supabase';
-
-// Caminho para persistência local de novos tenants criados dinamicamente
-const DYNAMIC_TENANTS_FILE = path.join(process.cwd(), 'src', 'lib', 'dynamicTenants.json');
 
 // Registro mestre em memória com os tenants padrão pré-carregados
 let inMemoryRegistry: TenantRegistry = { ...(defaultTenants as TenantRegistry) };
@@ -84,19 +79,8 @@ export function getKvConfig(): { url: string; token: string } | null {
   return null;
 }
 
-export function getMasterProvisionerUrl(): string | null {
-  const url = process.env['GOOGLE_MASTER_PROVISIONER_URL'];
-  return url && url.trim() ? url.trim() : null;
-}
-
-let cachedMasterSheetUrl: string | null = null;
-
-export function getCachedMasterSheetUrl(): string | null {
-  return cachedMasterSheetUrl;
-}
-
 /**
- * Sincroniza o registro em memória com a nuvem (Planilha Mestre Google Drive e/ou Vercel KV / Upstash)
+ * Sincroniza o registro em memória com o banco de dados oficial (Supabase) e cache KV
  */
 export async function syncTenantsFromRemote(): Promise<boolean> {
   let synced = false;
@@ -141,51 +125,6 @@ export async function syncTenantsFromRemote(): Promise<boolean> {
     }
   } catch (err) {
     console.warn('Nota: Não foi possível sincronizar com o Supabase:', err);
-  }
-
-  // 2. Sincroniza com Google Apps Script Master Provisioner (Fallback somente se Supabase não estiver configurado)
-  const provisionerUrl = getMasterProvisionerUrl();
-  if (!synced && provisionerUrl) {
-    try {
-      const res = await fetch(`${provisionerUrl}?action=listStores`, {
-        headers: { 'Content-Type': 'application/json' },
-      });
-      if (res.ok) {
-        const json = await res.json();
-        if (json.success && json.masterSheetUrl) {
-          cachedMasterSheetUrl = json.masterSheetUrl;
-        }
-        if (json.success && Array.isArray(json.stores)) {
-          for (const s of json.stores) {
-            if (s.tenantId) {
-              const domain = s.domain || `${s.slug || s.tenantId}.localhost`;
-              const tenantObj: Tenant = {
-                tenantId: s.tenantId,
-                name: s.name || s.storeName,
-                slug: s.slug || s.tenantId.replace(/_/g, '-'),
-                domain,
-                apiUrl: s.apiUrl || '',
-                whatsapp: s.whatsapp || '',
-                ownerEmail: s.ownerEmail || '',
-                niche: s.niche || 'Geral',
-                plan: s.plan || 'trial_30d',
-                subscriptionStatus: s.subscriptionStatus || 'active',
-                subscriptionExpiresAt: s.subscriptionExpiresAt,
-                createdAt: s.createdAt,
-                spreadsheetId: s.spreadsheetId,
-                spreadsheetUrl: s.spreadsheetUrl,
-              };
-              inMemoryRegistry[domain] = tenantObj;
-              if (s.slug) inMemoryRegistry[s.slug] = tenantObj;
-              inMemoryRegistry[s.tenantId] = tenantObj;
-            }
-          }
-          synced = true;
-        }
-      }
-    } catch (err) {
-      console.warn('Nota: Não foi possível sincronizar com o Master Provisioner Google:', err);
-    }
   }
 
   // 2. Sincroniza com Vercel KV / Upstash Redis
@@ -253,43 +192,15 @@ export async function syncTenantsToRemote(): Promise<boolean> {
   }
 }
 
-// Carrega tenants dinâmicos já persistidos (disco local e nuvem KV)
+// Inicializa sincronização remota (Supabase e KV)
 function loadPersistedTenants() {
-  try {
-    if (fs.existsSync(DYNAMIC_TENANTS_FILE)) {
-      const data = fs.readFileSync(DYNAMIC_TENANTS_FILE, 'utf-8');
-      const parsed = JSON.parse(data);
-      if (parsed && typeof parsed === 'object') {
-        inMemoryRegistry = { ...inMemoryRegistry, ...parsed };
-      }
-    }
-  } catch (err) {
-    console.warn('Nota: Não foi possível carregar dynamicTenants.json:', err);
-  }
-
-  const kv = getKvConfig();
-  if (kv) {
-    syncTenantsFromRemote().catch(() => {});
-  }
+  syncTenantsFromRemote().catch(() => {});
 }
 
 loadPersistedTenants();
 
-// Salva tenants criados dinamicamente em disco e no KV remoto
+// Persiste no KV remoto caso configurado (Supabase já persiste individualmente de forma transacional)
 function persistDynamicTenants() {
-  const dynamicOnly: TenantRegistry = {};
-  for (const [key, tenant] of Object.entries(inMemoryRegistry)) {
-    if (!(key in defaultTenants) || tenant.subscriptionStatus !== undefined) {
-      dynamicOnly[key] = tenant;
-    }
-  }
-
-  try {
-    fs.writeFileSync(DYNAMIC_TENANTS_FILE, JSON.stringify(dynamicOnly, null, 2), 'utf-8');
-  } catch (err) {
-    console.warn('Nota: Persistência em disco ignorada em ambiente read-only:', err);
-  }
-
   const kv = getKvConfig();
   if (kv) {
     syncTenantsToRemote().catch(() => {});
@@ -626,44 +537,6 @@ export async function registerTenant(input: CreateTenantInput): Promise<{
   const status: SubscriptionStatus = isTrial ? 'trial' : 'active';
   const expiresAt = new Date(now.getTime() + durationDays * 24 * 60 * 60 * 1000).toISOString();
 
-  // 1. Tenta auto-provisionar via Master Provisioner caso configurado
-  const provisionerUrl = getMasterProvisionerUrl();
-  let generatedSheetId = '1sheet_' + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-  let spreadsheetUrl = `https://docs.google.com/spreadsheets/d/${generatedSheetId}/edit`;
-
-  if (provisionerUrl) {
-    try {
-      const res = await fetch(provisionerUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          action: 'provisionStore',
-          storeName: input.name.trim(),
-          tenantId,
-          slug: finalSlug,
-          whatsapp: String(input.whatsapp || '').replace(/\D/g, ''),
-          ownerEmail: input.ownerEmail?.trim() || '',
-          niche: input.niche || 'Geral',
-          primaryColor: input.primaryColor || '#10b981',
-          secondaryColor: input.secondaryColor || '#047857',
-          password: input.password || 'admin123',
-          plan,
-        }),
-      });
-
-      if (res.ok) {
-        const json = await res.json();
-        if (json.success && json.spreadsheetUrl) {
-          spreadsheetUrl = json.spreadsheetUrl;
-          if (json.spreadsheetId) generatedSheetId = json.spreadsheetId;
-          if (json.masterSheetUrl) cachedMasterSheetUrl = json.masterSheetUrl;
-        }
-      }
-    } catch (err) {
-      console.warn('Nota: Provisionador Google inacessível, gerando fallback local:', err);
-    }
-  }
-
   // Cria o registro do Tenant
   const chosenUsername = (input.adminUsername || input.slug || input.name).toLowerCase().replace(/[^a-z0-9_]/g, '');
   const generatedApiToken = 'tok_' + Math.random().toString(36).substring(2) + Math.random().toString(36).substring(2);
@@ -673,7 +546,7 @@ export async function registerTenant(input: CreateTenantInput): Promise<{
     name: input.name.trim(),
     slug: finalSlug,
     domain: `${finalSlug}.localhost`,
-    apiUrl: process.env['APPS_SCRIPT_URL'] || '',
+    apiUrl: '',
     whatsapp: String(input.whatsapp || '').replace(/\D/g, ''),
     adminUsername: chosenUsername,
     plan,
@@ -681,8 +554,6 @@ export async function registerTenant(input: CreateTenantInput): Promise<{
     subscriptionExpiresAt: expiresAt,
     createdAt: now.toISOString(),
     ownerEmail: input.ownerEmail?.trim() || '',
-    spreadsheetId: generatedSheetId,
-    spreadsheetUrl,
     niche: input.niche || 'Geral',
     cpfCnpj: input.cpfCnpj ? input.cpfCnpj.trim() : undefined,
     notes: `Loja criada automaticamente via Onboarding (${input.niche || 'Geral'})`,
@@ -725,8 +596,8 @@ export async function registerTenant(input: CreateTenantInput): Promise<{
 
   return {
     tenant: newTenant,
-    spreadsheetUrl,
-    spreadsheetId: generatedSheetId,
+    spreadsheetUrl: '',
+    spreadsheetId: '',
   };
 }
 
@@ -895,11 +766,4 @@ export function getSaasMetrics(): SaasMetrics {
 export function resetDynamicTenants(): void {
   inMemoryRegistry = { ...(defaultTenants as TenantRegistry) };
   initializeDefaultTenantDetails();
-  try {
-    if (fs.existsSync(DYNAMIC_TENANTS_FILE)) {
-      fs.unlinkSync(DYNAMIC_TENANTS_FILE);
-    }
-  } catch {
-    // ignore
-  }
 }

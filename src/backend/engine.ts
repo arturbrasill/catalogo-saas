@@ -22,7 +22,7 @@ import {
   normalizePromotionalPrice,
   normalizeImages,
   normalizeVariations,
-} from '../lib/sheetNormalization';
+} from '../lib/productNormalization';
 import { applyCampaignDiscounts } from '../lib/supabase';
 
 export class BackendEngine {

@@ -209,7 +209,7 @@ export default function AdminConfiguracoesPage() {
 
   const handleCopyLink = () => {
     if (typeof navigator !== 'undefined' && navigator.clipboard) {
-      const showcaseUrl = `https://numclick-app.vercel.app/${slug || currentStoreId || ''}`;
+      const showcaseUrl = `https://numclick.app/${slug || currentStoreId || ''}`;
       navigator.clipboard.writeText(showcaseUrl);
       setCopiedLink(true);
       setTimeout(() => setCopiedLink(false), 2500);
@@ -1676,7 +1676,7 @@ export default function AdminConfiguracoesPage() {
                       <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
                         <div className="flex-1 flex items-center rounded-2xl border border-slate-200 bg-white overflow-hidden focus-within:border-slate-800 focus-within:ring-4 focus-within:ring-slate-900/5 shadow-2xs">
                           <span className="px-3.5 py-2.5 text-xs sm:text-sm font-semibold text-slate-500 bg-slate-50 border-r border-slate-200 flex-shrink-0 select-none">
-                            numclick-app.vercel.app/
+                            numclick.app/
                           </span>
                           <input
                             type="text"
@@ -1714,7 +1714,7 @@ export default function AdminConfiguracoesPage() {
                           </button>
 
                           <a
-                            href={`https://numclick-app.vercel.app/${slug || currentStoreId || ''}`}
+                            href={`https://numclick.app/${slug || currentStoreId || ''}`}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="px-3.5 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold flex items-center gap-1.5 transition shadow-2xs flex-shrink-0"

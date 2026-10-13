@@ -4,7 +4,7 @@ import React, { useState, useMemo } from 'react';
 import type { Product, StoreConfig, CatalogLayoutMode } from '@/types';
 import { formatCurrency } from '@/lib/whatsapp';
 import { useWishlist } from '@/lib/wishlist';
-import { extractProductImages } from '@/lib/sheetNormalization';
+import { extractProductImages } from '@/lib/productNormalization';
 import {
   formatInstallments,
   isColorVariation,

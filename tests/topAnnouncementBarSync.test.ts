@@ -4,7 +4,7 @@ import {
   serializeTenantSettings,
   cleanNotesForDisplay,
 } from '@/lib/supabase';
-import { normalizeCatalogInitialData } from '@/lib/sheetNormalization';
+import { normalizeCatalogInitialData } from '@/lib/productNormalization';
 import { updateTenantSubscription, findTenant } from '@/lib/tenantStore';
 import { BackendEngine } from '@/backend/engine';
 

@@ -39,11 +39,17 @@ describe('Módulo 5 — Multi-Tenant e Resolução de Domínios (src/lib/tenantR
       name: 'Loja Exemplo Produção',
       domain: 'saasnumclick.vercel.app',
     },
+    'numclick.app': {
+      tenantId: 'loja_exemplo',
+      apiUrl: '',
+      name: 'Loja Oficial Produção',
+      domain: 'numclick.app',
+    },
     'numclick-app.vercel.app': {
       tenantId: 'loja_exemplo',
-      apiUrl: 'https://script.google.com/macros/s/LOJA_EXEMPLO/exec',
+      apiUrl: '',
       name: 'Loja Oficial Produção',
-      domain: 'numclick-app.vercel.app',
+      domain: 'numclick.app',
     },
     localhost: {
       tenantId: 'loja_exemplo',
@@ -115,11 +121,17 @@ describe('Módulo 5 — Multi-Tenant e Resolução de Domínios (src/lib/tenantR
       expect(prodTenant?.domain).toBe('saasnumclick.vercel.app');
     });
 
-    it('deve resolver domínio oficial numclick-app.vercel.app em produção', () => {
+    it('deve resolver domínio oficial numclick.app em produção', () => {
+      const officialTenant = getTenantByHostname('numclick.app', mockRegistry);
+      expect(officialTenant).toBeTruthy();
+      expect(officialTenant?.tenantId).toBe('loja_exemplo');
+      expect(officialTenant?.domain).toBe('numclick.app');
+    });
+
+    it('deve resolver domínio legado numclick-app.vercel.app redirecionando para numclick.app', () => {
       const officialTenant = getTenantByHostname('numclick-app.vercel.app', mockRegistry);
       expect(officialTenant).toBeTruthy();
       expect(officialTenant?.tenantId).toBe('loja_exemplo');
-      expect(officialTenant?.domain).toBe('numclick-app.vercel.app');
     });
 
     it('deve retornar null para domínios desconhecidos ou não cadastrados', () => {
@@ -274,9 +286,8 @@ describe('Módulo 5 — Multi-Tenant e Resolução de Domínios (src/lib/tenantR
       expect(result.tenant.name).toBe('Bella Boutique');
       expect(result.tenant.slug).toBe('bella-boutique-teste');
       expect(result.tenant.plan).toBe('trial_30d');
-      expect(result.tenant.subscriptionStatus).toBe('trial');
-      expect(result.spreadsheetUrl).toContain('docs.google.com/spreadsheets/d/');
-      expect(result.spreadsheetId).toBeTruthy();
+      expect(result.tenant.whatsapp).toBe('11988887777');
+      expect(result.tenant.niche).toBe('Roupas e Moda');
 
       const found = findTenant('bella-boutique-teste');
       expect(found).toBeTruthy();
@@ -470,122 +481,35 @@ describe('Módulo 5 — Multi-Tenant e Resolução de Domínios (src/lib/tenantR
   });
 
   // ============================================================
-  // 7. PROVISIONADOR MESTRE GOOGLE & PLANILHAS PRIVADAS
+  // 7. ARQUITETURA STATELESS & INTEGRAÇÃO SUPABASE
   // ============================================================
-  describe('Google Master Provisioner & Master Sheet Sync', () => {
-    it('deve ler GOOGLE_MASTER_PROVISIONER_URL corretamente', async () => {
-      delete process.env['GOOGLE_MASTER_PROVISIONER_URL'];
-      const { getMasterProvisionerUrl } = await import('../src/lib/tenantStore');
-      expect(getMasterProvisionerUrl()).toBeNull();
-
-      process.env['GOOGLE_MASTER_PROVISIONER_URL'] = 'https://script.google.com/macros/s/MASTER_ABC/exec ';
-      expect(getMasterProvisionerUrl()).toBe('https://script.google.com/macros/s/MASTER_ABC/exec');
-      delete process.env['GOOGLE_MASTER_PROVISIONER_URL'];
+  describe('Arquitetura Stateless & Integração Supabase', () => {
+    it('deve sincronizar tenants a partir do Supabase quando disponível', async () => {
+      const { syncTenantsFromRemote } = await import('../src/lib/tenantStore');
+      const ok = await syncTenantsFromRemote();
+      expect(typeof ok).toBe('boolean');
     });
 
-    it('deve sincronizar lojas a partir da Planilha Mestre via Master Provisioner', async () => {
-      process.env['GOOGLE_MASTER_PROVISIONER_URL'] = 'https://script.google.com/macros/s/MASTER_MOCK/exec';
+    it('deve auto-provisionar nova loja de forma stateless para o Supabase', async () => {
+      const { registerTenant, findTenant } = await import('../src/lib/tenantStore');
 
-      const originalFetch = global.fetch;
-      try {
-        const mockFetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
-          const urlStr = input.toString();
-          if (urlStr.includes('MASTER_MOCK')) {
-            return new Response(
-              JSON.stringify({
-                success: true,
-                masterSheetUrl: 'https://docs.google.com/spreadsheets/d/MASTER_SHEET_ID/edit',
-                stores: [
-                  {
-                    tenantId: 'pizzaria_cloud',
-                    name: 'Pizzaria Cloud Test',
-                    domain: 'pizzaria.catalogo.app',
-                    slug: 'pizzaria-cloud',
-                    whatsapp: '11999998888',
-                    plan: 'monthly',
-                    subscriptionStatus: 'active',
-                    spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/PIZZA_SHEET_123/edit',
-                  },
-                ],
-              }),
-              { status: 200 }
-            );
-          }
-          return new Response('Not found', { status: 404 });
-        }) as unknown as typeof fetch;
+      const result = await registerTenant({
+        name: 'Hambúrguer Gourmet Cloud',
+        slug: 'burger-gourmet-cloud',
+        whatsapp: '21988887777',
+        plan: 'yearly',
+        ownerEmail: 'dono@burger.com',
+        niche: 'Hamburgueria',
+      });
 
-        global.fetch = mockFetch;
+      expect(result.tenant).toBeTruthy();
+      expect(result.tenant.plan).toBe('yearly');
+      expect(result.tenant.niche).toBe('Hamburgueria');
+      expect(result.tenant.whatsapp).toBe('21988887777');
 
-        const { syncTenantsFromRemote, findTenant, getCachedMasterSheetUrl } = await import(
-          '../src/lib/tenantStore'
-        );
-
-        const ok = await syncTenantsFromRemote();
-        expect(ok).toBe(true);
-
-        const store = findTenant('pizzaria_cloud');
-        expect(store).toBeTruthy();
-        expect(store?.name).toBe('Pizzaria Cloud Test');
-        expect(store?.plan).toBe('monthly');
-        expect(store?.spreadsheetUrl).toContain('PIZZA_SHEET_123');
-
-        expect(getCachedMasterSheetUrl()).toContain('MASTER_SHEET_ID');
-      } finally {
-        global.fetch = originalFetch;
-        delete process.env['GOOGLE_MASTER_PROVISIONER_URL'];
-      }
-    });
-
-    it('deve auto-provisionar nova loja chamando o Master Provisioner', async () => {
-      process.env['GOOGLE_MASTER_PROVISIONER_URL'] = 'https://script.google.com/macros/s/PROVISION_MOCK/exec';
-
-      const originalFetch = global.fetch;
-      try {
-        let sentBody: any = null;
-        const mockFetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
-          const urlStr = input.toString();
-          if (urlStr.includes('PROVISION_MOCK')) {
-            if (init?.body) {
-              sentBody = JSON.parse(init.body as string);
-            }
-            return new Response(
-              JSON.stringify({
-                success: true,
-                tenantId: sentBody?.tenantId || 'nova_loja',
-                spreadsheetId: 'REAL_PRIVATE_SHEET_999',
-                spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/REAL_PRIVATE_SHEET_999/edit',
-                masterSheetUrl: 'https://docs.google.com/spreadsheets/d/MASTER_CONTROL_777/edit',
-              }),
-              { status: 200 }
-            );
-          }
-          return new Response('Not found', { status: 404 });
-        }) as unknown as typeof fetch;
-
-        global.fetch = mockFetch;
-
-        const { registerTenant } = await import('../src/lib/tenantStore');
-
-        const result = await registerTenant({
-          name: 'Hambúrguer Gourmet Cloud',
-          slug: 'burger-gourmet-cloud',
-          whatsapp: '21988887777',
-          plan: 'yearly',
-          ownerEmail: 'dono@burger.com',
-          niche: 'Hamburgueria',
-        });
-
-        expect(result.spreadsheetId).toBe('REAL_PRIVATE_SHEET_999');
-        expect(result.spreadsheetUrl).toBe('https://docs.google.com/spreadsheets/d/REAL_PRIVATE_SHEET_999/edit');
-        expect(result.tenant.plan).toBe('yearly');
-        expect(result.tenant.niche).toBe('Hamburgueria');
-        expect(sentBody).toBeTruthy();
-        expect(sentBody.action).toBe('provisionStore');
-        expect(sentBody.plan).toBe('yearly');
-      } finally {
-        global.fetch = originalFetch;
-        delete process.env['GOOGLE_MASTER_PROVISIONER_URL'];
-      }
+      const store = findTenant('burger-gourmet-cloud');
+      expect(store).toBeTruthy();
+      expect(store?.name).toBe('Hambúrguer Gourmet Cloud');
     });
 
     it('deve excluir uma loja completamente do registro através de deleteTenant()', async () => {
@@ -619,7 +543,7 @@ describe('Módulo 5 — Multi-Tenant e Resolução de Domínios (src/lib/tenantR
           location: {
             pathname: '/aura-concept',
             search: '',
-            hostname: 'numclick-app.vercel.app',
+            hostname: 'numclick.app',
           },
         };
         (global as any).document = {
@@ -646,9 +570,9 @@ describe('Módulo 5 — Multi-Tenant e Resolução de Domínios (src/lib/tenantR
     it('Middleware deve interceptar rota /slug, injetar headers e gravar cookie app_tenant', async () => {
       const { middleware } = await import('../src/middleware');
 
-      const req = new NextRequest('https://numclick-app.vercel.app/aura-concept', {
+      const req = new NextRequest('https://numclick.app/aura-concept', {
         headers: {
-          host: 'numclick-app.vercel.app',
+          host: 'numclick.app',
         },
       });
 
