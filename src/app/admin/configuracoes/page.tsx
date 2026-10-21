@@ -50,16 +50,23 @@ import {
 } from 'lucide-react';
 
 const COLOR_PRESETS = [
+  { name: 'NumClick Laranja', primary: '#FB5607', secondary: '#8338EC' },
+  { name: 'NumClick Roxo', primary: '#8338EC', secondary: '#212529' },
+  { name: 'NumClick Dark', primary: '#212529', secondary: '#FB5607' },
   { name: 'Esmeralda', primary: '#10b981', secondary: '#047857' },
   { name: 'Índigo Moderno', primary: '#6366f1', secondary: '#4338ca' },
-  { name: 'Violeta Neon', primary: '#8b5cf6', secondary: '#6d28d9' },
   { name: 'Rosa Vibe', primary: '#ec4899', secondary: '#be185d' },
   { name: 'Âmbar Premium', primary: '#f59e0b', secondary: '#b45309' },
-  { name: 'Azul Tech', primary: '#0ea5e9', secondary: '#0369a1' },
-  { name: 'Dark Minimalista', primary: '#0f172a', secondary: '#020617' },
 ];
 
 const BG_CHOICES = [
+  {
+    id: 'numclick-gray',
+    name: 'Cinza NumClick',
+    hex: '#E9ECEF',
+    icon: Monitor,
+    description: 'Fundo oficial da marca NumClick (#E9ECEF). Contraste moderno e elegante.',
+  },
   {
     id: 'white',
     name: 'Branco Puro',
@@ -73,13 +80,6 @@ const BG_CHOICES = [
     hex: '#faf8f5',
     icon: Coffee,
     description: 'Aconchegante, nobre e elegante. Ideal para moda e artesanato.',
-  },
-  {
-    id: 'slate',
-    name: 'Slate Suave',
-    hex: '#f8fafc',
-    icon: Monitor,
-    description: 'Neutro, equilibrado e tecnológico. Perfeito para qualquer catálogo.',
   },
 ];
 
@@ -111,11 +111,11 @@ const VITRINE_FORMATS = [
 ];
 
 const ANNOUNCEMENT_BG_PRESETS = [
-  { name: 'Dark Slate (Padrão)', hex: '#0f172a' },
+  { name: 'NumClick Dark (#212529)', hex: '#212529' },
+  { name: 'NumClick Laranja (#FB5607)', hex: '#FB5607' },
+  { name: 'NumClick Roxo (#8338EC)', hex: '#8338EC' },
   { name: 'Esmeralda', hex: '#047857' },
-  { name: 'Índigo', hex: '#4338ca' },
   { name: 'Rosa Escuro', hex: '#9d174d' },
-  { name: 'Âmbar Noturno', hex: '#78350f' },
   { name: 'Preto Total', hex: '#000000' },
 ];
 
@@ -614,7 +614,7 @@ export default function AdminConfiguracoesPage() {
             type="button"
             onClick={handleSave}
             disabled={isSubmitting}
-            className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-2xl text-xs sm:text-sm font-bold text-white bg-slate-900 hover:bg-slate-800 shadow-sm transition disabled:opacity-50 cursor-pointer self-start sm:self-auto"
+            className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-2xl text-xs sm:text-sm font-bold text-white bg-[#FB5607] hover:bg-[#8338EC] shadow-sm transition disabled:opacity-50 cursor-pointer self-start sm:self-auto"
           >
             {isSubmitting ? (
               <>
@@ -655,17 +655,17 @@ export default function AdminConfiguracoesPage() {
             {/* Coluna 1: Abas de Configuração e Formulário (7 colunas) */}
             <div className="lg:col-span-7 space-y-6">
               {/* Abas Principais: Aparência vs Dados da Loja vs Assinatura */}
-              <div className="flex flex-col sm:flex-row bg-slate-100 p-1 rounded-2xl border border-slate-200/80 gap-1 sm:gap-0">
+              <div className="flex flex-col sm:flex-row bg-[#E9ECEF] p-1 rounded-2xl border border-slate-200/80 gap-1 sm:gap-0">
                 <button
                   type="button"
                   onClick={() => setActiveMainTab('appearance')}
                   className={`flex-1 py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
                     activeMainTab === 'appearance'
-                      ? 'bg-white text-slate-900 shadow-sm'
-                      : 'text-slate-600 hover:text-slate-900'
+                      ? 'bg-white text-[#212529] shadow-sm'
+                      : 'text-slate-600 hover:text-[#212529]'
                   }`}
                 >
-                  <Palette className="w-4 h-4 text-emerald-600" />
+                  <Palette className="w-4 h-4 text-[#FB5607]" />
                   <span>Aparência da Loja</span>
                 </button>
 
@@ -674,11 +674,11 @@ export default function AdminConfiguracoesPage() {
                   onClick={() => setActiveMainTab('store_data')}
                   className={`flex-1 py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
                     activeMainTab === 'store_data'
-                      ? 'bg-white text-slate-900 shadow-sm'
-                      : 'text-slate-600 hover:text-slate-900'
+                      ? 'bg-white text-[#212529] shadow-sm'
+                      : 'text-slate-600 hover:text-[#212529]'
                   }`}
                 >
-                  <Store className="w-4 h-4 text-emerald-600" />
+                  <Store className="w-4 h-4 text-[#8338EC]" />
                   <span>Dados & Contato</span>
                 </button>
 
@@ -687,14 +687,14 @@ export default function AdminConfiguracoesPage() {
                   onClick={() => setActiveMainTab('subscription')}
                   className={`flex-1 py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center justify-center gap-1.5 sm:gap-2 cursor-pointer ${
                     activeMainTab === 'subscription'
-                      ? 'bg-white text-slate-900 shadow-sm'
-                      : 'text-slate-600 hover:text-slate-900'
+                      ? 'bg-white text-[#212529] shadow-sm'
+                      : 'text-slate-600 hover:text-[#212529]'
                   }`}
                 >
-                  <CreditCard className="w-4 h-4 text-emerald-600" />
+                  <CreditCard className="w-4 h-4 text-[#FB5607]" />
                   <span>Minha Assinatura</span>
                   {isTrial && (
-                    <span className="hidden sm:inline-block text-[10px] bg-emerald-100 text-emerald-800 font-bold px-1.5 py-0.2 rounded-full">
+                    <span className="hidden sm:inline-block text-[10px] bg-[#FB5607]/15 text-[#FB5607] font-bold px-1.5 py-0.2 rounded-full">
                       {daysRemaining}d
                     </span>
                   )}
@@ -2004,7 +2004,7 @@ export default function AdminConfiguracoesPage() {
                     <button
                       type="submit"
                       disabled={isSubmitting}
-                      className="w-full inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-2xl text-xs sm:text-sm font-bold text-white bg-slate-900 hover:bg-slate-800 shadow-md transition disabled:opacity-50 cursor-pointer"
+                      className="w-full inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-2xl text-xs sm:text-sm font-bold text-white bg-[#FB5607] hover:bg-[#8338EC] shadow-md transition disabled:opacity-50 cursor-pointer"
                     >
                       {isSubmitting ? (
                         <>

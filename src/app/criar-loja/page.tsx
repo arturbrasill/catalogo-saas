@@ -25,11 +25,11 @@ import type { SubscriptionPlan } from '@/types';
 import { maskCpfCnpj, validateCpfCnpj } from '@/lib/masks';
 
 const COLOR_PRESETS = [
+  { name: 'NumClick Oficial', primary: '#FB5607', secondary: '#8338EC', bg: '#E9ECEF' },
+  { name: 'Roxo Royal', primary: '#8338EC', secondary: '#212529', bg: '#f8fafc' },
+  { name: 'Dark Luxe', primary: '#212529', secondary: '#FB5607', bg: '#E9ECEF' },
   { name: 'Esmeralda', primary: '#10b981', secondary: '#047857', bg: '#f8fafc' },
-  { name: 'Índigo', primary: '#6366f1', secondary: '#4338ca', bg: '#f8fafc' },
-  { name: 'Terracota', primary: '#ea580c', secondary: '#c2410c', bg: '#fffaf8' },
   { name: 'Rose', primary: '#e11d48', secondary: '#be123c', bg: '#fff5f7' },
-  { name: 'Dark Luxe', primary: '#0f172a', secondary: '#334155', bg: '#f8fafc' },
 ];
 
 const NICHES = [
@@ -218,37 +218,38 @@ export default function CriarLojaPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col justify-between selection:bg-emerald-500 selection:text-white">
+    <div className="min-h-screen bg-[#E9ECEF] text-[#212529] flex flex-col justify-between selection:bg-[#FB5607] selection:text-white">
       {/* Header Minimalista */}
-      <header className="h-16 sm:h-20 bg-white/95 backdrop-blur-md border-b border-slate-200/80 sticky top-0 z-30 px-4 sm:px-8 flex items-center shadow-xs">
+      <header className="h-16 sm:h-20 bg-white/95 backdrop-blur-md border-b border-[#212529]/10 sticky top-0 z-30 px-4 sm:px-8 flex items-center shadow-xs">
         <div className="max-w-4xl w-full mx-auto flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2.5 group">
-            <div className="w-8 h-8 rounded-xl overflow-hidden bg-slate-900 border border-slate-800 flex items-center justify-center shadow-xs group-hover:scale-105 transition-transform">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/numclick-badge.png"
+              alt="NumClick"
+              className="w-9 h-9 rounded-xl shadow-xs group-hover:scale-105 transition-transform object-contain"
+            />
+            <div className="leading-tight">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src="/numclick-badge.png"
+                src="/marca/marca-light.svg"
                 alt="NumClick"
-                className="w-full h-full object-cover"
+                className="h-4 sm:h-5 w-auto object-contain object-left"
               />
-            </div>
-            <div className="leading-tight">
-              <span className="font-bold text-slate-900 tracking-tight text-sm sm:text-base">
-                NumClick
-              </span>
-              <span className="text-[10px] text-slate-500 block">Plataforma de Catálogos Digitais</span>
+              <span className="text-[10px] font-semibold text-[#8338EC] block mt-0.5">Plataforma de Catálogos Digitais</span>
             </div>
           </Link>
 
           <div className="flex items-center gap-2 text-xs">
             <Link
               href="/saas-admin"
-              className="text-slate-600 hover:text-slate-900 font-medium px-2.5 py-1.5 rounded-lg hover:bg-slate-100 transition-colors"
+              className="text-[#212529]/75 hover:text-[#8338EC] font-bold px-2.5 py-1.5 rounded-lg hover:bg-[#E9ECEF] transition-colors"
             >
               Painel Master
             </Link>
             <Link
               href="/admin/login"
-              className="bg-slate-900 text-white font-medium px-3 py-1.5 rounded-lg hover:bg-slate-800 transition-colors shadow-2xs"
+              className="bg-[#212529] text-[#E9ECEF] font-bold px-3.5 py-2 rounded-xl hover:bg-[#FB5607] hover:text-white transition-colors shadow-2xs"
             >
               Entrar na Loja
             </Link>
@@ -262,14 +263,14 @@ export default function CriarLojaPage() {
           <div>
             {/* Título e Apresentação */}
             <div className="text-center mb-8 sm:mb-10">
-              <div className="inline-flex items-center gap-1.5 bg-emerald-50 text-emerald-700 text-xs font-semibold px-3 py-1 rounded-full mb-3 border border-emerald-200/60">
-                <Sparkles className="w-3.5 h-3.5" />
+              <div className="inline-flex items-center gap-1.5 bg-white text-[#8338EC] text-xs font-extrabold px-3.5 py-1 rounded-full mb-3 border border-[#8338EC]/25 shadow-2xs">
+                <Sparkles className="w-3.5 h-3.5 text-[#FB5607]" />
                 Crie seu catálogo em 1 minuto
               </div>
-              <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+              <h1 className="text-2xl sm:text-3xl font-extrabold text-[#212529] tracking-tight">
                 Abra sua Loja Digital Agora
               </h1>
-              <p className="text-xs sm:text-sm text-slate-500 mt-2 max-w-md mx-auto leading-relaxed">
+              <p className="text-xs sm:text-sm text-[#212529]/70 mt-2 max-w-md mx-auto leading-relaxed">
                 Tudo configurado automaticamente na nuvem: catálogo digital de alta conversão e painel admin completo.
               </p>
             </div>
@@ -479,10 +480,10 @@ export default function CriarLojaPage() {
               <div className="space-y-4 pt-4 border-t border-slate-100">
                 <div className="flex items-center justify-between">
                   <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
-                    <Zap className="w-4 h-4 text-slate-600" />
+                    <Zap className="w-4 h-4 text-[#FB5607]" />
                     4. Escolha seu Plano
                   </h3>
-                  <span className="text-[10px] text-emerald-600 font-semibold bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                  <span className="text-[10px] text-[#8338EC] font-bold bg-[#8338EC]/10 px-2.5 py-0.5 rounded-full border border-[#8338EC]/25">
                     Cobrança Segura via Asaas
                   </span>
                 </div>
@@ -492,7 +493,7 @@ export default function CriarLojaPage() {
                   <label
                     className={`relative p-4 rounded-xl border cursor-pointer transition-all flex flex-col justify-between ${
                       plan === 'trial_30d'
-                        ? 'border-emerald-600 bg-emerald-50/50 ring-2 ring-emerald-500/20 shadow-xs'
+                        ? 'border-[#FB5607] bg-[#FB5607]/5 ring-2 ring-[#FB5607]/20 shadow-xs'
                         : 'border-slate-200 hover:border-slate-300 bg-white'
                     }`}
                   >
@@ -506,17 +507,17 @@ export default function CriarLojaPage() {
                     />
                     <div>
                       <div className="flex items-center justify-between mb-1.5">
-                        <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-md">
+                        <span className="text-[10px] font-bold text-[#FB5607] bg-[#FB5607]/15 px-2 py-0.5 rounded-md">
                           Teste Grátis
                         </span>
-                        {plan === 'trial_30d' && <CheckCircle2 className="w-4 h-4 text-emerald-600" />}
+                        {plan === 'trial_30d' && <CheckCircle2 className="w-4 h-4 text-[#FB5607]" />}
                       </div>
-                      <h4 className="text-sm font-bold text-slate-900">Experimente por 7 Dias Grátis</h4>
+                      <h4 className="text-sm font-bold text-[#212529]">Experimente por 7 Dias Grátis</h4>
                       <p className="text-[11px] text-slate-500 mt-1 leading-normal">
                         Acesso total liberado por 7 dias grátis. Cancela de forma 100% automática ao final caso não renove.
                       </p>
                     </div>
-                    <div className="mt-4 pt-2.5 border-t border-slate-200/60 font-extrabold text-sm text-slate-900 flex items-baseline justify-between">
+                    <div className="mt-4 pt-2.5 border-t border-slate-200/60 font-extrabold text-sm text-[#212529] flex items-baseline justify-between">
                       <span>R$ 0,00</span>
                       <span className="text-[10px] font-normal text-slate-500">Sem cartão</span>
                     </div>
@@ -526,7 +527,7 @@ export default function CriarLojaPage() {
                   <label
                     className={`relative p-4 rounded-xl border cursor-pointer transition-all flex flex-col justify-between ${
                       plan === 'monthly'
-                        ? 'border-emerald-600 bg-emerald-50/50 ring-2 ring-emerald-500/20 shadow-xs'
+                        ? 'border-[#8338EC] bg-[#8338EC]/5 ring-2 ring-[#8338EC]/20 shadow-xs'
                         : 'border-slate-200 hover:border-slate-300 bg-white'
                     }`}
                   >
@@ -540,18 +541,18 @@ export default function CriarLojaPage() {
                     />
                     <div>
                       <div className="flex items-center justify-between mb-1.5">
-                        <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-md flex items-center gap-1">
+                        <span className="text-[10px] font-bold text-[#8338EC] bg-[#8338EC]/15 px-2 py-0.5 rounded-md flex items-center gap-1">
                           <CreditCard className="w-3 h-3" />
                           Plano Mensal
                         </span>
-                        {plan === 'monthly' && <CheckCircle2 className="w-4 h-4 text-emerald-600" />}
+                        {plan === 'monthly' && <CheckCircle2 className="w-4 h-4 text-[#8338EC]" />}
                       </div>
-                      <h4 className="text-sm font-bold text-slate-900">Mensal Flexível</h4>
+                      <h4 className="text-sm font-bold text-[#212529]">Mensal Flexível</h4>
                       <p className="text-[11px] text-slate-500 mt-1 leading-normal">
                         Cobrança automatizada via Asaas (PIX imediato, Cartão de Crédito ou Boleto).
                       </p>
                     </div>
-                    <div className="mt-4 pt-2.5 border-t border-slate-200/60 font-extrabold text-sm text-slate-900 flex items-baseline justify-between">
+                    <div className="mt-4 pt-2.5 border-t border-slate-200/60 font-extrabold text-sm text-[#212529] flex items-baseline justify-between">
                       <span>R$ 79,90</span>
                       <span className="text-[10px] font-normal text-slate-500">/mês</span>
                     </div>
@@ -559,16 +560,16 @@ export default function CriarLojaPage() {
                 </div>
 
                 {/* Campo de CPF/CNPJ para Faturamento Asaas (Sempre Visível) */}
-                <div className="p-4 bg-slate-50 border border-slate-200/90 rounded-2xl space-y-2">
+                <div className="p-4 bg-[#E9ECEF]/60 border border-slate-200/90 rounded-2xl space-y-2">
                   <div className="flex items-center justify-between">
-                    <label className="block text-xs font-bold text-slate-800 flex items-center gap-1.5">
-                      <CreditCard className="w-3.5 h-3.5 text-emerald-600" />
+                    <label className="block text-xs font-bold text-[#212529] flex items-center gap-1.5">
+                      <CreditCard className="w-3.5 h-3.5 text-[#8338EC]" />
                       <span>CPF ou CNPJ do Titular (Cobrança Asaas)</span>
-                      <span className="text-emerald-600 font-semibold">*</span>
+                      <span className="text-[#FB5607] font-semibold">*</span>
                     </label>
                     {cpfCnpj && validateCpfCnpj(cpfCnpj) ? (
-                      <span className="text-[11px] font-bold text-emerald-700 bg-emerald-100/90 px-2 py-0.5 rounded-full flex items-center gap-1">
-                        <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                      <span className="text-[11px] font-bold text-[#8338EC] bg-[#8338EC]/15 px-2 py-0.5 rounded-full flex items-center gap-1">
+                        <CheckCircle2 className="w-3 h-3 text-[#8338EC]" />
                         Válido
                       </span>
                     ) : cpfCnpj && !validateCpfCnpj(cpfCnpj) && (cpfCnpj.replace(/\D/g, '').length === 11 || cpfCnpj.replace(/\D/g, '').length === 14) ? (
@@ -589,14 +590,14 @@ export default function CriarLojaPage() {
                         cpfCnpj && !validateCpfCnpj(cpfCnpj) && (cpfCnpj.replace(/\D/g, '').length === 11 || cpfCnpj.replace(/\D/g, '').length === 14)
                           ? 'border-rose-400 focus:ring-rose-500'
                           : cpfCnpj && validateCpfCnpj(cpfCnpj)
-                          ? 'border-emerald-500 focus:ring-emerald-500'
-                          : 'border-slate-200 focus:ring-emerald-500'
+                          ? 'border-[#8338EC] focus:ring-[#8338EC]'
+                          : 'border-slate-200 focus:ring-[#FB5607]'
                       }`}
                     />
                   </div>
 
                   <p className="text-[11px] text-slate-500 leading-relaxed flex items-start gap-1.5">
-                    <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
+                    <ShieldCheck className="w-3.5 h-3.5 text-[#8338EC] shrink-0 mt-0.5" />
                     <span>
                       {plan === 'monthly'
                         ? 'Exigência do Banco Central e do Asaas para emissão da sua fatura recorrente via PIX, Cartão ou Boleto.'
@@ -611,7 +612,7 @@ export default function CriarLojaPage() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full py-3.5 px-4 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm sm:text-base rounded-xl shadow-sm hover:shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-75 disabled:cursor-not-allowed"
+                  className="w-full py-3.5 px-4 bg-[#FB5607] hover:bg-[#8338EC] text-white font-bold text-sm sm:text-base rounded-xl shadow-md shadow-[#FB5607]/20 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-75 disabled:cursor-not-allowed"
                 >
                   {loading ? (
                     <div className="flex items-center gap-2.5">
@@ -630,8 +631,8 @@ export default function CriarLojaPage() {
                   )}
                 </button>
 
-                <p className="text-[11px] text-center text-slate-400 mt-3 flex items-center justify-center gap-1.5">
-                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+                <p className="text-[11px] text-center text-slate-500 mt-3 flex items-center justify-center gap-1.5">
+                  <ShieldCheck className="w-3.5 h-3.5 text-[#FB5607]" />
                   Seus dados e produtos ficam 100% seguros na nuvem e sincronizados em tempo real.
                 </p>
               </div>
@@ -838,7 +839,7 @@ export default function CriarLojaPage() {
             <div className="pt-2 flex flex-col sm:flex-row gap-3 justify-center">
               <Link
                 href={createdData.adminUrl}
-                className="w-full sm:w-auto px-6 py-3 bg-slate-900 hover:bg-slate-800 text-white font-bold text-sm rounded-xl shadow-sm hover:shadow-md transition-all flex items-center justify-center gap-2"
+                className="w-full sm:w-auto px-6 py-3 bg-[#FB5607] hover:bg-[#8338EC] text-white font-bold text-sm rounded-xl shadow-sm hover:shadow-md transition-all flex items-center justify-center gap-2"
               >
                 <span>Acessar Painel da Minha Loja</span>
                 <ArrowRight className="w-4 h-4" />
@@ -846,7 +847,7 @@ export default function CriarLojaPage() {
               <Link
                 href={createdData.catalogUrl}
                 target="_blank"
-                className="w-full sm:w-auto px-6 py-3 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold text-sm rounded-xl transition-all flex items-center justify-center gap-2"
+                className="w-full sm:w-auto px-6 py-3 bg-white border border-slate-200 hover:bg-[#E9ECEF] text-[#212529] font-semibold text-sm rounded-xl transition-all flex items-center justify-center gap-2"
               >
                 <span>Ver Catálogo Online</span>
                 <ExternalLink className="w-4 h-4" />
@@ -857,8 +858,10 @@ export default function CriarLojaPage() {
       </main>
 
       {/* Footer Minimalista */}
-      <footer className="border-t border-slate-200 bg-white py-4 px-4 text-center text-xs text-slate-400">
-        NumClick SaaS • Plataforma de Catálogos Digitais de Alta Conversão
+      <footer className="border-t border-slate-200 bg-[#212529] py-5 px-4 text-center text-xs text-[#E9ECEF]/70 flex items-center justify-center gap-2">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/numclick-badge.png" alt="NumClick" className="w-5 h-5 rounded-md" />
+        <span>NumClick SaaS • Plataforma de Catálogos Digitais de Alta Conversão</span>
       </footer>
     </div>
   );

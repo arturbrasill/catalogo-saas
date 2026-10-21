@@ -241,8 +241,8 @@ export function VariationBuilder({
     <div className="space-y-4 rounded-2xl border border-slate-200 bg-slate-50/70 p-4 sm:p-5">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5">
         <div>
-          <h4 className="text-xs font-bold uppercase tracking-wider text-slate-800 flex items-center gap-1.5">
-            <Tag className="w-3.5 h-3.5 text-emerald-600" />
+          <h4 className="text-xs font-bold uppercase tracking-wider text-[#212529] flex items-center gap-1.5">
+            <Tag className="w-3.5 h-3.5 text-[#FB5607]" />
             Variações e Preços por Opção (Tamanho, Cor, Modelo, etc.)
           </h4>
           <p className="text-[11px] text-slate-500">
@@ -252,10 +252,10 @@ export function VariationBuilder({
       </div>
 
       {/* Dica Educativa sobre Preço Dinâmico */}
-      <div className="flex items-start gap-2 bg-emerald-50/80 border border-emerald-200/80 rounded-xl p-3 text-[11px] text-emerald-900">
-        <Sparkles className="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5" />
+      <div className="flex items-start gap-2 bg-[#8338EC]/10 border border-[#8338EC]/25 rounded-xl p-3 text-[11px] text-[#212529]">
+        <Sparkles className="w-4 h-4 text-[#8338EC] flex-shrink-0 mt-0.5" />
         <div className="space-y-0.5">
-          <span className="font-bold block">Como funciona o preço por variação?</span>
+          <span className="font-bold block text-[#8338EC]">Como funciona o preço por variação?</span>
           <span>
             Ao adicionar um tamanho ou opção com <strong>acréscimo (+ R$)</strong> (ex: Tamanho G com + R$ 10,00), o preço da vitrine se atualizará automaticamente em tempo real para o cliente quando ele selecionar essa opção!
           </span>
@@ -574,7 +574,7 @@ export function VariationBuilder({
             type="button"
             onClick={() => handleAddType()}
             disabled={disabled || !newTypeName.trim()}
-            className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 px-4 py-2 text-xs sm:text-sm font-bold text-white hover:bg-emerald-700 disabled:opacity-40 transition shadow-xs cursor-pointer"
+            className="inline-flex items-center gap-1.5 rounded-xl bg-[#FB5607] px-4 py-2 text-xs sm:text-sm font-bold text-white hover:bg-[#8338EC] disabled:opacity-40 transition shadow-xs cursor-pointer"
           >
             <Plus className="w-4 h-4 stroke-[2.5]" />
             <span>Criar Variação</span>

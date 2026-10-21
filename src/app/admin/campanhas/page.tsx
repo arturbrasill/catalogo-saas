@@ -327,10 +327,10 @@ export default function AdminCampanhasPage() {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <div className="flex items-center gap-2">
-              <span className="p-2 bg-rose-50 border border-rose-200 rounded-xl text-rose-600">
+              <span className="p-2 bg-[#FB5607]/10 border border-[#FB5607]/25 rounded-xl text-[#FB5607]">
                 <Flame className="w-5 h-5" />
               </span>
-              <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
+              <h1 className="text-xl sm:text-2xl font-bold text-[#212529] tracking-tight">
                 Campanhas & Descontos Temporais
               </h1>
             </div>
@@ -342,7 +342,7 @@ export default function AdminCampanhasPage() {
           <button
             type="button"
             onClick={handleOpenNew}
-            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-slate-900 text-white text-xs sm:text-sm font-semibold hover:bg-slate-800 transition shadow-sm cursor-pointer"
+            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-[#FB5607] text-white text-xs sm:text-sm font-semibold hover:bg-[#8338EC] transition shadow-sm cursor-pointer"
           >
             <Plus className="w-4 h-4" />
             <span>Nova Campanha</span>
@@ -888,7 +888,7 @@ export default function AdminCampanhasPage() {
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="px-5 py-2.5 rounded-xl bg-slate-900 text-white text-xs font-bold hover:bg-slate-800 transition flex items-center gap-2 disabled:opacity-50 cursor-pointer shadow-sm"
+                    className="px-5 py-2.5 rounded-xl bg-[#FB5607] text-white text-xs font-bold hover:bg-[#8338EC] transition flex items-center gap-2 disabled:opacity-50 cursor-pointer shadow-sm"
                   >
                     {isSubmitting ? (
                       <>

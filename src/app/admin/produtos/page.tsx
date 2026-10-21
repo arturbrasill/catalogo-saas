@@ -342,7 +342,7 @@ export default function AdminProdutosPage() {
           <button
             type="button"
             onClick={handleOpenNew}
-            className="inline-flex items-center gap-2 px-4 py-2.5 text-xs sm:text-sm font-bold text-white bg-slate-900 hover:bg-slate-800 rounded-2xl shadow-sm hover:shadow active:scale-98 transition-all self-start sm:self-auto cursor-pointer"
+            className="inline-flex items-center gap-2 px-4 py-2.5 text-xs sm:text-sm font-bold text-white bg-[#FB5607] hover:bg-[#8338EC] rounded-2xl shadow-sm hover:shadow active:scale-98 transition-all self-start sm:self-auto cursor-pointer"
           >
             <Plus className="w-4 h-4 stroke-[2.5]" />
             <span>Novo Produto</span>
@@ -918,7 +918,7 @@ export default function AdminProdutosPage() {
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl text-xs font-bold text-white bg-slate-900 hover:bg-slate-800 shadow-md transition disabled:opacity-50 cursor-pointer"
+                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl text-xs font-bold text-white bg-[#FB5607] hover:bg-[#8338EC] shadow-md transition disabled:opacity-50 cursor-pointer"
                   >
                     {isSubmitting ? (
                       <>

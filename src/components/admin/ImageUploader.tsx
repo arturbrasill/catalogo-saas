@@ -98,8 +98,8 @@ export function ImageUploader({
     <div className="space-y-4 rounded-2xl border border-slate-200 bg-slate-50/70 p-4 sm:p-5">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
         <div>
-          <label className="block text-xs font-bold uppercase tracking-wider text-slate-800 flex items-center gap-1.5">
-            <ImageIcon className="w-3.5 h-3.5 text-emerald-600" />
+          <label className="block text-xs font-bold uppercase tracking-wider text-[#212529] flex items-center gap-1.5">
+            <ImageIcon className="w-3.5 h-3.5 text-[#FB5607]" />
             Fotos e Galeria do Produto
           </label>
           <span className="text-[11px] text-slate-500">
@@ -110,7 +110,7 @@ export function ImageUploader({
           <button
             type="button"
             onClick={() => setShowUrlInput(!showUrlInput)}
-            className="text-[11px] font-semibold text-slate-600 hover:text-slate-900 underline transition cursor-pointer"
+            className="text-[11px] font-semibold text-[#8338EC] hover:text-[#FB5607] underline transition cursor-pointer"
           >
             {showUrlInput ? 'Ocultar URL' : '+ Adicionar por URL'}
           </button>

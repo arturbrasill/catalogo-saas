@@ -582,10 +582,15 @@ function CatalogContent({ onStoreLoaded, tenantSlug }: CatalogContentProps) {
             <span>•</span>
             <Link
               href="/landing"
-              className="inline-flex items-center gap-1 text-slate-500 hover:text-slate-800 font-medium transition"
+              className="inline-flex items-center gap-1.5 text-slate-500 hover:text-[#212529] font-medium transition"
             >
               <span>Feito com</span>
-              <span className="font-bold text-slate-700">NumClick</span>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/marca/marca-light.svg"
+                alt="NumClick"
+                className="h-3.5 w-auto object-contain"
+              />
             </Link>
           </div>
         </div>

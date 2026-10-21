@@ -61,32 +61,40 @@ export default function AdminLoginPage() {
   const backUrl = tenantSlug ? `/${tenantSlug}` : '/';
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-slate-100 flex items-center justify-center p-4 sm:p-6 py-10 sm:py-16 relative overflow-hidden select-none">
-      {/* Elementos visuais sutis de iluminação de fundo (Design minimalista moderno) */}
-      <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[32rem] h-[32rem] bg-emerald-500/5 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute -bottom-10 right-1/4 w-80 h-80 bg-teal-500/5 rounded-full blur-2xl pointer-events-none" />
+    <div className="min-h-screen bg-[#E9ECEF] flex items-center justify-center p-4 sm:p-6 py-10 sm:py-16 relative overflow-hidden select-none">
+      {/* Elementos visuais sutis de iluminação de fundo (Paleta Oficial NumClick) */}
+      <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[32rem] h-[32rem] bg-[#FB5607]/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute -bottom-10 right-1/4 w-80 h-80 bg-[#8338EC]/10 rounded-full blur-2xl pointer-events-none" />
 
-      <main className="w-full max-w-[420px] bg-white rounded-3xl shadow-[0_20px_50px_rgba(15,23,42,0.08)] border border-slate-200/80 p-8 sm:p-10 space-y-7 relative z-10 animate-fade-in transition-all">
+      <main className="w-full max-w-[420px] bg-white rounded-3xl shadow-[0_20px_50px_rgba(33,37,41,0.1)] border border-[#212529]/10 p-8 sm:p-10 space-y-7 relative z-10 animate-fade-in transition-all">
         {/* Cabeçalho de Identidade */}
         <div className="text-center space-y-3">
-          <div className="inline-flex h-14 w-14 items-center justify-center rounded-2xl overflow-hidden bg-slate-900 border border-slate-800 shadow-md shadow-slate-900/10">
+          <div className="inline-flex h-14 w-14 items-center justify-center rounded-2xl overflow-hidden shadow-md shadow-[#FB5607]/20">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/numclick-badge.png"
               alt="NumClick"
-              className="w-full h-full object-cover"
+              className="w-full h-full object-contain"
             />
           </div>
 
-          <div className="space-y-1">
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-50 border border-emerald-100/80 text-[11px] font-semibold text-emerald-700 mb-1">
-              <Sparkles className="w-3 h-3 text-emerald-600" />
+          <div className="space-y-1.5">
+            <div className="flex justify-center mb-1">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/marca/marca-light.svg"
+                alt="NumClick"
+                className="h-5 w-auto object-contain"
+              />
+            </div>
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#8338EC]/10 border border-[#8338EC]/25 text-[11px] font-bold text-[#8338EC] mb-1">
+              <Sparkles className="w-3 h-3 text-[#FB5607]" />
               <span>{tenantSlug ? `Loja: ${tenantSlug}` : 'NumClick • Painel do Lojista'}</span>
             </div>
-            <h1 className="text-2xl font-black text-slate-900 tracking-tight">
+            <h1 className="text-2xl font-black text-[#212529] tracking-tight">
               Acesso Administrativo
             </h1>
-            <p className="text-xs sm:text-sm text-slate-500 max-w-[280px] mx-auto leading-relaxed">
+            <p className="text-xs sm:text-sm text-[#212529]/70 max-w-[280px] mx-auto leading-relaxed">
               Entre com seu usuário e senha escolhidos no cadastro para gerenciar sua loja no NumClick.
             </p>
           </div>
@@ -186,32 +194,32 @@ export default function AdminLoginPage() {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full inline-flex items-center justify-center gap-2 rounded-2xl bg-slate-900 py-3.5 px-4 text-xs sm:text-sm font-bold text-white shadow-md shadow-slate-900/10 hover:bg-slate-800 active:scale-[0.98] focus:outline-none focus:ring-4 focus:ring-slate-900/10 transition-all disabled:opacity-60 cursor-pointer mt-2"
+            className="w-full inline-flex items-center justify-center gap-2 rounded-2xl bg-[#FB5607] py-3.5 px-4 text-xs sm:text-sm font-extrabold text-white shadow-md shadow-[#FB5607]/25 hover:bg-[#8338EC] active:scale-[0.98] focus:outline-none focus:ring-4 focus:ring-[#FB5607]/20 transition-all disabled:opacity-60 cursor-pointer mt-2"
           >
             {isSubmitting ? (
               <>
-                <Loader2 className="w-4 h-4 animate-spin text-slate-300" />
+                <Loader2 className="w-4 h-4 animate-spin text-white" />
                 <span>Validando Acesso...</span>
               </>
             ) : (
               <>
                 <span>Entrar no Painel</span>
-                <ArrowRight className="w-4 h-4 text-slate-300 transition-transform group-hover:translate-x-0.5" />
+                <ArrowRight className="w-4 h-4 text-white transition-transform group-hover:translate-x-0.5" />
               </>
             )}
           </button>
         </form>
 
         {/* Rodapé com Selo de Segurança e Navegação */}
-        <div className="pt-2 border-t border-slate-100 flex flex-col items-center gap-2.5 text-xs text-slate-400 text-center">
-          <div className="flex items-center gap-1.5 text-emerald-700 bg-emerald-50/70 border border-emerald-100/60 px-3 py-1 rounded-full text-[11px] font-medium">
-            <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+        <div className="pt-2 border-t border-[#E9ECEF] flex flex-col items-center gap-2.5 text-xs text-[#212529]/60 text-center">
+          <div className="flex items-center gap-1.5 text-[#8338EC] bg-[#8338EC]/10 border border-[#8338EC]/20 px-3 py-1 rounded-full text-[11px] font-bold">
+            <ShieldCheck className="w-3.5 h-3.5 text-[#FB5607]" />
             <span>Ambiente seguro com criptografia de ponta a ponta</span>
           </div>
 
           <a
             href={backUrl}
-            className="text-slate-500 hover:text-slate-900 font-medium transition inline-flex items-center gap-1 mt-1 hover:underline underline-offset-4"
+            className="text-[#212529]/70 hover:text-[#FB5607] font-bold transition inline-flex items-center gap-1 mt-1 hover:underline underline-offset-4"
           >
             &larr; Voltar para a vitrine pública da loja
           </a>

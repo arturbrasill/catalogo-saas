@@ -135,36 +135,35 @@ export function AdminLayout({ children }: AdminLayoutProps) {
 
   return (
     <ProtectedRoute>
-      <div className="min-h-screen bg-slate-100/70 flex">
-        {/* Sidebar Desktop (Modern Dark SaaS Theme) */}
-        {/* Sidebar Desktop (Modern Dark SaaS Theme - Blindagem de Cor Estática Branca) */}
+      <div className="min-h-screen bg-[#E9ECEF] flex">
+        {/* Sidebar Desktop (Modern Dark SaaS Theme - Paleta Oficial NumClick #212529) */}
         <aside
           data-admin-sidebar="true"
-          className="hidden lg:flex flex-col w-64 bg-slate-950 !text-white border-r border-slate-900 shadow-xl select-none"
+          className="hidden lg:flex flex-col w-64 bg-[#212529] !text-white border-r border-white/10 shadow-xl select-none"
           style={{ color: '#ffffff' }}
         >
           {/* Brand Header */}
-          <div className="h-16 sm:h-20 flex items-center px-6 border-b border-slate-900/80 gap-3">
-            <div className="h-10 w-10 rounded-xl overflow-hidden flex items-center justify-center text-white font-black shadow-lg shadow-black/40 flex-shrink-0 bg-slate-900 border border-slate-800">
+          <div className="h-16 sm:h-20 flex items-center px-6 border-b border-white/10 gap-3">
+            <div className="h-10 w-10 rounded-xl overflow-hidden flex items-center justify-center text-white font-black shadow-lg shadow-black/40 flex-shrink-0">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src="/numclick-badge.png"
                 alt="NumClick Logo"
-                className="w-full h-full object-cover"
+                className="w-full h-full object-contain"
               />
             </div>
             <div className="min-w-0">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/marca/marca-dark.svg"
+                alt="NumClick"
+                className="h-4 w-auto object-contain object-left"
+              />
               <span
-                className="font-extrabold !text-white block leading-tight text-sm tracking-tight truncate"
-                style={{ color: '#ffffff' }}
+                className="text-[11px] !text-[#FB5607] font-bold flex items-center gap-1 mt-1"
+                style={{ color: '#FB5607' }}
               >
-                NumClick
-              </span>
-              <span
-                className="text-[11px] !text-emerald-400 font-semibold flex items-center gap-1 mt-0.5"
-                style={{ color: '#34d399' }}
-              >
-                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                <span className="h-1.5 w-1.5 rounded-full bg-[#FB5607] animate-pulse" />
                 Painel do Lojista
               </span>
             </div>
@@ -230,17 +229,17 @@ export function AdminLayout({ children }: AdminLayoutProps) {
             </div>
 
             {/* Banner de Ajuda / Dica */}
-            <div className="p-4 rounded-2xl bg-gradient-to-b from-slate-900 to-slate-950 border border-slate-800/80 space-y-2 text-xs">
+            <div className="p-4 rounded-2xl bg-gradient-to-b from-[#8338EC]/20 to-black/30 border border-[#8338EC]/35 space-y-2 text-xs">
               <div
-                className="flex items-center gap-1.5 !text-amber-400 font-bold text-[11px]"
-                style={{ color: '#fbbf24' }}
+                className="flex items-center gap-1.5 !text-[#FB5607] font-bold text-[11px]"
+                style={{ color: '#FB5607' }}
               >
-                <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-                <span style={{ color: '#fbbf24' }}>Dica de Conversão</span>
+                <Sparkles className="w-3.5 h-3.5 text-[#FB5607]" />
+                <span style={{ color: '#FB5607' }}>Dica de Conversão</span>
               </div>
               <p
-                className="!text-slate-400 text-[11px] leading-relaxed"
-                style={{ color: '#94a3b8' }}
+                className="!text-[#E9ECEF]/80 text-[11px] leading-relaxed"
+                style={{ color: '#E9ECEF' }}
               >
                 Mantenha suas fotos em boa resolução e configure o WhatsApp para receber os pedidos instantaneamente.
               </p>
@@ -248,12 +247,12 @@ export function AdminLayout({ children }: AdminLayoutProps) {
           </div>
 
           {/* Rodapé da Sidebar */}
-          <div className="p-4 border-t border-slate-900 space-y-2">
+          <div className="p-4 border-t border-white/10 space-y-2">
             <a
               href={catalogHref}
               target="_blank"
               rel="noreferrer"
-              className="flex items-center justify-between w-full px-3.5 py-2.5 text-xs font-semibold !text-white hover:bg-white/10 active:bg-white/15 rounded-xl transition border border-white/10"
+              className="flex items-center justify-between w-full px-3.5 py-2.5 text-xs font-semibold !text-white hover:bg-[#FB5607] active:bg-[#8338EC] rounded-xl transition border border-white/15"
               style={{ color: '#ffffff' }}
             >
               <span className="flex items-center gap-2 !text-white" style={{ color: '#ffffff' }}>
@@ -265,8 +264,8 @@ export function AdminLayout({ children }: AdminLayoutProps) {
 
             <div className="flex items-center justify-between pt-2 px-1">
               <div className="flex items-center gap-2 min-w-0">
-                <div className="h-8 w-8 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center !text-white font-bold text-xs">
-                  <Shield className="w-4 h-4 !text-emerald-400" style={{ color: '#34d399' }} />
+                <div className="h-8 w-8 rounded-full bg-white/10 border border-white/15 flex items-center justify-center !text-white font-bold text-xs">
+                  <Shield className="w-4 h-4 !text-[#FB5607]" style={{ color: '#FB5607' }} />
                 </div>
                 <div className="truncate">
                   <span
@@ -276,8 +275,8 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                     Administrador
                   </span>
                   <span
-                    className="text-[10px] !text-slate-400 block"
-                    style={{ color: '#94a3b8' }}
+                    className="text-[10px] !text-[#E9ECEF]/70 block"
+                    style={{ color: '#E9ECEF' }}
                   >
                     Sessão Segura
                   </span>
@@ -287,7 +286,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
               <button
                 type="button"
                 onClick={logout}
-                className="p-2 !text-slate-400 hover:!text-rose-400 hover:bg-white/10 rounded-lg transition cursor-pointer"
+                className="p-2 !text-[#E9ECEF]/70 hover:!text-[#FB5607] hover:bg-white/10 rounded-lg transition cursor-pointer"
                 title="Sair do painel administrativo"
                 aria-label="Sair da conta"
               >
@@ -303,7 +302,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
           {isTrial && (
             <aside
               aria-label="Status do teste gratuito"
-              className="bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 text-white px-4 py-2.5 sm:px-8 flex flex-col sm:flex-row items-center justify-between gap-2.5 text-xs sm:text-sm font-medium z-30 shadow-xs sticky top-0"
+              className="bg-gradient-to-r from-[#8338EC] via-[#8338EC] to-[#FB5607] text-white px-4 py-2.5 sm:px-8 flex flex-col sm:flex-row items-center justify-between gap-2.5 text-xs sm:text-sm font-medium z-30 shadow-xs sticky top-0"
             >
               <div className="flex items-center gap-2 text-center sm:text-left">
                 <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-white/20 text-white font-bold text-[10px] sm:text-[11px] uppercase tracking-wider backdrop-blur-xs">
@@ -319,15 +318,15 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                     href={store.asaas_payment_link}
                     target="_blank"
                     rel="noreferrer"
-                    className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-white text-emerald-800 font-bold hover:bg-emerald-50 shadow-xs transition text-xs"
+                    className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-[#212529] text-[#E9ECEF] font-bold hover:bg-black shadow-xs transition text-xs"
                   >
                     <span>Assinar Agora</span>
-                    <ExternalLink className="w-3.5 h-3.5" />
+                    <ExternalLink className="w-3.5 h-3.5 text-[#FB5607]" />
                   </a>
                 ) : (
                   <a
                     href="/admin/configuracoes?tab=subscription"
-                    className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-white text-emerald-800 font-bold hover:bg-emerald-50 shadow-xs transition text-xs"
+                    className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-[#212529] text-[#E9ECEF] font-bold hover:bg-black shadow-xs transition text-xs"
                   >
                     <span>Ver Detalhes do Pagamento</span>
                   </a>
@@ -390,30 +389,30 @@ export function AdminLayout({ children }: AdminLayoutProps) {
           {mobileMenuOpen && (
             <div className="lg:hidden fixed inset-0 z-50 flex">
               <div
-                className="fixed inset-0 bg-slate-950/60 backdrop-blur-xs"
+                className="fixed inset-0 bg-[#212529]/70 backdrop-blur-xs"
                 onClick={() => setMobileMenuOpen(false)}
               />
               <div
                 data-admin-mobile-drawer="true"
-                className="relative w-72 max-w-[80vw] bg-slate-950 !text-white flex flex-col z-10 shadow-2xl select-none"
+                className="relative w-72 max-w-[80vw] bg-[#212529] !text-white flex flex-col z-10 shadow-2xl select-none"
                 style={{ color: '#ffffff' }}
               >
-                <div className="h-16 sm:h-20 flex items-center justify-between px-5 border-b border-slate-900">
+                <div className="h-16 sm:h-20 flex items-center justify-between px-5 border-b border-white/10">
                   <div className="flex items-center gap-2.5">
-                    <div className="h-8 w-8 rounded-lg overflow-hidden flex items-center justify-center bg-slate-900 border border-slate-800">
+                    <div className="h-8 w-8 rounded-lg overflow-hidden flex items-center justify-center">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
                         src="/numclick-badge.png"
                         alt="NumClick Logo"
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-contain"
                       />
                     </div>
-                    <span
-                      className="font-extrabold !text-white text-sm"
-                      style={{ color: '#ffffff' }}
-                    >
-                      NumClick • Lojista
-                    </span>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src="/marca/marca-dark.svg"
+                      alt="NumClick"
+                      className="h-4 w-auto object-contain"
+                    />
                   </div>
                   <button
                     type="button"

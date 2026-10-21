@@ -236,8 +236,8 @@ export default function AdminCuponsPage() {
         {/* Cabeçalho da Página */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-2xs">
           <div>
-            <div className="flex items-center gap-2 text-slate-900">
-              <div className="h-9 w-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+            <div className="flex items-center gap-2 text-[#212529]">
+              <div className="h-9 w-9 rounded-xl bg-[#FB5607]/10 text-[#FB5607] flex items-center justify-center">
                 <TicketPercent className="w-5 h-5" />
               </div>
               <h1 className="text-xl sm:text-2xl font-black tracking-tight">Cupons de Desconto</h1>
@@ -250,7 +250,7 @@ export default function AdminCuponsPage() {
           <button
             type="button"
             onClick={handleOpenNew}
-            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-sm hover:shadow transition-all cursor-pointer"
+            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-[#FB5607] hover:bg-[#8338EC] text-white font-bold text-xs shadow-sm hover:shadow transition-all cursor-pointer"
           >
             <Plus className="w-4 h-4" />
             <span>Novo Cupom</span>
@@ -688,7 +688,7 @@ export default function AdminCuponsPage() {
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white transition disabled:opacity-50 cursor-pointer"
+                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-[#FB5607] hover:bg-[#8338EC] text-white transition disabled:opacity-50 cursor-pointer"
                   >
                     {isSubmitting && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
                     <span>{editingCoupon ? 'Atualizar Cupom' : 'Salvar Cupom'}</span>

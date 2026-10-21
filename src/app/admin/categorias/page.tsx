@@ -171,7 +171,7 @@ export default function AdminCategoriasPage() {
           <button
             type="button"
             onClick={handleOpenNew}
-            className="inline-flex items-center gap-2 px-4 py-2.5 text-xs font-bold text-white bg-emerald-600 rounded-xl hover:bg-emerald-700 shadow-md hover:shadow-lg active:scale-95 transition-all self-start sm:self-auto cursor-pointer"
+            className="inline-flex items-center gap-2 px-4 py-2.5 text-xs font-bold text-white bg-[#FB5607] rounded-xl hover:bg-[#8338EC] shadow-md hover:shadow-lg active:scale-95 transition-all self-start sm:self-auto cursor-pointer"
           >
             <Plus className="w-4 h-4 stroke-[2.5]" />
             <span>Nova Categoria</span>
@@ -398,7 +398,7 @@ export default function AdminCategoriasPage() {
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 shadow-md transition disabled:opacity-50 cursor-pointer"
+                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold text-white bg-[#FB5607] hover:bg-[#8338EC] shadow-md transition disabled:opacity-50 cursor-pointer"
                   >
                     {isSubmitting ? (
                       <>

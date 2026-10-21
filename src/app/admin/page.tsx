@@ -61,18 +61,18 @@ export default function AdminDashboardPage() {
     <AdminLayout>
       <div className="space-y-6 sm:space-y-8">
         {/* Banner de Boas-Vindas e Ações Rápidas */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white p-6 rounded-3xl border border-slate-200/80 shadow-xs">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white p-6 rounded-3xl border border-[#212529]/10 shadow-xs">
           <div>
             <div className="flex items-center gap-2 mb-1">
-              <span className="text-xs font-bold uppercase tracking-wider text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
+              <span className="text-xs font-bold uppercase tracking-wider text-[#8338EC] bg-[#8338EC]/10 px-2.5 py-0.5 rounded-full border border-[#8338EC]/25">
                 Painel do Lojista
               </span>
-              <span className="text-xs text-slate-400">• NumClick</span>
+              <span className="text-xs font-bold text-[#FB5607]">• NumClick</span>
             </div>
-            <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+            <h1 className="text-xl sm:text-2xl font-black text-[#212529] tracking-tight">
               {store?.store_name ? `Olá, ${store.store_name}!` : 'Bem-vindo ao Painel!'}
             </h1>
-            <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
+            <p className="text-xs sm:text-sm text-[#212529]/65 mt-0.5">
               Acompanhe seu inventário, organize seções e controle as vendas do seu catálogo.
             </p>
           </div>
@@ -82,14 +82,14 @@ export default function AdminDashboardPage() {
               type="button"
               onClick={loadData}
               disabled={isLoading}
-              className="inline-flex items-center gap-1.5 px-3.5 py-2.5 text-xs font-bold text-slate-700 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl shadow-2xs transition disabled:opacity-50 cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2.5 text-xs font-bold text-[#212529] bg-[#E9ECEF] hover:bg-[#E9ECEF]/70 border border-[#212529]/10 rounded-xl shadow-2xs transition disabled:opacity-50 cursor-pointer"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin' : ''}`} />
               Atualizar
             </button>
             <a
               href="/admin/produtos"
-              className="inline-flex items-center gap-1.5 px-4 py-2.5 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl shadow-md hover:shadow-lg transition cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-4 py-2.5 text-xs font-bold text-white bg-[#FB5607] hover:bg-[#8338EC] rounded-xl shadow-md hover:shadow-lg transition cursor-pointer"
             >
               <Plus className="w-4 h-4" />
               Cadastrar Produto
@@ -167,44 +167,44 @@ export default function AdminDashboardPage() {
           </div>
 
           {/* Card 2: Produtos Ativos */}
-          <div className="bg-white rounded-3xl border border-slate-200/80 p-5 shadow-xs flex flex-col justify-between space-y-3 hover:border-slate-300 transition">
+          <div className="bg-white rounded-3xl border border-slate-200/80 p-5 shadow-xs flex flex-col justify-between space-y-3 hover:border-[#FB5607]/40 transition">
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
                 Visíveis na Vitrine
               </span>
-              <div className="h-9 w-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+              <div className="h-9 w-9 rounded-xl bg-[#FB5607]/10 text-[#FB5607] flex items-center justify-center">
                 <CheckCircle2 className="w-4 h-4" />
               </div>
             </div>
             <div>
-              <div className="text-3xl font-black text-emerald-600 tracking-tight">
+              <div className="text-3xl font-black text-[#FB5607] tracking-tight">
                 {isLoading ? '...' : activeProducts}
               </div>
               <p className="text-xs text-slate-500 mt-0.5">Disponíveis para compra dos clientes</p>
             </div>
-            <div className="pt-2 border-t border-slate-100 flex items-center gap-1.5 text-[11px] text-emerald-700 font-medium">
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+            <div className="pt-2 border-t border-slate-100 flex items-center gap-1.5 text-[11px] text-[#FB5607] font-bold">
+              <span className="h-1.5 w-1.5 rounded-full bg-[#FB5607] animate-pulse" />
               <span>Prontos para pedidos no WhatsApp</span>
             </div>
           </div>
 
           {/* Card 3: Categorias */}
-          <div className="bg-white rounded-3xl border border-slate-200/80 p-5 shadow-xs flex flex-col justify-between space-y-3 hover:border-slate-300 transition">
+          <div className="bg-white rounded-3xl border border-slate-200/80 p-5 shadow-xs flex flex-col justify-between space-y-3 hover:border-[#8338EC]/40 transition">
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
                 Categorias Ativas
               </span>
-              <div className="h-9 w-9 rounded-xl bg-sky-50 text-sky-600 flex items-center justify-center">
+              <div className="h-9 w-9 rounded-xl bg-[#8338EC]/10 text-[#8338EC] flex items-center justify-center">
                 <FolderTree className="w-4 h-4" />
               </div>
             </div>
             <div>
-              <div className="text-3xl font-black text-slate-900 tracking-tight">
+              <div className="text-3xl font-black text-[#212529] tracking-tight">
                 {isLoading ? '...' : categories.length}
               </div>
               <p className="text-xs text-slate-500 mt-0.5">Seções de navegação do catálogo</p>
             </div>
-            <div className="pt-2 border-t border-slate-100 text-[11px] text-sky-700 font-medium">
+            <div className="pt-2 border-t border-slate-100 text-[11px] text-[#8338EC] font-bold">
               <span>Organizadas por prioridade</span>
             </div>
           </div>
@@ -305,15 +305,15 @@ export default function AdminDashboardPage() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <a
             href="/admin/produtos"
-            className="group bg-white rounded-3xl border border-slate-200/80 p-6 shadow-xs hover:border-emerald-500 hover:shadow-md transition space-y-3 cursor-pointer"
+            className="group bg-white rounded-3xl border border-slate-200/80 p-6 shadow-xs hover:border-[#FB5607] hover:shadow-md transition space-y-3 cursor-pointer"
           >
-            <div className="h-11 w-11 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold group-hover:scale-110 transition-transform">
+            <div className="h-11 w-11 rounded-2xl bg-[#FB5607]/10 text-[#FB5607] flex items-center justify-center font-bold group-hover:scale-110 transition-transform">
               <Package className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="font-bold text-slate-900 group-hover:text-emerald-700 transition flex items-center justify-between text-sm sm:text-base">
+              <h3 className="font-bold text-[#212529] group-hover:text-[#FB5607] transition flex items-center justify-between text-sm sm:text-base">
                 Gerenciar Produtos
-                <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-emerald-600 group-hover:translate-x-1 transition-all" />
+                <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-[#FB5607] group-hover:translate-x-1 transition-all" />
               </h3>
               <p className="text-xs text-slate-500 mt-1 leading-relaxed">
                 Cadastre novos itens, edite preços, organize fotos e controle estoques.
@@ -323,15 +323,15 @@ export default function AdminDashboardPage() {
 
           <a
             href="/admin/categorias"
-            className="group bg-white rounded-3xl border border-slate-200/80 p-6 shadow-xs hover:border-sky-500 hover:shadow-md transition space-y-3 cursor-pointer"
+            className="group bg-white rounded-3xl border border-slate-200/80 p-6 shadow-xs hover:border-[#212529] hover:shadow-md transition space-y-3 cursor-pointer"
           >
-            <div className="h-11 w-11 rounded-2xl bg-sky-50 text-sky-600 flex items-center justify-center font-bold group-hover:scale-110 transition-transform">
+            <div className="h-11 w-11 rounded-2xl bg-[#E9ECEF] text-[#212529] flex items-center justify-center font-bold group-hover:scale-110 transition-transform">
               <FolderTree className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="font-bold text-slate-900 group-hover:text-sky-700 transition flex items-center justify-between text-sm sm:text-base">
+              <h3 className="font-bold text-[#212529] group-hover:text-[#FB5607] transition flex items-center justify-between text-sm sm:text-base">
                 Gerenciar Categorias
-                <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-sky-600 group-hover:translate-x-1 transition-all" />
+                <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-[#FB5607] group-hover:translate-x-1 transition-all" />
               </h3>
               <p className="text-xs text-slate-500 mt-1 leading-relaxed">
                 Crie e ordene as seções da vitrine para facilitar a navegação do cliente.
@@ -341,15 +341,15 @@ export default function AdminDashboardPage() {
 
           <a
             href="/admin/configuracoes"
-            className="group bg-white rounded-3xl border border-slate-200/80 p-6 shadow-xs hover:border-purple-500 hover:shadow-md transition space-y-3 cursor-pointer"
+            className="group bg-white rounded-3xl border border-slate-200/80 p-6 shadow-xs hover:border-[#8338EC] hover:shadow-md transition space-y-3 cursor-pointer"
           >
-            <div className="h-11 w-11 rounded-2xl bg-purple-50 text-purple-600 flex items-center justify-center font-bold group-hover:scale-110 transition-transform">
+            <div className="h-11 w-11 rounded-2xl bg-[#8338EC]/10 text-[#8338EC] flex items-center justify-center font-bold group-hover:scale-110 transition-transform">
               <Sliders className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="font-bold text-slate-900 group-hover:text-purple-700 transition flex items-center justify-between text-sm sm:text-base">
+              <h3 className="font-bold text-[#212529] group-hover:text-[#8338EC] transition flex items-center justify-between text-sm sm:text-base">
                 Identidade & WhatsApp
-                <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-purple-600 group-hover:translate-x-1 transition-all" />
+                <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-[#8338EC] group-hover:translate-x-1 transition-all" />
               </h3>
               <p className="text-xs text-slate-500 mt-1 leading-relaxed">
                 Personalize nome da loja, cores da marca, número de WhatsApp e logo.

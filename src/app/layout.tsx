@@ -124,7 +124,7 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: initialCssVariables }}
         />
       </head>
-      <body className="antialiased min-h-screen bg-slate-50 font-sans selection:bg-brand-primary selection:text-white transition-colors duration-200">
+      <body className="antialiased min-h-screen bg-[#E9ECEF] text-[#212529] font-sans selection:bg-[#FB5607] selection:text-white transition-colors duration-200">
         {children}
       </body>
     </html>

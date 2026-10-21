@@ -65,9 +65,9 @@ export function InadimplenciaModal({
       aria-labelledby="inadimplencia-title"
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/75 backdrop-blur-sm animate-fade-in"
     >
-      <div className="relative w-full max-w-lg bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden text-slate-900 transition-all">
-        {/* Top Header com Gradiente */}
-        <div className="bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 p-6 text-white relative">
+      <div className="relative w-full max-w-lg bg-white rounded-3xl shadow-2xl border border-[#212529]/15 overflow-hidden text-[#212529] transition-all">
+        {/* Top Header com Gradiente Oficial NumClick */}
+        <div className="bg-gradient-to-r from-[#FB5607] to-[#8338EC] p-6 text-white relative">
           <button
             type="button"
             onClick={onClose}
@@ -94,25 +94,25 @@ export function InadimplenciaModal({
 
         {/* Corpo do Modal */}
         <div className="p-6 sm:p-7 space-y-5">
-          <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+          <p className="text-xs sm:text-sm text-[#212529]/75 leading-relaxed">
             O período de degustação de 7 dias da loja <strong>{store.store_name}</strong> terminou.
             Para manter seu catálogo público online e continuar recebendo pedidos pelo WhatsApp, regularize sua assinatura mensal.
           </p>
 
           {/* Card Resumo do Plano */}
-          <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-between">
+          <div className="p-4 rounded-2xl bg-[#E9ECEF]/70 border border-[#212529]/10 flex items-center justify-between">
             <div className="space-y-0.5">
-              <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block">
+              <span className="text-[11px] font-semibold text-[#8338EC] uppercase tracking-wider block">
                 Plano Selecionado
               </span>
-              <span className="font-extrabold text-sm sm:text-base text-slate-900">
+              <span className="font-extrabold text-sm sm:text-base text-[#212529]">
                 Plano Mensal NumClick
               </span>
-              <span className="text-xs text-slate-500 block">Sem fidelidade • Cancele quando quiser</span>
+              <span className="text-xs text-[#212529]/60 block">Sem fidelidade • Cancele quando quiser</span>
             </div>
             <div className="text-right">
-              <span className="text-2xl font-black text-emerald-600 tracking-tight">R$ 79,90</span>
-              <span className="text-[10px] text-slate-400 block font-medium">/mês</span>
+              <span className="text-2xl font-black text-[#FB5607] tracking-tight">R$ 79,90</span>
+              <span className="text-[10px] text-[#212529]/50 block font-medium">/mês</span>
             </div>
           </div>
 
@@ -122,22 +122,22 @@ export function InadimplenciaModal({
               <button
                 type="button"
                 onClick={() => setShowPixDetails(!showPixDetails)}
-                className="text-xs font-bold text-slate-700 hover:text-slate-900 flex items-center gap-1.5 cursor-pointer underline"
+                className="text-xs font-bold text-[#212529] hover:text-[#FB5607] flex items-center gap-1.5 cursor-pointer underline"
               >
-                <QrCode className="w-4 h-4 text-emerald-600" />
+                <QrCode className="w-4 h-4 text-[#FB5607]" />
                 <span>{showPixDetails ? 'Ocultar QR Code PIX' : 'Pagar via QR Code PIX (Liberação Imediata)'}</span>
               </button>
-              <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+              <span className="text-[10px] font-semibold text-[#8338EC] bg-[#8338EC]/10 px-2 py-0.5 rounded-full border border-[#8338EC]/25">
                 Mais Rápido
               </span>
             </div>
 
             {showPixDetails && (
-              <div className="p-4 rounded-2xl bg-emerald-50/60 border border-emerald-200 space-y-3 animate-fade-in text-center">
-                <p className="text-xs text-emerald-900 font-medium">
+              <div className="p-4 rounded-2xl bg-[#E9ECEF]/70 border border-[#8338EC]/30 space-y-3 animate-fade-in text-center">
+                <p className="text-xs text-[#212529] font-medium">
                   Escaneie o QR Code abaixo no app do seu banco ou use a chave Copia e Cola:
                 </p>
-                <div className="w-36 h-36 mx-auto bg-white p-2 rounded-xl border border-emerald-300 shadow-xs flex items-center justify-center">
+                <div className="w-36 h-36 mx-auto bg-white p-2 rounded-xl border border-[#8338EC]/30 shadow-xs flex items-center justify-center">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(
@@ -152,12 +152,12 @@ export function InadimplenciaModal({
                     type="text"
                     readOnly
                     value={pixKeySimulated}
-                    className="flex-1 px-3 py-1.5 text-[11px] font-mono bg-white border border-emerald-200 rounded-lg text-slate-600 truncate focus:outline-hidden"
+                    className="flex-1 px-3 py-1.5 text-[11px] font-mono bg-white border border-[#212529]/15 rounded-lg text-[#212529] truncate focus:outline-hidden"
                   />
                   <button
                     type="button"
                     onClick={handleCopyPix}
-                    className="px-3 py-1.5 rounded-lg bg-emerald-600 text-white font-bold text-xs hover:bg-emerald-700 transition flex items-center gap-1 cursor-pointer shrink-0"
+                    className="px-3 py-1.5 rounded-lg bg-[#FB5607] text-white font-bold text-xs hover:bg-[#8338EC] transition flex items-center gap-1 cursor-pointer shrink-0"
                   >
                     {copiedPix ? <CheckCircle2 className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
                     <span>{copiedPix ? 'Copiado!' : 'Copiar'}</span>
@@ -173,11 +173,11 @@ export function InadimplenciaModal({
               href={invoiceUrl}
               target="_blank"
               rel="noreferrer"
-              className="w-full py-3.5 px-4 rounded-2xl bg-slate-900 hover:bg-slate-800 text-white font-extrabold text-sm shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer text-center"
+              className="w-full py-3.5 px-4 rounded-2xl bg-[#212529] hover:bg-[#FB5607] text-white font-extrabold text-sm shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer text-center"
             >
-              <CreditCard className="w-4 h-4 text-emerald-400" />
+              <CreditCard className="w-4 h-4 text-[#FB5607]" />
               <span>Pagar Fatura no Asaas (R$ 79,90)</span>
-              <ExternalLink className="w-3.5 h-3.5 text-slate-400" />
+              <ExternalLink className="w-3.5 h-3.5 text-[#E9ECEF]" />
             </a>
 
             <div className="flex flex-col sm:flex-row gap-2 pt-1">

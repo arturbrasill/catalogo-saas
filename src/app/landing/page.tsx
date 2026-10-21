@@ -1,716 +1,618 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import {
-  Sparkles,
-  ArrowRight,
-  Check,
-  Smartphone,
-  Store,
-  DollarSign,
-  ChevronDown,
-  ChevronUp,
+  ShoppingBag,
   MessageCircle,
-  Percent,
-  Sliders,
-  Star,
+  Sparkles,
+  CheckCircle2,
+  ArrowRight,
+  Zap,
   ShieldCheck,
+  Smartphone,
+  Palette,
+  Layers,
+  TrendingUp,
+  Store,
+  ChevronRight,
+  HelpCircle,
+  Clock,
   Globe,
-  Lock,
-  X,
+  CreditCard,
+  Award,
   XCircle,
+  Eye,
+  Plus,
 } from 'lucide-react';
-import { formatCurrency, normalizePhoneNumber } from '@/lib/whatsapp';
 
-/**
- * Constrói URL sanitizada e codificada de forma segura para WhatsApp
- */
-function getSanitizedWhatsappUrl(rawPhone: string | undefined, message: string): string {
-  let cleanPhone = '5511999999999';
-  try {
-    if (rawPhone && rawPhone.trim()) {
-      cleanPhone = normalizePhoneNumber(rawPhone);
-    }
-  } catch {
-    cleanPhone = '5511999999999';
-  }
-  return `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`;
+interface DemoProduct {
+  name: string;
+  category: string;
+  price: string;
+  oldPrice?: string;
+  badge?: string;
+  image: string;
 }
 
-import { DEMO_STORES } from '@/lib/demoStores';
+interface DemoNiche {
+  id: string;
+  label: string;
+  icon: string;
+  storeName: string;
+  subdomain: string;
+  tagline: string;
+  announcement: string;
+  primaryColor: string;
+  bgColor: string;
+  presetName: string;
+  layoutType: string;
+  bannerImage: string;
+  bannerTitle: string;
+  bannerSubtitle: string;
+  products: DemoProduct[];
+}
 
-// Perguntas frequentes
-const FAQ_ITEMS = [
-  {
-    question: 'Vocês cobram alguma comissão ou porcentagem sobre as minhas vendas?',
-    answer:
-      'NÃO! Cobramos ZERO comissão por pedido. Você paga apenas a assinatura mensal fixa do sistema e todo o dinheiro das suas vendas cai direto na sua conta bancária (via PIX, dinheiro ou maquininha). Não retemos um único centavo.',
-  },
-  {
-    question: 'Como os pedidos chegam para mim?',
-    answer:
-      'O cliente monta a sacola no catálogo pelo celular, escolhe os adicionais/tamanhos, seleciona se quer entrega (com endereço e bairro) ou retirada, escolhe a forma de pagamento (com opção de copiar sua chave PIX com 1 clique) e clica em enviar. O pedido chega no seu WhatsApp 100% pronto e formatado, sem você perder tempo digitando.',
-  },
-  {
-    question: 'Como atualizo meus produtos, preços e fotos?',
-    answer:
-      'Basta acessar o seu Painel Administrativo direto no navegador do celular ou computador! Mudou o preço, foto ou estoque no painel, o catálogo atualiza na mesma hora de forma 100% instantânea.',
-  },
-  {
-    question: 'Preciso de computador ou conhecimento de programação?',
-    answer:
-      'Nenhum conhecimento técnico é necessário. O sistema foi desenvolvido para ser gerenciado 100% pelo smartphone. Em menos de 2 minutos sua loja já está no ar pronta para vender.',
-  },
-  {
-    question: 'Como funciona o link da minha vitrine?',
-    answer:
-      'Sua loja recebe um link exclusivo e seguro (ex: numclick.app/sualoja) com certificado SSL gratuito. Basta colar o link na bio do Instagram ou compartilhar no WhatsApp para seus clientes comprarem instantaneamente.',
-  },
-  {
-    question: 'Como funciona o teste grátis de 7 dias?',
-    answer:
-      'Você cria sua loja agora mesmo sem precisar cadastrar cartão de crédito. Experimente por 7 dias grátis com todas as funcionalidades liberadas. Só continua se o catálogo realmente aumentar suas vendas. Sem fidelidade, cancele quando quiser.',
-  },
-];
+export default function LandingPage() {
+  const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(0);
+  const [activeNicheIndex, setActiveNicheIndex] = useState<number>(0);
 
-export default function SaaSCommercialLandingPage() {
-  const [monthlyRevenue, setMonthlyRevenue] = useState<number>(15000);
-  const [marketplaceFee, setMarketplaceFee] = useState<number>(18);
-  const [openFaq, setOpenFaq] = useState<number | null>(0);
+  const demoNiches: DemoNiche[] = [
+    {
+      id: 'moda',
+      label: 'Moda & Boutique',
+      icon: '👗',
+      storeName: 'Atelier Lumina',
+      subdomain: 'lumina.numclick.app',
+      tagline: 'Moda Feminina Autoral • Envios para todo Brasil',
+      announcement: '✨ FRETE GRÁTIS NAS COMPRAS ACIMA DE R$ 299 • USE O CUPOM: LUMINA10',
+      primaryColor: '#8338EC',
+      bgColor: '#FAF9F6',
+      presetName: 'Editorial Luxury',
+      layoutType: 'Grade 2 Colunas',
+      bannerImage: 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=900&auto=format&fit=crop&q=80',
+      bannerTitle: 'Coleção Outono / Inverno',
+      bannerSubtitle: 'Alfaiataria contemporânea com tecidos nobres.',
+      products: [
+        {
+          name: 'Blazer Linho Off-White',
+          category: 'Alfaiataria',
+          price: 'R$ 349,90',
+          oldPrice: 'R$ 429,00',
+          badge: 'Mais Vendido',
+          image: 'https://images.unsplash.com/photo-1591047139829-d91aecb6caea?w=500&auto=format&fit=crop&q=80',
+        },
+        {
+          name: 'Vestido Midi Seda Pura',
+          category: 'Vestidos',
+          price: 'R$ 289,90',
+          badge: 'Lançamento',
+          image: 'https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=500&auto=format&fit=crop&q=80',
+        },
+        {
+          name: 'Bolsa Couro Minimal',
+          category: 'Acessórios',
+          price: 'R$ 219,00',
+          oldPrice: 'R$ 269,00',
+          image: 'https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=500&auto=format&fit=crop&q=80',
+        },
+        {
+          name: 'Sandália Tiras Douradas',
+          category: 'Calçados',
+          price: 'R$ 198,00',
+          image: 'https://images.unsplash.com/photo-1543163521-1bf539c55dd2?w=500&auto=format&fit=crop&q=80',
+        },
+      ],
+    },
+    {
+      id: 'gastronomia',
+      label: 'Hamburgueria & Delivery',
+      icon: '🍔',
+      storeName: 'Brasa & Co. Burgers',
+      subdomain: 'brasaburger.numclick.app',
+      tagline: 'Smash Burgers Artesanais na Brasa • Entrega em 35 min',
+      announcement: '🔥 COMBO CASAL COM REFRI GRÁTIS SÓ HOJE ATÉ ÀS 23H!',
+      primaryColor: '#FB5607',
+      bgColor: '#FFFDF9',
+      presetName: 'Bold & Vibrant',
+      layoutType: 'Lista Horizontal (Cardápio)',
+      bannerImage: 'https://images.unsplash.com/photo-1550547660-d9450f859349?w=900&auto=format&fit=crop&q=80',
+      bannerTitle: 'Smash Duplo Cheddar Bacon',
+      bannerSubtitle: 'Blend 180g Angus, pão brioche selado na manteiga e molho da casa.',
+      products: [
+        {
+          name: 'Combo Brasa Duplo + Fritas',
+          category: 'Combos',
+          price: 'R$ 44,90',
+          oldPrice: 'R$ 54,90',
+          badge: 'Campeão',
+          image: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=500&auto=format&fit=crop&q=80',
+        },
+        {
+          name: 'Truffle Burger Artesanal',
+          category: 'Burgers',
+          price: 'R$ 38,90',
+          badge: 'Chef',
+          image: 'https://images.unsplash.com/photo-1586190848861-99aa4a171e90?w=500&auto=format&fit=crop&q=80',
+        },
+        {
+          name: 'Batata Rústica c/ Cheddar & Bacon',
+          category: 'Porções',
+          price: 'R$ 24,90',
+          image: 'https://images.unsplash.com/photo-1576107232684-1279f3908594?w=500&auto=format&fit=crop&q=80',
+        },
+        {
+          name: 'Milkshake Pistache Belga 400ml',
+          category: 'Sobremesas',
+          price: 'R$ 22,90',
+          image: 'https://images.unsplash.com/photo-1572490122747-3968b75cc699?w=500&auto=format&fit=crop&q=80',
+        },
+      ],
+    },
+    {
+      id: 'cosmeticos',
+      label: 'Cosméticos & Skincare',
+      icon: '✨',
+      storeName: 'Botanica Glow',
+      subdomain: 'botanicaglow.numclick.app',
+      tagline: 'Skincare Vegano & Dermatológico • Cruelty-Free',
+      announcement: '💜 BRINDE EXCLUSIVO EM PEDIDOS ACIMA DE R$ 150 PELO WHATSAPP',
+      primaryColor: '#8338EC',
+      bgColor: '#F8FAFC',
+      presetName: 'Modern Clean',
+      layoutType: 'Grade 2 Colunas',
+      bannerImage: 'https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=900&auto=format&fit=crop&q=80',
+      bannerTitle: 'Rotina Glow Vitamina C 20%',
+      bannerSubtitle: 'Pele radiante, uniforme e hidratada desde a primeira semana.',
+      products: [
+        {
+          name: 'Sérum Facial Vitamina C Pura',
+          category: 'Séruns',
+          price: 'R$ 119,90',
+          oldPrice: 'R$ 149,90',
+          badge: '-20% OFF',
+          image: 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=500&auto=format&fit=crop&q=80',
+        },
+        {
+          name: 'Kit Completo Hidratação Profunda',
+          category: 'Kits',
+          price: 'R$ 239,00',
+          oldPrice: 'R$ 299,00',
+          badge: 'Kit Favorito',
+          image: 'https://images.unsplash.com/photo-1556228720-195a672e8a03?w=500&auto=format&fit=crop&q=80',
+        },
+        {
+          name: 'Gel de Limpeza Botânico Suave',
+          category: 'Limpeza',
+          price: 'R$ 68,00',
+          image: 'https://images.unsplash.com/photo-1556228578-0d85b1a4d571?w=500&auto=format&fit=crop&q=80',
+        },
+        {
+          name: 'Protetor Solar Toque Seco FPS 60',
+          category: 'Proteção',
+          price: 'R$ 89,90',
+          image: 'https://images.unsplash.com/photo-1608248597359-0e6d526a6828?w=500&auto=format&fit=crop&q=80',
+        },
+      ],
+    },
+    {
+      id: 'eletronicos',
+      label: 'Eletrônicos & Tech',
+      icon: '🎧',
+      storeName: 'PrimeTech Store',
+      subdomain: 'primetech.numclick.app',
+      tagline: 'Importados Originais & Acessórios Premium • Garantia Oficial',
+      announcement: '⚡ 10% DE DESCONTO NO PIX IMEDIATO EM TODA A LINHA ÁUDIO & SMART',
+      primaryColor: '#212529',
+      bgColor: '#E9ECEF',
+      presetName: 'Modern Clean',
+      layoutType: 'Grade 2 Colunas',
+      bannerImage: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=900&auto=format&fit=crop&q=80',
+      bannerTitle: 'Semana Tech Sem Juros',
+      bannerSubtitle: 'Fones Noise Cancelling, Smartwatches e Carregadores MagSafe.',
+      products: [
+        {
+          name: 'Headphone Wireless ANC Pro',
+          category: 'Áudio',
+          price: 'R$ 549,00',
+          oldPrice: 'R$ 699,00',
+          badge: 'Oferta Relâmpago',
+          image: 'https://images.unsplash.com/photo-1546435770-a3e426bf472b?w=500&auto=format&fit=crop&q=80',
+        },
+        {
+          name: 'Smartwatch Ultra Titanium 49mm',
+          category: 'Wearables',
+          price: 'R$ 799,00',
+          badge: 'Pronta Entrega',
+          image: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=500&auto=format&fit=crop&q=80',
+        },
+        {
+          name: 'PowerBank MagSafe 10.000mAh',
+          category: 'Energia',
+          price: 'R$ 189,90',
+          oldPrice: 'R$ 229,00',
+          image: 'https://images.unsplash.com/photo-1609091839311-d5365f9ff1c5?w=500&auto=format&fit=crop&q=80',
+        },
+        {
+          name: 'Caixa de Som Bluetooth Waterproof',
+          category: 'Áudio',
+          price: 'R$ 329,00',
+          image: 'https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?w=500&auto=format&fit=crop&q=80',
+        },
+      ],
+    },
+  ];
 
-  // Cálculos da calculadora de economia baseada no plano mensal único
-  const monthlyFeeAmount = (monthlyRevenue * marketplaceFee) / 100;
-  const yearlyMarketplaceLoss = monthlyFeeAmount * 12;
-  const saasYearlyCost = 79.9 * 12; // R$ 79,90/mês
-  const yearlySavings = Math.max(0, yearlyMarketplaceLoss - saasYearlyCost);
+  const activeNiche = (demoNiches[activeNicheIndex] ?? demoNiches[0])!;
 
-  // Mensagem para contratação direta via WhatsApp com sanitização rigorosa de número
-  const commercialHireMessage = 'Olá! Tenho interesse em implantar o catálogo na minha loja.';
-  const specialistMessage = 'Olá! Gostaria de falar com um especialista sobre o catálogo para minha loja.';
-
-  const commercialPhone =
-    process.env.NEXT_PUBLIC_COMMERCIAL_WHATSAPP ||
-    process.env.NEXT_PUBLIC_WHATSAPP ||
-    '5511999999999';
-
-  const commercialWhatsappHireUrl = useMemo(
-    () => getSanitizedWhatsappUrl(commercialPhone, commercialHireMessage),
-    [commercialPhone]
-  );
-
-  const specialistWhatsappUrl = useMemo(
-    () => getSanitizedWhatsappUrl(commercialPhone, specialistMessage),
-    [commercialPhone]
-  );
+  const faqs = [
+    {
+      question: 'Preciso ter CNPJ ou cartão de crédito para começar os 7 dias grátis?',
+      answer:
+        'Não! Você pode criar sua loja agora mesmo apenas com seu nome, WhatsApp e e-mail. Você terá 7 dias completos para cadastrar produtos, personalizar cores e já realizar vendas reais sem pagar nada.',
+    },
+    {
+      question: 'O NumClick cobra comissão sobre as minhas vendas?',
+      answer:
+        'Zero comissão! Diferente de marketplaces que ficam com até 27% do seu faturamento, no NumClick 100% do dinheiro das vendas vai direto para o seu PIX ou maquininha. Você paga apenas a assinatura fixa de R$ 79,90/mês após o período de teste.',
+    },
+    {
+      question: 'Como o meu cliente faz o pedido e como ele chega no meu WhatsApp?',
+      answer:
+        'O cliente acessa o link exclusivo da sua loja (ex: sua-loja.numclick.app), escolhe os produtos, variações (tamanho, cor, sabor), aplica cupons se tiver e clica em "Finalizar no WhatsApp". O pedido chega no seu WhatsApp perfeitamente organizado com itens, quantidades, subtotal, endereço de entrega e forma de pagamento escolhida.',
+    },
+    {
+      question: 'Posso personalizar a vitrine com a logo e as cores da minha marca?',
+      answer:
+        'Sim! O sistema é 100% White-Label. No seu Painel Administrativo você altera o logotipo, banners, cores da marca, barra de avisos no topo, tipografia (Moderna, Editorial ou Vibrante) e até o formato da grade de produtos em tempo real.',
+    },
+    {
+      question: 'Tem limite de produtos, fotos ou pedidos por mês?',
+      answer:
+        'Não há limites! O plano único de R$ 79,90/mês inclui cadastro ilimitado de produtos e categorias, pedidos ilimitados via WhatsApp e hospedagem em nuvem de alta velocidade inclusa.',
+    },
+  ];
 
   return (
-    <div className="min-h-screen bg-white text-slate-900 selection:bg-emerald-500 selection:text-white font-sans antialiased w-full overflow-x-hidden">
-      {/* ============================================================ */}
-      {/* 1. NAVBAR MINIMALISTA & ELEGANTE (Linear / Raycast Style)   */}
-      {/* ============================================================ */}
-      <header className="sticky top-0 z-40 bg-white/85 backdrop-blur-md border-b border-slate-200/80 transition-all">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 sm:h-20 flex items-center justify-between gap-4">
+    <div className="min-h-screen bg-[#E9ECEF] text-[#212529] font-sans selection:bg-[#FB5607] selection:text-white overflow-x-hidden">
+      {/* ===================================================================== */}
+      {/* 1. NAVBAR FIXA COM GLASSMORPHISM & MARCA OFICIAL NUMCLICK */}
+      {/* ===================================================================== */}
+      <header className="sticky top-0 z-50 border-b border-[#212529]/10 bg-[#E9ECEF]/90 backdrop-blur-xl">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 sm:h-20 flex items-center justify-between">
           {/* Logo Oficial NumClick */}
-          <Link href="/landing" className="flex items-center gap-2.5 group">
-            <div className="h-9 w-9 rounded-xl overflow-hidden shadow-xs border border-slate-200/60 group-hover:scale-105 transition-transform flex items-center justify-center bg-slate-950">
+          <Link href="/" className="flex items-center gap-3 group">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/numclick-badge.png"
+              alt="NumClick"
+              className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl shadow-md shadow-[#FB5607]/25 group-hover:scale-105 transition-transform object-contain"
+            />
+            <div className="flex flex-col">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src="/numclick-badge.png"
-                alt="NumClick Logo"
-                className="w-full h-full object-cover"
+                src="/marca/marca-light.svg"
+                alt="NumClick"
+                className="h-5 sm:h-6 w-auto object-contain object-left"
               />
-            </div>
-            <div className="flex items-center gap-1.5">
-              <span className="text-base font-extrabold tracking-tight text-slate-900">
-                Num<span className="text-emerald-600">Click</span>
-              </span>
-              <span className="text-[10px] font-semibold tracking-wide bg-slate-100 text-slate-600 border border-slate-200/70 px-1.5 py-0.5 rounded-md hidden sm:inline-block">
-                SaaS
+              <span className="text-[10px] font-bold uppercase tracking-widest text-[#8338EC] block mt-0.5">
+                Catálogos Digitais
               </span>
             </div>
           </Link>
 
-          {/* Navegação Desktop */}
-          <nav className="hidden md:flex items-center gap-6 text-xs font-medium text-slate-600">
-            <a href="#exemplos" className="hover:text-slate-900 transition-colors">
-              Exemplos
+          {/* Links de Navegação Desktop */}
+          <nav className="hidden md:flex items-center gap-7 text-sm font-bold text-[#212529]/80">
+            <a href="#exemplos" className="hover:text-[#FB5607] transition-colors">
+              Lojas de Exemplo
             </a>
-            <a href="#comparativo" className="hover:text-slate-900 transition-colors">
+            <a href="#comparativo" className="hover:text-[#FB5607] transition-colors">
               Antes & Depois
             </a>
-            <a href="#recursos" className="hover:text-slate-900 transition-colors">
+            <a href="#recursos" className="hover:text-[#FB5607] transition-colors">
               Recursos
             </a>
-            <a href="#calculadora" className="hover:text-slate-900 transition-colors">
-              Calculadora
+            <a href="#precos" className="hover:text-[#FB5607] transition-colors">
+              Preço Único
             </a>
-            <a href="#precos" className="hover:text-slate-900 transition-colors">
-              Preço
-            </a>
-            <a href="#faq" className="hover:text-slate-900 transition-colors">
+            <a href="#faq" className="hover:text-[#FB5607] transition-colors">
               Dúvidas
             </a>
           </nav>
 
           {/* Ações Rápidas */}
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-2.5 sm:gap-3">
             <Link
               href="/admin/login"
-              className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors"
+              className="px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-xl text-xs sm:text-sm font-bold text-[#212529] hover:text-[#8338EC] hover:bg-white/70 transition-all"
             >
-              <Store className="w-3.5 h-3.5 text-slate-400" />
-              <span>Painel</span>
+              Área do Lojista
             </Link>
-
             <Link
               href="/criar-loja"
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-semibold text-white bg-slate-900 hover:bg-slate-800 shadow-xs hover:shadow active:scale-[0.98] transition-all"
+              className="inline-flex items-center gap-1.5 px-4 py-2.5 sm:px-5 sm:py-2.5 rounded-xl text-xs sm:text-sm font-extrabold text-white bg-[#FB5607] hover:bg-[#8338EC] shadow-md shadow-[#FB5607]/25 transition-all active:scale-95"
             >
-              <span>Testar Grátis por 7 Dias</span>
-              <ArrowRight className="w-3.5 h-3.5 text-slate-400" />
+              <span>Criar Minha Loja</span>
+              <ArrowRight className="w-4 h-4 hidden xs:inline" />
             </Link>
           </div>
         </div>
       </header>
 
-      {/* ============================================================ */}
-      {/* 2. HERO PRINCIPAL COM MOCKUP RESPONSIVO (FUNDO CLARO)       */}
-      {/* ============================================================ */}
-      <section className="relative pt-10 sm:pt-16 md:pt-20 pb-16 sm:pb-24 overflow-x-hidden bg-white">
-        {/* Efeito sutil de luz ambiente no fundo */}
-        <div className="absolute top-0 inset-x-0 h-96 bg-[radial-gradient(ellipse_80%_60%_at_50%_-20%,rgba(16,185,129,0.09),transparent)] pointer-events-none" />
+      {/* ===================================================================== */}
+      {/* SEÇÃO 1 (CLARA - #E9ECEF): HERO + VITRINE INTERATIVA DE LOJAS MODELO */}
+      {/* ===================================================================== */}
+      <section className="relative pt-10 pb-20 sm:pt-16 sm:pb-28 overflow-hidden bg-[#E9ECEF]">
+        {/* Luzes de fundo sutis com as cores da marca (#FB5607 e #8338EC) */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute -top-36 left-1/2 -translate-x-1/2 w-[950px] h-[480px] bg-gradient-to-tr from-[#FB5607]/15 via-[#8338EC]/12 to-transparent rounded-full blur-3xl -z-10"
+        />
 
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center space-y-5 sm:space-y-7 relative z-10">
-          {/* Badge de Destaque no topo */}
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-50 border border-emerald-200/90 text-xs font-bold text-emerald-800 shadow-2xs hover:bg-emerald-100/70 transition-colors max-w-full">
-            <span className="flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse flex-shrink-0" />
-            <span className="truncate">Experimente por 7 dias grátis • Sem cartão de crédito</span>
-          </div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Bloco Central de Copywriting de Alta Conversão */}
+          <div className="max-w-3xl mx-auto text-center space-y-6">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white border border-[#8338EC]/25 text-[#8338EC] text-xs font-extrabold tracking-wide uppercase shadow-2xs">
+              <Sparkles className="w-3.5 h-3.5 text-[#FB5607]" />
+              <span>Seu Catálogo Digital Profissional em 60 Segundos</span>
+            </div>
 
-          {/* Título Principal curto e focado na conversão */}
-          <h1 className="text-3xl xs:text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight text-[#0F172A] leading-[1.14] max-w-3xl mx-auto break-words">
-            Transforme seu WhatsApp em uma máquina de vendas, sem taxas por pedido.
-          </h1>
+            <h1 className="text-3xl xs:text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight text-[#212529] leading-[1.08]">
+              Transforme seu WhatsApp em uma{' '}
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#FB5607] to-[#8338EC]">
+                Máquina de Vendas
+              </span>{' '}
+              sem pagar comissões.
+            </h1>
 
-          {/* Subtítulo direto */}
-          <p className="text-sm xs:text-base sm:text-lg md:text-xl text-slate-600 font-normal leading-relaxed max-w-2xl mx-auto">
-            Substitua PDFs pesados e conversas confusas por um catálogo rápido com seu link exclusivo, cores da sua marca e pedido detalhado direto no seu Zap.
-          </p>
-
-          {/* Grupo de CTAs de Alta Conversão */}
-          <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 max-w-lg mx-auto">
-            {/* Botão 1 (Destaque Principal de Conversão): 'Começar Teste de 7 Dias Grátis' */}
-            <Link
-              href="/criar-loja"
-              title="Criar sua loja e testar 7 dias grátis sem cartão"
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-xl text-sm font-bold text-white bg-slate-900 hover:bg-slate-800 shadow-sm hover:shadow-md active:scale-[0.98] transition-all cursor-pointer"
-            >
-              <span>Começar Teste de 7 Dias Grátis</span>
-              <ArrowRight className="w-4 h-4 text-emerald-400" />
-            </Link>
-
-            {/* Botão 2 (Secundário Outline): 'Ver Demonstração ao Vivo' */}
-            <Link
-              href="#exemplos"
-              title="Conhecer lojas de exemplo"
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl text-sm font-semibold text-slate-700 bg-white hover:bg-slate-50 border border-slate-200/90 shadow-2xs hover:border-slate-300 active:scale-[0.98] transition-all cursor-pointer"
-            >
-              <span>Ver Demonstração ao Vivo</span>
-              <ArrowRight className="w-4 h-4 text-slate-400" />
-            </Link>
-          </div>
-
-          {/* Aviso sutil anti-objeção obrigatório */}
-          <p className="text-xs text-slate-500 font-medium pt-1">
-            Sem fidelidade • Cancele quando quiser • Comece em menos de 2 minutos
-          </p>
-
-          {/* Micro-prova de confiança sutil */}
-          <div className="pt-1 flex flex-wrap items-center justify-center gap-4 sm:gap-6 text-xs text-slate-500 font-normal">
-            <span className="flex items-center gap-1.5">
-              <Check className="w-3.5 h-3.5 text-emerald-600 stroke-[2.5]" />
-              Sem cartão de crédito
-            </span>
-            <span className="flex items-center gap-1.5">
-              <Check className="w-3.5 h-3.5 text-emerald-600 stroke-[2.5]" />
-              Configuração em 2 minutos
-            </span>
-            <span className="flex items-center gap-1.5">
-              <Check className="w-3.5 h-3.5 text-emerald-600 stroke-[2.5]" />
-              Sincronização em tempo real
-            </span>
-          </div>
-        </div>
-
-        {/* BLOCO: LOJAS DE EXEMPLO (EXATAMENTE 2 SLOTS EXCLUSIVOS) */}
-        <div id="exemplos" className="mt-12 sm:mt-16 max-w-4xl mx-auto px-4 sm:px-6">
-          {/* Cabeçalho Compacto das Lojas de Exemplo */}
-          <div className="text-center max-w-xl mx-auto mb-6 sm:mb-8 space-y-2 px-2">
-            <span className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200/80">
-              <Store className="w-3.5 h-3.5 text-emerald-600" />
-              Lojas Modelo
-            </span>
-            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-slate-900 tracking-tight">
-              Veja modelos de catálogos prontos
-            </h2>
-            <p className="text-xs sm:text-sm text-slate-500">
-              Acesse os modelos abaixo e veja na prática como a navegação e a experiência de compra são rápidas:
+            <p className="text-base sm:text-lg lg:text-xl text-[#212529]/75 leading-relaxed max-w-2xl mx-auto font-medium">
+              Chega de perder horas respondendo preço por preço ou enviando PDFs pesados que ninguém abre. Crie sua vitrine online com a sua marca e receba pedidos prontos no WhatsApp.
             </p>
+
+            {/* Botões de Ação Principal */}
+            <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3.5">
+              <Link
+                href="/criar-loja"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-8 py-4 rounded-2xl text-base font-black text-white bg-[#FB5607] hover:bg-[#8338EC] shadow-xl shadow-[#FB5607]/30 hover:shadow-[#8338EC]/30 transition-all hover:-translate-y-0.5 active:translate-y-0"
+              >
+                <span>Começar 7 Dias Grátis Agora</span>
+                <ArrowRight className="w-5 h-5 stroke-[2.5]" />
+              </Link>
+              <a
+                href="#exemplos"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-4 rounded-2xl text-sm font-bold text-[#212529] bg-white hover:bg-[#212529] hover:text-[#E9ECEF] border border-[#212529]/15 shadow-xs transition-all"
+              >
+                <Eye className="w-4 h-4 text-[#8338EC]" />
+                <span>Testar Lojas de Exemplo</span>
+              </a>
+            </div>
+
+            {/* Selos de Confiança Imediata */}
+            <div className="pt-3 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs font-bold text-[#212529]/75">
+              <span className="flex items-center gap-1.5">
+                <CheckCircle2 className="w-4 h-4 text-[#FB5607]" />
+                7 dias grátis sem cartão
+              </span>
+              <span className="flex items-center gap-1.5">
+                <CheckCircle2 className="w-4 h-4 text-[#8338EC]" />
+                0% de taxa por pedido
+              </span>
+              <span className="flex items-center gap-1.5">
+                <CheckCircle2 className="w-4 h-4 text-[#FB5607]" />
+                Cancele quando quiser
+              </span>
+            </div>
           </div>
 
-          {/* 2 Cards de Demonstração */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-2xl mx-auto">
-            {DEMO_STORES.map((store) => {
-              const isAvailable = store.isAvailable && store.url !== '#';
+          {/* ================================================================= */}
+          {/* VITRINE INTERATIVA DE LOJAS MODELO POR NICHO (#exemplos) */}
+          {/* ================================================================= */}
+          <div id="exemplos" className="mt-14 sm:mt-16 scroll-mt-24">
+            <div className="text-center mb-5">
+              <span className="text-xs font-extrabold uppercase tracking-wider text-[#8338EC] block mb-2">
+                 Clique em um segmento abaixo para ver como a sua loja vai ficar:
+              </span>
+              {/* Seletor de Nichos */}
+              <div className="inline-flex flex-wrap items-center justify-center gap-2 p-1.5 rounded-2xl bg-white border border-[#212529]/10 shadow-xs">
+                {demoNiches.map((niche, idx) => {
+                  const isActive = idx === activeNicheIndex;
+                  return (
+                    <button
+                      key={niche.id}
+                      type="button"
+                      onClick={() => setActiveNicheIndex(idx)}
+                      className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-extrabold transition-all cursor-pointer ${
+                        isActive
+                          ? 'bg-[#212529] text-[#E9ECEF] shadow-sm scale-[1.01]'
+                          : 'text-[#212529]/70 hover:text-[#212529] hover:bg-[#E9ECEF]/60'
+                      }`}
+                    >
+                      <span>{niche.icon}</span>
+                      <span>{niche.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
 
-              if (!isAvailable) {
-                return (
-                  <div
-                    key={store.id}
-                    className="relative flex flex-col justify-between p-5 rounded-2xl bg-slate-50/80 border border-dashed border-slate-300 text-left opacity-90 select-none shadow-xs"
-                  >
+            {/* Moldura de Navegador / Dispositivo Realista */}
+            <div className="relative mx-auto max-w-5xl rounded-3xl bg-[#212529] p-2 sm:p-3.5 shadow-2xl border border-[#212529]">
+              {/* Barra Superior do Browser */}
+              <div className="flex items-center justify-between px-3 py-2.5 bg-[#212529] rounded-t-2xl border-b border-white/10">
+                <div className="flex items-center gap-1.5">
+                  <span className="w-2.5 h-2.5 rounded-full bg-[#FB5607]" />
+                  <span className="w-2.5 h-2.5 rounded-full bg-[#8338EC]" />
+                  <span className="w-2.5 h-2.5 rounded-full bg-[#E9ECEF]/40" />
+                </div>
+
+                {/* URL Dinâmica do Subdomínio */}
+                <div className="flex items-center gap-2 px-4 py-1 rounded-lg bg-black/30 border border-white/10 text-[11px] font-mono text-[#E9ECEF] max-w-[260px] sm:max-w-md truncate">
+                  <Globe className="w-3 h-3 text-[#FB5607] shrink-0" />
+                  <span className="truncate">https://{activeNiche.subdomain}</span>
+                </div>
+
+                {/* Badges de Configuração Ativa */}
+                <div className="hidden sm:flex items-center gap-2">
+                  <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-[#8338EC]/30 text-[#E9ECEF] border border-[#8338EC]/50">
+                    Tema: {activeNiche.presetName}
+                  </span>
+                </div>
+              </div>
+
+              {/* Conteúdo da Loja Simulada */}
+              <div
+                className="rounded-b-2xl overflow-hidden transition-colors duration-300"
+                style={{ backgroundColor: activeNiche.bgColor }}
+              >
+                {/* Barra de Anúncio do Topo */}
+                <div
+                  className="py-2 px-4 text-center text-[10px] sm:text-xs font-extrabold tracking-wide text-white"
+                  style={{ backgroundColor: activeNiche.primaryColor }}
+                >
+                  {activeNiche.announcement}
+                </div>
+
+                {/* Cabeçalho da Loja Simulada */}
+                <div className="bg-white/95 backdrop-blur-md border-b border-[#212529]/10 px-4 sm:px-6 py-3.5 flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div
+                      className="w-10 h-10 rounded-xl flex items-center justify-center text-white font-black text-base shadow-xs"
+                      style={{ backgroundColor: activeNiche.primaryColor }}
+                    >
+                      {activeNiche.storeName.charAt(0)}
+                    </div>
                     <div>
-                      <div className="flex items-start justify-between gap-3 mb-3">
-                        <div className="w-10 h-10 rounded-xl bg-slate-200/80 text-slate-500 flex items-center justify-center flex-shrink-0">
-                          <Store className="w-5 h-5" />
-                        </div>
-                        <span className="inline-flex items-center text-[10px] font-bold text-amber-800 bg-amber-50 border border-amber-200/80 px-2.5 py-0.5 rounded-full flex-shrink-0">
-                          {store.badge}
+                      <div className="flex items-center gap-2">
+                        <span className="font-black text-sm sm:text-base text-[#212529]">
+                          {activeNiche.storeName}
+                        </span>
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#FB5607]/10 text-[#FB5607] border border-[#FB5607]/25">
+                          <span className="w-1.5 h-1.5 rounded-full bg-[#FB5607] animate-pulse" />
+                          Aberto
                         </span>
                       </div>
-                      <div>
-                        <h3 className="text-sm font-bold text-slate-700">
-                          {store.name}
-                        </h3>
-                        <p className="text-[11px] font-medium text-slate-400 mt-0.5">
-                          {store.category}
-                        </p>
-                        <p className="text-xs text-slate-500 mt-2">
-                          {store.description}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="mt-5 pt-3 border-t border-slate-200/80 flex items-center justify-between text-xs font-semibold text-slate-400">
-                      <span>Em breve no ar</span>
-                      <span className="text-[10px] bg-slate-200/70 px-2 py-0.5 rounded text-slate-500 font-mono">
-                        Slot 2
-                      </span>
+                      <p className="text-[11px] text-[#212529]/60 hidden xs:block">
+                        {activeNiche.tagline}
+                      </p>
                     </div>
                   </div>
-                );
-              }
 
-              return (
-                <a
-                  key={store.id}
-                  href={store.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="group flex flex-col justify-between p-5 rounded-2xl bg-white border border-slate-200/90 hover:border-emerald-500/60 hover:shadow-md active:scale-[0.98] transition-all duration-200 text-left shadow-xs cursor-pointer"
-                >
-                  <div>
-                    <div className="flex items-start justify-between gap-3 mb-3">
-                      <div className="w-10 h-10 rounded-xl bg-slate-100 group-hover:bg-emerald-50 text-slate-700 group-hover:text-emerald-700 flex items-center justify-center transition-colors flex-shrink-0">
-                        <Store className="w-5 h-5" />
-                      </div>
-                      <span className="inline-flex items-center text-[10px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200/70 px-2.5 py-0.5 rounded-full flex-shrink-0">
-                        {store.badge}
+                  {/* Sacola Simulada */}
+                  <div className="flex items-center gap-2">
+                    <Link
+                      href="/criar-loja"
+                      className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-white text-xs font-bold shadow-xs transition hover:opacity-95"
+                      style={{ backgroundColor: activeNiche.primaryColor }}
+                    >
+                      <ShoppingBag className="w-3.5 h-3.5" />
+                      <span>Sacola (2)</span>
+                      <span className="hidden sm:inline opacity-90">• Finalizar</span>
+                    </Link>
+                  </div>
+                </div>
+
+                {/* Corpo da Vitrine Simulada */}
+                <div className="p-4 sm:p-6 space-y-5">
+                  {/* Banner Hero da Loja */}
+                  <div className="relative rounded-2xl overflow-hidden h-36 sm:h-48 bg-[#212529] flex items-end p-5 sm:p-6">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={activeNiche.bannerImage}
+                      alt={activeNiche.bannerTitle}
+                      className="absolute inset-0 w-full h-full object-cover opacity-65"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#212529]/90 via-[#212529]/40 to-transparent" />
+                    <div className="relative z-10 max-w-lg text-white">
+                      <span
+                        className="inline-block text-[10px] font-extrabold uppercase tracking-widest px-2.5 py-0.5 rounded-md mb-1.5"
+                        style={{ backgroundColor: activeNiche.primaryColor }}
+                      >
+                        Destaque da Semana
                       </span>
-                    </div>
-                    <div>
-                      <h3 className="text-sm font-bold text-slate-900 group-hover:text-emerald-700 transition-colors">
-                        {store.name}
+                      <h3 className="text-lg sm:text-2xl font-black leading-tight">
+                        {activeNiche.bannerTitle}
                       </h3>
-                      <p className="text-[11px] font-medium text-emerald-600 mt-0.5">
-                        {store.category}
-                      </p>
-                      <p className="text-xs text-slate-500 mt-2 line-clamp-2">
-                        {store.description}
+                      <p className="text-xs sm:text-sm text-[#E9ECEF]/90 mt-0.5 line-clamp-1">
+                        {activeNiche.bannerSubtitle}
                       </p>
                     </div>
                   </div>
-                  <div className="mt-5 pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-semibold text-slate-600 group-hover:text-emerald-700 transition-colors">
-                    <span>Acessar vitrine</span>
-                    <ArrowRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-emerald-600 group-hover:translate-x-1 transition-all" />
+
+                  {/* Grid de 4 Produtos Reais do Nicho */}
+                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+                    {activeNiche.products.map((prod, pIdx) => (
+                      <div
+                        key={pIdx}
+                        className="group bg-white rounded-2xl border border-[#212529]/10 overflow-hidden shadow-2xs hover:shadow-md transition-all flex flex-col justify-between"
+                      >
+                        <div>
+                          <div className="relative aspect-[4/3] bg-[#E9ECEF] overflow-hidden">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                              src={prod.image}
+                              alt={prod.name}
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                            />
+                            {prod.badge && (
+                              <span
+                                className="absolute top-2 left-2 text-[10px] font-extrabold text-white px-2 py-0.5 rounded-full shadow-xs"
+                                style={{ backgroundColor: activeNiche.primaryColor }}
+                              >
+                                {prod.badge}
+                              </span>
+                            )}
+                          </div>
+                          <div className="p-3">
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-[#212529]/50 block">
+                              {prod.category}
+                            </span>
+                            <h4 className="text-xs sm:text-sm font-extrabold text-[#212529] mt-0.5 line-clamp-1">
+                              {prod.name}
+                            </h4>
+                          </div>
+                        </div>
+
+                        <div className="px-3 pb-3 pt-1 flex items-center justify-between border-t border-[#E9ECEF]">
+                          <div>
+                            {prod.oldPrice && (
+                              <span className="text-[10px] text-[#212529]/45 line-through block leading-none">
+                                {prod.oldPrice}
+                              </span>
+                            )}
+                            <span
+                              className="text-xs sm:text-sm font-black"
+                              style={{ color: activeNiche.primaryColor }}
+                            >
+                              {prod.price}
+                            </span>
+                          </div>
+                          <Link
+                            href="/criar-loja"
+                            className="w-7 h-7 rounded-lg flex items-center justify-center text-white shadow-2xs transition hover:scale-105"
+                            style={{ backgroundColor: activeNiche.primaryColor }}
+                            title="Criar uma loja como esta"
+                          >
+                            <Plus className="w-4 h-4 stroke-[2.5]" />
+                          </Link>
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                </a>
-              );
-            })}
-          </div>
-        </div>
-      </section>
 
-      {/* ============================================================ */}
-      {/* 3. SEÇÃO DE CONTRASTE 'ANTES & DEPOIS' (FUNDO ESCURO - DARK) */}
-      {/* ============================================================ */}
-      <section id="comparativo" className="py-20 sm:py-28 bg-slate-950 text-slate-100 border-y border-slate-800/80 overflow-x-hidden">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 space-y-10 sm:space-y-14">
-          {/* Cabeçalho da Seção em Dark Mode */}
-          <div className="text-center max-w-2xl mx-auto space-y-2.5">
-            <span className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-emerald-400 bg-emerald-950/60 border border-emerald-500/30 px-3 py-1 rounded-full">
-              Comparativo Prático
-            </span>
-            <h2 className="text-2xl xs:text-3xl sm:text-4xl font-extrabold text-white tracking-tight break-words">
-              A diferença real na rotina do seu comércio
-            </h2>
-            <p className="text-xs xs:text-sm sm:text-base text-slate-400 leading-relaxed">
-              Veja como você economiza tempo e elimina o estresse do atendimento manual no WhatsApp.
-            </p>
-          </div>
-
-          {/* 2 Cards Lado a Lado */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 items-stretch">
-            {/* Card 1: 'O Jeito Antigo' (Fundo sutil escuro com toques de alerta) */}
-            <div className="rounded-3xl bg-rose-950/20 border border-rose-900/40 p-5 sm:p-8 space-y-6 flex flex-col justify-between">
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-950/80 text-rose-300 border border-rose-800/50 text-xs font-bold">
-                    <XCircle className="w-3.5 h-3.5 text-rose-400" />
-                    O Jeito Antigo
-                  </span>
-                  <span className="text-[11px] font-semibold text-rose-400">Sem sistema</span>
-                </div>
-
-                <h3 className="text-lg sm:text-xl font-bold text-white leading-tight">
-                  Conversas caóticas e perda diária de pedidos
-                </h3>
-                <p className="text-xs sm:text-sm text-slate-400 leading-relaxed">
-                  Muito esforço manual para pouca conversão, com clientes impacientes esperando respostas.
-                </p>
-
-                <ul className="space-y-3.5 pt-2">
-                  <li className="flex items-start gap-3">
-                    <div className="h-6 w-6 rounded-full bg-rose-950/60 border border-rose-800/50 text-rose-400 flex items-center justify-center flex-shrink-0 mt-0.5">
-                      <X className="w-3.5 h-3.5 stroke-[2.5]" />
-                    </div>
-                    <div className="space-y-0.5">
-                      <strong className="text-xs sm:text-sm font-bold text-slate-200 block">
-                        PDFs pesados de 40MB que travam o celular
-                      </strong>
-                      <p className="text-xs text-slate-400 leading-relaxed">
-                        Arquivos lentos que demoram para baixar no 4G, enchem a memória do cliente e ficam desatualizados no dia seguinte.
-                      </p>
-                    </div>
-                  </li>
-
-                  <li className="flex items-start gap-3">
-                    <div className="h-6 w-6 rounded-full bg-rose-950/60 border border-rose-800/50 text-rose-400 flex items-center justify-center flex-shrink-0 mt-0.5">
-                      <X className="w-3.5 h-3.5 stroke-[2.5]" />
-                    </div>
-                    <div className="space-y-0.5">
-                      <strong className="text-xs sm:text-sm font-bold text-slate-200 block">
-                        Cliente perguntando preço e tamanho o dia todo
-                      </strong>
-                      <p className="text-xs text-slate-400 leading-relaxed">
-                        Dezenas de mensagens manuais no direct e no WhatsApp para tirar dúvidas básicas que poderiam estar visíveis com 1 clique.
-                      </p>
-                    </div>
-                  </li>
-
-                  <li className="flex items-start gap-3">
-                    <div className="h-6 w-6 rounded-full bg-rose-950/60 border border-rose-800/50 text-rose-400 flex items-center justify-center flex-shrink-0 mt-0.5">
-                      <X className="w-3.5 h-3.5 stroke-[2.5]" />
-                    </div>
-                    <div className="space-y-0.5">
-                      <strong className="text-xs sm:text-sm font-bold text-slate-200 block">
-                        Pedidos anotados no papel com erro
-                      </strong>
-                      <p className="text-xs text-slate-400 leading-relaxed">
-                        Anotações perdidas em comandas ou blocos de notas, esquecimento de adicionais, troco errado e endereço incompleto.
-                      </p>
-                    </div>
-                  </li>
-                </ul>
-              </div>
-
-              <div className="pt-4 border-t border-rose-900/40 text-[11px] text-rose-400 font-medium">
-                Resultado: Clientes desistem antes de comprar e o lojista perde horas no chat.
-              </div>
-            </div>
-
-            {/* Card 2: 'Com Nosso Catálogo' (Card de Alto Destaque Dark com Borda Esmeralda) */}
-            <div className="rounded-3xl bg-slate-900 border-2 border-emerald-500 p-5 sm:p-8 space-y-6 flex flex-col justify-between shadow-2xl shadow-emerald-950/40 relative ring-1 ring-emerald-500/20">
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 text-xs font-bold">
-                    <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
-                    Com Nosso Catálogo
-                  </span>
-                  <span className="text-[11px] font-bold text-emerald-400 bg-emerald-950/60 px-2 py-0.5 rounded-full border border-emerald-500/30">
-                    Moderno & Rápido
-                  </span>
-                </div>
-
-                <h3 className="text-lg sm:text-xl font-bold text-white leading-tight">
-                  Vendas rápidas, automáticas e organizadas
-                </h3>
-                <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
-                  O cliente tem autonomia para navegar e o pedido chega pronto para faturar.
-                </p>
-
-                <ul className="space-y-3.5 pt-2">
-                  <li className="flex items-start gap-3">
-                    <div className="h-6 w-6 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center flex-shrink-0 mt-0.5">
-                      <Check className="w-3.5 h-3.5 stroke-[2.5]" />
-                    </div>
-                    <div className="space-y-0.5">
-                      <strong className="text-xs sm:text-sm font-bold text-white block">
-                        Link limpo na bio do Instagram
-                      </strong>
-                      <p className="text-xs text-slate-400 leading-relaxed">
-                        Carregamento instantâneo no navegador do celular, sem necessidade de baixar aplicativo e sempre atualizado em tempo real.
-                      </p>
-                    </div>
-                  </li>
-
-                  <li className="flex items-start gap-3">
-                    <div className="h-6 w-6 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center flex-shrink-0 mt-0.5">
-                      <Check className="w-3.5 h-3.5 stroke-[2.5]" />
-                    </div>
-                    <div className="space-y-0.5">
-                      <strong className="text-xs sm:text-sm font-bold text-white block">
-                        Cliente escolhe cor/tamanho e clica em pedir
-                      </strong>
-                      <p className="text-xs text-slate-400 leading-relaxed">
-                        Fotos nítidas, variações organizadas, cálculo automático de frete ou retirada e botão para copiar chave PIX em 1 toque.
-                      </p>
-                    </div>
-                  </li>
-
-                  <li className="flex items-start gap-3">
-                    <div className="h-6 w-6 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center flex-shrink-0 mt-0.5">
-                      <Check className="w-3.5 h-3.5 stroke-[2.5]" />
-                    </div>
-                    <div className="space-y-0.5">
-                      <strong className="text-xs sm:text-sm font-bold text-white block">
-                        Pedido chega organizado e somado no WhatsApp
-                      </strong>
-                      <p className="text-xs text-slate-400 leading-relaxed">
-                        Mensagem pré-formatada com itens, adicionais, dados de entrega e valor total calculado, pronto para você só despachar.
-                      </p>
-                    </div>
-                  </li>
-                </ul>
-              </div>
-
-              <div className="pt-4 border-t border-slate-800 text-[11px] text-emerald-400 font-semibold flex items-center justify-between">
-                <span>Resultado: Mais vendas diárias e menos tempo no chat.</span>
-                <ArrowRight className="w-3.5 h-3.5" />
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ============================================================ */}
-      {/* 4. BENTO GRID DE RECURSOS (FUNDO CLARO - LIGHT)              */}
-      {/* ============================================================ */}
-      <section id="recursos" className="py-20 sm:py-28 bg-white border-b border-slate-200/80 overflow-x-hidden">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 space-y-10 sm:space-y-14">
-          {/* Cabeçalho do Bento Grid */}
-          <div className="text-center max-w-2xl mx-auto space-y-2.5">
-            <span className="text-xs font-semibold text-emerald-700 uppercase tracking-wider">
-              Tecnologia e Performance
-            </span>
-            <h2 className="text-2xl xs:text-3xl sm:text-4xl font-extrabold text-[#0F172A] tracking-tight break-words">
-              Tudo o que seu comércio precisa para vender em alto nível
-            </h2>
-            <p className="text-xs xs:text-sm sm:text-base text-slate-600 leading-relaxed">
-              Recursos de alta conversão empacotados em uma interface limpa, sem complexidade de programação.
-            </p>
-          </div>
-
-          {/* Grid Assimétrico 4 Blocos */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 sm:gap-8">
-            {/* Bloco 1 (Largo - col-span-12 lg:col-span-7): 'Sua Vitrine Instantânea na Web' */}
-            <div className="lg:col-span-7 bg-slate-50/80 border border-slate-200/80 rounded-3xl p-5 sm:p-8 space-y-6 flex flex-col justify-between shadow-2xs hover:border-slate-300 transition-all">
-              <div className="space-y-2.5">
-                <div className="h-9 w-9 rounded-xl bg-slate-900 text-white flex items-center justify-center shadow-xs">
-                  <Globe className="w-4 h-4 text-emerald-400" />
-                </div>
-                <h3 className="text-lg sm:text-xl font-bold text-slate-900 tracking-tight">
-                  Sua Vitrine Instantânea na Web
-                </h3>
-                <p className="text-xs sm:text-sm text-slate-600 leading-relaxed max-w-xl">
-                  Tenha presença profissional no mercado. Cada loja recebe um link exclusivo e otimizado (ex: <code className="text-slate-800 font-mono text-xs bg-slate-200/70 px-1 py-0.5 rounded">numclick.app/sualoja</code>) pronto para colocar na bio do Instagram e compartilhar no WhatsApp, com conexão ultrarrápida e certificado SSL.
-                </p>
-              </div>
-
-              {/* Input simulado de navegador com URL e Badge SSL */}
-              <div className="bg-white border border-slate-200/90 rounded-2xl p-3.5 sm:p-4 shadow-sm space-y-3">
-                <div className="flex items-center gap-1.5 pb-1">
-                  <span className="h-2 w-2 rounded-full bg-slate-300" />
-                  <span className="h-2 w-2 rounded-full bg-slate-300" />
-                  <span className="h-2 w-2 rounded-full bg-slate-300" />
-                  <span className="text-[10px] text-slate-400 ml-2 font-mono truncate">Navegador do Cliente</span>
-                </div>
-
-                <div className="bg-slate-50 border border-slate-200 rounded-xl px-2.5 sm:px-3 py-2 flex items-center justify-between text-xs font-mono shadow-inner gap-2 overflow-hidden">
-                  <div className="flex items-center gap-1.5 sm:gap-2 truncate">
-                    <Lock className="w-3.5 h-3.5 text-emerald-600 flex-shrink-0" />
-                    <span className="text-slate-400 text-[11px] hidden sm:inline">https://</span>
-                    <span className="text-slate-900 font-semibold text-xs truncate">
-                      numclick.app/sualoja
-                    </span>
-                  </div>
-                  <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200/80 flex-shrink-0">
-                    <ShieldCheck className="w-3 h-3" />
-                    <span className="hidden sm:inline">Certificado </span>SSL Grátis
-                  </span>
-                </div>
-
-                <div className="flex flex-wrap items-center gap-2.5 sm:gap-3 text-[11px] text-slate-500 pt-1">
-                  <span className="flex items-center gap-1">
-                    <Check className="w-3 h-3 text-emerald-600" />
-                    Sem menções a terceiros
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <Check className="w-3 h-3 text-emerald-600" />
-                    Hospedagem inclusa
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <Check className="w-3 h-3 text-emerald-600" />
-                    Pronto para bio
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {/* Bloco 2 (Médio - col-span-12 lg:col-span-5): 'Zero Comissões' */}
-            <div className="lg:col-span-5 bg-slate-900 text-white rounded-3xl p-5 sm:p-8 space-y-6 flex flex-col justify-between shadow-lg">
-              <div className="space-y-2.5">
-                <div className="h-9 w-9 rounded-xl bg-emerald-950/80 border border-emerald-500/30 text-emerald-400 flex items-center justify-center">
-                  <Percent className="w-4 h-4 stroke-[2.2]" />
-                </div>
-                <h3 className="text-lg sm:text-xl font-bold text-white tracking-tight">
-                  Zero Comissões
-                </h3>
-                <p className="text-xs sm:text-sm text-slate-400 leading-relaxed">
-                  100% do lucro das suas vendas fica direto com você. Sem cobrança de porcentagem por pedido e sem reter dinheiro das suas vendas.
-                </p>
-              </div>
-
-              {/* Destaque Visual 100% do Lucro */}
-              <div className="bg-slate-950/80 border border-slate-800 rounded-2xl p-4 sm:p-5 text-center space-y-3">
-                <div className="space-y-0.5">
-                  <span className="text-4xl sm:text-5xl font-black text-emerald-400 tracking-tight block">
-                    100%
-                  </span>
-                  <span className="text-xs text-slate-300 font-semibold tracking-wide uppercase">
-                    Do lucro fica com o lojista
-                  </span>
-                </div>
-
-                <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-800 text-[11px]">
-                  <div className="p-2 rounded-lg bg-slate-900 border border-slate-800 text-left">
-                    <span className="text-slate-500 block text-[10px]">Marketplaces</span>
-                    <span className="text-rose-400 font-bold text-xs">18% a 27%</span>
-                  </div>
-                  <div className="p-2 rounded-lg bg-emerald-950/50 border border-emerald-500/30 text-left">
-                    <span className="text-slate-400 block text-[10px]">NumClick</span>
-                    <span className="text-emerald-400 font-bold text-xs">0% (R$ 0,00)</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Bloco 3 (Médio - col-span-12 lg:col-span-5): 'Painel Simples no Celular' */}
-            <div className="lg:col-span-5 bg-slate-50/80 border border-slate-200/80 rounded-3xl p-5 sm:p-8 space-y-6 flex flex-col justify-between shadow-2xs hover:border-slate-300 transition-all">
-              <div className="space-y-2.5">
-                <div className="h-9 w-9 rounded-xl bg-slate-900 text-white flex items-center justify-center shadow-xs">
-                  <Smartphone className="w-4 h-4 text-emerald-400" />
-                </div>
-                <h3 className="text-lg sm:text-xl font-bold text-slate-900 tracking-tight">
-                  Painel Simples no Celular
-                </h3>
-                <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-                  Altere preços, estoque e fotos em segundos. Funciona perfeitamente direto pelo navegador do smartphone ou computador.
-                </p>
-              </div>
-
-              {/* Ilustração Visual de Edição Rápida */}
-              <div className="bg-white border border-slate-200/90 rounded-2xl p-3.5 sm:p-4 shadow-sm space-y-3">
-                <div className="flex items-center justify-between border-b border-slate-100 pb-2">
-                  <span className="text-xs font-bold text-slate-900">Edição Rápida</span>
-                  <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200/80">
-                    Salvo na hora
-                  </span>
-                </div>
-
-                <div className="space-y-2 text-xs">
-                  <div>
-                    <span className="text-[10px] text-slate-400 font-medium block">Preço Promocional</span>
-                    <div className="flex items-center gap-2 mt-0.5">
-                      <span className="px-2.5 py-1 rounded-lg bg-slate-50 border border-slate-200 font-bold text-slate-900">
-                        R$ 38,90
-                      </span>
-                      <span className="text-[10px] text-slate-400 line-through">R$ 44,90</span>
-                      <span className="text-[10px] text-emerald-700 font-bold bg-emerald-50 px-1.5 py-0.5 rounded">
-                        -13% OFF
+                  {/* Barra Inferior de Ação na Vitrine */}
+                  <div className="bg-white rounded-2xl border border-[#212529]/10 p-3.5 sm:px-5 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-xs">
+                    <div className="flex items-center gap-2.5 text-xs sm:text-sm font-bold text-[#212529]">
+                      <MessageCircle className="w-5 h-5 text-[#FB5607] shrink-0" />
+                      <span>
+                        Gostou do visual da <strong>{activeNiche.storeName}</strong>? Crie uma igual para o seu negócio agora!
                       </span>
                     </div>
-                  </div>
-
-                  <div className="flex items-center justify-between pt-1">
-                    <span className="text-slate-600 text-xs">Status do Estoque:</span>
-                    <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
-                      <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                      Pronta Entrega
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Bloco 4 (Largo - col-span-12 lg:col-span-7): 'Pedido Pré-Formatado' */}
-            <div className="lg:col-span-7 bg-slate-50/80 border border-slate-200/80 rounded-3xl p-5 sm:p-8 space-y-6 flex flex-col justify-between shadow-2xs hover:border-slate-300 transition-all">
-              <div className="space-y-2.5">
-                <div className="h-9 w-9 rounded-xl bg-slate-900 text-white flex items-center justify-center shadow-xs">
-                  <MessageCircle className="w-4 h-4 text-emerald-400" />
-                </div>
-                <h3 className="text-lg sm:text-xl font-bold text-slate-900 tracking-tight">
-                  Pedido Pré-Formatado
-                </h3>
-                <p className="text-xs sm:text-sm text-slate-600 leading-relaxed max-w-xl">
-                  Adeus conversas truncadas. O cliente aperta um botão e você recebe uma mensagem padronizada no WhatsApp com item, tamanho, quantidade e subtotal calculado.
-                </p>
-              </div>
-
-              {/* Caixa de Mensagem Realista do WhatsApp */}
-              <div className="bg-[#EFEAE2] border border-slate-300/80 rounded-2xl p-3 sm:p-4 space-y-2 shadow-inner">
-                <div className="flex items-center justify-between text-[11px] text-slate-600 pb-1 border-b border-slate-300/40">
-                  <div className="flex items-center gap-1.5">
-                    <div className="h-4 w-4 rounded-full bg-emerald-600 text-white flex items-center justify-center text-[9px] font-bold">
-                      W
-                    </div>
-                    <span className="font-semibold text-slate-800 truncate">WhatsApp da sua Loja</span>
-                  </div>
-                  <span className="text-[10px] text-slate-500 flex-shrink-0">Hoje às 14:32</span>
-                </div>
-
-                {/* Balão do WhatsApp */}
-                <div className="bg-white rounded-xl rounded-tl-xs p-3 text-xs text-slate-800 shadow-xs space-y-1.5 border border-slate-200/60 max-w-lg">
-                  <p className="font-bold text-slate-900 text-[11px]">
-                    👋 Olá! Gostaria de fazer o seguinte pedido:
-                  </p>
-                  <div className="border-t border-slate-100 pt-1.5 space-y-1 text-[11px] font-mono leading-relaxed">
-                    <p className="font-bold text-slate-900 font-sans">
-                      🛍️ 1x Double Smash Bacon Especial
-                    </p>
-                    <p className="text-slate-600 text-[10px]">
-                      • Ponto: Ao ponto | Molho: Da Casa
-                    </p>
-                    <p className="text-slate-600 text-[10px]">
-                      • Tipo: Entrega (Rua das Flores, 142 - Apto 32B)
-                    </p>
-                    <p className="text-slate-600 text-[10px]">
-                      • Pagamento: PIX (chave copiada no catálogo)
-                    </p>
-                    <div className="pt-1 border-t border-slate-100 flex items-center justify-between font-sans text-xs">
-                      <span className="font-extrabold text-slate-900">Total: R$ 44,90</span>
-                      <span className="text-[10px] text-slate-400">14:32 ✓✓</span>
-                    </div>
+                    <Link
+                      href="/criar-loja"
+                      className="w-full sm:w-auto text-center px-4 py-2 rounded-xl text-xs font-extrabold text-white bg-[#212529] hover:bg-[#FB5607] transition shrink-0"
+                    >
+                      Usar Este Modelo Grátis →
+                    </Link>
                   </div>
                 </div>
               </div>
@@ -719,381 +621,382 @@ export default function SaaSCommercialLandingPage() {
         </div>
       </section>
 
-      {/* ============================================================ */}
-      {/* 5. CALCULADORA DE ECONOMIA (FUNDO ESCURO - DARK)             */}
-      {/* ============================================================ */}
-      <section id="calculadora" className="py-20 sm:py-28 bg-slate-950 text-slate-100 border-y border-slate-800/80 overflow-x-hidden">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 space-y-10 sm:space-y-14">
-          <div className="text-center max-w-2xl mx-auto space-y-2.5">
-            <span className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-emerald-400 bg-emerald-950/60 border border-emerald-500/30 px-3 py-1 rounded-full">
-              Calculadora de Economia Real
+      {/* ===================================================================== */}
+      {/* SEÇÃO 2 (ESCURA - #212529): COMPARATIVO ANTES & DEPOIS */}
+      {/* ===================================================================== */}
+      <section id="comparativo" className="py-20 sm:py-28 bg-[#212529] text-[#E9ECEF] scroll-mt-20 relative overflow-hidden">
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute top-0 right-0 w-[500px] h-[500px] bg-[#8338EC]/15 rounded-full blur-3xl"
+        />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="max-w-3xl mx-auto text-center mb-14">
+            <span className="text-xs font-extrabold uppercase tracking-widest text-[#FB5607] block mb-2">
+              Por que migrar para o NumClick?
             </span>
-            <h2 className="text-2xl xs:text-3xl sm:text-4xl font-extrabold text-white tracking-tight break-words">
-              Quanto você deixa na mesa todos os meses em taxas abusivas?
+            <h2 className="text-2xl sm:text-4xl font-black tracking-tight text-[#E9ECEF]">
+              Pare de perder clientes no atendimento manual
             </h2>
-            <p className="text-xs xs:text-sm sm:text-base text-slate-400 leading-relaxed">
-              Arraste os seletores abaixo e veja na ponta do lápis quanto sobra no seu bolso vendendo com catálogo próprio.
+            <p className="text-sm sm:text-base text-[#E9ECEF]/75 mt-3">
+              Veja a diferença entre atender no improviso pelo WhatsApp e ter uma vitrine automatizada trabalhando 24h por você.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center bg-slate-900/90 border border-slate-800 rounded-3xl p-5 sm:p-10 shadow-2xl">
-            {/* Controles da Calculadora */}
-            <div className="lg:col-span-7 space-y-7">
-              {/* Slider 1: Faturamento */}
-              <div className="space-y-2.5">
-                <div className="flex items-center justify-between">
-                  <label className="text-xs sm:text-sm font-bold text-slate-300 flex items-center gap-1.5 sm:gap-2">
-                    <DollarSign className="w-4 h-4 text-emerald-400 flex-shrink-0" />
-                    <span>Faturamento Mensal Estimado:</span>
-                  </label>
-                  <span className="text-base sm:text-xl font-extrabold text-emerald-400">
-                    {formatCurrency(monthlyRevenue, 'BRL')}
-                  </span>
-                </div>
-                <input
-                  type="range"
-                  min={3000}
-                  max={80000}
-                  step={1000}
-                  value={monthlyRevenue}
-                  onChange={(e) => setMonthlyRevenue(Number(e.target.value))}
-                  className="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-emerald-500"
-                />
-                <div className="flex justify-between text-[11px] text-slate-500 font-mono">
-                  <span>R$ 3.000</span>
-                  <span>R$ 40.000</span>
-                  <span>R$ 80.000+</span>
-                </div>
-              </div>
-
-              {/* Slider 2: Taxa de Marketplace */}
-              <div className="space-y-2.5">
-                <div className="flex items-center justify-between">
-                  <label className="text-xs sm:text-sm font-bold text-slate-300 flex items-center gap-1.5 sm:gap-2">
-                    <Sliders className="w-4 h-4 text-amber-400 flex-shrink-0" />
-                    <span>Taxa Cobrada por Marketplaces:</span>
-                  </label>
-                  <span className="text-base sm:text-xl font-extrabold text-amber-400">
-                    {marketplaceFee}% por pedido
-                  </span>
-                </div>
-                <input
-                  type="range"
-                  min={10}
-                  max={28}
-                  step={1}
-                  value={marketplaceFee}
-                  onChange={(e) => setMarketplaceFee(Number(e.target.value))}
-                  className="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-amber-500"
-                />
-                <div className="flex justify-between text-[11px] text-slate-500 font-mono">
-                  <span>10% (Mínima)</span>
-                  <span>18% (Média delivery)</span>
-                  <span>28% (Máxima)</span>
-                </div>
-              </div>
-
-              {/* Comparativo Rápido */}
-              <div className="grid grid-cols-2 gap-2.5 sm:gap-3 pt-1 text-xs">
-                <div className="p-3 sm:p-3.5 rounded-2xl bg-rose-950/30 border border-rose-900/40">
-                  <span className="text-[10px] sm:text-[11px] font-semibold text-rose-400 block leading-tight">Comissão Perdida/Mês:</span>
-                  <span className="text-sm sm:text-lg font-black text-rose-200 mt-0.5 block truncate">
-                    {formatCurrency(monthlyFeeAmount, 'BRL')}
-                  </span>
-                </div>
-                <div className="p-3 sm:p-3.5 rounded-2xl bg-emerald-950/30 border border-emerald-900/40">
-                  <span className="text-[10px] sm:text-[11px] font-semibold text-emerald-400 block leading-tight">Comissão no NumClick:</span>
-                  <span className="text-sm sm:text-lg font-black text-emerald-300 mt-0.5 block truncate">
-                    R$ 0,00 (0%)
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {/* Resultado do Lucro Retido */}
-            <div className="lg:col-span-5 bg-gradient-to-b from-emerald-950/40 to-slate-950 p-6 sm:p-8 rounded-3xl border border-emerald-500/30 text-center space-y-4 sm:space-y-5">
-              <span className="inline-block text-[11px] font-extrabold uppercase tracking-wider text-emerald-400 bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/20">
-                Economia Real
-              </span>
-
-              <div className="space-y-1">
-                <span className="text-xs text-slate-400 block">Você economiza anualmente cerca de:</span>
-                <span className="text-3xl sm:text-4xl font-extrabold text-emerald-400 tracking-tight block">
-                  {formatCurrency(yearlySavings, 'BRL')}
-                </span>
-                <span className="text-[11px] text-slate-400 block">
-                  livres de taxas para reinvestir no seu comércio ou lucro puro.
-                </span>
-              </div>
-
-              <div className="pt-2 border-t border-slate-800 text-xs text-slate-400 space-y-1.5">
-                <div className="flex items-center justify-between">
-                  <span>Custo Anual (R$ 79,90/mês):</span>
-                  <span className="font-semibold text-white">{formatCurrency(saasYearlyCost, 'BRL')}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span>Taxa por pedido:</span>
-                  <span className="font-bold text-emerald-400">0% (Isento)</span>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Link
-                  href="/criar-loja"
-                  className="w-full inline-flex items-center justify-center gap-2 py-3.5 px-4 rounded-xl text-xs sm:text-sm font-extrabold text-slate-950 bg-emerald-400 hover:bg-emerald-300 shadow-lg shadow-emerald-500/20 transition-all cursor-pointer"
-                >
-                  <span>Testar Grátis por 7 Dias</span>
-                  <ArrowRight className="w-4 h-4" />
-                </Link>
-                <p className="text-[11px] text-center text-slate-400 font-medium">
-                  Sem fidelidade • Cancele quando quiser • Comece em menos de 2 minutos
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ============================================================ */}
-      {/* 6. PROVA SOCIAL & DEPOIMENTOS DE LOJISTAS (FUNDO CLARO)      */}
-      {/* ============================================================ */}
-      <section className="py-20 sm:py-28 bg-slate-50/70 border-b border-slate-200/80 overflow-x-hidden">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 space-y-10 sm:space-y-14">
-          {/* Métricas Principais da Plataforma */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-6">
-            <div className="p-5 sm:p-6 rounded-2xl bg-white border border-slate-200/80 text-center space-y-1 shadow-2xs">
-              <span className="text-2xl sm:text-3xl font-extrabold text-[#0F172A] block tracking-tight">1.200+</span>
-              <span className="text-xs text-slate-500 font-medium block">Lojas Ativas</span>
-            </div>
-            <div className="p-5 sm:p-6 rounded-2xl bg-white border border-slate-200/80 text-center space-y-1 shadow-2xs">
-              <span className="text-2xl sm:text-3xl font-extrabold text-[#0F172A] block tracking-tight">R$ 4.8M+</span>
-              <span className="text-xs text-slate-500 font-medium block">Transacionados</span>
-            </div>
-            <div className="p-5 sm:p-6 rounded-2xl bg-white border border-slate-200/80 text-center space-y-1 shadow-2xs">
-              <span className="text-2xl sm:text-3xl font-extrabold text-emerald-700 block tracking-tight">R$ 0,00</span>
-              <span className="text-xs text-slate-500 font-medium block">Retido em Taxas</span>
-            </div>
-            <div className="p-5 sm:p-6 rounded-2xl bg-white border border-slate-200/80 text-center space-y-1 shadow-2xs">
-              <div className="flex items-center justify-center gap-1 text-amber-500">
-                <span className="text-2xl sm:text-3xl font-extrabold text-[#0F172A] block tracking-tight">4.9</span>
-                <Star className="w-4 h-4 fill-amber-500 text-amber-500 inline" />
-              </div>
-              <span className="text-xs text-slate-500 font-medium block">Avaliação dos Lojistas</span>
-            </div>
-          </div>
-
-          {/* Depoimentos */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5 sm:gap-8">
-            <div className="p-5 sm:p-6 rounded-2xl bg-white border border-slate-200/80 flex flex-col justify-between space-y-4 shadow-2xs">
-              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed italic">
-                &ldquo;Economizamos mais de R$ 2.400 por mês que antes iam embora em comissões de delivery. O cliente monta o lanche, copia o PIX e o pedido cai no nosso WhatsApp 100% pronto.&rdquo;
-              </p>
-              <div className="pt-3 border-t border-slate-100 flex items-center gap-3">
-                <div className="h-9 w-9 rounded-full bg-emerald-50 text-emerald-700 font-bold text-xs flex items-center justify-center border border-emerald-100 flex-shrink-0">
-                  FC
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
+            {/* Coluna 1: Sem NumClick (Dor) */}
+            <div className="rounded-3xl bg-white/[0.04] border border-white/10 p-6 sm:p-8 space-y-6">
+              <div className="flex items-center gap-3 pb-4 border-b border-white/10">
+                <div className="w-10 h-10 rounded-2xl bg-[#FB5607]/20 border border-[#FB5607]/40 flex items-center justify-center text-[#FB5607]">
+                  <XCircle className="w-5 h-5" />
                 </div>
                 <div>
-                  <h4 className="text-xs font-bold text-slate-900">Felipe Costa</h4>
-                  <span className="text-[11px] text-slate-400 block">Artesanal Burger & Beer • SP</span>
-                </div>
-              </div>
-            </div>
-
-            <div className="p-5 sm:p-6 rounded-2xl bg-white border border-slate-200/80 flex flex-col justify-between space-y-4 shadow-2xs">
-              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed italic">
-                &ldquo;Nossa loja no Instagram converteu muito mais depois que colocamos o link na bio. O cliente vê os tamanhos disponíveis na hora e não fica horas perguntando preço no direct.&rdquo;
-              </p>
-              <div className="pt-3 border-t border-slate-100 flex items-center gap-3">
-                <div className="h-9 w-9 rounded-full bg-slate-100 text-slate-700 font-bold text-xs flex items-center justify-center border border-slate-200 flex-shrink-0">
-                  CD
-                </div>
-                <div>
-                  <h4 className="text-xs font-bold text-slate-900">Camila Duarte</h4>
-                  <span className="text-[11px] text-slate-400 block">Bella Flor Boutique • MG</span>
-                </div>
-              </div>
-            </div>
-
-            <div className="p-5 sm:p-6 rounded-2xl bg-white border border-slate-200/80 flex flex-col justify-between space-y-4 shadow-2xs">
-              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed italic">
-                &ldquo;Atualizo os preços no painel administrativo direto pelo celular e em 5 segundos já tá no ar para os clientes. Praticidade nota 10, sem complicação de programação.&rdquo;
-              </p>
-              <div className="pt-3 border-t border-slate-100 flex items-center gap-3">
-                <div className="h-9 w-9 rounded-full bg-emerald-50 text-emerald-700 font-bold text-xs flex items-center justify-center border border-emerald-100 flex-shrink-0">
-                  MS
-                </div>
-                <div>
-                  <h4 className="text-xs font-bold text-slate-900">Mariana Souza</h4>
-                  <span className="text-[11px] text-slate-400 block">Glow Natural Skincare • PR</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ============================================================ */}
-      {/* 7. SEÇÃO DE PREÇO ÚNICO (FUNDO CLARO - ITENS SOLICITADOS)    */}
-      {/* ============================================================ */}
-      <section id="precos" className="py-20 sm:py-28 bg-white max-w-4xl mx-auto px-4 sm:px-6 space-y-10 sm:space-y-14 overflow-x-hidden">
-        <div className="text-center max-w-xl mx-auto space-y-2.5">
-          <span className="text-xs font-semibold text-emerald-700 uppercase tracking-wider">
-            Preço Transparente
-          </span>
-          <h2 className="text-2xl xs:text-3xl sm:text-4xl font-extrabold text-[#0F172A] tracking-tight break-words">
-            Um único plano, sem pegadinhas nem fidelidade
-          </h2>
-          <p className="text-xs xs:text-sm sm:text-base text-slate-600">
-            Acesso irrestrito a todos os recursos da plataforma para vender mais no WhatsApp.
-          </p>
-        </div>
-
-        {/* Selos em Destaque: 'Sem fidelidade' e 'Sem taxas sobre suas vendas' */}
-        <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-6 pt-1">
-          <div className="inline-flex items-center gap-1.5 sm:gap-2 px-3.5 py-1.5 rounded-full bg-slate-50 border border-slate-200 text-xs font-bold text-slate-800 shadow-2xs">
-            <ShieldCheck className="w-4 h-4 text-emerald-600 flex-shrink-0" />
-            <span>Sem fidelidade</span>
-            <span className="text-slate-400 font-normal hidden sm:inline">(Cancele quando quiser)</span>
-          </div>
-
-          <div className="inline-flex items-center gap-1.5 sm:gap-2 px-3.5 py-1.5 rounded-full bg-emerald-50 border border-emerald-200 text-xs font-bold text-emerald-900 shadow-2xs">
-            <Percent className="w-4 h-4 text-emerald-600 flex-shrink-0" />
-            <span>Sem taxas sobre suas vendas</span>
-            <span className="text-emerald-700 font-normal hidden sm:inline">(0% de comissão)</span>
-          </div>
-
-          <div className="inline-flex items-center gap-1.5 sm:gap-2 px-3.5 py-1.5 rounded-full bg-emerald-50 border border-emerald-200 text-xs font-bold text-emerald-900 shadow-2xs">
-            <Sparkles className="w-4 h-4 text-emerald-600 flex-shrink-0" />
-            <span>Experimente por 7 dias grátis</span>
-            <span className="text-emerald-700 font-normal hidden sm:inline">(Sem cartão)</span>
-          </div>
-        </div>
-
-        {/* Card Único de Plano Mensal com Itens Solicitados */}
-        <div className="max-w-md mx-auto">
-          <div className="bg-white border-2 border-slate-900 rounded-3xl p-6 sm:p-8 space-y-6 shadow-xl relative ring-1 ring-slate-900/10">
-            <span className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-[10px] sm:text-[11px] font-bold uppercase tracking-wider px-3.5 sm:px-4 py-1 rounded-full whitespace-nowrap shadow-md max-w-[92%] truncate text-center">
-              Plano Único Exclusivo • 7 Dias Grátis
-            </span>
-
-            <div className="space-y-4 pt-1">
-              <div>
-                <h3 className="text-lg font-bold text-slate-900">Mensalidade Única</h3>
-                <p className="text-xs text-slate-500 mt-0.5">
-                  Liberdade total para o lojista, sem compromisso de longo prazo
-                </p>
-              </div>
-
-              <div className="border-y border-slate-100 py-4">
-                <div className="flex items-baseline gap-1.5">
-                  <span className="text-4xl sm:text-5xl font-extrabold text-slate-900 tracking-tight">R$ 79,90</span>
-                  <span className="text-xs sm:text-sm text-slate-500 font-medium">/mês</span>
-                  <span className="ml-auto text-[11px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200/80 px-2 py-0.5 rounded-full">
-                    Apenas R$ 2,66/dia
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-[#FB5607] block">
+                    O jeito antigo e cansativo
                   </span>
+                  <h3 className="text-lg sm:text-xl font-black text-[#E9ECEF]">
+                    Vender no Improviso
+                  </h3>
                 </div>
-                <span className="text-[11px] text-slate-500 block mt-1.5">
-                  Experimente por 7 dias grátis • Sem cartão de crédito para iniciar
-                </span>
               </div>
 
-              {/* Lista dos Recursos Inclusos */}
-              <ul className="space-y-3.5 text-xs sm:text-sm text-slate-700">
-                <li className="flex items-center gap-2.5">
-                  <Check className="w-4 h-4 text-emerald-600 flex-shrink-0" />
-                  <span><strong>Suporte Direto</strong> humanizado no WhatsApp</span>
+              <ul className="space-y-4 text-sm text-[#E9ECEF]/80">
+                <li className="flex items-start gap-3">
+                  <XCircle className="w-5 h-5 text-[#FB5607] shrink-0 mt-0.5" />
+                  <span>
+                    <strong className="text-white">Mandar 30 fotos soltas no chat:</strong> Lotando a memória do celular do cliente e deixando a conversa confusa.
+                  </span>
                 </li>
-                <li className="flex items-center gap-2.5">
-                  <Check className="w-4 h-4 text-emerald-600 flex-shrink-0" />
-                  <span><strong>Painel de Gestão</strong> para celular e computador</span>
+                <li className="flex items-start gap-3">
+                  <XCircle className="w-5 h-5 text-[#FB5607] shrink-0 mt-0.5" />
+                  <span>
+                    <strong className="text-white">Catálogos em PDF pesados:</strong> Demoram para baixar no 4G, não atualizam estoque e o cliente desiste da compra.
+                  </span>
                 </li>
-                <li className="flex items-center gap-2.5">
-                  <Check className="w-4 h-4 text-emerald-600 flex-shrink-0" />
-                  <span><strong>Atualizações Ilimitadas</strong> (produtos, fotos e preços)</span>
+                <li className="flex items-start gap-3">
+                  <XCircle className="w-5 h-5 text-[#FB5607] shrink-0 mt-0.5" />
+                  <span>
+                    <strong className="text-white">&quot;Qual o valor desse?&quot; o dia inteiro:</strong> Você perde horas respondendo perguntas repetidas em vez de apenas fechar pedidos.
+                  </span>
                 </li>
-                <li className="flex items-center gap-2.5">
-                  <Check className="w-4 h-4 text-emerald-600 flex-shrink-0" />
-                  <span>Chave PIX com cópia rápida em 1 clique</span>
-                </li>
-                <li className="flex items-center gap-2.5">
-                  <Check className="w-4 h-4 text-emerald-600 flex-shrink-0" />
-                  <span><strong>Catálogo Rápido</strong> pronto para a bio do Instagram</span>
-                </li>
-                <li className="flex items-center gap-2.5">
-                  <Check className="w-4 h-4 text-emerald-600 flex-shrink-0" />
-                  <span><strong>0% de taxas</strong> sobre suas vendas (lucro 100% seu)</span>
+                <li className="flex items-start gap-3">
+                  <XCircle className="w-5 h-5 text-[#FB5607] shrink-0 mt-0.5" />
+                  <span>
+                    <strong className="text-white">Taxas abusivas em apps de terceiros:</strong> Perder de 15% a 27% de comissão em cada venda realizada.
+                  </span>
                 </li>
               </ul>
             </div>
 
-            {/* Ações: CTA Principal de Conversão Imediata + Suporte WhatsApp */}
-            <div className="space-y-2.5 pt-2">
-              <Link
-                href="/criar-loja"
-                className="w-full inline-flex items-center justify-center gap-2 py-3.5 px-4 rounded-xl text-xs sm:text-sm font-bold text-white bg-slate-900 hover:bg-slate-800 shadow-md hover:shadow-lg active:scale-[0.99] transition-all cursor-pointer"
-              >
-                <span>Começar Teste de 7 Dias Grátis</span>
-                <ArrowRight className="w-4 h-4 text-emerald-400" />
-              </Link>
+            {/* Coluna 2: Com NumClick (Solução) */}
+            <div className="rounded-3xl bg-gradient-to-br from-[#8338EC]/25 via-[#212529] to-[#FB5607]/20 border-2 border-[#FB5607] p-6 sm:p-8 space-y-6 relative shadow-2xl shadow-[#FB5607]/10">
+              <div className="absolute -top-3.5 right-6 bg-[#FB5607] text-white text-[11px] font-black uppercase tracking-wider px-3.5 py-1 rounded-full shadow-md">
+                O Padrão Profissional
+              </div>
 
-              <p className="text-[11px] text-center text-slate-500 font-medium py-0.5">
-                Sem fidelidade • Cancele quando quiser • Comece em menos de 2 minutos
-              </p>
+              <div className="flex items-center gap-3 pb-4 border-b border-white/15">
+                <div className="w-10 h-10 rounded-2xl bg-[#FB5607] flex items-center justify-center text-white shadow-md shadow-[#FB5607]/30">
+                  <CheckCircle2 className="w-5 h-5" />
+                </div>
+                <div>
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-[#FB5607] block">
+                    Venda no piloto automático
+                  </span>
+                  <h3 className="text-lg sm:text-xl font-black text-white">
+                    Com Catálogo NumClick
+                  </h3>
+                </div>
+              </div>
 
-              <a
-                href={commercialWhatsappHireUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-full inline-flex items-center justify-center gap-1.5 py-1.5 text-[11px] font-medium text-slate-500 hover:text-emerald-700 transition-colors"
-              >
-                <MessageCircle className="w-3.5 h-3.5 text-emerald-600" />
-                <span>Prefere falar com um especialista no WhatsApp?</span>
-              </a>
+              <ul className="space-y-4 text-sm text-[#E9ECEF]">
+                <li className="flex items-start gap-3">
+                  <CheckCircle2 className="w-5 h-5 text-[#FB5607] shrink-0 mt-0.5" />
+                  <span>
+                    <strong className="text-white">Link único na bio do Instagram e WhatsApp:</strong> Abre instantaneamente no navegador sem precisar instalar nenhum aplicativo.
+                  </span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <CheckCircle2 className="w-5 h-5 text-[#FB5607] shrink-0 mt-0.5" />
+                  <span>
+                    <strong className="text-white">Sacola inteligente com variações e cupons:</strong> O próprio cliente escolhe tamanho, cor, aplica cupom e calcula tudo sozinho.
+                  </span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <CheckCircle2 className="w-5 h-5 text-[#FB5607] shrink-0 mt-0.5" />
+                  <span>
+                    <strong className="text-white">Pedido chega mastigado no seu WhatsApp:</strong> Resumo estruturado com produtos, valores, troco ou PIX e endereço completo.
+                  </span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <CheckCircle2 className="w-5 h-5 text-[#FB5607] shrink-0 mt-0.5" />
+                  <span>
+                    <strong className="text-white">100% do lucro no seu bolso:</strong> Assinatura fixa acessível de R$ 79,90/mês sem nenhuma comissão sobre suas vendas.
+                  </span>
+                </li>
+              </ul>
             </div>
           </div>
         </div>
       </section>
 
-      {/* ============================================================ */}
-      {/* 8. PERGUNTAS FREQUENTES (FAQ) (FUNDO SUAVE - LIGHT)          */}
-      {/* ============================================================ */}
-      <section id="faq" className="py-20 sm:py-28 bg-slate-50/70 border-t border-slate-200/80 overflow-x-hidden">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 space-y-8">
-          <div className="text-center space-y-2">
-            <span className="text-xs font-semibold text-emerald-700 uppercase tracking-wider">
-              Tire Suas Dúvidas
+      {/* ===================================================================== */}
+      {/* SEÇÃO 3 (CLARA - #E9ECEF): BENTO GRID DE RECURSOS WHITE-LABEL */}
+      {/* ===================================================================== */}
+      <section id="recursos" className="py-20 sm:py-28 bg-[#E9ECEF] text-[#212529] scroll-mt-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="max-w-3xl mx-auto text-center mb-14">
+            <span className="text-xs font-extrabold uppercase tracking-widest text-[#8338EC] block mb-2">
+              Tecnologia de Ponta para Negócios Locais
             </span>
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-[#0F172A] tracking-tight">
+            <h2 className="text-2xl sm:text-4xl font-black tracking-tight text-[#212529]">
+              Tudo o que você precisa para vender mais todos os dias
+            </h2>
+            <p className="text-sm sm:text-base text-[#212529]/75 mt-3">
+              Criado especificamente para lojistas que querem agilidade, visual de grande marca e conversão máxima no celular.
+            </p>
+          </div>
+
+          {/* Bento Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5 sm:gap-6">
+            {/* Card Grande 1 (2 colunas) */}
+            <div className="md:col-span-2 rounded-3xl bg-white border border-[#212529]/10 p-6 sm:p-8 flex flex-col justify-between hover:border-[#FB5607]/50 hover:shadow-lg transition-all">
+              <div className="space-y-3 max-w-xl">
+                <div className="w-11 h-11 rounded-2xl bg-[#FB5607] text-white flex items-center justify-center shadow-sm shadow-[#FB5607]/30">
+                  <MessageCircle className="w-5 h-5" />
+                </div>
+                <h3 className="text-xl sm:text-2xl font-black text-[#212529]">
+                  Checkout Direto no WhatsApp + Roteamento Multi-Vendedor
+                </h3>
+                <p className="text-sm text-[#212529]/75 leading-relaxed">
+                  Seu cliente monta o carrinho em segundos e envia o pedido pronto para o seu WhatsApp. Tem mais de um atendente na loja? Ative a escolha de vendedor para distribuir os atendimentos automaticamente para sua equipe!
+                </p>
+              </div>
+
+              {/* Simulação Visual do Resumo do Pedido no WhatsApp */}
+              <div className="mt-6 p-4 rounded-2xl bg-[#E9ECEF]/70 border border-[#212529]/10 font-mono text-xs text-[#212529] space-y-1">
+                <div className="flex items-center justify-between text-[11px] font-sans font-bold text-[#FB5607] pb-1.5 border-b border-[#212529]/10">
+                  <span>📲 Como o pedido chega para você no WhatsApp:</span>
+                  <span className="bg-[#FB5607]/15 text-[#FB5607] px-2 py-0.5 rounded-full">Pronto para cobrar</span>
+                </div>
+                <p className="pt-1 font-bold text-[#212529]">🛍️ *NOVO PEDIDO — ATELIER LUMINA*</p>
+                <p>• 1x Blazer Linho Off-White (Tam: M) — R$ 349,90</p>
+                <p>• 1x Bolsa Couro Minimal (Cor: Caramelo) — R$ 219,00</p>
+                <p className="text-[#8338EC] font-bold">🏷️ Cupom aplicado: LUMINA10 (-R$ 56,89)</p>
+                <p className="font-bold text-[#212529] pt-1">💰 *Total Final: R$ 512,01* (Pagamento via PIX)</p>
+              </div>
+            </div>
+
+            {/* Card 2 (1 coluna) - Personalização White-Label */}
+            <div className="rounded-3xl bg-[#212529] text-[#E9ECEF] p-6 sm:p-8 flex flex-col justify-between shadow-xl relative overflow-hidden">
+              <div className="space-y-3 relative z-10">
+                <div className="w-11 h-11 rounded-2xl bg-[#8338EC] text-white flex items-center justify-center shadow-md shadow-[#8338EC]/30">
+                  <Palette className="w-5 h-5" />
+                </div>
+                <h3 className="text-xl font-black text-white">
+                  Estúdio de Identidade Visual Ao Vivo
+                </h3>
+                <p className="text-sm text-[#E9ECEF]/80 leading-relaxed">
+                  Escolha entre 3 estilos tipográficos (Moderno, Editorial ou Vibrante), defina as cores da sua marca, banners rotativos e veja tudo mudar em tempo real no simulador mobile.
+                </p>
+              </div>
+
+              <div className="mt-6 pt-4 border-t border-white/10 flex items-center justify-between text-xs font-bold text-[#FB5607]">
+                <span>100% com a cara da sua marca</span>
+                <Sparkles className="w-4 h-4 text-[#8338EC]" />
+              </div>
+            </div>
+
+            {/* Card 3 - Campanhas e Cupons */}
+            <div className="rounded-3xl bg-white border border-[#212529]/10 p-6 sm:p-7 space-y-3 hover:border-[#8338EC]/50 hover:shadow-lg transition-all">
+              <div className="w-11 h-11 rounded-2xl bg-[#8338EC]/15 text-[#8338EC] flex items-center justify-center border border-[#8338EC]/25">
+                <Zap className="w-5 h-5" />
+              </div>
+              <h3 className="text-lg font-black text-[#212529]">
+                Cupons de Desconto & Campanhas Relâmpago
+              </h3>
+              <p className="text-xs sm:text-sm text-[#212529]/75 leading-relaxed">
+                Crie códigos de cupom (ex: BEMVINDO10) ou programe promoções automáticas com data de início e fim para girar seu estoque rapidamente.
+              </p>
+            </div>
+
+            {/* Card 4 - Preços por Variação */}
+            <div className="rounded-3xl bg-white border border-[#212529]/10 p-6 sm:p-7 space-y-3 hover:border-[#FB5607]/50 hover:shadow-lg transition-all">
+              <div className="w-11 h-11 rounded-2xl bg-[#FB5607]/15 text-[#FB5607] flex items-center justify-center border border-[#FB5607]/25">
+                <Layers className="w-5 h-5" />
+              </div>
+              <h3 className="text-lg font-black text-[#212529]">
+                Variações com Preço Dinâmico Real-Time
+              </h3>
+              <p className="text-xs sm:text-sm text-[#212529]/75 leading-relaxed">
+                Venda produtos por tamanho (P, M, G), cor, voltagem ou adicionais pagos. O preço atualiza na hora na tela do cliente conforme a escolha.
+              </p>
+            </div>
+
+            {/* Card 5 - Mobile First & Subdomínio */}
+            <div className="rounded-3xl bg-white border border-[#212529]/10 p-6 sm:p-7 space-y-3 hover:border-[#8338EC]/50 hover:shadow-lg transition-all">
+              <div className="w-11 h-11 rounded-2xl bg-[#212529] text-[#E9ECEF] flex items-center justify-center">
+                <Smartphone className="w-5 h-5 text-[#FB5607]" />
+              </div>
+              <h3 className="text-lg font-black text-[#212529]">
+                Ultra Rápido no 4G & Link Exclusivo
+              </h3>
+              <p className="text-xs sm:text-sm text-[#212529]/75 leading-relaxed">
+                Sua loja ganha endereço próprio (<code className="font-mono font-bold text-[#8338EC]">sualoja.numclick.app</code>) otimizado para abrir em menos de 1 segundo em qualquer celular.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ===================================================================== */}
+      {/* SEÇÃO 4 (ESCURA - #212529): PREÇO ÚNICO & TRANSPARENTE */}
+      {/* ===================================================================== */}
+      <section id="precos" className="py-20 sm:py-28 bg-[#212529] text-[#E9ECEF] scroll-mt-20 relative overflow-hidden">
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute -bottom-24 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-gradient-to-r from-[#8338EC]/20 via-[#FB5607]/20 to-transparent rounded-full blur-3xl"
+        />
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="text-center max-w-2xl mx-auto mb-12">
+            <span className="text-xs font-extrabold uppercase tracking-widest text-[#FB5607] block mb-2">
+              Simples, Justo e Sem Surpresas
+            </span>
+            <h2 className="text-2xl sm:text-4xl font-black tracking-tight text-white">
+              Um único plano completo para o seu negócio crescer
+            </h2>
+            <p className="text-sm sm:text-base text-[#E9ECEF]/75 mt-3">
+              Sem planos limitados ou cobranças escondidas. Você tem acesso total a todas as ferramentas desde o primeiro dia.
+            </p>
+          </div>
+
+          {/* Card de Preço Único em Destaque */}
+          <div className="rounded-3xl bg-[#E9ECEF] text-[#212529] border-2 border-[#FB5607] shadow-2xl overflow-hidden grid grid-cols-1 lg:grid-cols-12">
+            {/* Lado Esquerdo: Benefícios Inclusos */}
+            <div className="lg:col-span-7 p-6 sm:p-10 space-y-6 bg-white">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#8338EC]/10 border border-[#8338EC]/25 text-[#8338EC] text-xs font-extrabold">
+                <Award className="w-4 h-4 text-[#FB5607]" />
+                <span>Plano PRO Ilimitado • Tudo Incluso</span>
+              </div>
+
+              <h3 className="text-2xl sm:text-3xl font-black text-[#212529]">
+                Sua loja online completa pronta para vender hoje
+              </h3>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 text-xs sm:text-sm font-semibold text-[#212529]/85">
+                {[
+                  'Produtos e fotos ilimitados',
+                  'Pedidos ilimitados no WhatsApp',
+                  '0% de comissão sobre vendas',
+                  'Subdomínio próprio (.numclick.app)',
+                  'Cupons de desconto (% ou R$)',
+                  'Campanhas e ofertas temporais',
+                  'Roteamento para vários vendedores',
+                  'Personalização total de cores e fontes',
+                  'Variações com acréscimo de preço',
+                  'Suporte prioritário em português',
+                ].map((feature, i) => (
+                  <div key={i} className="flex items-center gap-2.5">
+                    <CheckCircle2 className="w-4 h-4 text-[#FB5607] shrink-0" />
+                    <span>{feature}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Lado Direito: Valor e CTA */}
+            <div className="lg:col-span-5 bg-gradient-to-br from-[#212529] via-[#212529] to-[#8338EC]/40 text-white p-6 sm:p-10 flex flex-col justify-between border-t lg:border-t-0 lg:border-l border-white/10">
+              <div className="space-y-4">
+                <span className="inline-block text-xs font-extrabold uppercase tracking-wider text-[#E9ECEF] bg-[#8338EC] px-3 py-1 rounded-full">
+                  7 Dias de Teste Grátis
+                </span>
+
+                <div>
+                  <span className="text-xs text-[#E9ECEF]/60 line-through block">
+                    De R$ 149,90/mês por apenas:
+                  </span>
+                  <div className="flex items-baseline gap-1 mt-1">
+                    <span className="text-sm font-bold text-[#E9ECEF]/80">R$</span>
+                    <span className="text-5xl sm:text-6xl font-black tracking-tight text-white">
+                      79,90
+                    </span>
+                    <span className="text-sm font-semibold text-[#E9ECEF]/80">/mês</span>
+                  </div>
+                  <span className="text-xs text-[#FB5607] font-bold block mt-1">
+                    Menos de R$ 2,66 por dia • Sem fidelidade
+                  </span>
+                </div>
+
+                <p className="text-xs text-[#E9ECEF]/80 leading-relaxed">
+                  Teste gratuitamente por 7 dias. Após o período de degustação, pague facilmente via PIX, Boleto ou Cartão pelo gateway oficial Asaas.
+                </p>
+              </div>
+
+              <div className="pt-6 space-y-3">
+                <Link
+                  href="/criar-loja"
+                  className="w-full py-4 px-6 rounded-2xl bg-[#FB5607] hover:bg-[#8338EC] text-white font-black text-sm sm:text-base shadow-lg shadow-[#FB5607]/25 transition-all flex items-center justify-center gap-2"
+                >
+                  <span>Criar Minha Loja Grátis</span>
+                  <ArrowRight className="w-5 h-5" />
+                </Link>
+                <div className="flex items-center justify-center gap-4 text-[11px] text-[#E9ECEF]/70 font-medium">
+                  <span className="flex items-center gap-1">
+                    <ShieldCheck className="w-3.5 h-3.5 text-[#FB5607]" />
+                    Ambiente Seguro
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <Clock className="w-3.5 h-3.5 text-[#8338EC]" />
+                    Pronto em 1 minuto
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ===================================================================== */}
+      {/* SEÇÃO 5 (CLARA - #E9ECEF): PERGUNTAS FREQUENTES (FAQ) */}
+      {/* ===================================================================== */}
+      <section id="faq" className="py-20 sm:py-24 bg-[#E9ECEF] text-[#212529] scroll-mt-20">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <span className="text-xs font-extrabold uppercase tracking-widest text-[#8338EC] block mb-2">
+              Tire suas dúvidas
+            </span>
+            <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-[#212529]">
               Perguntas Frequentes
             </h2>
           </div>
 
           <div className="space-y-3">
-            {FAQ_ITEMS.map((item, idx) => {
-              const isOpen = openFaq === idx;
+            {faqs.map((faq, idx) => {
+              const isOpen = openFaqIndex === idx;
               return (
                 <div
                   key={idx}
-                  className="rounded-xl bg-white border border-slate-200/80 overflow-hidden transition-all shadow-2xs"
+                  className={`rounded-2xl border transition-all ${
+                    isOpen
+                      ? 'bg-white border-[#8338EC] shadow-md'
+                      : 'bg-white/80 border-[#212529]/10 hover:border-[#212529]/25'
+                  }`}
                 >
                   <button
                     type="button"
-                    onClick={() => setOpenFaq(isOpen ? null : idx)}
-                    className="w-full p-4 sm:p-5 text-left flex items-center justify-between gap-4 cursor-pointer"
+                    onClick={() => setOpenFaqIndex(isOpen ? null : idx)}
+                    className="w-full p-5 text-left flex items-center justify-between gap-4 cursor-pointer"
                   >
-                    <span className="text-xs sm:text-sm font-bold text-slate-900 leading-snug">
-                      {item.question}
+                    <span className="text-sm sm:text-base font-extrabold text-[#212529]">
+                      {faq.question}
                     </span>
-                    {isOpen ? (
-                      <ChevronUp className="w-4 h-4 text-slate-500 flex-shrink-0" />
-                    ) : (
-                      <ChevronDown className="w-4 h-4 text-slate-400 flex-shrink-0" />
-                    )}
+                    <ChevronRight
+                      className={`w-5 h-5 text-[#FB5607] shrink-0 transition-transform duration-200 ${
+                        isOpen ? 'rotate-90 text-[#8338EC]' : ''
+                      }`}
+                    />
                   </button>
-
                   {isOpen && (
-                    <div className="px-4 sm:px-5 pb-5 pt-1 text-xs sm:text-sm text-slate-600 leading-relaxed border-t border-slate-100">
-                      {item.answer}
+                    <div className="px-5 pb-5 text-xs sm:text-sm text-[#212529]/80 leading-relaxed border-t border-[#E9ECEF] pt-3">
+                      {faq.answer}
                     </div>
                   )}
                 </div>
@@ -1103,131 +1006,72 @@ export default function SaaSCommercialLandingPage() {
         </div>
       </section>
 
-      {/* ============================================================ */}
-      {/* 9. CTA FINAL DE CONVERSÃO (FUNDO ESCURO - DARK)              */}
-      {/* ============================================================ */}
-      <section className="py-20 sm:py-28 bg-slate-900 text-white text-center border-t border-slate-800 overflow-x-hidden">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 space-y-6">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-xs font-bold text-emerald-400 shadow-2xs">
-            <Sparkles className="w-3.5 h-3.5" />
-            <span>Experimente por 7 dias grátis</span>
-          </div>
-
-          <h2 className="text-2xl xs:text-3xl sm:text-4xl font-extrabold tracking-tight break-words">
-            Pronto para ver suas vendas no WhatsApp decolarem?
-          </h2>
-          <p className="text-xs xs:text-sm sm:text-base text-slate-400 max-w-xl mx-auto leading-relaxed">
-            Experimente por 7 dias grátis. Não precisa de cartão de crédito e sua loja fica pronta em menos de 2 minutos.
-          </p>
-
-          <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
-            <Link
-              href="/criar-loja"
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-xl text-sm font-bold text-slate-950 bg-emerald-400 hover:bg-emerald-300 shadow-lg shadow-emerald-500/20 transition-all cursor-pointer"
-            >
-              <span>Começar Teste de 7 Dias Grátis</span>
-              <ArrowRight className="w-4 h-4" />
-            </Link>
-
-            <a
-              href={commercialWhatsappHireUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl text-sm font-semibold text-white bg-slate-800 hover:bg-slate-700 border border-slate-700 transition-colors cursor-pointer"
-            >
-              <MessageCircle className="w-4 h-4 text-emerald-400" />
-              <span>Falar no WhatsApp Comercial</span>
-            </a>
-          </div>
-
-          {/* Aviso sutil anti-objeção obrigatório */}
-          <p className="text-xs text-slate-400 font-medium pt-1">
-            Sem fidelidade • Cancele quando quiser • Comece em menos de 2 minutos
-          </p>
-        </div>
-      </section>
-
-      {/* ============================================================ */}
-      {/* 10. RODAPÉ MINIMALISTA (FUNDO ESCURO - DARK)                 */}
-      {/* ============================================================ */}
-      <footer className="bg-slate-950 border-t border-slate-800 py-12 pb-24 md:pb-12 text-xs text-slate-400 overflow-x-hidden">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 space-y-8">
-          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-            <div className="space-y-1.5">
-              <div className="flex items-center gap-2">
-                <div className="h-7 w-7 rounded-lg overflow-hidden border border-slate-800 flex items-center justify-center bg-slate-950">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src="/numclick-badge.png"
-                    alt="NumClick Logo"
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <span className="text-base font-extrabold tracking-tight text-white">
-                  Num<span className="text-emerald-400">Click</span>
-                </span>
-              </div>
-              <p className="text-xs text-slate-400 font-medium">
-                Feito para fortalecer o comércio local
+      {/* ===================================================================== */}
+      {/* SEÇÃO 6 (ESCURA - #212529): CTA FINAL & RODAPÉ INSTITUCIONAL */}
+      {/* ===================================================================== */}
+      <footer className="bg-[#212529] text-[#E9ECEF] pt-16 pb-12 border-t border-white/10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Card CTA Final */}
+          <div className="rounded-3xl bg-gradient-to-r from-[#FB5607] to-[#8338EC] p-8 sm:p-12 text-center text-white shadow-2xl mb-14 relative overflow-hidden">
+            <div className="max-w-2xl mx-auto space-y-5 relative z-10">
+              <h2 className="text-2xl sm:text-4xl font-black tracking-tight">
+                Comece hoje mesmo a vender de forma profissional pelo WhatsApp
+              </h2>
+              <p className="text-sm sm:text-base text-white/90">
+                Crie sua conta em menos de 1 minuto, escolha seu modelo de loja e compartilhe seu link exclusivo com seus clientes.
               </p>
+              <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
+                <Link
+                  href="/criar-loja"
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 rounded-2xl bg-[#212529] text-[#E9ECEF] font-black text-sm sm:text-base hover:bg-black shadow-lg transition-all"
+                >
+                  <span>Criar Minha Loja Grátis (7 Dias)</span>
+                  <ArrowRight className="w-5 h-5 text-[#FB5607]" />
+                </Link>
+                <Link
+                  href="/admin/login"
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-4 rounded-2xl bg-white/15 hover:bg-white/25 text-white font-bold text-sm border border-white/25 transition-all"
+                >
+                  <span>Já sou assinante • Entrar</span>
+                </Link>
+              </div>
+            </div>
+          </div>
+
+          {/* Rodapé Links & Copyright */}
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-6 pt-6 border-t border-white/10 text-xs text-[#E9ECEF]/70">
+            <div className="flex items-center gap-3">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/numclick-badge.png"
+                alt="NumClick"
+                className="w-8 h-8 rounded-xl object-contain"
+              />
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/marca/marca-dark.svg"
+                alt="NumClick"
+                className="h-4 w-auto object-contain"
+              />
+              <span className="text-[#E9ECEF]/40">•</span>
+              <span>Plataforma White-Label de Catálogos Digitais</span>
             </div>
 
-            {/* Links rápidos de contato e navegação */}
-            <div className="flex flex-wrap items-center gap-4 sm:gap-6 text-xs text-slate-300">
-              <a
-                href={commercialWhatsappHireUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="hover:text-white transition-colors flex items-center gap-1.5"
-              >
-                <MessageCircle className="w-3.5 h-3.5 text-emerald-400" />
-                <span>WhatsApp Comercial</span>
-              </a>
-              <Link href="/criar-loja" className="hover:text-white transition-colors">
+            <div className="flex flex-wrap items-center gap-6">
+              <Link href="/criar-loja" className="hover:text-[#FB5607] transition">
                 Criar Loja
               </Link>
-              <Link href="/admin/login" className="hover:text-white transition-colors">
+              <Link href="/admin/login" className="hover:text-[#FB5607] transition">
                 Painel do Lojista
               </Link>
-              <Link href="/saas-admin" className="hover:text-white transition-colors">
-                Administração SaaS
-              </Link>
-            </div>
-          </div>
-
-          {/* Linha de Termos simples e Copyright */}
-          <div className="border-t border-slate-900 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px] text-slate-500">
-            <p>© {new Date().getFullYear()} NumClick SaaS. Todos os direitos reservados.</p>
-            <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 text-slate-500">
-              <span>Termos de Uso Simplificados</span>
-              <span>•</span>
-              <span>Privacidade e Segurança</span>
-              <span>•</span>
-              <span>0% de Comissões por Venda</span>
+              <a href="#precos" className="hover:text-[#FB5607] transition">
+                Planos
+              </a>
+              <span>© {new Date().getFullYear()} NumClick. Todos os direitos reservados.</span>
             </div>
           </div>
         </div>
       </footer>
-
-      {/* ============================================================ */}
-      {/* BOTÃO FLUTUANTE DE WHATSAPP (MOBILE ONLY - CANTO INFERIOR)   */}
-      {/* ============================================================ */}
-      <div className="fixed bottom-4 right-4 z-50 md:hidden">
-        <a
-          href={specialistWhatsappUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-lg shadow-emerald-950/25 active:scale-95 transition-all ring-2 ring-white/90"
-          aria-label="Falar com Especialista no WhatsApp"
-        >
-          <span className="relative flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-300 opacity-75" />
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-white" />
-          </span>
-          <MessageCircle className="w-4 h-4" />
-          <span>Falar com Especialista</span>
-        </a>
-      </div>
     </div>
   );
 }
