@@ -46,12 +46,12 @@ export class BackendEngine {
     this.configMap.set('store_name', initialConfig?.store_name || 'Minha Loja Digital');
     this.configMap.set(
       'logo_url',
-      initialConfig?.logo_url || 'https://images.unsplash.com/photo-example.jpg'
+      initialConfig?.logo_url || '/numclick-badge.png'
     );
-    this.configMap.set('primary_color', initialConfig?.primary_color || '#10b981');
-    this.configMap.set('secondary_color', initialConfig?.secondary_color || '#047857');
-    this.configMap.set('background_color', initialConfig?.background_color || '#f8fafc');
-    this.configMap.set('text_color', initialConfig?.text_color || '#0f172a');
+    this.configMap.set('primary_color', initialConfig?.primary_color || '#FB5607');
+    this.configMap.set('secondary_color', initialConfig?.secondary_color || '#8338EC');
+    this.configMap.set('background_color', initialConfig?.background_color || '#E9ECEF');
+    this.configMap.set('text_color', initialConfig?.text_color || '#212529');
     this.configMap.set('banners', JSON.stringify(initialConfig?.banners || []));
     this.configMap.set('whatsapp', initialConfig?.whatsapp || '5511999999999');
     this.configMap.set('admin_password_hash', defaultPasswordHash);

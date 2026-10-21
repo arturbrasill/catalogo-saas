@@ -110,10 +110,10 @@ export function generateThemeCssVariables(config?: Partial<StoreConfig> | null):
   const presetKey: ThemePreset = (config?.theme_preset as ThemePreset) || 'modern';
   const tokens = getThemePresetTokens(presetKey);
 
-  const primary = config?.primary_color || '#16a34a';
-  const secondary = config?.secondary_color || '#15803d';
-  const surface = config?.background_color || '#f8fafc';
-  const textMain = config?.text_color || '#0f172a';
+  const primary = config?.primary_color || '#FB5607';
+  const secondary = config?.secondary_color || '#8338EC';
+  const surface = config?.background_color || '#E9ECEF';
+  const textMain = config?.text_color || '#212529';
   const announcementBg = config?.announcement_bg_color || '#0f172a';
   const announcementText = config?.announcement_text_color || '#ffffff';
 
@@ -160,10 +160,10 @@ export function applyThemeToDocument(config: Partial<StoreConfig>): void {
   const presetKey: ThemePreset = (config.theme_preset as ThemePreset) || 'modern';
   const tokens = getThemePresetTokens(presetKey);
 
-  const primary = config.primary_color || '#16a34a';
-  const secondary = config.secondary_color || '#15803d';
-  const surface = config.background_color || '#f8fafc';
-  const textMain = config.text_color || '#0f172a';
+  const primary = config.primary_color || '#FB5607';
+  const secondary = config.secondary_color || '#8338EC';
+  const surface = config.background_color || '#E9ECEF';
+  const textMain = config.text_color || '#212529';
   const announcementBg = config.announcement_bg_color || '#0f172a';
   const announcementText = config.announcement_text_color || '#ffffff';
 

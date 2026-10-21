@@ -468,8 +468,8 @@ function CatalogContent({ onStoreLoaded, tenantSlug }: CatalogContentProps) {
                 store_id: '',
                 store_name: '',
                 logo_url: '',
-                primary_color: '#10b981',
-                secondary_color: '#047857',
+                primary_color: '#FB5607',
+                secondary_color: '#8338EC',
                 whatsapp: '',
                 domain: '',
                 currency: 'BRL',
@@ -612,7 +612,7 @@ function CatalogContent({ onStoreLoaded, tenantSlug }: CatalogContentProps) {
               <div className="flex items-center gap-3 pl-1 sm:pl-2">
                 <div
                   className="relative h-11 w-11 rounded-xl sm:rounded-full flex items-center justify-center text-white shadow-inner flex-shrink-0 transition-transform duration-200 group-hover:scale-105"
-                  style={{ backgroundColor: store?.primary_color || '#10b981' }}
+                  style={{ backgroundColor: store?.primary_color || '#FB5607' }}
                 >
                   <ShoppingBag className="w-5 h-5 stroke-[2]" />
                   {/* Badge com pulso animado */}
@@ -656,7 +656,7 @@ function CatalogContent({ onStoreLoaded, tenantSlug }: CatalogContentProps) {
 
                 <div
                   className="h-9 px-3.5 sm:px-4 rounded-xl sm:rounded-full text-brand-contrast font-bold text-xs flex items-center gap-1.5 shadow-sm group-hover:brightness-110 active:scale-95 transition-all"
-                  style={{ backgroundColor: store?.primary_color || '#10b981' }}
+                  style={{ backgroundColor: store?.primary_color || '#FB5607' }}
                 >
                   <span className="hidden xs:inline">Avançar</span>
                   <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
