@@ -61,32 +61,28 @@ export default function AdminLoginPage() {
   const backUrl = tenantSlug ? `/${tenantSlug}` : '/';
 
   return (
-    <div className="min-h-screen bg-[#E9ECEF] flex items-center justify-center p-4 sm:p-6 py-10 sm:py-16 relative overflow-hidden select-none">
-      {/* Elementos visuais sutis de iluminação de fundo (Paleta Oficial NumClick) */}
-      <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[32rem] h-[32rem] bg-[#FB5607]/10 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute -bottom-10 right-1/4 w-80 h-80 bg-[#8338EC]/10 rounded-full blur-2xl pointer-events-none" />
-
-      <main className="w-full max-w-[420px] bg-white rounded-3xl shadow-[0_20px_50px_rgba(33,37,41,0.1)] border border-[#212529]/10 p-8 sm:p-10 space-y-7 relative z-10 animate-fade-in transition-all">
+    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4 sm:p-6 py-10 sm:py-16 relative overflow-hidden select-none">
+      <main className="w-full max-w-[420px] bg-white rounded-xl shadow-xs border border-slate-200 p-8 sm:p-10 space-y-7 relative z-10 animate-fade-in transition-all">
         {/* Cabeçalho de Identidade */}
         <div className="text-center space-y-3">
-          <div className="inline-flex h-14 w-14 items-center justify-center rounded-2xl overflow-hidden bg-[#212529] border border-[#212529]/15 shadow-md shadow-[#212529]/10">
+          <div className="inline-flex h-12 w-12 items-center justify-center">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src="/numclick-badge.png"
+              src="/favicon.svg"
               alt="NumClick"
-              className="w-full h-full object-cover"
+              className="w-10 h-10 object-contain"
             />
           </div>
 
           <div className="space-y-1">
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#8338EC]/10 border border-[#8338EC]/25 text-[11px] font-semibold text-[#8338EC] mb-1">
-              <Sparkles className="w-3 h-3 text-[#FB5607]" />
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-orange-50 border border-orange-200 text-[11px] font-semibold text-orange-700 mb-1">
+              <Sparkles className="w-3 h-3 text-orange-600" />
               <span>{tenantSlug ? `Loja: ${tenantSlug}` : 'NumClick • Painel do Lojista'}</span>
             </div>
-            <h1 className="text-2xl font-black text-[#212529] tracking-tight">
+            <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
               Acesso Administrativo
             </h1>
-            <p className="text-xs sm:text-sm text-slate-500 max-w-[280px] mx-auto leading-relaxed">
+            <p className="text-xs sm:text-sm text-slate-600 max-w-[280px] mx-auto leading-relaxed">
               Entre com seu usuário e senha escolhidos no cadastro para gerenciar sua loja no NumClick.
             </p>
           </div>
@@ -96,7 +92,7 @@ export default function AdminLoginPage() {
         {errorMessage && (
           <div
             role="alert"
-            className="rounded-2xl bg-rose-50 border border-rose-200/80 p-3.5 flex items-start gap-2.5 text-xs text-rose-800 animate-shake"
+            className="rounded-xl bg-rose-50 border border-rose-200 p-3.5 flex items-start gap-2.5 text-xs text-rose-800 animate-shake"
           >
             <AlertCircle className="w-4 h-4 text-rose-600 flex-shrink-0 mt-0.5" />
             <span className="leading-snug">{errorMessage}</span>
@@ -110,7 +106,7 @@ export default function AdminLoginPage() {
             <div className="flex items-center justify-between">
               <label
                 htmlFor="admin-username"
-                className="block text-xs font-bold uppercase tracking-wider text-slate-700"
+                className="block text-xs font-semibold uppercase tracking-wider text-slate-700"
               >
                 Usuário do Lojista
               </label>
@@ -128,7 +124,7 @@ export default function AdminLoginPage() {
                 autoComplete="username"
                 disabled={isSubmitting}
                 {...register('username')}
-                className="block w-full rounded-2xl border border-slate-200 bg-slate-50/60 pl-10 pr-4 py-3 text-sm text-slate-900 placeholder-slate-400 focus:bg-white focus:border-slate-800 focus:outline-none focus:ring-4 focus:ring-slate-900/5 transition font-mono tracking-wide lowercase"
+                className="block w-full rounded-xl border border-slate-200 bg-white pl-10 pr-4 py-3 text-sm text-slate-900 placeholder-slate-400 focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20 transition font-mono tracking-wide lowercase"
               />
             </div>
 
@@ -145,7 +141,7 @@ export default function AdminLoginPage() {
             <div className="flex items-center justify-between">
               <label
                 htmlFor="admin-password"
-                className="block text-xs font-bold uppercase tracking-wider text-slate-700"
+                className="block text-xs font-semibold uppercase tracking-wider text-slate-700"
               >
                 Senha de Acesso
               </label>
@@ -163,7 +159,7 @@ export default function AdminLoginPage() {
                 autoComplete="current-password"
                 disabled={isSubmitting}
                 {...register('password')}
-                className="block w-full rounded-2xl border border-slate-200 bg-slate-50/60 pl-10 pr-11 py-3 text-sm text-slate-900 placeholder-slate-400 focus:bg-white focus:border-slate-800 focus:outline-none focus:ring-4 focus:ring-slate-900/5 transition font-mono tracking-wider"
+                className="block w-full rounded-xl border border-slate-200 bg-white pl-10 pr-11 py-3 text-sm text-slate-900 placeholder-slate-400 focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20 transition font-mono tracking-wider"
               />
               <button
                 type="button"
@@ -186,7 +182,7 @@ export default function AdminLoginPage() {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full inline-flex items-center justify-center gap-2 rounded-2xl bg-[#FB5607] py-3.5 px-4 text-xs sm:text-sm font-extrabold text-white shadow-md shadow-[#FB5607]/25 hover:bg-[#8338EC] active:scale-[0.98] focus:outline-none focus:ring-4 focus:ring-[#FB5607]/20 transition-all disabled:opacity-60 cursor-pointer mt-2"
+            className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-slate-900 py-3.5 px-4 text-xs sm:text-sm font-semibold text-white shadow-xs hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-900/20 transition-all disabled:opacity-60 cursor-pointer mt-2"
           >
             {isSubmitting ? (
               <>
@@ -203,15 +199,15 @@ export default function AdminLoginPage() {
         </form>
 
         {/* Rodapé com Selo de Segurança e Navegação */}
-        <div className="pt-2 border-t border-[#E9ECEF] flex flex-col items-center gap-2.5 text-xs text-[#212529]/60 text-center">
-          <div className="flex items-center gap-1.5 text-[#8338EC] bg-[#8338EC]/10 border border-[#8338EC]/20 px-3 py-1 rounded-full text-[11px] font-bold">
-            <ShieldCheck className="w-3.5 h-3.5 text-[#FB5607]" />
+        <div className="pt-4 border-t border-slate-100 flex flex-col items-center gap-2.5 text-xs text-slate-500 text-center">
+          <div className="flex items-center gap-1.5 text-slate-600 bg-slate-50 border border-slate-200 px-3 py-1 rounded-full text-[11px] font-semibold">
+            <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
             <span>Ambiente seguro com criptografia de ponta a ponta</span>
           </div>
 
           <a
             href={backUrl}
-            className="text-[#212529]/70 hover:text-[#FB5607] font-bold transition inline-flex items-center gap-1 mt-1 hover:underline underline-offset-4"
+            className="text-slate-600 hover:text-slate-900 font-semibold transition inline-flex items-center gap-1 mt-1 hover:underline underline-offset-4"
           >
             &larr; Voltar para a vitrine pública da loja
           </a>

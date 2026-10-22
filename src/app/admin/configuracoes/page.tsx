@@ -50,9 +50,8 @@ import {
 } from 'lucide-react';
 
 const COLOR_PRESETS = [
-  { name: 'NumClick Laranja', primary: '#FB5607', secondary: '#8338EC' },
-  { name: 'NumClick Roxo', primary: '#8338EC', secondary: '#212529' },
-  { name: 'NumClick Dark', primary: '#212529', secondary: '#FB5607' },
+  { name: 'NumClick Laranja', primary: '#EA580C', secondary: '#F97316' },
+  { name: 'NumClick Slate', primary: '#0F172A', secondary: '#EA580C' },
   { name: 'Esmeralda', primary: '#10b981', secondary: '#047857' },
   { name: 'Índigo Moderno', primary: '#6366f1', secondary: '#4338ca' },
   { name: 'Rosa Vibe', primary: '#ec4899', secondary: '#be185d' },
@@ -61,11 +60,11 @@ const COLOR_PRESETS = [
 
 const BG_CHOICES = [
   {
-    id: 'numclick-gray',
-    name: 'Cinza NumClick',
-    hex: '#E9ECEF',
+    id: 'slate-soft',
+    name: 'Cinza Suave',
+    hex: '#F8FAFC',
     icon: Monitor,
-    description: 'Fundo oficial da marca NumClick (#E9ECEF). Contraste moderno e elegante.',
+    description: 'Fundo sutil (#F8FAFC). Contraste limpo, moderno e elegante.',
   },
   {
     id: 'white',
@@ -111,9 +110,8 @@ const VITRINE_FORMATS = [
 ];
 
 const ANNOUNCEMENT_BG_PRESETS = [
-  { name: 'NumClick Dark (#212529)', hex: '#212529' },
-  { name: 'NumClick Laranja (#FB5607)', hex: '#FB5607' },
-  { name: 'NumClick Roxo (#8338EC)', hex: '#8338EC' },
+  { name: 'Slate Profundo (#0F172A)', hex: '#0F172A' },
+  { name: 'NumClick Laranja (#EA580C)', hex: '#EA580C' },
   { name: 'Esmeralda', hex: '#047857' },
   { name: 'Rosa Escuro', hex: '#9d174d' },
   { name: 'Preto Total', hex: '#000000' },
@@ -600,9 +598,9 @@ export default function AdminConfiguracoesPage() {
     <AdminLayout>
       <div className="space-y-6 sm:space-y-8">
         {/* Header do Painel */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-5">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 pb-5">
           <div>
-            <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+            <h1 className="text-xl sm:text-2xl font-semibold text-slate-900 tracking-tight">
               Configurações da Loja
             </h1>
             <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
@@ -614,7 +612,7 @@ export default function AdminConfiguracoesPage() {
             type="button"
             onClick={handleSave}
             disabled={isSubmitting}
-            className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-2xl text-xs sm:text-sm font-bold text-white bg-[#FB5607] hover:bg-[#8338EC] shadow-sm transition disabled:opacity-50 cursor-pointer self-start sm:self-auto"
+            className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-xs sm:text-sm font-semibold text-white bg-slate-900 hover:bg-slate-800 shadow-xs transition disabled:opacity-50 cursor-pointer self-start sm:self-auto"
           >
             {isSubmitting ? (
               <>
@@ -632,21 +630,21 @@ export default function AdminConfiguracoesPage() {
 
         {/* Alertas */}
         {successMessage && (
-          <div className="rounded-2xl bg-emerald-50 border border-emerald-200 p-4 text-xs sm:text-sm text-emerald-800 flex items-center gap-2.5 shadow-xs animate-fade-in">
+          <div className="rounded-xl bg-emerald-50 border border-emerald-200 p-4 text-xs sm:text-sm text-emerald-800 flex items-center gap-2.5 shadow-xs animate-fade-in">
             <Check className="w-5 h-5 text-emerald-600 flex-shrink-0" />
             <span className="font-semibold">{successMessage}</span>
           </div>
         )}
 
         {errorMessage && (
-          <div className="rounded-2xl bg-rose-50 border border-rose-200 p-4 text-xs sm:text-sm text-rose-800 flex items-center gap-2.5 shadow-xs animate-shake">
+          <div className="rounded-xl bg-rose-50 border border-rose-200 p-4 text-xs sm:text-sm text-rose-800 flex items-center gap-2.5 shadow-xs animate-shake">
             <AlertCircle className="w-5 h-5 text-rose-600 flex-shrink-0" />
             <span>{errorMessage}</span>
           </div>
         )}
 
         {isLoading ? (
-          <div className="bg-white rounded-3xl border border-slate-200/80 p-14 text-center shadow-xs">
+          <div className="bg-white rounded-xl border border-slate-200 p-14 text-center shadow-xs">
             <Loader2 className="w-8 h-8 animate-spin text-slate-900 mx-auto mb-3" />
             <p className="text-sm font-semibold text-slate-600">Carregando configurações da loja...</p>
           </div>
@@ -655,46 +653,46 @@ export default function AdminConfiguracoesPage() {
             {/* Coluna 1: Abas de Configuração e Formulário (7 colunas) */}
             <div className="lg:col-span-7 space-y-6">
               {/* Abas Principais: Aparência vs Dados da Loja vs Assinatura */}
-              <div className="flex flex-col sm:flex-row bg-[#E9ECEF] p-1 rounded-2xl border border-slate-200/80 gap-1 sm:gap-0">
+              <div className="flex flex-col sm:flex-row bg-slate-100 p-1 rounded-xl border border-slate-200 gap-1 sm:gap-0">
                 <button
                   type="button"
                   onClick={() => setActiveMainTab('appearance')}
-                  className={`flex-1 py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
+                  className={`flex-1 py-2.5 px-3 rounded-lg text-xs sm:text-sm font-semibold transition-all flex items-center justify-center gap-2 cursor-pointer ${
                     activeMainTab === 'appearance'
-                      ? 'bg-white text-[#212529] shadow-sm'
-                      : 'text-slate-600 hover:text-[#212529]'
+                      ? 'bg-white text-slate-900 shadow-xs'
+                      : 'text-slate-600 hover:text-slate-900'
                   }`}
                 >
-                  <Palette className="w-4 h-4 text-[#FB5607]" />
+                  <Palette className="w-4 h-4 text-orange-600" />
                   <span>Aparência da Loja</span>
                 </button>
 
                 <button
                   type="button"
                   onClick={() => setActiveMainTab('store_data')}
-                  className={`flex-1 py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
+                  className={`flex-1 py-2.5 px-3 rounded-lg text-xs sm:text-sm font-semibold transition-all flex items-center justify-center gap-2 cursor-pointer ${
                     activeMainTab === 'store_data'
-                      ? 'bg-white text-[#212529] shadow-sm'
-                      : 'text-slate-600 hover:text-[#212529]'
+                      ? 'bg-white text-slate-900 shadow-xs'
+                      : 'text-slate-600 hover:text-slate-900'
                   }`}
                 >
-                  <Store className="w-4 h-4 text-[#8338EC]" />
+                  <Store className="w-4 h-4 text-slate-700" />
                   <span>Dados & Contato</span>
                 </button>
 
                 <button
                   type="button"
                   onClick={() => setActiveMainTab('subscription')}
-                  className={`flex-1 py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center justify-center gap-1.5 sm:gap-2 cursor-pointer ${
+                  className={`flex-1 py-2.5 px-3 rounded-lg text-xs sm:text-sm font-semibold transition-all flex items-center justify-center gap-1.5 sm:gap-2 cursor-pointer ${
                     activeMainTab === 'subscription'
-                      ? 'bg-white text-[#212529] shadow-sm'
-                      : 'text-slate-600 hover:text-[#212529]'
+                      ? 'bg-white text-slate-900 shadow-xs'
+                      : 'text-slate-600 hover:text-slate-900'
                   }`}
                 >
-                  <CreditCard className="w-4 h-4 text-[#FB5607]" />
+                  <CreditCard className="w-4 h-4 text-orange-600" />
                   <span>Minha Assinatura</span>
                   {isTrial && (
-                    <span className="hidden sm:inline-block text-[10px] bg-[#FB5607]/15 text-[#FB5607] font-bold px-1.5 py-0.2 rounded-full">
+                    <span className="hidden sm:inline-block text-[10px] bg-orange-50 border border-orange-200 text-orange-700 font-semibold px-1.5 py-0.2 rounded-full">
                       {daysRemaining}d
                     </span>
                   )}
@@ -707,7 +705,7 @@ export default function AdminConfiguracoesPage() {
                 {/* ABA 1: APARÊNCIA DA LOJA */}
                 {/* ============================================================ */}
                 {activeMainTab === 'appearance' && (
-                  <div className="bg-white rounded-3xl border border-slate-200/80 p-5 sm:p-7 shadow-xs space-y-6 animate-fade-in">
+                  <div className="bg-white rounded-xl border border-slate-200 p-5 sm:p-7 shadow-xs space-y-6 animate-fade-in">
                     {/* Sub-Navegação de Aparência em 4 Blocos/Abas */}
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pb-2 border-b border-slate-100">
                       <button
@@ -1326,10 +1324,10 @@ export default function AdminConfiguracoesPage() {
                 {/* ABA 2: DADOS DA LOJA & CONTATO */}
                 {/* ============================================================ */}
                 {activeMainTab === 'store_data' && (
-                  <div className="bg-white rounded-3xl border border-slate-200/80 p-5 sm:p-7 shadow-xs space-y-5 animate-fade-in">
+                  <div className="bg-white rounded-xl border border-slate-200 p-5 sm:p-7 shadow-xs space-y-5 animate-fade-in">
                     {/* Nome da Loja */}
                     <div>
-                      <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5 flex items-center gap-1.5">
+                      <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5 flex items-center gap-1.5">
                         <Store className="w-4 h-4 text-slate-400" />
                         <span>Nome da Loja *</span>
                       </label>
@@ -1339,13 +1337,13 @@ export default function AdminConfiguracoesPage() {
                         value={storeName}
                         onChange={(e) => setStoreName(e.target.value)}
                         placeholder="Ex: Boutique Elegance"
-                        className="w-full rounded-2xl border border-slate-200 px-3.5 py-2.5 text-xs sm:text-sm focus:border-slate-800 focus:outline-none focus:ring-4 focus:ring-slate-900/5"
+                        className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-xs sm:text-sm focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20"
                       />
                     </div>
 
                     {/* Logotipo */}
                     <div>
-                      <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">
+                      <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5">
                         Logotipo da Loja
                       </label>
                       <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
@@ -1354,9 +1352,9 @@ export default function AdminConfiguracoesPage() {
                           value={logoUrl}
                           onChange={(e) => setLogoUrl(e.target.value)}
                           placeholder="https://exemplo.com/logo.png"
-                          className="flex-1 w-full rounded-2xl border border-slate-200 px-3.5 py-2.5 text-xs sm:text-sm focus:border-slate-800 focus:outline-none focus:ring-4 focus:ring-slate-900/5"
+                          className="flex-1 w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-xs sm:text-sm focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20"
                         />
-                        <label className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-2xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-xs font-bold text-slate-700 cursor-pointer transition shadow-2xs">
+                        <label className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl border border-slate-300 bg-white hover:bg-slate-100 text-xs font-semibold text-slate-700 cursor-pointer transition shadow-2xs">
                           <Upload className="w-3.5 h-3.5 text-slate-500" />
                           <span>{isUploadingLogo ? 'Enviando...' : 'Upload Logo'}</span>
                           <input
@@ -1374,8 +1372,8 @@ export default function AdminConfiguracoesPage() {
                     <div className="pt-3 border-t border-slate-100 space-y-3">
                       <div className="flex items-center justify-between">
                         <div>
-                          <span className="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
-                            <ImageIcon className="w-4 h-4 text-emerald-600" />
+                          <span className="text-xs font-semibold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
+                            <ImageIcon className="w-4 h-4 text-orange-600" />
                             Banners do Topo ({banners.length}/3)
                           </span>
                           <p className="text-[11px] text-slate-400 mt-0.5">
@@ -1394,7 +1392,7 @@ export default function AdminConfiguracoesPage() {
                       </div>
 
                       {showBannerUrlInput && banners.length < 3 && (
-                        <div className="flex gap-2 p-3 bg-slate-50 rounded-2xl border border-slate-200 animate-fade-in">
+                        <div className="flex gap-2 p-3 bg-slate-50 rounded-xl border border-slate-200 animate-fade-in">
                           <div className="relative flex-1">
                             <LinkIcon className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-2.5" />
                             <input
@@ -1402,14 +1400,14 @@ export default function AdminConfiguracoesPage() {
                               placeholder="Cole o link da imagem do banner..."
                               value={newBannerInput}
                               onChange={(e) => setNewBannerInput(e.target.value)}
-                              className="w-full rounded-xl border border-slate-200 bg-white pl-8 pr-3 py-1.5 text-xs text-slate-800 focus:outline-none focus:border-slate-800"
+                              className="w-full rounded-xl border border-slate-200 bg-white pl-8 pr-3 py-1.5 text-xs text-slate-800 focus:outline-none focus:border-orange-500"
                             />
                           </div>
                           <button
                             type="button"
                             onClick={handleAddBannerUrl}
                             disabled={!newBannerInput.trim()}
-                            className="px-3.5 py-1.5 text-xs font-bold bg-slate-900 hover:bg-slate-800 text-white rounded-xl transition disabled:opacity-40 cursor-pointer"
+                            className="px-3.5 py-1.5 text-xs font-semibold bg-slate-900 hover:bg-slate-800 text-white rounded-xl transition disabled:opacity-40 cursor-pointer"
                           >
                             Inserir
                           </button>
@@ -1420,7 +1418,7 @@ export default function AdminConfiguracoesPage() {
                         {banners.map((bannerUrl, idx) => (
                           <div
                             key={idx}
-                            className="group relative rounded-2xl border border-slate-200 overflow-hidden bg-slate-100 aspect-[16/9] shadow-2xs hover:shadow-md transition"
+                            className="group relative rounded-xl border border-slate-200 overflow-hidden bg-slate-100 aspect-[16/9] shadow-2xs transition"
                           >
                             {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img
@@ -1462,7 +1460,7 @@ export default function AdminConfiguracoesPage() {
                         ))}
 
                         {banners.length < 3 && (
-                          <label className="flex flex-col items-center justify-center aspect-[16/9] rounded-2xl border-2 border-dashed border-slate-200 hover:border-slate-400 bg-slate-50/50 hover:bg-slate-50 transition cursor-pointer p-3">
+                          <label className="flex flex-col items-center justify-center aspect-[16/9] rounded-xl border-2 border-dashed border-slate-200 hover:border-slate-400 bg-slate-50/50 hover:bg-slate-50 transition cursor-pointer p-3">
                             <input
                               type="file"
                               accept="image/*"
@@ -1473,12 +1471,12 @@ export default function AdminConfiguracoesPage() {
                             {isUploadingBanner ? (
                               <div className="flex flex-col items-center gap-1 text-slate-500">
                                 <Loader2 className="w-5 h-5 animate-spin" />
-                                <span className="text-[10px] font-bold">Enviando...</span>
+                                <span className="text-[10px] font-semibold">Enviando...</span>
                               </div>
                             ) : (
                               <div className="flex flex-col items-center gap-1 text-slate-500">
                                 <Upload className="w-4 h-4 text-slate-400" />
-                                <span className="text-xs font-bold">+ Upload Banner</span>
+                                <span className="text-xs font-semibold">+ Upload Banner</span>
                                 <span className="text-[9px] text-slate-400">1200x500px</span>
                               </div>
                             )}
@@ -1489,7 +1487,7 @@ export default function AdminConfiguracoesPage() {
 
                     {/* WhatsApp de Atendimento Principal */}
                     <div className="pt-3 border-t border-slate-100">
-                      <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5 flex items-center gap-1.5">
+                      <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5 flex items-center gap-1.5">
                         <Phone className="w-4 h-4 text-emerald-600" />
                         <span>WhatsApp Principal da Loja *</span>
                       </label>
@@ -1500,7 +1498,7 @@ export default function AdminConfiguracoesPage() {
                         onChange={(e) => setWhatsapp(maskWhatsApp(e.target.value))}
                         placeholder="(11) 98765-4321"
                         maxLength={15}
-                        className="w-full rounded-2xl border border-slate-200 px-3.5 py-2.5 text-xs sm:text-sm font-semibold text-slate-900 focus:border-slate-800 focus:outline-none focus:ring-4 focus:ring-slate-900/5 font-mono"
+                        className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-xs sm:text-sm font-semibold text-slate-900 focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20 font-mono"
                       />
                       <p className="text-[11px] text-slate-400 mt-1">
                         Número de contingência principal onde todos os pedidos chegam por padrão.
@@ -1511,8 +1509,8 @@ export default function AdminConfiguracoesPage() {
                     <div className="pt-4 border-t border-slate-100 space-y-3">
                       <div className="flex items-center justify-between">
                         <div>
-                          <label className="block text-xs font-bold uppercase tracking-wider text-slate-800 flex items-center gap-1.5">
-                            <Users className="w-4 h-4 text-emerald-600" />
+                          <label className="block text-xs font-semibold uppercase tracking-wider text-slate-800 flex items-center gap-1.5">
+                            <Users className="w-4 h-4 text-orange-600" />
                             <span>Permitir que o cliente escolha o vendedor</span>
                           </label>
                           <p className="text-[11px] text-slate-500 mt-0.5">
@@ -1532,8 +1530,8 @@ export default function AdminConfiguracoesPage() {
 
                       {/* Gestão de Vendedores */}
                       {allowSellerChoice && (
-                        <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-3 animate-fade-in">
-                          <span className="text-xs font-bold text-slate-800 flex items-center justify-between">
+                        <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-3 animate-fade-in">
+                          <span className="text-xs font-semibold text-slate-800 flex items-center justify-between">
                             <span>Equipe de Vendedores ({sellers.length})</span>
                             <span className="text-[11px] font-normal text-slate-500">Mínimo de 2 para exibir seleção</span>
                           </span>
@@ -1546,13 +1544,13 @@ export default function AdminConfiguracoesPage() {
                           )}
 
                           {/* Formulário de Adicionar / Editar Vendedor */}
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 bg-white p-3 rounded-xl border border-slate-200/80">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 bg-white p-3 rounded-xl border border-slate-200">
                             <input
                               type="text"
                               placeholder="Nome do Vendedor (ex: Lucas)"
                               value={newSellerName}
                               onChange={(e) => setNewSellerName(e.target.value)}
-                              className="px-3 py-2 rounded-xl border border-slate-200 text-xs font-semibold text-slate-900 focus:outline-none focus:border-slate-800"
+                              className="px-3 py-2 rounded-xl border border-slate-200 text-xs font-semibold text-slate-900 focus:outline-none focus:border-orange-500"
                             />
                             <div className="flex gap-2">
                               <input
@@ -1561,12 +1559,12 @@ export default function AdminConfiguracoesPage() {
                                 value={newSellerPhone}
                                 maxLength={15}
                                 onChange={(e) => setNewSellerPhone(maskWhatsApp(e.target.value))}
-                                className="flex-1 px-3 py-2 rounded-xl border border-slate-200 text-xs font-semibold text-slate-900 focus:outline-none focus:border-slate-800 font-mono"
+                                className="flex-1 px-3 py-2 rounded-xl border border-slate-200 text-xs font-semibold text-slate-900 focus:outline-none focus:border-orange-500 font-mono"
                               />
                               <button
                                 type="button"
                                 onClick={handleAddOrUpdateSeller}
-                                className="px-3 py-2 bg-slate-900 text-white rounded-xl text-xs font-bold hover:bg-slate-800 transition flex items-center gap-1 cursor-pointer flex-shrink-0"
+                                className="px-3 py-2 bg-slate-900 text-white rounded-xl text-xs font-semibold hover:bg-slate-800 transition flex items-center gap-1 cursor-pointer flex-shrink-0"
                               >
                                 {editingSellerId ? <Check className="w-3.5 h-3.5" /> : <UserPlus className="w-3.5 h-3.5" />}
                                 <span>{editingSellerId ? 'Salvar' : 'Adicionar'}</span>
@@ -1583,11 +1581,11 @@ export default function AdminConfiguracoesPage() {
                                   className="flex items-center justify-between p-2.5 bg-white rounded-xl border border-slate-200 text-xs shadow-2xs"
                                 >
                                   <div className="flex items-center gap-2.5 min-w-0">
-                                    <span className="w-7 h-7 rounded-full bg-emerald-50 text-emerald-700 font-bold flex items-center justify-center flex-shrink-0">
+                                    <span className="w-7 h-7 rounded-full bg-orange-50 border border-orange-200 text-orange-700 font-semibold flex items-center justify-center flex-shrink-0">
                                       {s.name.charAt(0).toUpperCase()}
                                     </span>
                                     <div className="min-w-0">
-                                      <p className="font-bold text-slate-900 truncate">{s.name}</p>
+                                      <p className="font-semibold text-slate-900 truncate">{s.name}</p>
                                       <p className="font-mono text-slate-500 text-[11px]">{maskWhatsApp(s.whatsapp)}</p>
                                     </div>
                                   </div>
@@ -1624,12 +1622,12 @@ export default function AdminConfiguracoesPage() {
                     {/* CPF ou CNPJ para Faturamento Asaas */}
                     <div className="pt-3 border-t border-slate-100">
                       <div className="flex items-center justify-between mb-1.5">
-                        <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
-                          <CreditCard className="w-4 h-4 text-emerald-600" />
+                        <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
+                          <CreditCard className="w-4 h-4 text-orange-600" />
                           <span>CPF ou CNPJ do Titular (Cobrança Asaas)</span>
                         </label>
                         {cpfCnpj && validateCpfCnpj(cpfCnpj) ? (
-                          <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full flex items-center gap-1">
+                          <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full flex items-center gap-1">
                             <Check className="w-3 h-3 text-emerald-600" />
                             Válido
                           </span>
@@ -1641,7 +1639,7 @@ export default function AdminConfiguracoesPage() {
                         onChange={(e) => setCpfCnpj(maskCpfCnpj(e.target.value))}
                         placeholder="000.000.000-00 ou 00.000.000/0000-00"
                         maxLength={18}
-                        className="w-full rounded-2xl border border-slate-200 px-3.5 py-2.5 text-xs sm:text-sm font-semibold text-slate-900 focus:border-slate-800 focus:outline-none focus:ring-4 focus:ring-slate-900/5 font-mono"
+                        className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-xs sm:text-sm font-semibold text-slate-900 focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20 font-mono"
                       />
                       <p className="text-[11px] text-slate-400 mt-1">
                         Utilizado pelo gateway Asaas para emissão de faturas e QR Code Pix oficial de R$ 79,90/mês.
@@ -1651,13 +1649,13 @@ export default function AdminConfiguracoesPage() {
                     {/* Link Oficial da Vitrine (Slug Único) */}
                     <div className="pt-3 border-t border-slate-100 space-y-2">
                       <div className="flex items-center justify-between">
-                        <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
-                          <LinkIcon className="w-4 h-4 text-emerald-600" />
+                        <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
+                          <LinkIcon className="w-4 h-4 text-orange-600" />
                           <span>Link Oficial da Vitrine (Slug Único) *</span>
                         </label>
                         {slugFeedback && (
                           <span
-                            className={`text-[11px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 ${
+                            className={`text-[11px] font-semibold px-2 py-0.5 rounded-full flex items-center gap-1 ${
                               slugFeedback.available
                                 ? 'bg-emerald-100 text-emerald-800'
                                 : 'bg-rose-100 text-rose-800'
@@ -1674,7 +1672,7 @@ export default function AdminConfiguracoesPage() {
                       </div>
 
                       <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-                        <div className="flex-1 flex items-center rounded-2xl border border-slate-200 bg-white overflow-hidden focus-within:border-slate-800 focus-within:ring-4 focus-within:ring-slate-900/5 shadow-2xs">
+                        <div className="flex-1 flex items-center rounded-xl border border-slate-200 bg-white overflow-hidden focus-within:border-orange-500 focus-within:ring-2 focus-within:ring-orange-500/20 shadow-2xs">
                           <span className="px-3.5 py-2.5 text-xs sm:text-sm font-semibold text-slate-500 bg-slate-50 border-r border-slate-200 flex-shrink-0 select-none">
                             numclick.app/
                           </span>
@@ -1684,7 +1682,7 @@ export default function AdminConfiguracoesPage() {
                             value={slug}
                             onChange={(e) => handleCheckSlug(e.target.value)}
                             placeholder="minha-loja"
-                            className="w-full px-3 py-2.5 text-xs sm:text-sm font-bold text-slate-900 focus:outline-none font-mono lowercase"
+                            className="w-full px-3 py-2.5 text-xs sm:text-sm font-semibold text-slate-900 focus:outline-none font-mono lowercase"
                           />
                           {isCheckingSlug && (
                             <span className="pr-3">
@@ -1697,7 +1695,7 @@ export default function AdminConfiguracoesPage() {
                           <button
                             type="button"
                             onClick={handleCopyLink}
-                            className="px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-bold flex items-center gap-1.5 transition shadow-2xs cursor-pointer flex-shrink-0"
+                            className="px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white hover:bg-slate-100 text-slate-700 text-xs font-semibold flex items-center gap-1.5 transition shadow-2xs cursor-pointer flex-shrink-0"
                             title="Copiar link da vitrine"
                           >
                             {copiedLink ? (
@@ -1717,7 +1715,7 @@ export default function AdminConfiguracoesPage() {
                             href={`https://numclick.app/${slug || currentStoreId || ''}`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="px-3.5 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold flex items-center gap-1.5 transition shadow-2xs flex-shrink-0"
+                            className="px-3.5 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold flex items-center gap-1.5 transition shadow-2xs flex-shrink-0"
                             title="Abrir vitrine em nova aba"
                           >
                             <ExternalLink className="w-3.5 h-3.5" />
@@ -1733,7 +1731,7 @@ export default function AdminConfiguracoesPage() {
 
                     {/* Status de Atendimento (Aberto / Fechado) */}
                     <div className="pt-3 border-t border-slate-100 space-y-2">
-                      <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
+                      <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
                         <Power className="w-4 h-4 text-emerald-600" />
                         <span>Status da Loja</span>
                       </label>
@@ -1741,19 +1739,19 @@ export default function AdminConfiguracoesPage() {
                         <button
                           type="button"
                           onClick={() => setIsOpen(true)}
-                          className={`p-3 rounded-2xl border text-xs font-bold flex items-center justify-center gap-2 transition cursor-pointer ${
+                          className={`p-3 rounded-xl border text-xs font-semibold flex items-center justify-center gap-2 transition cursor-pointer ${
                             isOpen
                               ? 'border-emerald-500 bg-emerald-50 text-emerald-800 shadow-2xs'
                               : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300'
                           }`}
                         >
-                          <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                          <span className="h-2 w-2 rounded-full bg-emerald-500" />
                           <span>🟢 Aberto Agora</span>
                         </button>
                         <button
                           type="button"
                           onClick={() => setIsOpen(false)}
-                          className={`p-3 rounded-2xl border text-xs font-bold flex items-center justify-center gap-2 transition cursor-pointer ${
+                          className={`p-3 rounded-xl border text-xs font-semibold flex items-center justify-center gap-2 transition cursor-pointer ${
                             !isOpen
                               ? 'border-rose-400 bg-rose-50 text-rose-800 shadow-2xs'
                               : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300'
@@ -1767,7 +1765,7 @@ export default function AdminConfiguracoesPage() {
 
                     {/* Horário de Atendimento */}
                     <div className="pt-3 border-t border-slate-100">
-                      <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5 flex items-center gap-1.5">
+                      <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5 flex items-center gap-1.5">
                         <Clock className="w-4 h-4 text-slate-400" />
                         <span>Horário de Funcionamento</span>
                       </label>
@@ -1776,21 +1774,21 @@ export default function AdminConfiguracoesPage() {
                         value={businessHours}
                         onChange={(e) => setBusinessHours(e.target.value)}
                         placeholder="Ex: Seg a Sáb: 09h às 19h • Dom: 09h às 14h"
-                        className="w-full rounded-2xl border border-slate-200 px-3.5 py-2.5 text-xs sm:text-sm focus:border-slate-800 focus:outline-none focus:ring-4 focus:ring-slate-900/5"
+                        className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-xs sm:text-sm focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20"
                       />
                     </div>
 
                     {/* Chave PIX */}
                     <div className="pt-3 border-t border-slate-100 space-y-2">
-                      <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
-                        <QrCode className="w-4 h-4 text-emerald-600" />
+                      <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
+                        <QrCode className="w-4 h-4 text-orange-600" />
                         <span>Chave PIX da Loja</span>
                       </label>
                       <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                         <select
                           value={pixKeyType}
                           onChange={(e) => setPixKeyType(e.target.value as any)}
-                          className="rounded-2xl border border-slate-200 px-3.5 py-2.5 text-xs bg-slate-50 focus:bg-white focus:border-slate-800 focus:outline-none"
+                          className="rounded-xl border border-slate-200 px-3.5 py-2.5 text-xs bg-white focus:border-orange-500 focus:outline-none"
                         >
                           <option value="cpf">CPF</option>
                           <option value="cnpj">CNPJ</option>
@@ -1803,7 +1801,7 @@ export default function AdminConfiguracoesPage() {
                           value={pixKey}
                           onChange={(e) => setPixKey(e.target.value)}
                           placeholder="pix@minhaloja.com"
-                          className="sm:col-span-2 rounded-2xl border border-slate-200 px-3.5 py-2.5 text-xs sm:text-sm focus:border-slate-800 focus:outline-none focus:ring-4 focus:ring-slate-900/5 font-mono"
+                          className="sm:col-span-2 rounded-xl border border-slate-200 px-3.5 py-2.5 text-xs sm:text-sm focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20 font-mono"
                         />
                       </div>
                     </div>
@@ -1814,19 +1812,19 @@ export default function AdminConfiguracoesPage() {
                 {/* ABA 3: MINHA ASSINATURA */}
                 {/* ============================================================ */}
                 {activeMainTab === 'subscription' && (
-                  <div className="bg-white rounded-3xl border border-slate-200/80 p-5 sm:p-7 shadow-xs space-y-6 animate-fade-in">
+                  <div className="bg-white rounded-xl border border-slate-200 p-5 sm:p-7 shadow-xs space-y-6 animate-fade-in">
                     {/* Header da Seção */}
                     <div className="flex items-center justify-between pb-4 border-b border-slate-100">
                       <div>
-                        <span className="text-xs font-bold uppercase tracking-wider text-emerald-600 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
+                        <span className="text-xs font-semibold uppercase tracking-wider text-orange-700 bg-orange-50 px-2.5 py-0.5 rounded-full border border-orange-200">
                           Gestão de Cobrança
                         </span>
-                        <h3 className="text-lg font-bold text-slate-900 mt-1">Minha Assinatura</h3>
+                        <h3 className="text-lg font-semibold text-slate-900 tracking-tight mt-1">Minha Assinatura</h3>
                         <p className="text-xs text-slate-500 mt-0.5">
                           Acompanhe os detalhes da sua assinatura e faturamento no Asaas.
                         </p>
                       </div>
-                      <div className="h-10 w-10 rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-600">
+                      <div className="h-10 w-10 rounded-xl bg-orange-50 border border-orange-200/70 flex items-center justify-center text-orange-600">
                         <CreditCard className="w-5 h-5" />
                       </div>
                     </div>
@@ -1834,40 +1832,40 @@ export default function AdminConfiguracoesPage() {
                     {/* Bento Grid: Plano Atual, Status e Próximo Vencimento */}
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                       {/* Card 1: Plano Atual */}
-                      <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-1">
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
+                      <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+                        <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 block">
                           Plano Atual
                         </span>
-                        <span className="font-extrabold text-slate-900 text-sm block">
+                        <span className="font-bold text-slate-900 text-sm block">
                           Plano Mensal - R$ 79,90/mês
                         </span>
                         <span className="text-[11px] text-slate-500 block">Catálogo Digital Ilimitado</span>
                       </div>
 
                       {/* Card 2: Status */}
-                      <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-1">
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
+                      <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+                        <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 block">
                           Status
                         </span>
                         {isTrial ? (
                           <div className="flex items-center gap-1.5">
-                            <span className="h-2 w-2 rounded-full bg-amber-500 animate-pulse" />
-                            <span className="font-extrabold text-amber-700 text-sm">
-                              Período de Teste (7 dias)
+                            <span className="h-2 w-2 rounded-full bg-amber-500" />
+                            <span className="font-bold text-amber-700 text-sm">
+                              Trial Ativo (7 dias)
                             </span>
                           </div>
                         ) : isOverdueOrBlocked ? (
                           <div className="flex items-center gap-1.5">
                             <span className="h-2 w-2 rounded-full bg-rose-500" />
-                            <span className="font-extrabold text-rose-700 text-sm">
-                              Pagamento Pendente
+                            <span className="font-bold text-rose-700 text-sm">
+                              Inadimplente / Bloqueado
                             </span>
                           </div>
                         ) : (
                           <div className="flex items-center gap-1.5">
                             <span className="h-2 w-2 rounded-full bg-emerald-500" />
-                            <span className="font-extrabold text-emerald-700 text-sm">
-                              Assinatura Ativa
+                            <span className="font-bold text-emerald-700 text-sm">
+                              Assinante Ativo
                             </span>
                           </div>
                         )}
@@ -1879,11 +1877,11 @@ export default function AdminConfiguracoesPage() {
                       </div>
 
                       {/* Card 3: Próximo Vencimento */}
-                      <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-1">
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
+                      <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+                        <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 block">
                           Próximo Vencimento
                         </span>
-                        <span className="font-extrabold text-slate-900 text-sm block">
+                        <span className="font-bold text-slate-900 text-sm block">
                           {formattedNextDueDate}
                         </span>
                         <span className="text-[11px] text-slate-500 block">Fatura Asaas</span>
@@ -1891,19 +1889,19 @@ export default function AdminConfiguracoesPage() {
                     </div>
 
                     {/* Card de Documento de Cobrança (CPF/CNPJ) */}
-                    <div className="p-4 sm:p-5 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-2.5">
+                    <div className="p-4 sm:p-5 rounded-xl bg-slate-50 border border-slate-200 space-y-2.5">
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5">
-                        <label className="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
-                          <CreditCard className="w-4 h-4 text-emerald-600" />
+                        <label className="text-xs font-semibold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
+                          <CreditCard className="w-4 h-4 text-orange-600" />
                           <span>CPF ou CNPJ para Faturamento Asaas</span>
                         </label>
                         {cpfCnpj && validateCpfCnpj(cpfCnpj) ? (
-                          <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2.5 py-0.5 rounded-full inline-flex items-center gap-1 w-fit">
+                          <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-100 px-2.5 py-0.5 rounded-full inline-flex items-center gap-1 w-fit">
                             <Check className="w-3 h-3 text-emerald-600" />
                             Documento Válido
                           </span>
                         ) : !cpfCnpj ? (
-                          <span className="text-[10px] font-bold text-amber-700 bg-amber-100 px-2.5 py-0.5 rounded-full w-fit">
+                          <span className="text-[10px] font-semibold text-amber-700 bg-amber-100 px-2.5 py-0.5 rounded-full w-fit">
                             Obrigatório para emissão de faturas
                           </span>
                         ) : (
@@ -1918,13 +1916,13 @@ export default function AdminConfiguracoesPage() {
                           value={cpfCnpj}
                           onChange={(e) => setCpfCnpj(maskCpfCnpj(e.target.value))}
                           placeholder="Informe seu CPF ou CNPJ"
-                          className="flex-1 rounded-xl border border-slate-200 px-3.5 py-2.5 text-xs sm:text-sm font-semibold text-slate-900 focus:border-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-900/5 font-mono bg-white"
+                          className="flex-1 rounded-xl border border-slate-200 px-3.5 py-2.5 text-xs sm:text-sm font-semibold text-slate-900 focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20 font-mono bg-white"
                         />
                         <button
                           type="button"
                           onClick={handleSave}
                           disabled={isSubmitting}
-                          className="px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs transition cursor-pointer disabled:opacity-60 whitespace-nowrap"
+                          className="px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs transition cursor-pointer disabled:opacity-60 whitespace-nowrap"
                         >
                           {isSubmitting ? 'Salvando...' : 'Salvar Documento'}
                         </button>
@@ -1935,13 +1933,13 @@ export default function AdminConfiguracoesPage() {
                     </div>
 
                     {/* Detalhes de Fatura e Gateway Asaas */}
-                    <div className="p-5 rounded-2xl bg-gradient-to-br from-slate-900 via-slate-950 to-slate-900 text-white space-y-4 shadow-md">
+                    <div className="p-5 rounded-xl bg-[#0B0F19] border border-slate-800 text-white space-y-4">
                       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                         <div>
-                          <span className="text-[10px] font-bold uppercase tracking-wider bg-emerald-500/20 text-emerald-400 px-2.5 py-0.5 rounded-full inline-block mb-1 border border-emerald-500/30">
+                          <span className="text-[10px] font-semibold uppercase tracking-wider bg-orange-500/15 text-orange-400 px-2.5 py-0.5 rounded-full inline-block mb-1 border border-orange-500/30">
                             Gateway Oficial Asaas
                           </span>
-                          <h4 className="text-base font-bold text-white">
+                          <h4 className="text-base font-semibold text-white tracking-tight">
                             Link de Pagamento e Faturas
                           </h4>
                           <p className="text-xs text-slate-400 mt-0.5">
@@ -1949,7 +1947,7 @@ export default function AdminConfiguracoesPage() {
                           </p>
                         </div>
                         <div className="text-right">
-                          <span className="text-2xl font-black text-emerald-400 tracking-tight">R$ 79,90</span>
+                          <span className="text-2xl font-bold text-white tracking-tight">R$ 79,90</span>
                           <span className="text-[10px] text-slate-400 block font-medium">/mês</span>
                         </div>
                       </div>
@@ -1961,7 +1959,7 @@ export default function AdminConfiguracoesPage() {
                               href={rawStore.asaas_payment_link}
                               target="_blank"
                               rel="noreferrer"
-                              className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs shadow-md transition text-center"
+                              className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-orange-600 hover:bg-orange-500 text-white font-semibold text-xs shadow-xs transition text-center"
                             >
                               <CreditCard className="w-4 h-4" />
                               <span>Acessar Fatura no Asaas (R$ 79,90)</span>
@@ -1971,7 +1969,7 @@ export default function AdminConfiguracoesPage() {
                               type="button"
                               onClick={handleGenerateInvoice}
                               disabled={isGeneratingInvoice}
-                              className="inline-flex items-center justify-center gap-1.5 px-3.5 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs transition cursor-pointer"
+                              className="inline-flex items-center justify-center gap-1.5 px-3.5 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs transition cursor-pointer"
                               title="Sincronizar fatura ou emitir nova via"
                             >
                               <span>{isGeneratingInvoice ? 'Sincronizando...' : 'Atualizar Fatura'}</span>
@@ -1982,7 +1980,7 @@ export default function AdminConfiguracoesPage() {
                             type="button"
                             onClick={handleGenerateInvoice}
                             disabled={isGeneratingInvoice}
-                            className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs shadow-md transition disabled:opacity-60 cursor-pointer text-center"
+                            className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-orange-600 hover:bg-orange-500 text-white font-semibold text-xs shadow-xs transition disabled:opacity-60 cursor-pointer text-center"
                           >
                             <CreditCard className="w-4 h-4" />
                             <span>{isGeneratingInvoice ? 'Gerando Fatura...' : 'Acessar Link de Pagamento (R$ 79,90)'}</span>
@@ -2004,7 +2002,7 @@ export default function AdminConfiguracoesPage() {
                     <button
                       type="submit"
                       disabled={isSubmitting}
-                      className="w-full inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-2xl text-xs sm:text-sm font-bold text-white bg-[#FB5607] hover:bg-[#8338EC] shadow-md transition disabled:opacity-50 cursor-pointer"
+                      className="w-full inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl text-xs sm:text-sm font-semibold text-white bg-slate-900 hover:bg-slate-800 shadow-xs transition disabled:opacity-50 cursor-pointer"
                     >
                       {isSubmitting ? (
                         <>

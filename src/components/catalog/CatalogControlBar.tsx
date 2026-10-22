@@ -65,10 +65,10 @@ export function CatalogControlBar({
   return (
     <div className="space-y-3">
       {/* Barra de Controles Principal */}
-      <div className="flex flex-wrap items-center justify-between gap-3 bg-white rounded-2xl border border-slate-200/80 p-3 sm:px-4 shadow-2xs">
+      <div className="flex flex-wrap items-center justify-between gap-3 bg-white rounded-xl border border-slate-200 p-3 sm:px-4 shadow-2xs">
         {/* Contagem de Resultados */}
-        <div className="flex items-center gap-2 text-xs font-bold text-slate-700">
-          <span className="text-slate-900 font-extrabold">{filteredCount}</span>
+        <div className="flex items-center gap-2 text-xs font-semibold text-slate-700">
+          <span className="text-slate-900 font-bold">{filteredCount}</span>
           <span className="text-slate-500 font-normal">
             {filteredCount === 1 ? 'produto encontrado' : `produtos de ${totalCount}`}
           </span>
@@ -80,13 +80,13 @@ export function CatalogControlBar({
           <button
             type="button"
             onClick={() => onUpdateFilters({ onlyPromotions: !filters.onlyPromotions })}
-            className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition cursor-pointer flex items-center gap-1.5 ${
+            className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition cursor-pointer flex items-center gap-1.5 ${
               filters.onlyPromotions
-                ? 'bg-rose-50 border-rose-200 text-rose-700 shadow-2xs'
+                ? 'bg-orange-50 border-orange-200 text-orange-700 shadow-2xs'
                 : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'
             }`}
           >
-            <Tag className="w-3.5 h-3.5 text-rose-500" />
+            <Tag className="w-3.5 h-3.5 text-orange-600" />
             <span className="hidden sm:inline">Ofertas</span>
             <span>% OFF</span>
           </button>
@@ -95,13 +95,13 @@ export function CatalogControlBar({
           <button
             type="button"
             onClick={() => onUpdateFilters({ onlyInStock: !filters.onlyInStock })}
-            className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition cursor-pointer flex items-center gap-1.5 hidden md:flex ${
+            className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition cursor-pointer flex items-center gap-1.5 hidden md:flex ${
               filters.onlyInStock
-                ? 'bg-brand-primary/10 border-brand-primary/30 text-brand-primary shadow-2xs'
+                ? 'bg-slate-900 border-slate-900 text-white shadow-2xs'
                 : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'
             }`}
           >
-            <PackageCheck className="w-3.5 h-3.5 text-brand-primary" />
+            <PackageCheck className="w-3.5 h-3.5" />
             <span>Em Estoque</span>
           </button>
 
@@ -110,7 +110,7 @@ export function CatalogControlBar({
             <select
               value={filters.sortBy}
               onChange={(e) => onUpdateFilters({ sortBy: e.target.value as SortOption })}
-              className="appearance-none bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 pr-8 text-xs font-bold text-slate-700 hover:bg-slate-100 focus:outline-none focus:ring-1 focus:ring-slate-300 transition cursor-pointer"
+              className="appearance-none bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5 pr-8 text-xs font-semibold text-slate-700 hover:bg-slate-100 focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition cursor-pointer"
             >
               <option value="featured">Ordenar: Destaques</option>
               <option value="price_asc">Menor Preço</option>
@@ -124,11 +124,11 @@ export function CatalogControlBar({
 
           {/* Seletor Rápido de Layout (Grade / Lista / Editorial) */}
           {onChangeLayoutMode && (
-            <div className="flex items-center bg-slate-100 p-0.5 rounded-xl border border-slate-200/80">
+            <div className="flex items-center bg-slate-100 p-0.5 rounded-lg border border-slate-200">
               <button
                 type="button"
                 onClick={() => onChangeLayoutMode('grid')}
-                className={`p-1.5 rounded-lg transition-all cursor-pointer ${
+                className={`p-1.5 rounded-md transition-all cursor-pointer ${
                   layoutMode === 'grid'
                     ? 'bg-white text-slate-900 shadow-2xs'
                     : 'text-slate-400 hover:text-slate-700'
@@ -141,7 +141,7 @@ export function CatalogControlBar({
               <button
                 type="button"
                 onClick={() => onChangeLayoutMode('list')}
-                className={`p-1.5 rounded-lg transition-all cursor-pointer ${
+                className={`p-1.5 rounded-md transition-all cursor-pointer ${
                   layoutMode === 'list'
                     ? 'bg-white text-slate-900 shadow-2xs'
                     : 'text-slate-400 hover:text-slate-700'
@@ -154,7 +154,7 @@ export function CatalogControlBar({
               <button
                 type="button"
                 onClick={() => onChangeLayoutMode('editorial')}
-                className={`p-1.5 rounded-lg transition-all cursor-pointer ${
+                className={`p-1.5 rounded-md transition-all cursor-pointer ${
                   layoutMode === 'editorial'
                     ? 'bg-white text-slate-900 shadow-2xs'
                     : 'text-slate-400 hover:text-slate-700'
@@ -171,16 +171,16 @@ export function CatalogControlBar({
           <button
             type="button"
             onClick={onOpenFilterDrawer}
-            className={`px-3.5 py-1.5 rounded-xl text-xs font-bold border transition cursor-pointer flex items-center gap-2 ${
+            className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold border transition cursor-pointer flex items-center gap-2 ${
               activeFiltersCount > 0
-                ? 'bg-slate-900 text-white border-transparent shadow-xs'
+                ? 'bg-slate-900 text-white border-transparent shadow-2xs'
                 : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
             }`}
           >
             <SlidersHorizontal className="w-3.5 h-3.5" />
             <span>Filtros</span>
             {activeFiltersCount > 0 && (
-              <span className="h-4 w-4 rounded-full bg-white text-slate-900 text-[10px] font-black flex items-center justify-center">
+              <span className="h-4 w-4 rounded-full bg-orange-600 text-white text-[10px] font-bold flex items-center justify-center">
                 {activeFiltersCount}
               </span>
             )}

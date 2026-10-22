@@ -331,12 +331,12 @@ export default function SaasAdminPage() {
     }
   };
 
-  // Cálculo de dias restantes e formatação de status
+  // Cálculo de dias restantes e formatação de status padronizado
   const getStoreStatusDetails = (store: Tenant) => {
     if (store.subscriptionStatus === 'blocked') {
       return {
-        badgeClass: 'bg-slate-200 text-slate-700 border-slate-300',
-        text: 'Bloqueada',
+        badgeClass: 'bg-rose-50 text-rose-700 border border-rose-200',
+        text: 'Inadimplente / Bloqueado',
         daysText: 'Acesso suspenso',
         isCritical: true,
       };
@@ -344,8 +344,8 @@ export default function SaasAdminPage() {
 
     if (!store.subscriptionExpiresAt) {
       return {
-        badgeClass: 'bg-emerald-100 text-emerald-800 border-emerald-200',
-        text: 'Ativa Vitalícia',
+        badgeClass: 'bg-emerald-50 text-emerald-700 border border-emerald-200',
+        text: 'Assinante Ativo',
         daysText: 'Sem expiração',
         isCritical: false,
       };
@@ -357,8 +357,8 @@ export default function SaasAdminPage() {
 
     if (diffDays <= 0) {
       return {
-        badgeClass: 'bg-rose-100 text-rose-800 border-rose-200',
-        text: 'Vencida',
+        badgeClass: 'bg-rose-50 text-rose-700 border border-rose-200',
+        text: 'Inadimplente / Bloqueado',
         daysText: `Venceu há ${Math.abs(diffDays)} dia(s)`,
         isCritical: true,
       };
@@ -366,8 +366,8 @@ export default function SaasAdminPage() {
 
     if (store.subscriptionStatus === 'trial' || store.plan === 'trial_30d') {
       return {
-        badgeClass: 'bg-blue-100 text-blue-800 border-blue-200',
-        text: 'Teste (7d)',
+        badgeClass: 'bg-amber-50 text-amber-700 border border-amber-200',
+        text: 'Trial Ativo',
         daysText: `Restam ${diffDays} dia(s)`,
         isCritical: diffDays <= 3,
       };
@@ -375,16 +375,16 @@ export default function SaasAdminPage() {
 
     if (diffDays <= 5) {
       return {
-        badgeClass: 'bg-amber-100 text-amber-800 border-amber-200',
-        text: 'Vencendo',
+        badgeClass: 'bg-amber-50 text-amber-700 border border-amber-200',
+        text: 'Trial Ativo',
         daysText: `Restam ${diffDays} dia(s)`,
         isCritical: true,
       };
     }
 
     return {
-      badgeClass: 'bg-emerald-100 text-emerald-800 border-emerald-200',
-      text: 'Ativa',
+      badgeClass: 'bg-emerald-50 text-emerald-700 border border-emerald-200',
+      text: 'Assinante Ativo',
       daysText: `Restam ${diffDays} dia(s)`,
       isCritical: false,
     };
@@ -422,43 +422,43 @@ export default function SaasAdminPage() {
   // Se não estiver logado, exibe tela de login do SuperAdmin
   if (!token) {
     return (
-      <div className="min-h-screen bg-[#212529] text-[#E9ECEF] flex items-center justify-center p-4 sm:p-6 py-12 sm:py-16">
-        <div className="max-w-md w-full bg-[#212529] border border-white/15 rounded-2xl p-6 sm:p-8 shadow-2xl backdrop-blur-md">
+      <div className="min-h-screen bg-slate-50 text-slate-900 flex items-center justify-center p-4 sm:p-6 py-12 sm:py-16">
+        <div className="max-w-md w-full bg-white border border-slate-200 rounded-xl p-6 sm:p-8 shadow-xs">
           <div className="text-center mb-6">
-            <div className="w-14 h-14 rounded-2xl overflow-hidden bg-[#212529] border border-white/15 flex items-center justify-center mx-auto mb-3 shadow-lg">
+            <div className="w-12 h-12 rounded-xl bg-orange-50 border border-orange-200/80 flex items-center justify-center mx-auto mb-3">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src="/numclick-badge.png"
+                src="/favicon.svg"
                 alt="NumClick"
-                className="w-full h-full object-cover"
+                className="w-6 h-6 object-contain"
               />
             </div>
-            <h1 className="text-xl sm:text-2xl font-extrabold text-white">NumClick SuperAdmin</h1>
-            <p className="text-xs text-[#E9ECEF]/70 mt-1">
+            <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">NumClick SuperAdmin</h1>
+            <p className="text-xs text-slate-500 mt-1">
               Gerencie todos os lojistas, assinaturas e faturamento em tempo real.
             </p>
           </div>
 
           {loginError && (
-            <div className="mb-4 p-3 rounded-xl bg-rose-500/20 border border-rose-500/40 text-rose-300 text-xs text-center">
+            <div className="mb-4 p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs text-center font-medium">
               {loginError}
             </div>
           )}
 
           <form onSubmit={handleLogin} className="space-y-4">
             <div>
-              <label className="block text-xs font-semibold text-[#E9ECEF]/80 mb-1.5">
+              <label className="block text-xs font-semibold text-slate-700 mb-1.5">
                 Senha Master de Administrador
               </label>
               <div className="relative">
-                <Lock className="w-4 h-4 text-[#E9ECEF]/50 absolute left-3.5 top-3" />
+                <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
                 <input
                   type="password"
                   required
                   placeholder="Informe a chave mestre"
                   value={masterPassword}
                   onChange={(e) => setMasterPassword(e.target.value)}
-                  className="w-full pl-10 pr-3.5 py-2.5 text-sm bg-black/30 border border-white/15 rounded-xl text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-[#FB5607] transition-all"
+                  className="w-full pl-10 pr-3.5 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl text-slate-900 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition-all"
                 />
               </div>
             </div>
@@ -466,7 +466,7 @@ export default function SaasAdminPage() {
             <button
               type="submit"
               disabled={loggingIn}
-              className="w-full py-2.5 px-4 bg-[#FB5607] hover:bg-[#8338EC] text-white font-bold text-sm rounded-xl transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+              className="w-full py-2.5 px-4 bg-slate-900 hover:bg-slate-800 text-white font-semibold text-sm rounded-xl transition-all shadow-2xs flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
             >
               {loggingIn ? (
                 <div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
@@ -476,8 +476,8 @@ export default function SaasAdminPage() {
             </button>
           </form>
 
-          <p className="text-[11px] text-[#E9ECEF]/60 text-center mt-6">
-            Dica: A senha padrão inicial é <code className="text-white bg-white/10 px-1 py-0.5 rounded">master2026</code>
+          <p className="text-[11px] text-slate-500 text-center mt-6">
+            Dica: A senha padrão inicial é <code className="text-slate-900 bg-slate-100 border border-slate-200 px-1.5 py-0.5 rounded font-mono">master2026</code>
           </p>
         </div>
       </div>
@@ -485,29 +485,29 @@ export default function SaasAdminPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#E9ECEF] text-[#212529] flex flex-col justify-between selection:bg-[#FB5607] selection:text-white">
+    <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col justify-between selection:bg-orange-500 selection:text-white">
       {/* Header do Painel Master */}
-      <header className="h-16 sm:h-20 bg-white border-b border-slate-200 sticky top-0 z-30 px-4 sm:px-8 flex items-center shadow-xs">
+      <header className="h-16 bg-white border-b border-slate-200 sticky top-0 z-30 px-4 sm:px-8 flex items-center">
         <div className="max-w-7xl w-full mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl overflow-hidden bg-[#212529] border border-slate-800 flex items-center justify-center shadow-xs">
+            <div className="w-9 h-9 rounded-lg bg-[#0B0F19] border border-slate-800 flex items-center justify-center">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src="/numclick-badge.png"
+                src="/favicon.svg"
                 alt="NumClick"
-                className="w-full h-full object-cover"
+                className="w-5 h-5 object-contain"
               />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="font-extrabold text-[#212529] text-sm sm:text-base tracking-tight">
+                <span className="font-bold text-slate-900 text-sm sm:text-base tracking-tight">
                   NumClick SuperAdmin
                 </span>
-                <span className="bg-[#8338EC]/10 text-[#8338EC] text-[10px] font-bold px-2 py-0.5 rounded-full border border-[#8338EC]/25">
-                  Online
+                <span className="bg-orange-50 text-orange-700 text-[10px] font-semibold px-2 py-0.5 rounded-full border border-orange-200">
+                  Master
                 </span>
               </div>
-              <span className="text-[10px] text-slate-400 hidden sm:block">
+              <span className="text-[11px] text-slate-500 hidden sm:block">
                 Gestão Central de Lojistas e Assinaturas
               </span>
             </div>
@@ -517,16 +517,16 @@ export default function SaasAdminPage() {
             <button
               type="button"
               onClick={() => loadStores()}
-              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-[#E9ECEF] hover:bg-slate-200 text-[#212529] transition cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold border border-slate-300 bg-white hover:bg-slate-100 text-slate-700 transition cursor-pointer"
               title="Sincronizar lojas com o Supabase"
             >
-              <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin text-[#FB5607]' : ''}`} />
-              <span className="hidden md:inline">Sincronizar Supabase</span>
+              <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin text-orange-600' : ''}`} />
+              <span className="hidden md:inline">Sincronizar</span>
             </button>
 
             <Link
               href="/criar-loja"
-              className="inline-flex items-center gap-1.5 px-3 py-2 bg-[#FB5607] hover:bg-[#8338EC] text-white font-semibold text-xs rounded-xl shadow-2xs transition cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-orange-600 hover:bg-orange-500 text-white font-semibold text-xs rounded-xl shadow-2xs transition cursor-pointer"
             >
               <Plus className="w-3.5 h-3.5" />
               <span>Nova Loja</span>
@@ -535,7 +535,7 @@ export default function SaasAdminPage() {
             <button
               type="button"
               onClick={handleLogout}
-              className="p-2 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition cursor-pointer"
+              className="p-2 rounded-xl border border-slate-200 text-slate-500 hover:text-rose-600 hover:bg-rose-50 hover:border-rose-200 transition cursor-pointer"
               title="Sair do Painel"
             >
               <LogOut className="w-4 h-4" />
@@ -559,85 +559,95 @@ export default function SaasAdminPage() {
       )}
 
       {/* Conteúdo Central */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-8 py-6 sm:py-8 lg:py-10 space-y-6">
-        {/* Banner de Status do Banco de Dados Supabase Oficial */}
-        <div className="p-4 bg-gradient-to-r from-slate-900 to-slate-800 text-slate-100 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3.5 text-xs shadow-md border border-slate-700/80">
+      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-8 py-6 sm:py-8 space-y-6">
+        {/* Banner de Status do Banco de Dados Supabase Oficial (Sólido Escuro #0B0F19) */}
+        <div className="p-4 sm:p-5 bg-[#0B0F19] text-slate-100 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3.5 text-xs border border-slate-800">
           <div className="flex items-start sm:items-center gap-3">
-            <div className="h-9 w-9 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center flex-shrink-0">
-              <Database className="w-5 h-5" />
+            <div className="h-9 w-9 rounded-lg bg-orange-500/10 border border-orange-500/20 text-orange-400 flex items-center justify-center flex-shrink-0">
+              <Database className="w-4.5 h-4.5" />
             </div>
             <div>
-              <div className="flex items-center gap-2">
-                <p className="font-bold text-white text-sm">Banco de Dados Oficial Conectado (Supabase)</p>
-                <span className="inline-flex items-center gap-1 text-[10px] font-bold bg-emerald-500/25 text-emerald-300 border border-emerald-500/40 px-2 py-0.5 rounded-full">
+              <div className="flex items-center gap-2 flex-wrap">
+                <p className="font-semibold text-white text-sm tracking-tight">Banco de Dados Oficial Conectado (Supabase)</p>
+                <span className="inline-flex items-center gap-1 text-[10px] font-semibold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded-full">
                   <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
                   PostgreSQL Ativo
                 </span>
               </div>
-              <p className="text-slate-300 text-[11px] mt-0.5">
-                Todas as lojas, produtos, configurações e pedidos sincronizam de forma 100% automática e instantânea no banco de dados Supabase, sem dependência de planilhas.
+              <p className="text-slate-400 text-[11px] mt-0.5">
+                Todas as lojas, produtos, configurações e pedidos sincronizam de forma 100% automática e instantânea no banco de dados Supabase.
               </p>
             </div>
           </div>
           <div className="flex items-center gap-2 self-start sm:self-auto font-mono text-[11px] text-slate-400">
-            <span>SaaS White-Label</span>
+            <span>SaaS Multi-Tenant</span>
           </div>
         </div>
 
-        {/* Cards de Métricas (KPIs) */}
+        {/* Cards de Métricas Globais (KPIs) */}
         {metrics && (
           <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 sm:gap-4">
-            <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-2xs">
-              <div className="flex items-center justify-between text-slate-400 mb-1">
-                <span className="text-[11px] font-bold uppercase tracking-wider">Total de Lojas</span>
-                <Store className="w-4 h-4 text-slate-600" />
+            <div className="bg-white p-4 sm:p-5 rounded-xl border border-slate-200">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Total de Lojas</span>
+                <div className="h-8 w-8 rounded-lg bg-slate-100 border border-slate-200 text-slate-700 flex items-center justify-center">
+                  <Store className="w-4 h-4" />
+                </div>
               </div>
-              <div className="text-xl sm:text-2xl font-extrabold text-slate-900">{metrics.totalStores}</div>
-              <span className="text-[10px] text-slate-400">Cadastradas na nuvem</span>
+              <div className="text-2xl font-bold text-slate-900 tracking-tight">{metrics.totalStores}</div>
+              <span className="text-[11px] text-slate-500 mt-0.5 block">Cadastradas na nuvem</span>
             </div>
 
-            <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-2xs">
-              <div className="flex items-center justify-between text-slate-400 mb-1">
-                <span className="text-[11px] font-bold uppercase tracking-wider">Lojas Ativas</span>
-                <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+            <div className="bg-white p-4 sm:p-5 rounded-xl border border-slate-200">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Assinantes</span>
+                <div className="h-8 w-8 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-600 flex items-center justify-center">
+                  <CheckCircle2 className="w-4 h-4" />
+                </div>
               </div>
-              <div className="text-xl sm:text-2xl font-extrabold text-emerald-600">{metrics.activeStores}</div>
-              <span className="text-[10px] text-slate-400">Pagantes em dia</span>
+              <div className="text-2xl font-bold text-slate-900 tracking-tight">{metrics.activeStores}</div>
+              <span className="text-[11px] text-slate-500 mt-0.5 block">Pagantes em dia</span>
             </div>
 
-            <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-2xs">
-              <div className="flex items-center justify-between text-slate-400 mb-1">
-                <span className="text-[11px] font-bold uppercase tracking-wider">Em Teste</span>
-                <Clock className="w-4 h-4 text-blue-600" />
+            <div className="bg-white p-4 sm:p-5 rounded-xl border border-slate-200">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Trial Ativo</span>
+                <div className="h-8 w-8 rounded-lg bg-amber-50 border border-amber-200 text-amber-600 flex items-center justify-center">
+                  <Clock className="w-4 h-4" />
+                </div>
               </div>
-              <div className="text-xl sm:text-2xl font-extrabold text-blue-600">{metrics.trialStores}</div>
-              <span className="text-[10px] text-slate-400">Período de avaliação</span>
+              <div className="text-2xl font-bold text-slate-900 tracking-tight">{metrics.trialStores}</div>
+              <span className="text-[11px] text-slate-500 mt-0.5 block">Período de 7 dias</span>
             </div>
 
-            <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-2xs">
-              <div className="flex items-center justify-between text-slate-400 mb-1">
-                <span className="text-[11px] font-bold uppercase tracking-wider">Vencidas/Bloq</span>
-                <AlertTriangle className="w-4 h-4 text-rose-600" />
+            <div className="bg-white p-4 sm:p-5 rounded-xl border border-slate-200">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Inadimplentes</span>
+                <div className="h-8 w-8 rounded-lg bg-rose-50 border border-rose-200 text-rose-600 flex items-center justify-center">
+                  <AlertTriangle className="w-4 h-4" />
+                </div>
               </div>
-              <div className="text-xl sm:text-2xl font-extrabold text-rose-600">{metrics.expiredOrBlockedStores}</div>
-              <span className="text-[10px] text-slate-400">Necessitam renovação</span>
+              <div className="text-2xl font-bold text-slate-900 tracking-tight">{metrics.expiredOrBlockedStores}</div>
+              <span className="text-[11px] text-slate-500 mt-0.5 block">Vencidas ou bloqueadas</span>
             </div>
 
-            <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-2xs col-span-2 sm:col-span-1">
-              <div className="flex items-center justify-between text-slate-400 mb-1">
-                <span className="text-[11px] font-bold uppercase tracking-wider">MRR Estimado</span>
-                <TrendingUp className="w-4 h-4 text-emerald-600" />
+            <div className="bg-white p-4 sm:p-5 rounded-xl border border-slate-200 col-span-2 sm:col-span-1">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">MRR Estimado</span>
+                <div className="h-8 w-8 rounded-lg bg-orange-50 border border-orange-200 text-orange-600 flex items-center justify-center">
+                  <TrendingUp className="w-4 h-4" />
+                </div>
               </div>
-              <div className="text-xl sm:text-2xl font-extrabold text-slate-900">
+              <div className="text-2xl font-bold text-slate-900 tracking-tight">
                 R$ {metrics.estimatedMonthlyRevenue.toFixed(2).replace('.', ',')}
               </div>
-              <span className="text-[10px] text-slate-400">Receita recorrente / mês</span>
+              <span className="text-[11px] text-slate-500 mt-0.5 block">Receita recorrente / mês</span>
             </div>
           </div>
         )}
 
         {/* Barra de Filtros e Busca */}
-        <div className="bg-white p-3.5 sm:p-4 rounded-2xl border border-slate-200/80 shadow-2xs flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between">
+        <div className="bg-white p-3.5 sm:p-4 rounded-xl border border-slate-200 flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between">
           <div className="relative flex-1">
             <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
             <input
@@ -645,7 +655,7 @@ export default function SaasAdminPage() {
               placeholder="Buscar por nome da loja, slug, whatsapp ou email..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition-all"
+              className="w-full pl-10 pr-4 py-2 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 focus:bg-white transition-all"
             />
           </div>
 
@@ -655,24 +665,24 @@ export default function SaasAdminPage() {
                 key={st}
                 type="button"
                 onClick={() => setStatusFilter(st)}
-                className={`px-3 py-1.5 rounded-xl text-xs font-semibold capitalize whitespace-nowrap transition-colors ${
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold capitalize whitespace-nowrap transition-colors cursor-pointer ${
                   statusFilter === st
                     ? 'bg-slate-900 text-white'
                     : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                 }`}
               >
                 {st === 'all' && 'Todas'}
-                {st === 'active' && 'Ativas'}
-                {st === 'trial' && 'Em Teste'}
-                {st === 'expired' && 'Vencidas'}
+                {st === 'active' && 'Assinantes'}
+                {st === 'trial' && 'Trial Ativo'}
+                {st === 'expired' && 'Inadimplentes'}
                 {st === 'blocked' && 'Bloqueadas'}
               </button>
             ))}
           </div>
         </div>
 
-        {/* Listagem de Lojas */}
-        <div className="bg-white rounded-2xl border border-slate-200/80 shadow-2xs overflow-hidden">
+        {/* Listagem de Lojas (Tenants) */}
+        <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
           {/* Visualização Desktop (Tabela) */}
           <div className="hidden md:block overflow-x-auto">
             <table className="w-full text-left border-collapse text-xs sm:text-sm">
@@ -1002,10 +1012,10 @@ export default function SaasAdminPage() {
       {/* Modal de Edição de Loja / Assinatura */}
       {editingStore && (
         <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-xl max-w-lg w-full p-6 space-y-5 animate-in fade-in zoom-in-95">
+          <div className="bg-white rounded-xl border border-slate-200 shadow-xl max-w-lg w-full p-6 space-y-5 animate-in fade-in zoom-in-95">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <div>
-                <h3 className="font-bold text-slate-900 text-base">
+                <h3 className="font-semibold text-slate-900 tracking-tight text-base">
                   Editar Loja: {editingStore.name}
                 </h3>
                 <span className="text-xs text-slate-400 font-mono">
@@ -1032,7 +1042,7 @@ export default function SaasAdminPage() {
                     required
                     value={editName}
                     onChange={(e) => setEditName(e.target.value)}
-                    className="w-full px-3 py-2 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    className="w-full px-3 py-2 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20"
                     placeholder="Ex: Minha Loja Digital"
                   />
                 </div>
@@ -1046,7 +1056,7 @@ export default function SaasAdminPage() {
                     required
                     value={editWhatsapp}
                     onChange={(e) => setEditWhatsapp(e.target.value)}
-                    className="w-full px-3 py-2 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 font-mono"
+                    className="w-full px-3 py-2 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 font-mono"
                     placeholder="Ex: 5511999999999"
                   />
                 </div>
@@ -1060,7 +1070,7 @@ export default function SaasAdminPage() {
                   type="email"
                   value={editOwnerEmail}
                   onChange={(e) => setEditOwnerEmail(e.target.value)}
-                  className="w-full px-3 py-2 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  className="w-full px-3 py-2 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20"
                   placeholder="Ex: contato@lojista.com"
                 />
               </div>
@@ -1073,7 +1083,7 @@ export default function SaasAdminPage() {
                   <select
                     value={editPlan}
                     onChange={(e) => setEditPlan(e.target.value as SubscriptionPlan)}
-                    className="w-full px-3 py-2 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    className="w-full px-3 py-2 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20"
                   >
                     <option value="trial_30d">Teste 7 Dias Grátis</option>
                     <option value="monthly">Plano Mensal (R$ 79,90)</option>
@@ -1090,12 +1100,12 @@ export default function SaasAdminPage() {
                   <select
                     value={editStatus}
                     onChange={(e) => setEditStatus(e.target.value as SubscriptionStatus)}
-                    className="w-full px-3 py-2 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    className="w-full px-3 py-2 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20"
                   >
-                    <option value="active">Ativa</option>
-                    <option value="trial">Em Teste (Trial)</option>
-                    <option value="expired">Expirada</option>
-                    <option value="blocked">Bloqueada</option>
+                    <option value="active">Assinante Ativo</option>
+                    <option value="trial">Trial Ativo (7d)</option>
+                    <option value="expired">Inadimplente / Vencida</option>
+                    <option value="blocked">Inadimplente / Bloqueada</option>
                   </select>
                 </div>
               </div>
@@ -1108,11 +1118,11 @@ export default function SaasAdminPage() {
                   type="date"
                   value={editExpiry}
                   onChange={(e) => setEditExpiry(e.target.value)}
-                  className="w-full px-3 py-2 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  className="w-full px-3 py-2 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20"
                 />
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3 bg-slate-50/80 rounded-xl border border-slate-200/80">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3 bg-slate-50 rounded-xl border border-slate-200">
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 mb-1 flex items-center gap-1">
                     <User className="w-3.5 h-3.5 text-slate-500" />
@@ -1122,7 +1132,7 @@ export default function SaasAdminPage() {
                     type="text"
                     value={editAdminUsername}
                     onChange={(e) => setEditAdminUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''))}
-                    className="w-full px-3 py-2 text-xs sm:text-sm bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 font-mono"
+                    className="w-full px-3 py-2 text-xs sm:text-sm bg-white border border-slate-200 rounded-xl focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 font-mono"
                     placeholder="Ex: admin ou essenza"
                   />
                   <span className="text-[10px] text-slate-400 mt-1 block">
@@ -1139,7 +1149,7 @@ export default function SaasAdminPage() {
                     type="text"
                     value={editPassword}
                     onChange={(e) => setEditPassword(e.target.value)}
-                    className="w-full px-3 py-2 text-xs sm:text-sm bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 font-mono"
+                    className="w-full px-3 py-2 text-xs sm:text-sm bg-white border border-slate-200 rounded-xl focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 font-mono"
                     placeholder="Nova senha (vazio p/ manter)"
                   />
                   <span className="text-[10px] text-slate-400 mt-1 block">
@@ -1157,7 +1167,7 @@ export default function SaasAdminPage() {
                   placeholder="Ex: Pagamento confirmado via Pix, cliente solicitou desconto anual..."
                   value={editNotes}
                   onChange={(e) => setEditNotes(e.target.value)}
-                  className="w-full px-3 py-2 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  className="w-full px-3 py-2 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20"
                 />
               </div>
 
@@ -1165,14 +1175,14 @@ export default function SaasAdminPage() {
                 <button
                   type="button"
                   onClick={() => setEditingStore(null)}
-                  className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs rounded-xl transition-colors"
+                  className="px-4 py-2 border border-slate-300 bg-white hover:bg-slate-100 text-slate-700 font-semibold text-xs rounded-xl transition-colors cursor-pointer"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
                   disabled={savingEdit}
-                  className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs rounded-xl shadow-2xs transition-colors flex items-center gap-1.5"
+                  className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs rounded-xl shadow-2xs transition-colors flex items-center gap-1.5 cursor-pointer"
                 >
                   {savingEdit ? 'Salvando...' : 'Salvar Alterações'}
                 </button>

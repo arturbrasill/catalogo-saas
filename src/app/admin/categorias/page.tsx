@@ -161,7 +161,7 @@ export default function AdminCategoriasPage() {
         {/* Header da Página */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+            <h1 className="text-xl sm:text-2xl font-semibold text-slate-900 tracking-tight">
               Gerenciar Categorias
             </h1>
             <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
@@ -171,16 +171,16 @@ export default function AdminCategoriasPage() {
           <button
             type="button"
             onClick={handleOpenNew}
-            className="inline-flex items-center gap-2 px-4 py-2.5 text-xs font-bold text-white bg-[#FB5607] rounded-xl hover:bg-[#8338EC] shadow-md hover:shadow-lg active:scale-95 transition-all self-start sm:self-auto cursor-pointer"
+            className="inline-flex items-center gap-2 px-4 py-2.5 text-xs font-semibold text-white bg-slate-900 rounded-xl hover:bg-slate-800 shadow-xs transition-all self-start sm:self-auto cursor-pointer"
           >
-            <Plus className="w-4 h-4 stroke-[2.5]" />
+            <Plus className="w-4 h-4 stroke-[2.25]" />
             <span>Nova Categoria</span>
           </button>
         </div>
 
         {/* Feedback Visual: Sucesso */}
         {successMessage && (
-          <div className="rounded-2xl bg-emerald-50 border border-emerald-200 p-4 text-xs sm:text-sm text-emerald-800 flex items-center justify-between shadow-xs animate-fade-in">
+          <div className="rounded-xl bg-emerald-50 border border-emerald-200 p-4 text-xs sm:text-sm text-emerald-800 flex items-center justify-between shadow-xs animate-fade-in">
             <div className="flex items-center gap-2.5">
               <CheckCircle2 className="w-5 h-5 text-emerald-600 flex-shrink-0" />
               <span className="font-semibold">{successMessage}</span>
@@ -198,7 +198,7 @@ export default function AdminCategoriasPage() {
 
         {/* Mensagem de Erro */}
         {errorMessage && (
-          <div className="rounded-2xl bg-rose-50 border border-rose-200 p-4 text-xs sm:text-sm text-rose-800 flex items-center justify-between shadow-xs animate-shake">
+          <div className="rounded-xl bg-rose-50 border border-rose-200 p-4 text-xs sm:text-sm text-rose-800 flex items-center justify-between shadow-xs animate-shake">
             <div className="flex items-center gap-2.5">
               <AlertCircle className="w-5 h-5 text-rose-600 flex-shrink-0" />
               <span>{errorMessage}</span>
@@ -206,7 +206,7 @@ export default function AdminCategoriasPage() {
             <button
               type="button"
               onClick={loadCategories}
-              className="underline font-bold hover:text-rose-950 cursor-pointer"
+              className="underline font-semibold hover:text-rose-950 cursor-pointer"
             >
               Tentar novamente
             </button>
@@ -215,14 +215,14 @@ export default function AdminCategoriasPage() {
 
         {/* Tabela de Categorias */}
         {isLoading ? (
-          <div className="bg-white rounded-3xl border border-slate-200/80 p-12 text-center shadow-xs">
-            <Loader2 className="w-8 h-8 animate-spin text-emerald-600 mx-auto mb-3" />
+          <div className="bg-white rounded-xl border border-slate-200 p-12 text-center shadow-xs">
+            <Loader2 className="w-8 h-8 animate-spin text-slate-900 mx-auto mb-3" />
             <p className="text-sm font-medium text-slate-500">Carregando categorias...</p>
           </div>
         ) : categories.length === 0 ? (
-          <div className="bg-white rounded-3xl border border-slate-200/80 p-12 text-center shadow-xs space-y-3">
+          <div className="bg-white rounded-xl border border-slate-200 p-12 text-center shadow-xs space-y-3">
             <FolderTree className="w-12 h-12 text-slate-300 mx-auto stroke-1" />
-            <h3 className="text-base font-bold text-slate-900">
+            <h3 className="text-base font-semibold text-slate-900 tracking-tight">
               Nenhuma categoria cadastrada
             </h3>
             <p className="text-xs text-slate-500 max-w-sm mx-auto leading-relaxed">
@@ -231,17 +231,17 @@ export default function AdminCategoriasPage() {
             <button
               type="button"
               onClick={handleOpenNew}
-              className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-xl transition cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-white bg-slate-900 hover:bg-slate-800 rounded-xl transition cursor-pointer"
             >
               <Plus className="w-4 h-4" />
               Criar Categoria
             </button>
           </div>
         ) : (
-          <div className="bg-white rounded-3xl border border-slate-200/80 overflow-hidden shadow-xs">
+          <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-xs">
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs sm:text-sm text-slate-600">
-                <thead className="bg-slate-50 border-b border-slate-200/80 text-[11px] uppercase tracking-wider font-bold text-slate-500">
+                <thead className="bg-slate-50 border-b border-slate-200 text-[11px] uppercase tracking-wider font-semibold text-slate-500">
                   <tr>
                     <th className="px-5 py-3.5">Ordem</th>
                     <th className="px-5 py-3.5">Nome da Categoria</th>
@@ -255,13 +255,13 @@ export default function AdminCategoriasPage() {
                     <tr key={cat.id} className="hover:bg-slate-50/70 transition-colors">
                       {/* Ordem */}
                       <td className="px-5 py-3.5">
-                        <span className="inline-flex items-center justify-center h-7 w-7 rounded-lg bg-slate-100 text-slate-700 font-bold text-xs border border-slate-200/60">
+                        <span className="inline-flex items-center justify-center h-7 w-7 rounded-lg bg-slate-100 text-slate-700 font-semibold text-xs border border-slate-200">
                           #{cat.ordem}
                         </span>
                       </td>
 
                       {/* Nome */}
-                      <td className="px-5 py-3.5 font-bold text-slate-900">
+                      <td className="px-5 py-3.5 font-semibold text-slate-900">
                         {cat.nome}
                       </td>
 
@@ -275,7 +275,7 @@ export default function AdminCategoriasPage() {
                         <span
                           className={`inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full border ${
                             cat.ativo
-                              ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
+                              ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
                               : 'bg-slate-100 text-slate-500 border-slate-200'
                           }`}
                         >
@@ -294,7 +294,7 @@ export default function AdminCategoriasPage() {
                           <button
                             type="button"
                             onClick={() => handleOpenEdit(cat)}
-                            className="p-1.5 text-slate-400 hover:text-emerald-700 hover:bg-emerald-50 rounded-lg transition cursor-pointer"
+                            className="p-1.5 text-slate-400 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition cursor-pointer"
                             title="Editar categoria"
                             aria-label={`Editar ${cat.nome}`}
                           >
@@ -322,9 +322,9 @@ export default function AdminCategoriasPage() {
         {/* Modal de Criação / Edição de Categoria */}
         {isModalOpen && (
           <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-5 animate-fade-in">
-            <div className="bg-white rounded-3xl max-w-md w-full shadow-2xl border border-slate-100 p-6 space-y-5 animate-scale-in">
-              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-                <h3 className="text-base font-bold text-slate-900">
+            <div className="bg-white rounded-xl max-w-md w-full shadow-2xl border border-slate-200 p-6 space-y-5 animate-scale-in">
+              <div className="flex items-center justify-between border-b border-slate-200 pb-3">
+                <h3 className="text-base font-semibold text-slate-900 tracking-tight">
                   {editingCategory ? 'Editar Categoria' : 'Nova Categoria'}
                 </h3>
                 <button
@@ -345,7 +345,7 @@ export default function AdminCategoriasPage() {
                 )}
 
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">
+                  <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5">
                     Nome da Categoria *
                   </label>
                   <input
@@ -354,12 +354,12 @@ export default function AdminCategoriasPage() {
                     placeholder="Ex: Calçados, Moda Praia, Acessórios..."
                     value={formNome}
                     onChange={(e) => setFormNome(e.target.value)}
-                    className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-xs sm:text-sm focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                    className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-xs sm:text-sm focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">
+                  <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5">
                     Ordem de Exibição (Posição)
                   </label>
                   <input
@@ -367,7 +367,7 @@ export default function AdminCategoriasPage() {
                     min="0"
                     value={formOrdem}
                     onChange={(e) => setFormOrdem(e.target.value)}
-                    className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-xs sm:text-sm focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                    className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-xs sm:text-sm focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20"
                   />
                   <span className="text-[11px] text-slate-400 mt-1 block">
                     Números menores aparecem primeiro na barra de categorias da vitrine.
@@ -376,14 +376,14 @@ export default function AdminCategoriasPage() {
 
                 <div className="pt-2 flex items-center justify-between">
                   <div>
-                    <span className="text-xs font-bold text-slate-800 block">Categoria Ativa</span>
+                    <span className="text-xs font-semibold text-slate-800 block">Categoria Ativa</span>
                     <span className="text-[11px] text-slate-400">Exibir no catálogo público</span>
                   </div>
                   <input
                     type="checkbox"
                     checked={formAtivo}
                     onChange={(e) => setFormAtivo(e.target.checked)}
-                    className="h-5 w-5 rounded-md text-emerald-600 focus:ring-emerald-500 border-slate-300 cursor-pointer"
+                    className="h-5 w-5 rounded-md text-orange-600 focus:ring-orange-500 border-slate-300 cursor-pointer"
                   />
                 </div>
 
@@ -391,14 +391,14 @@ export default function AdminCategoriasPage() {
                   <button
                     type="button"
                     onClick={() => setIsModalOpen(false)}
-                    className="px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-100 rounded-xl transition"
+                    className="px-4 py-2 text-xs font-semibold text-slate-700 border border-slate-300 hover:bg-slate-100 rounded-xl transition"
                   >
                     Cancelar
                   </button>
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold text-white bg-[#FB5607] hover:bg-[#8338EC] shadow-md transition disabled:opacity-50 cursor-pointer"
+                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-semibold text-white bg-slate-900 hover:bg-slate-800 shadow-xs transition disabled:opacity-50 cursor-pointer"
                   >
                     {isSubmitting ? (
                       <>

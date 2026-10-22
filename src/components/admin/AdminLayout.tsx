@@ -135,32 +135,32 @@ export function AdminLayout({ children }: AdminLayoutProps) {
 
   return (
     <ProtectedRoute>
-      <div className="min-h-screen bg-[#E9ECEF] flex">
-        {/* Sidebar Desktop (Modern Dark SaaS Theme - Paleta Oficial NumClick #212529) */}
+      <div className="min-h-screen bg-slate-50 flex">
+        {/* Sidebar Desktop (Modern Dark SaaS Theme - #0B0F19) */}
         <aside
           data-admin-sidebar="true"
-          className="hidden lg:flex flex-col w-64 bg-[#212529] !text-white border-r border-white/10 shadow-xl select-none"
+          className="hidden lg:flex flex-col w-64 bg-[#0B0F19] !text-white border-r border-slate-800/80 select-none"
           style={{ color: '#ffffff' }}
         >
           {/* Brand Header */}
-          <div className="h-16 sm:h-20 flex items-center px-6 border-b border-white/10 gap-3">
-            <div className="h-9 w-9 rounded-xl overflow-hidden flex items-center justify-center shadow-sm bg-[#212529] border border-white/15 flex-shrink-0">
+          <div className="h-16 sm:h-20 flex items-center px-6 border-b border-slate-800/80 gap-3">
+            <div className="h-8 w-8 flex items-center justify-center flex-shrink-0">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src="/numclick-badge.png"
+                src="/favicon.svg"
                 alt="NumClick Logo"
-                className="w-full h-full object-cover"
+                className="w-7 h-7 object-contain"
               />
             </div>
             <div>
               <span
-                className="font-extrabold !text-white tracking-tight text-sm block leading-none"
+                className="font-bold !text-white tracking-tight text-sm block leading-none"
                 style={{ color: '#ffffff' }}
               >
                 NumClick
               </span>
               <span
-                className="text-[11px] !text-white font-medium"
+                className="text-[11px] !text-white font-medium opacity-70 mt-0.5 block"
                 style={{ color: '#ffffff' }}
               >
                 Painel do Lojista
@@ -172,7 +172,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
           <div className="flex-1 px-3 py-6 space-y-6 overflow-y-auto no-scrollbar">
             <div>
               <p
-                className="px-3 text-[10px] font-bold uppercase tracking-wider !text-slate-400 mb-2"
+                className="px-3 text-[10px] font-semibold uppercase tracking-wider !text-slate-400 mb-2"
                 style={{ color: '#94a3b8' }}
               >
                 Menu Principal
@@ -188,17 +188,17 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                     <a
                       key={item.name}
                       href={itemHref}
-                      className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all duration-150 group !text-white ${
+                      className={`flex items-center justify-between px-3.5 py-2.5 text-xs font-semibold transition-all duration-150 group !text-white ${
                         active
-                          ? 'bg-white/10 border border-white/15 shadow-xs'
-                          : 'hover:bg-white/5 active:bg-white/10 border border-transparent'
+                          ? 'bg-white/10 border-l-2 border-orange-500 rounded-r-lg'
+                          : 'hover:bg-white/5 active:bg-white/10 border-l-2 border-transparent rounded-r-lg'
                       }`}
                       style={{ color: '#ffffff' }}
                     >
                       <div className="flex items-center gap-3 min-w-0">
                         <Icon
                           className={`w-4 h-4 transition-transform group-hover:scale-105 !text-white ${
-                            active ? 'opacity-100' : 'opacity-90 group-hover:opacity-100'
+                            active ? 'opacity-100' : 'opacity-85 group-hover:opacity-100'
                           }`}
                           style={{ color: '#ffffff' }}
                         />
@@ -213,7 +213,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                         <span
                           className={`text-[9px] font-semibold px-2 py-0.5 rounded-md !text-white border ${
                             active
-                              ? 'bg-white/20 border-white/25'
+                              ? 'bg-orange-500/20 border-orange-500/40'
                               : 'bg-white/10 border-white/15'
                           }`}
                           style={{ color: '#ffffff' }}
@@ -228,17 +228,17 @@ export function AdminLayout({ children }: AdminLayoutProps) {
             </div>
 
             {/* Banner de Ajuda / Dica */}
-            <div className="p-4 rounded-2xl bg-gradient-to-b from-[#8338EC]/20 to-black/30 border border-[#8338EC]/35 space-y-2 text-xs">
+            <div className="p-4 rounded-xl bg-slate-900/90 border border-slate-800 space-y-2 text-xs">
               <div
-                className="flex items-center gap-1.5 !text-[#FB5607] font-bold text-[11px]"
-                style={{ color: '#FB5607' }}
+                className="flex items-center gap-1.5 !text-orange-500 font-semibold text-[11px]"
+                style={{ color: '#f97316' }}
               >
-                <Sparkles className="w-3.5 h-3.5 text-[#FB5607]" />
-                <span style={{ color: '#FB5607' }}>Dica de Conversão</span>
+                <Sparkles className="w-3.5 h-3.5 text-orange-500" />
+                <span style={{ color: '#f97316' }}>Dica de Conversão</span>
               </div>
               <p
-                className="!text-[#E9ECEF]/80 text-[11px] leading-relaxed"
-                style={{ color: '#E9ECEF' }}
+                className="!text-slate-300 text-[11px] leading-relaxed"
+                style={{ color: '#cbd5e1' }}
               >
                 Mantenha suas fotos em boa resolução e configure o WhatsApp para receber os pedidos instantaneamente.
               </p>
@@ -246,36 +246,36 @@ export function AdminLayout({ children }: AdminLayoutProps) {
           </div>
 
           {/* Rodapé da Sidebar */}
-          <div className="p-4 border-t border-white/10 space-y-2">
+          <div className="p-4 border-t border-slate-800/80 space-y-2">
             <a
               href={catalogHref}
               target="_blank"
               rel="noreferrer"
-              className="flex items-center justify-between w-full px-3.5 py-2.5 text-xs font-semibold !text-white hover:bg-[#FB5607] active:bg-[#8338EC] rounded-xl transition border border-white/15"
+              className="flex items-center justify-between w-full px-3.5 py-2.5 text-xs font-semibold !text-white bg-orange-600 hover:bg-orange-500 rounded-xl transition"
               style={{ color: '#ffffff' }}
             >
               <span className="flex items-center gap-2 !text-white" style={{ color: '#ffffff' }}>
                 <ExternalLink className="w-4 h-4 !text-white" style={{ color: '#ffffff' }} />
                 Ver Catálogo Público
               </span>
-              <ChevronRight className="w-3.5 h-3.5 !text-white opacity-70" style={{ color: '#ffffff' }} />
+              <ChevronRight className="w-3.5 h-3.5 !text-white opacity-80" style={{ color: '#ffffff' }} />
             </a>
 
             <div className="flex items-center justify-between pt-2 px-1">
               <div className="flex items-center gap-2 min-w-0">
-                <div className="h-8 w-8 rounded-full bg-white/10 border border-white/15 flex items-center justify-center !text-white font-bold text-xs">
-                  <Shield className="w-4 h-4 !text-[#FB5607]" style={{ color: '#FB5607' }} />
+                <div className="h-8 w-8 rounded-full bg-white/10 border border-slate-700 flex items-center justify-center !text-white font-bold text-xs">
+                  <Shield className="w-4 h-4 !text-orange-500" style={{ color: '#f97316' }} />
                 </div>
                 <div className="truncate">
                   <span
-                    className="text-xs font-bold !text-white block truncate leading-tight"
+                    className="text-xs font-semibold !text-white block truncate leading-tight"
                     style={{ color: '#ffffff' }}
                   >
                     Administrador
                   </span>
                   <span
-                    className="text-[10px] !text-[#E9ECEF]/70 block"
-                    style={{ color: '#E9ECEF' }}
+                    className="text-[10px] !text-slate-400 block"
+                    style={{ color: '#94a3b8' }}
                   >
                     Sessão Segura
                   </span>
@@ -285,7 +285,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
               <button
                 type="button"
                 onClick={logout}
-                className="p-2 !text-[#E9ECEF]/70 hover:!text-[#FB5607] hover:bg-white/10 rounded-lg transition cursor-pointer"
+                className="p-2 !text-slate-400 hover:!text-orange-500 hover:bg-white/10 rounded-lg transition cursor-pointer"
                 title="Sair do painel administrativo"
                 aria-label="Sair da conta"
               >
@@ -301,14 +301,14 @@ export function AdminLayout({ children }: AdminLayoutProps) {
           {isTrial && (
             <aside
               aria-label="Status do teste gratuito"
-              className="bg-gradient-to-r from-[#8338EC] via-[#8338EC] to-[#FB5607] text-white px-4 py-2.5 sm:px-8 flex flex-col sm:flex-row items-center justify-between gap-2.5 text-xs sm:text-sm font-medium z-30 shadow-xs sticky top-0"
+              className="bg-orange-50/60 border-b border-orange-200/80 text-orange-900 px-4 py-2.5 sm:px-8 flex flex-col sm:flex-row items-center justify-between gap-2.5 text-xs sm:text-sm font-medium z-30 sticky top-0 backdrop-blur-sm"
             >
-              <div className="flex items-center gap-2 text-center sm:text-left">
-                <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-white/20 text-white font-bold text-[10px] sm:text-[11px] uppercase tracking-wider backdrop-blur-xs">
-                  ⚡ Teste Gratuito
+              <div className="flex items-center gap-2.5 text-center sm:text-left">
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full bg-orange-100 border border-orange-200 text-orange-800 font-semibold text-[10px] sm:text-[11px] uppercase tracking-wider">
+                  ✨ Teste Grátis
                 </span>
-                <span>
-                  Você está no período de teste gratuito: restam <strong>{daysRemaining} {daysRemaining === 1 ? 'dia' : 'dias'}</strong>. Sua assinatura será de <strong>R$ 79,90/mês</strong>.
+                <span className="text-orange-900">
+                  Você está no período de teste gratuito: restam <strong className="font-semibold underline decoration-orange-400">{daysRemaining} {daysRemaining === 1 ? 'dia' : 'dias'}</strong>. Sua assinatura será de <strong className="font-semibold">R$ 79,90/mês</strong>.
                 </span>
               </div>
               <div className="flex items-center gap-2 shrink-0">
@@ -317,15 +317,15 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                     href={store.asaas_payment_link}
                     target="_blank"
                     rel="noreferrer"
-                    className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-[#212529] text-[#E9ECEF] font-bold hover:bg-black shadow-xs transition text-xs"
+                    className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-slate-900 text-white font-semibold hover:bg-slate-800 shadow-xs transition text-xs"
                   >
                     <span>Assinar Agora</span>
-                    <ExternalLink className="w-3.5 h-3.5 text-[#FB5607]" />
+                    <ExternalLink className="w-3.5 h-3.5 text-orange-400" />
                   </a>
                 ) : (
                   <a
                     href="/admin/configuracoes?tab=subscription"
-                    className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-[#212529] text-[#E9ECEF] font-bold hover:bg-black shadow-xs transition text-xs"
+                    className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-slate-900 text-white font-semibold hover:bg-slate-800 shadow-xs transition text-xs"
                   >
                     <span>Ver Detalhes do Pagamento</span>
                   </a>
@@ -335,7 +335,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
           )}
 
           {/* Top Bar Desktop / Header */}
-          <header className="h-16 sm:h-20 bg-white border-b border-slate-200/80 px-4 sm:px-8 py-3.5 sm:py-4 flex items-center justify-between sticky top-0 z-20 shadow-xs">
+          <header className="h-16 sm:h-20 bg-white border-b border-slate-200 px-4 sm:px-8 py-3.5 sm:py-4 flex items-center justify-between sticky top-0 z-20">
             <div className="flex items-center gap-3">
               {/* Hamburger Mobile */}
               <button
@@ -353,7 +353,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                   <ChevronRight className="w-3.5 h-3.5" />
                   <span className="text-slate-600">{getPageTitle()}</span>
                 </div>
-                <h2 className="text-base sm:text-lg font-bold text-slate-900 leading-tight">
+                <h2 className="text-base sm:text-lg font-semibold text-slate-900 tracking-tight leading-tight">
                   {getPageTitle()}
                 </h2>
               </div>
@@ -365,7 +365,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                 href={catalogHref}
                 target="_blank"
                 rel="noreferrer"
-                className="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-xl transition cursor-pointer"
+                className="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-slate-700 bg-white border border-slate-300 hover:bg-slate-100 rounded-xl transition cursor-pointer"
               >
                 <ExternalLink className="w-3.5 h-3.5 text-slate-500" />
                 <span>Abrir Vitrine</span>
@@ -388,26 +388,26 @@ export function AdminLayout({ children }: AdminLayoutProps) {
           {mobileMenuOpen && (
             <div className="lg:hidden fixed inset-0 z-50 flex">
               <div
-                className="fixed inset-0 bg-[#212529]/70 backdrop-blur-xs"
+                className="fixed inset-0 bg-slate-950/70 backdrop-blur-xs"
                 onClick={() => setMobileMenuOpen(false)}
               />
               <div
                 data-admin-mobile-drawer="true"
-                className="relative w-72 max-w-[80vw] bg-[#212529] !text-white flex flex-col z-10 shadow-2xl select-none"
+                className="relative w-72 max-w-[80vw] bg-[#0B0F19] !text-white flex flex-col z-10 shadow-2xl select-none"
                 style={{ color: '#ffffff' }}
               >
-                <div className="h-16 sm:h-20 flex items-center justify-between px-5 border-b border-white/10">
+                <div className="h-16 sm:h-20 flex items-center justify-between px-5 border-b border-slate-800">
                   <div className="flex items-center gap-2.5">
-                    <div className="h-8 w-8 rounded-lg overflow-hidden flex items-center justify-center bg-[#212529] border border-white/15">
+                    <div className="h-7 w-7 flex items-center justify-center">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
-                        src="/numclick-badge.png"
+                        src="/favicon.svg"
                         alt="NumClick Logo"
-                        className="w-full h-full object-cover"
+                        className="w-6 h-6 object-contain"
                       />
                     </div>
                     <span
-                      className="font-extrabold !text-white text-sm"
+                      className="font-bold !text-white text-sm tracking-tight"
                       style={{ color: '#ffffff' }}
                     >
                       NumClick • Lojista
@@ -435,10 +435,10 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                         key={item.name}
                         href={itemHref}
                         onClick={() => setMobileMenuOpen(false)}
-                        className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-semibold transition !text-white ${
+                        className={`flex items-center justify-between px-3.5 py-2.5 text-sm font-semibold transition !text-white ${
                           active
-                            ? 'bg-white/10 border border-white/15 shadow-xs'
-                            : 'hover:bg-white/5 active:bg-white/10 border border-transparent'
+                            ? 'bg-white/10 border-l-2 border-orange-500 rounded-r-lg'
+                            : 'hover:bg-white/5 active:bg-white/10 border-l-2 border-transparent rounded-r-lg'
                         }`}
                         style={{ color: '#ffffff' }}
                       >
@@ -460,7 +460,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                           <span
                             className={`text-[9px] font-semibold px-2 py-0.5 rounded-md !text-white border ${
                               active
-                                ? 'bg-white/20 border-white/25'
+                                ? 'bg-orange-500/20 border-orange-500/40'
                                 : 'bg-white/10 border-white/15'
                             }`}
                             style={{ color: '#ffffff' }}
@@ -473,12 +473,12 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                   })}
                 </nav>
 
-                <div className="p-4 border-t border-slate-900 space-y-2">
+                <div className="p-4 border-t border-slate-800 space-y-2">
                   <a
                     href={catalogHref}
                     target="_blank"
                     rel="noreferrer"
-                    className="flex items-center justify-center gap-2 w-full px-3 py-2 text-xs font-bold !text-white bg-slate-900 hover:bg-white/10 rounded-xl border border-white/10 transition"
+                    className="flex items-center justify-center gap-2 w-full px-3 py-2 text-xs font-semibold !text-white bg-orange-600 hover:bg-orange-500 rounded-xl transition"
                     style={{ color: '#ffffff' }}
                   >
                     <ExternalLink className="w-3.5 h-3.5 !text-white" style={{ color: '#ffffff' }} />
@@ -487,7 +487,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                   <button
                     type="button"
                     onClick={logout}
-                    className="flex items-center justify-center gap-2 w-full px-3 py-2 text-xs font-bold !text-rose-400 hover:bg-white/10 rounded-xl transition"
+                    className="flex items-center justify-center gap-2 w-full px-3 py-2 text-xs font-semibold !text-rose-400 hover:bg-white/10 rounded-xl transition"
                   >
                     <LogOut className="w-3.5 h-3.5" />
                     Sair da Conta

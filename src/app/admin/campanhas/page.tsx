@@ -327,10 +327,10 @@ export default function AdminCampanhasPage() {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <div className="flex items-center gap-2">
-              <span className="p-2 bg-[#FB5607]/10 border border-[#FB5607]/25 rounded-xl text-[#FB5607]">
+              <span className="p-2 bg-orange-50 border border-orange-200 rounded-xl text-orange-600">
                 <Flame className="w-5 h-5" />
               </span>
-              <h1 className="text-xl sm:text-2xl font-bold text-[#212529] tracking-tight">
+              <h1 className="text-xl sm:text-2xl font-semibold text-slate-900 tracking-tight">
                 Campanhas & Descontos Temporais
               </h1>
             </div>
@@ -342,7 +342,7 @@ export default function AdminCampanhasPage() {
           <button
             type="button"
             onClick={handleOpenNew}
-            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-[#FB5607] text-white text-xs sm:text-sm font-semibold hover:bg-[#8338EC] transition shadow-sm cursor-pointer"
+            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-slate-900 text-white text-xs sm:text-sm font-semibold hover:bg-slate-800 transition shadow-xs cursor-pointer"
           >
             <Plus className="w-4 h-4" />
             <span>Nova Campanha</span>
@@ -351,7 +351,7 @@ export default function AdminCampanhasPage() {
 
         {/* Mensagens de Sucesso ou Erro Geral */}
         {successMessage && (
-          <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs sm:text-sm font-medium flex items-center justify-between animate-fade-in">
+          <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs sm:text-sm font-medium flex items-center justify-between animate-fade-in">
             <div className="flex items-center gap-2">
               <CheckCircle2 className="w-5 h-5 text-emerald-600 flex-shrink-0" />
               <span>{successMessage}</span>
@@ -366,7 +366,7 @@ export default function AdminCampanhasPage() {
         )}
 
         {errorMessage && (
-          <div className="p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 text-xs sm:text-sm font-medium flex items-center justify-between animate-fade-in">
+          <div className="p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs sm:text-sm font-medium flex items-center justify-between animate-fade-in">
             <div className="flex items-center gap-2">
               <AlertCircle className="w-5 h-5 text-rose-600 flex-shrink-0" />
               <span>{errorMessage}</span>
@@ -389,7 +389,7 @@ export default function AdminCampanhasPage() {
               placeholder="Buscar campanha por nome..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-slate-800 focus:ring-4 focus:ring-slate-900/5 transition shadow-2xs"
+              className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition shadow-2xs"
             />
             {searchTerm && (
               <button
@@ -405,16 +405,16 @@ export default function AdminCampanhasPage() {
 
         {/* Listagem de Campanhas */}
         {isLoading ? (
-          <div className="p-12 text-center bg-white rounded-2xl border border-slate-200/80 shadow-2xs">
+          <div className="p-12 text-center bg-white rounded-xl border border-slate-200 shadow-2xs">
             <Loader2 className="w-8 h-8 text-slate-400 animate-spin mx-auto mb-3" />
             <p className="text-sm font-medium text-slate-500">Carregando campanhas...</p>
           </div>
         ) : filteredCampaigns.length === 0 ? (
-          <div className="p-12 text-center bg-white rounded-2xl border border-slate-200/80 shadow-2xs space-y-3">
-            <div className="w-14 h-14 bg-rose-50 text-rose-600 rounded-2xl flex items-center justify-center mx-auto border border-rose-100">
-              <Flame className="w-7 h-7" />
+          <div className="p-12 text-center bg-white rounded-xl border border-slate-200 shadow-2xs space-y-3">
+            <div className="w-12 h-12 bg-orange-50 text-orange-600 rounded-xl flex items-center justify-center mx-auto border border-orange-200/60">
+              <Flame className="w-6 h-6" />
             </div>
-            <h3 className="text-base font-bold text-slate-800">
+            <h3 className="text-base font-semibold text-slate-900 tracking-tight">
               {searchTerm ? 'Nenhuma campanha encontrada' : 'Nenhuma campanha cadastrada'}
             </h3>
             <p className="text-xs sm:text-sm text-slate-500 max-w-sm mx-auto">
@@ -443,7 +443,7 @@ export default function AdminCampanhasPage() {
               return (
                 <div
                   key={camp.id}
-                  className={`bg-white rounded-2xl border p-5 transition shadow-2xs hover:shadow-md flex flex-col justify-between ${
+                  className={`bg-white rounded-xl border p-5 transition shadow-2xs hover:border-slate-300 flex flex-col justify-between ${
                     camp.is_active ? 'border-slate-200' : 'border-slate-200/60 opacity-80'
                   }`}
                 >
@@ -452,19 +452,19 @@ export default function AdminCampanhasPage() {
                     <div className="flex items-start justify-between gap-2">
                       <div className="flex-1 min-w-0">
                         <span
-                          className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold border ${status.color}`}
+                          className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold border ${status.color}`}
                         >
                           <span className={`w-1.5 h-1.5 rounded-full ${status.dot}`} />
                           {status.label}
                         </span>
-                        <h3 className="text-base font-bold text-slate-900 mt-2 truncate" title={camp.name}>
+                        <h3 className="text-base font-semibold text-slate-900 tracking-tight mt-2 truncate" title={camp.name}>
                           {camp.name}
                         </h3>
                       </div>
 
                       {/* Desconto em destaque */}
                       <div className="text-right flex-shrink-0">
-                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl bg-rose-50 text-rose-700 border border-rose-200 font-extrabold text-sm">
+                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-orange-50 text-orange-700 border border-orange-200 font-bold text-sm">
                           {camp.discount_type === 'percentage' ? (
                             <>
                               <Percent className="w-3.5 h-3.5" />
@@ -481,13 +481,13 @@ export default function AdminCampanhasPage() {
                     </div>
 
                     {/* Escopo de Aplicação */}
-                    <div className="p-3 bg-slate-50 rounded-xl border border-slate-100 space-y-1.5 text-xs text-slate-600">
+                    <div className="p-3 bg-slate-50 rounded-xl border border-slate-200/70 space-y-1.5 text-xs text-slate-600">
                       <div className="flex items-center justify-between font-semibold">
                         <span className="flex items-center gap-1.5 text-slate-500">
                           <Layers className="w-3.5 h-3.5" />
                           <span>Escopo:</span>
                         </span>
-                        <span className="text-slate-800 font-bold">
+                        <span className="text-slate-800 font-semibold">
                           {camp.scope === 'all'
                             ? 'Toda a Loja'
                             : camp.scope === 'categories'
@@ -525,7 +525,7 @@ export default function AdminCampanhasPage() {
                       onClick={() => handleToggleStatus(camp)}
                       className={`text-xs font-semibold px-2.5 py-1.5 rounded-lg border transition cursor-pointer ${
                         camp.is_active
-                          ? 'text-slate-600 bg-white border-slate-200 hover:bg-slate-50'
+                          ? 'text-slate-700 bg-white border-slate-300 hover:bg-slate-100'
                           : 'text-emerald-700 bg-emerald-50 border-emerald-200 hover:bg-emerald-100'
                       }`}
                     >
@@ -560,15 +560,15 @@ export default function AdminCampanhasPage() {
         {/* Modal de Criação / Edição de Campanha */}
         {isModalOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs animate-fade-in overflow-y-auto">
-            <div className="bg-white rounded-3xl max-w-xl w-full max-h-[92vh] overflow-y-auto shadow-2xl border border-slate-100 flex flex-col animate-scale-in">
+            <div className="bg-white rounded-xl max-w-xl w-full max-h-[92vh] overflow-y-auto shadow-2xl border border-slate-200 flex flex-col animate-scale-in">
               {/* Header do Modal */}
-              <div className="p-5 sm:p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/60 sticky top-0 z-10 backdrop-blur-md">
+              <div className="p-5 sm:p-6 border-b border-slate-200 flex items-center justify-between bg-slate-50/60 sticky top-0 z-10 backdrop-blur-md">
                 <div className="flex items-center gap-2.5">
-                  <span className="p-2 bg-rose-50 border border-rose-200 rounded-xl text-rose-600">
+                  <span className="p-2 bg-orange-50 border border-orange-200 rounded-xl text-orange-600">
                     <Flame className="w-5 h-5" />
                   </span>
                   <div>
-                    <h2 className="text-base sm:text-lg font-bold text-slate-900">
+                    <h2 className="text-base sm:text-lg font-semibold text-slate-900 tracking-tight">
                       {editingCampaign ? 'Editar Campanha' : 'Nova Campanha Promocional'}
                     </h2>
                     <p className="text-xs text-slate-500">Configure o período e o desconto</p>
@@ -577,7 +577,7 @@ export default function AdminCampanhasPage() {
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-200/50 rounded-xl transition"
+                  className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-200/50 rounded-lg transition"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -594,7 +594,7 @@ export default function AdminCampanhasPage() {
 
                 {/* Nome da Campanha */}
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">
+                  <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5">
                     Nome da Campanha *
                   </label>
                   <input
@@ -603,14 +603,14 @@ export default function AdminCampanhasPage() {
                     placeholder="Ex: Liquidação de Inverno, Black Friday, Ofertas da Semana"
                     value={formName}
                     onChange={(e) => setFormName(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs sm:text-sm font-semibold text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-slate-800 focus:ring-4 focus:ring-slate-900/5"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs sm:text-sm font-semibold text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20"
                   />
                 </div>
 
                 {/* Período: Início e Fim */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                   <div>
-                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5 flex items-center gap-1.5">
+                    <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5 flex items-center gap-1.5">
                       <Calendar className="w-3.5 h-3.5 text-slate-400" />
                       <span>Data & Hora de Início *</span>
                     </label>
@@ -619,12 +619,12 @@ export default function AdminCampanhasPage() {
                       required
                       value={formStartDate}
                       onChange={(e) => setFormStartDate(e.target.value)}
-                      className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-semibold text-slate-900 focus:outline-none focus:border-slate-800 focus:ring-4 focus:ring-slate-900/5 font-mono"
+                      className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-semibold text-slate-900 focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 font-mono"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5 flex items-center gap-1.5">
+                    <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5 flex items-center gap-1.5">
                       <Clock className="w-3.5 h-3.5 text-slate-400" />
                       <span>Data & Hora de Término *</span>
                     </label>
@@ -633,7 +633,7 @@ export default function AdminCampanhasPage() {
                       required
                       value={formEndDate}
                       onChange={(e) => setFormEndDate(e.target.value)}
-                      className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-semibold text-slate-900 focus:outline-none focus:border-slate-800 focus:ring-4 focus:ring-slate-900/5 font-mono"
+                      className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-semibold text-slate-900 focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 font-mono"
                     />
                   </div>
                 </div>
@@ -641,14 +641,14 @@ export default function AdminCampanhasPage() {
                 {/* Tipo de Desconto e Valor */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                   <div>
-                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">
+                    <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5">
                       Tipo de Desconto *
                     </label>
                     <div className="grid grid-cols-2 gap-2">
                       <button
                         type="button"
                         onClick={() => setFormDiscountType('percentage')}
-                        className={`p-2.5 rounded-xl border text-xs font-bold flex items-center justify-center gap-1.5 transition ${
+                        className={`p-2.5 rounded-xl border text-xs font-semibold flex items-center justify-center gap-1.5 transition ${
                           formDiscountType === 'percentage'
                             ? 'border-slate-900 bg-slate-900 text-white shadow-2xs'
                             : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300'
@@ -661,7 +661,7 @@ export default function AdminCampanhasPage() {
                       <button
                         type="button"
                         onClick={() => setFormDiscountType('fixed')}
-                        className={`p-2.5 rounded-xl border text-xs font-bold flex items-center justify-center gap-1.5 transition ${
+                        className={`p-2.5 rounded-xl border text-xs font-semibold flex items-center justify-center gap-1.5 transition ${
                           formDiscountType === 'fixed'
                             ? 'border-slate-900 bg-slate-900 text-white shadow-2xs'
                             : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300'
@@ -674,7 +674,7 @@ export default function AdminCampanhasPage() {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">
+                    <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5">
                       {formDiscountType === 'percentage' ? 'Valor do Desconto (%) *' : 'Valor do Desconto (R$) *'}
                     </label>
                     <input
@@ -686,53 +686,53 @@ export default function AdminCampanhasPage() {
                       placeholder={formDiscountType === 'percentage' ? 'Ex: 20' : 'Ex: 15.00'}
                       value={formDiscountValue}
                       onChange={(e) => setFormDiscountValue(e.target.value)}
-                      className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs sm:text-sm font-semibold text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-slate-800 focus:ring-4 focus:ring-slate-900/5 font-mono"
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs sm:text-sm font-semibold text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 font-mono"
                     />
                   </div>
                 </div>
 
                 {/* Seletor de Escopo */}
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">
+                  <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5">
                     Onde aplicar o desconto? *
                   </label>
                   <div className="grid grid-cols-3 gap-2">
                     <button
                       type="button"
                       onClick={() => setFormScope('all')}
-                      className={`p-2.5 rounded-xl border text-xs font-bold flex flex-col items-center justify-center gap-1 transition ${
+                      className={`p-2.5 rounded-xl border text-xs font-semibold flex flex-col items-center justify-center gap-1 transition ${
                         formScope === 'all'
-                          ? 'border-emerald-600 bg-emerald-50 text-emerald-800 shadow-2xs'
+                          ? 'border-orange-500 bg-orange-50 text-orange-800 shadow-2xs'
                           : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300'
                       }`}
                     >
-                      <Sparkles className="w-4 h-4 text-emerald-600" />
+                      <Sparkles className="w-4 h-4 text-orange-600" />
                       <span>Toda a Loja</span>
                     </button>
 
                     <button
                       type="button"
                       onClick={() => setFormScope('categories')}
-                      className={`p-2.5 rounded-xl border text-xs font-bold flex flex-col items-center justify-center gap-1 transition ${
+                      className={`p-2.5 rounded-xl border text-xs font-semibold flex flex-col items-center justify-center gap-1 transition ${
                         formScope === 'categories'
-                          ? 'border-emerald-600 bg-emerald-50 text-emerald-800 shadow-2xs'
+                          ? 'border-orange-500 bg-orange-50 text-orange-800 shadow-2xs'
                           : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300'
                       }`}
                     >
-                      <Layers className="w-4 h-4 text-emerald-600" />
+                      <Layers className="w-4 h-4 text-orange-600" />
                       <span>Categorias</span>
                     </button>
 
                     <button
                       type="button"
                       onClick={() => setFormScope('products')}
-                      className={`p-2.5 rounded-xl border text-xs font-bold flex flex-col items-center justify-center gap-1 transition ${
+                      className={`p-2.5 rounded-xl border text-xs font-semibold flex flex-col items-center justify-center gap-1 transition ${
                         formScope === 'products'
-                          ? 'border-emerald-600 bg-emerald-50 text-emerald-800 shadow-2xs'
+                          ? 'border-orange-500 bg-orange-50 text-orange-800 shadow-2xs'
                           : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300'
                       }`}
                     >
-                      <ShoppingBag className="w-4 h-4 text-emerald-600" />
+                      <ShoppingBag className="w-4 h-4 text-orange-600" />
                       <span>Produtos</span>
                     </button>
                   </div>
@@ -740,9 +740,9 @@ export default function AdminCampanhasPage() {
 
                 {/* Seleção de Categorias quando escopo = 'categories' */}
                 {formScope === 'categories' && (
-                  <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-2.5">
+                  <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-2.5">
                     <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-slate-800">
+                      <span className="text-xs font-semibold text-slate-800">
                         Selecione as categorias participantes ({formCategoryIds.length} selecionadas):
                       </span>
                       <button
@@ -754,7 +754,7 @@ export default function AdminCampanhasPage() {
                             setFormCategoryIds(categories.map((c) => c.id));
                           }
                         }}
-                        className="text-[11px] font-semibold text-emerald-700 hover:underline"
+                        className="text-[11px] font-semibold text-orange-600 hover:underline"
                       >
                         {formCategoryIds.length === categories.length ? 'Desmarcar todas' : 'Marcar todas'}
                       </button>
@@ -767,7 +767,7 @@ export default function AdminCampanhasPage() {
                           <label
                             key={cat.id}
                             className={`flex items-center gap-2.5 p-2 rounded-xl text-xs font-medium cursor-pointer transition ${
-                              checked ? 'bg-white border border-emerald-400 text-slate-900 shadow-2xs' : 'hover:bg-slate-200/50 text-slate-700'
+                              checked ? 'bg-white border border-orange-400 text-slate-900 shadow-2xs' : 'hover:bg-slate-200/50 text-slate-700'
                             }`}
                           >
                             <input
@@ -780,7 +780,7 @@ export default function AdminCampanhasPage() {
                                   setFormCategoryIds((prev) => prev.filter((id) => id !== cat.id));
                                 }
                               }}
-                              className="rounded text-emerald-600 focus:ring-emerald-500"
+                              className="rounded text-orange-600 focus:ring-orange-500"
                             />
                             <span>{cat.nome}</span>
                           </label>
@@ -792,9 +792,9 @@ export default function AdminCampanhasPage() {
 
                 {/* Seleção de Produtos quando escopo = 'products' */}
                 {formScope === 'products' && (
-                  <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-2.5">
+                  <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-2.5">
                     <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-slate-800">
+                      <span className="text-xs font-semibold text-slate-800">
                         Selecione os produtos participantes ({formProductIds.length} selecionados):
                       </span>
                       <button
@@ -806,7 +806,7 @@ export default function AdminCampanhasPage() {
                             setFormProductIds(products.map((p) => p.id));
                           }
                         }}
-                        className="text-[11px] font-semibold text-emerald-700 hover:underline"
+                        className="text-[11px] font-semibold text-orange-600 hover:underline"
                       >
                         {formProductIds.length === products.length ? 'Desmarcar todos' : 'Marcar todos'}
                       </button>
@@ -818,7 +818,7 @@ export default function AdminCampanhasPage() {
                       placeholder="Filtrar produto por nome..."
                       value={productSearchInModal}
                       onChange={(e) => setProductSearchInModal(e.target.value)}
-                      className="w-full px-3 py-1.5 rounded-xl border border-slate-200 text-xs text-slate-800 bg-white placeholder:text-slate-400 focus:outline-none focus:border-slate-800"
+                      className="w-full px-3 py-1.5 rounded-xl border border-slate-200 text-xs text-slate-800 bg-white placeholder:text-slate-400 focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20"
                     />
 
                     <div className="max-h-48 overflow-y-auto space-y-1.5 pr-1">
@@ -828,7 +828,7 @@ export default function AdminCampanhasPage() {
                           <label
                             key={prod.id}
                             className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium cursor-pointer transition ${
-                              checked ? 'bg-white border border-emerald-400 text-slate-900 shadow-2xs' : 'hover:bg-slate-200/50 text-slate-700'
+                              checked ? 'bg-white border border-orange-400 text-slate-900 shadow-2xs' : 'hover:bg-slate-200/50 text-slate-700'
                             }`}
                           >
                             <div className="flex items-center gap-2 min-w-0">
@@ -842,7 +842,7 @@ export default function AdminCampanhasPage() {
                                     setFormProductIds((prev) => prev.filter((id) => id !== prod.id));
                                   }
                                 }}
-                                className="rounded text-emerald-600 focus:ring-emerald-500"
+                                className="rounded text-orange-600 focus:ring-orange-500"
                               />
                               <span className="truncate">{prod.nome}</span>
                             </div>
@@ -859,7 +859,7 @@ export default function AdminCampanhasPage() {
                 {/* Status Ativo */}
                 <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
                   <div>
-                    <span className="text-xs font-bold text-slate-800 block">Campanha Ativa</span>
+                    <span className="text-xs font-semibold text-slate-800 block">Campanha Ativa</span>
                     <span className="text-[11px] text-slate-500">
                       Quando ativada, os descontos vigorarão automaticamente dentro do período configurado.
                     </span>
@@ -880,7 +880,7 @@ export default function AdminCampanhasPage() {
                   <button
                     type="button"
                     onClick={() => setIsModalOpen(false)}
-                    className="px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-50 transition"
+                    className="px-4 py-2.5 rounded-xl border border-slate-300 text-xs font-semibold text-slate-700 hover:bg-slate-100 transition"
                   >
                     Cancelar
                   </button>
@@ -888,7 +888,7 @@ export default function AdminCampanhasPage() {
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="px-5 py-2.5 rounded-xl bg-[#FB5607] text-white text-xs font-bold hover:bg-[#8338EC] transition flex items-center gap-2 disabled:opacity-50 cursor-pointer shadow-sm"
+                    className="px-5 py-2.5 rounded-xl bg-slate-900 text-white text-xs font-semibold hover:bg-slate-800 transition flex items-center gap-2 disabled:opacity-50 cursor-pointer shadow-xs"
                   >
                     {isSubmitting ? (
                       <>

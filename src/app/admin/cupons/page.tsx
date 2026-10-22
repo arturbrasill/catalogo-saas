@@ -234,13 +234,13 @@ export default function AdminCuponsPage() {
     <AdminLayout>
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Cabeçalho da Página */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-2xs">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-5 sm:p-6 rounded-xl border border-slate-200 shadow-2xs">
           <div>
-            <div className="flex items-center gap-2 text-[#212529]">
-              <div className="h-9 w-9 rounded-xl bg-[#FB5607]/10 text-[#FB5607] flex items-center justify-center">
+            <div className="flex items-center gap-2 text-slate-900">
+              <div className="h-9 w-9 rounded-lg bg-orange-50 text-orange-600 border border-orange-200/60 flex items-center justify-center">
                 <TicketPercent className="w-5 h-5" />
               </div>
-              <h1 className="text-xl sm:text-2xl font-black tracking-tight">Cupons de Desconto</h1>
+              <h1 className="text-xl sm:text-2xl font-semibold tracking-tight">Cupons de Desconto</h1>
             </div>
             <p className="text-xs sm:text-sm text-slate-500 mt-1">
               Crie cupons promocionais (em % ou R$) para seus clientes aplicarem na sacola e fecharem mais pedidos.
@@ -250,7 +250,7 @@ export default function AdminCuponsPage() {
           <button
             type="button"
             onClick={handleOpenNew}
-            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-[#FB5607] hover:bg-[#8338EC] text-white font-bold text-xs shadow-sm hover:shadow transition-all cursor-pointer"
+            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs shadow-xs transition-all cursor-pointer"
           >
             <Plus className="w-4 h-4" />
             <span>Novo Cupom</span>
@@ -260,36 +260,36 @@ export default function AdminCuponsPage() {
         {/* Métricas / Visão Geral */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
           <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-2xs">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 block">
               Total de Cupons
             </span>
-            <span className="text-2xl font-black text-slate-900 mt-1 block">{stats.total}</span>
+            <span className="text-2xl font-bold text-slate-900 tracking-tight mt-1 block">{stats.total}</span>
           </div>
 
           <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-2xs">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-600 block">
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-emerald-600 block">
               Cupons Ativos
             </span>
-            <span className="text-2xl font-black text-emerald-700 mt-1 block">{stats.active}</span>
+            <span className="text-2xl font-bold text-slate-900 tracking-tight mt-1 block">{stats.active}</span>
           </div>
 
           <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-2xs">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 block">
               Em Porcentagem (%)
             </span>
-            <span className="text-2xl font-black text-slate-900 mt-1 block">{stats.percentage}</span>
+            <span className="text-2xl font-bold text-slate-900 tracking-tight mt-1 block">{stats.percentage}</span>
           </div>
 
           <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-2xs">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 block">
               Valor Fixo (R$)
             </span>
-            <span className="text-2xl font-black text-slate-900 mt-1 block">{stats.fixed}</span>
+            <span className="text-2xl font-bold text-slate-900 tracking-tight mt-1 block">{stats.fixed}</span>
           </div>
         </div>
 
         {/* Barra de Busca e Filtros */}
-        <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs flex flex-col sm:flex-row gap-3 items-center justify-between">
+        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-2xs flex flex-col sm:flex-row gap-3 items-center justify-between">
           <div className="relative w-full sm:max-w-xs">
             <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
             <input
@@ -297,7 +297,7 @@ export default function AdminCuponsPage() {
               placeholder="Buscar por código ou descrição..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-9 pr-3 py-2 text-xs rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:border-emerald-500 focus:outline-none transition"
+              className="w-full pl-9 pr-3 py-2 text-xs rounded-xl border border-slate-200 bg-white focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 focus:outline-none transition"
             />
           </div>
 
@@ -308,7 +308,7 @@ export default function AdminCuponsPage() {
 
         {/* Feedback Visual: Sucesso */}
         {successMessage && (
-          <div className="rounded-2xl bg-emerald-50 border border-emerald-200 p-4 text-xs sm:text-sm text-emerald-800 flex items-center justify-between shadow-xs animate-fade-in">
+          <div className="rounded-xl bg-emerald-50 border border-emerald-200 p-4 text-xs sm:text-sm text-emerald-800 flex items-center justify-between shadow-xs animate-fade-in">
             <div className="flex items-center gap-2.5">
               <CheckCircle2 className="w-5 h-5 text-emerald-600 flex-shrink-0" />
               <span className="font-semibold">{successMessage}</span>
@@ -334,7 +334,7 @@ export default function AdminCuponsPage() {
             <button
               type="button"
               onClick={loadCoupons}
-              className="underline font-bold hover:text-rose-900"
+              className="underline font-semibold hover:text-rose-900"
             >
               Tentar novamente
             </button>
@@ -343,16 +343,16 @@ export default function AdminCuponsPage() {
 
         {/* Listagem de Cupons */}
         {isLoading ? (
-          <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center shadow-2xs">
-            <Loader2 className="w-8 h-8 text-emerald-600 animate-spin mx-auto mb-3" />
+          <div className="bg-white rounded-xl border border-slate-200 p-12 text-center shadow-2xs">
+            <Loader2 className="w-8 h-8 text-slate-900 animate-spin mx-auto mb-3" />
             <p className="text-xs font-semibold text-slate-500">Carregando cupons da loja...</p>
           </div>
         ) : filteredCoupons.length === 0 ? (
-          <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center shadow-2xs space-y-3">
-            <div className="h-16 w-16 bg-slate-100 text-slate-400 rounded-2xl flex items-center justify-center mx-auto">
-              <Tag className="w-8 h-8 stroke-1 text-slate-300" />
+          <div className="bg-white rounded-xl border border-slate-200 p-12 text-center shadow-2xs space-y-3">
+            <div className="h-14 w-14 bg-slate-100 text-slate-400 rounded-xl flex items-center justify-center mx-auto">
+              <Tag className="w-7 h-7 stroke-1.5 text-slate-400" />
             </div>
-            <h3 className="text-base font-bold text-slate-900">
+            <h3 className="text-base font-semibold text-slate-900 tracking-tight">
               {searchTerm ? 'Nenhum cupom encontrado' : 'Nenhum cupom cadastrado'}
             </h3>
             <p className="text-xs text-slate-500 max-w-sm mx-auto">
@@ -364,7 +364,7 @@ export default function AdminCuponsPage() {
               <button
                 type="button"
                 onClick={handleOpenNew}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-600 text-white font-bold text-xs hover:bg-emerald-700 transition"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-900 text-white font-semibold text-xs hover:bg-slate-800 transition"
               >
                 <Plus className="w-4 h-4" />
                 Criar Primeiro Cupom
@@ -372,10 +372,10 @@ export default function AdminCuponsPage() {
             )}
           </div>
         ) : (
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-2xs overflow-hidden">
+          <div className="bg-white rounded-xl border border-slate-200 shadow-2xs overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
-                <thead className="bg-slate-50/80 border-b border-slate-200 text-slate-500 uppercase tracking-wider text-[10px] font-bold">
+                <thead className="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase tracking-wider text-[11px] font-semibold">
                   <tr>
                     <th className="py-3.5 px-4 sm:px-6">Código</th>
                     <th className="py-3.5 px-4">Desconto</th>
@@ -391,13 +391,13 @@ export default function AdminCuponsPage() {
                       {/* Código com botão copiar */}
                       <td className="py-3.5 px-4 sm:px-6">
                         <div className="flex items-center gap-2">
-                          <span className="font-mono font-black text-xs sm:text-sm text-slate-900 bg-slate-100 px-2 py-1 rounded-md border border-slate-200/80">
+                          <span className="font-mono font-bold text-xs sm:text-sm text-slate-900 bg-slate-100 px-2 py-1 rounded-md border border-slate-200">
                             {coupon.codigo}
                           </span>
                           <button
                             type="button"
                             onClick={() => handleCopyCode(coupon.codigo)}
-                            className="text-slate-400 hover:text-emerald-600 p-1 rounded-md hover:bg-slate-100 transition cursor-pointer"
+                            className="text-slate-400 hover:text-orange-600 p-1 rounded-md hover:bg-slate-100 transition cursor-pointer"
                             title="Copiar código"
                           >
                             {copiedCode === coupon.codigo ? (
@@ -417,9 +417,9 @@ export default function AdminCuponsPage() {
                       {/* Desconto */}
                       <td className="py-3.5 px-4">
                         <span
-                          className={`inline-flex items-center gap-1 font-bold text-xs px-2.5 py-0.5 rounded-full ${
+                          className={`inline-flex items-center gap-1 font-semibold text-xs px-2.5 py-0.5 rounded-full ${
                             coupon.tipo === 'percentage'
-                              ? 'bg-purple-50 text-purple-700 border border-purple-200'
+                              ? 'bg-orange-50 text-orange-700 border border-orange-200'
                               : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
                           }`}
                         >
@@ -465,7 +465,7 @@ export default function AdminCuponsPage() {
                         <button
                           type="button"
                           onClick={() => handleToggleStatus(coupon)}
-                          className={`inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-md transition cursor-pointer ${
+                          className={`inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-md transition cursor-pointer ${
                             coupon.ativo
                               ? 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200'
                               : 'bg-slate-100 text-slate-500 hover:bg-slate-200 border border-slate-200'
@@ -518,13 +518,13 @@ export default function AdminCuponsPage() {
         {/* Modal de Criação / Edição */}
         {isModalOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs animate-fade-in">
-            <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden border border-slate-200 animate-scale-in">
-              <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/80">
+            <div className="bg-white rounded-xl shadow-2xl max-w-md w-full overflow-hidden border border-slate-200 animate-scale-in">
+              <div className="px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50/80">
                 <div className="flex items-center gap-2">
-                  <div className="h-8 w-8 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center">
+                  <div className="h-8 w-8 rounded-lg bg-orange-50 text-orange-600 border border-orange-200 flex items-center justify-center">
                     <TicketPercent className="w-4 h-4" />
                   </div>
-                  <h3 className="font-bold text-slate-900 text-sm">
+                  <h3 className="font-semibold text-slate-900 text-sm tracking-tight">
                     {editingCoupon ? 'Editar Cupom' : 'Novo Cupom de Desconto'}
                   </h3>
                 </div>
@@ -547,7 +547,7 @@ export default function AdminCuponsPage() {
 
                 {/* Código do Cupom */}
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
+                  <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1">
                     Código do Cupom *
                   </label>
                   <input
@@ -556,7 +556,7 @@ export default function AdminCuponsPage() {
                     placeholder="Ex: PROMO10, BEMVINDO, BLACKFRIDAY"
                     value={formCodigo}
                     onChange={(e) => setFormCodigo(e.target.value.toUpperCase().replace(/\s+/g, ''))}
-                    className="w-full px-3 py-2 text-xs font-mono uppercase font-bold rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:border-emerald-500 focus:outline-none transition"
+                    className="w-full px-3 py-2 text-xs font-mono uppercase font-semibold rounded-xl border border-slate-200 bg-white focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 focus:outline-none transition"
                   />
                   <span className="text-[10px] text-slate-400 mt-1 block">
                     Sem espaços. Será o código digitado pelo cliente na sacola.
@@ -565,33 +565,33 @@ export default function AdminCuponsPage() {
 
                 {/* Tipo de Desconto */}
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
+                  <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1">
                     Tipo de Desconto *
                   </label>
                   <div className="grid grid-cols-2 gap-2">
                     <button
                       type="button"
                       onClick={() => setFormTipo('percentage')}
-                      className={`p-2.5 rounded-xl border text-xs font-bold flex items-center justify-center gap-1.5 transition cursor-pointer ${
+                      className={`p-2.5 rounded-xl border text-xs font-semibold flex items-center justify-center gap-1.5 transition cursor-pointer ${
                         formTipo === 'percentage'
-                          ? 'border-emerald-500 bg-emerald-50 text-emerald-800 shadow-2xs'
+                          ? 'border-orange-500 bg-orange-50 text-orange-800 shadow-2xs'
                           : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300'
                       }`}
                     >
-                      <Percent className="w-3.5 h-3.5 text-emerald-600" />
+                      <Percent className="w-3.5 h-3.5 text-orange-600" />
                       <span>Porcentagem (%)</span>
                     </button>
 
                     <button
                       type="button"
                       onClick={() => setFormTipo('fixed')}
-                      className={`p-2.5 rounded-xl border text-xs font-bold flex items-center justify-center gap-1.5 transition cursor-pointer ${
+                      className={`p-2.5 rounded-xl border text-xs font-semibold flex items-center justify-center gap-1.5 transition cursor-pointer ${
                         formTipo === 'fixed'
-                          ? 'border-emerald-500 bg-emerald-50 text-emerald-800 shadow-2xs'
+                          ? 'border-orange-500 bg-orange-50 text-orange-800 shadow-2xs'
                           : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300'
                       }`}
                     >
-                      <DollarSign className="w-3.5 h-3.5 text-emerald-600" />
+                      <DollarSign className="w-3.5 h-3.5 text-orange-600" />
                       <span>Valor Fixo (R$)</span>
                     </button>
                   </div>
@@ -599,7 +599,7 @@ export default function AdminCuponsPage() {
 
                 {/* Valor do Desconto */}
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
+                  <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1">
                     Valor do Desconto {formTipo === 'percentage' ? '(em %)' : '(em R$)'} *
                   </label>
                   <div className="relative">
@@ -612,14 +612,14 @@ export default function AdminCuponsPage() {
                       placeholder={formTipo === 'percentage' ? 'Ex: 10 (para 10%)' : 'Ex: 20.00 (para R$ 20)'}
                       value={formValor}
                       onChange={(e) => setFormValor(e.target.value)}
-                      className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:border-emerald-500 focus:outline-none transition"
+                      className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 bg-white focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 focus:outline-none transition"
                     />
                   </div>
                 </div>
 
                 {/* Valor Mínimo do Pedido (Opcional) */}
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
+                  <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1">
                     Valor Mínimo do Pedido (R$)
                   </label>
                   <input
@@ -629,7 +629,7 @@ export default function AdminCuponsPage() {
                     placeholder="Ex: 50.00 (deixe em branco se não houver mínimo)"
                     value={formValorMinimo}
                     onChange={(e) => setFormValorMinimo(e.target.value)}
-                    className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:border-emerald-500 focus:outline-none transition"
+                    className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 bg-white focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 focus:outline-none transition"
                   />
                   <span className="text-[10px] text-slate-400 mt-1 block">
                     O cupom só será ativado se a soma dos produtos atingir este valor.
@@ -638,20 +638,20 @@ export default function AdminCuponsPage() {
 
                 {/* Data de Validade (Opcional) */}
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
+                  <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1">
                     Data de Expiração (Opcional)
                   </label>
                   <input
                     type="date"
                     value={formValidade}
                     onChange={(e) => setFormValidade(e.target.value)}
-                    className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:border-emerald-500 focus:outline-none transition"
+                    className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 bg-white focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 focus:outline-none transition"
                   />
                 </div>
 
                 {/* Descrição / Anotação Interna */}
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
+                  <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1">
                     Descrição / Regra (Opcional)
                   </label>
                   <input
@@ -659,7 +659,7 @@ export default function AdminCuponsPage() {
                     placeholder="Ex: Boas-vindas para primeira compra"
                     value={formDescricao}
                     onChange={(e) => setFormDescricao(e.target.value)}
-                    className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:border-emerald-500 focus:outline-none transition"
+                    className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 bg-white focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 focus:outline-none transition"
                   />
                 </div>
 
@@ -670,7 +670,7 @@ export default function AdminCuponsPage() {
                     id="formAtivo"
                     checked={formAtivo}
                     onChange={(e) => setFormAtivo(e.target.checked)}
-                    className="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+                    className="h-4 w-4 rounded border-slate-300 text-orange-600 focus:ring-orange-500"
                   />
                   <label htmlFor="formAtivo" className="text-xs font-semibold text-slate-800 cursor-pointer">
                     Cupom Ativo (liberado para uso imediato no catálogo)
@@ -681,14 +681,14 @@ export default function AdminCuponsPage() {
                   <button
                     type="button"
                     onClick={() => setIsModalOpen(false)}
-                    className="px-4 py-2 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-100 transition cursor-pointer"
+                    className="px-4 py-2 rounded-xl border border-slate-300 text-xs font-semibold text-slate-700 hover:bg-slate-100 transition cursor-pointer"
                   >
                     Cancelar
                   </button>
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-[#FB5607] hover:bg-[#8338EC] text-white transition disabled:opacity-50 cursor-pointer"
+                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-slate-900 hover:bg-slate-800 text-white transition disabled:opacity-50 cursor-pointer"
                   >
                     {isSubmitting && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
                     <span>{editingCoupon ? 'Atualizar Cupom' : 'Salvar Cupom'}</span>

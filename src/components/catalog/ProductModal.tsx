@@ -233,7 +233,7 @@ export function ProductModal({
     <>
       <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-950/65 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4 animate-fade-in">
         <div
-          className="bg-brand-card rounded-t-3xl sm:rounded-3xl max-w-3xl w-full max-h-[92vh] overflow-y-auto shadow-2xl border border-slate-100 flex flex-col relative animate-slide-up sm:animate-scale-in"
+          className="bg-white rounded-t-2xl sm:rounded-2xl max-w-3xl w-full max-h-[92vh] overflow-y-auto shadow-2xl border border-slate-200 flex flex-col relative animate-slide-up sm:animate-scale-in"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Mobile Bottom-Sheet Drag Handle */}
@@ -459,18 +459,19 @@ export function ProductModal({
 
                 {/* Título e Preço Atualizado Dinamicamente */}
                 <div>
-                  <h3 className="text-xl font-black text-brand-text-main leading-tight">
+                  <h3 className="text-xl font-bold text-slate-900 tracking-tight leading-tight">
                     {product.nome}
                   </h3>
                   <div className="flex items-baseline gap-3 mt-2 flex-wrap">
                     <span
-                      className="text-2xl sm:text-3xl font-black tracking-tight text-brand-primary transition-all duration-200"
-                      style={{ color: store.primary_color }}
+                      className={`text-2xl sm:text-3xl font-bold tracking-tight transition-all duration-200 ${
+                        currentPromoPrice ? 'text-emerald-700' : 'text-slate-900'
+                      }`}
                     >
                       {formatCurrency(currentEffectivePrice, store.currency)}
                     </span>
                     {currentPromoPrice && (
-                      <span className="text-sm text-brand-text-muted line-through">
+                      <span className="text-sm text-slate-400 line-through">
                         {formatCurrency(currentUnitPrice, store.currency)}
                       </span>
                     )}
@@ -480,13 +481,13 @@ export function ProductModal({
                       </span>
                     )}
                     {savings > 0 && (
-                      <span className="text-[11px] font-bold text-brand-primary bg-brand-primary/10 px-2 py-0.5 rounded-md border border-brand-primary/20">
+                      <span className="text-[11px] font-bold text-orange-700 bg-orange-50 px-2 py-0.5 rounded-md border border-orange-200">
                         Economize {formatCurrency(savings, store.currency)}
                       </span>
                     )}
                   </div>
                   {installmentText && (
-                    <p className="text-xs text-brand-text-muted font-medium mt-1">
+                    <p className="text-xs text-slate-500 font-medium mt-1">
                       {installmentText}
                     </p>
                   )}
@@ -510,12 +511,12 @@ export function ProductModal({
                       return (
                         <div key={variation.tipo} className="space-y-2">
                           <div className="flex items-center justify-between">
-                            <label className="block text-xs font-black uppercase tracking-wider text-slate-700">
+                            <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700">
                               {variation.tipo}:
                             </label>
                             {selectedVal ? (
-                              <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-800 bg-emerald-50 border border-emerald-200/80 px-2 py-0.5 rounded-full shadow-2xs">
-                                <Check className="w-3 h-3 stroke-[3] text-emerald-600" />
+                              <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-orange-700 bg-orange-50 border border-orange-200 px-2 py-0.5 rounded-full">
+                                <Check className="w-3 h-3 stroke-[3] text-orange-600" />
                                 <span>{selectedVal}</span>
                               </span>
                             ) : (
@@ -544,27 +545,26 @@ export function ProductModal({
                                   onClick={() =>
                                     handleSelectVariation(variation.tipo, parsed.cleanLabel)
                                   }
-                                  className={`group/btn relative px-3.5 sm:px-4 py-2.5 rounded-xl text-xs font-bold border transition-all duration-200 cursor-pointer flex items-center gap-2 active:scale-95 shadow-2xs ${
+                                  className={`group/btn relative px-3.5 sm:px-4 py-2 rounded-xl text-xs font-semibold border transition-all duration-150 cursor-pointer flex items-center gap-2 active:scale-95 ${
                                     isSelected
-                                      ? 'text-white border-transparent shadow-md scale-102 ring-2 ring-offset-1'
-                                      : 'bg-white text-slate-700 border-slate-200/90 hover:border-slate-300 hover:bg-slate-50/80 hover:shadow-xs'
+                                      ? 'bg-slate-900 text-white border-slate-900 shadow-2xs'
+                                      : 'bg-white text-slate-700 border-slate-200 hover:border-slate-400 hover:bg-slate-50'
                                   }`}
                                   style={
-                                    isSelected
+                                    isSelected && store.primary_color
                                       ? {
-                                          backgroundColor: store.primary_color || '#0f172a',
-                                          borderColor: store.primary_color || '#0f172a',
-                                          boxShadow: `0 4px 14px 0 ${store.primary_color ? `${store.primary_color}40` : 'rgba(15,23,42,0.2)'}`,
+                                          backgroundColor: store.primary_color,
+                                          borderColor: store.primary_color,
                                         }
                                       : undefined
                                   }
                                 >
                                   {isColor && parsed.corHex && (
                                     <span
-                                      className={`h-4 w-4 rounded-full border shadow-2xs transition-transform duration-200 ${
+                                      className={`h-3.5 w-3.5 rounded-full border shadow-2xs transition-transform duration-150 ${
                                         isSelected
-                                          ? 'border-2 border-white ring-2 ring-white/80 scale-110'
-                                          : 'border-black/20 group-hover/btn:scale-105'
+                                          ? 'border-2 border-white'
+                                          : 'border-slate-300'
                                       }`}
                                       style={{ backgroundColor: parsed.corHex }}
                                     />
@@ -574,7 +574,7 @@ export function ProductModal({
 
                                   {parsed.displayBadge && (
                                     <span
-                                      className={`text-[10px] font-black px-1.5 py-0.5 rounded-md transition-colors ${
+                                      className={`text-[10px] font-bold px-1.5 py-0.5 rounded-md transition-colors ${
                                         isSelected
                                           ? 'bg-white/25 text-white border border-white/20'
                                           : 'bg-emerald-50 text-emerald-800 border border-emerald-200'
@@ -585,8 +585,8 @@ export function ProductModal({
                                   )}
 
                                   {isSelected && (
-                                    <span className="flex items-center justify-center h-4 w-4 rounded-full bg-white/20 ml-0.5 animate-scale-in">
-                                      <Check className="w-3 h-3 stroke-[3] text-white" />
+                                    <span className="flex items-center justify-center h-3.5 w-3.5 rounded-full bg-white/20 ml-0.5">
+                                      <Check className="w-2.5 h-2.5 stroke-[3] text-white" />
                                     </span>
                                   )}
                                 </button>
@@ -605,9 +605,9 @@ export function ProductModal({
                     <button
                       type="button"
                       onClick={() => setActiveTab('details')}
-                      className={`text-xs font-bold pb-1.5 border-b-2 transition cursor-pointer ${
+                      className={`text-xs font-semibold pb-1.5 border-b-2 transition cursor-pointer ${
                         activeTab === 'details'
-                          ? 'border-slate-900 text-slate-900'
+                          ? 'border-orange-500 text-slate-900'
                           : 'border-transparent text-slate-400 hover:text-slate-600'
                       }`}
                     >
@@ -616,9 +616,9 @@ export function ProductModal({
                     <button
                       type="button"
                       onClick={() => setActiveTab('shipping')}
-                      className={`text-xs font-bold pb-1.5 border-b-2 transition cursor-pointer flex items-center gap-1 ${
+                      className={`text-xs font-semibold pb-1.5 border-b-2 transition cursor-pointer flex items-center gap-1 ${
                         activeTab === 'shipping'
-                          ? 'border-slate-900 text-slate-900'
+                          ? 'border-orange-500 text-slate-900'
                           : 'border-transparent text-slate-400 hover:text-slate-600'
                       }`}
                     >
@@ -628,9 +628,9 @@ export function ProductModal({
                     <button
                       type="button"
                       onClick={() => setActiveTab('warranty')}
-                      className={`text-xs font-bold pb-1.5 border-b-2 transition cursor-pointer flex items-center gap-1 ${
+                      className={`text-xs font-semibold pb-1.5 border-b-2 transition cursor-pointer flex items-center gap-1 ${
                         activeTab === 'warranty'
-                          ? 'border-slate-900 text-slate-900'
+                          ? 'border-orange-500 text-slate-900'
                           : 'border-transparent text-slate-400 hover:text-slate-600'
                       }`}
                     >
@@ -640,22 +640,22 @@ export function ProductModal({
                   </div>
 
                   {activeTab === 'details' && (
-                    <div className="text-xs text-slate-600 leading-relaxed bg-slate-50/70 p-3 rounded-2xl border border-slate-100">
+                    <div className="text-xs text-slate-600 leading-relaxed bg-slate-50 p-3 rounded-xl border border-slate-200">
                       {product.descricao || 'Produto original com garantia da loja e pronta entrega.'}
                     </div>
                   )}
 
                   {activeTab === 'shipping' && (
-                    <div className="text-xs text-slate-600 leading-relaxed bg-slate-50/70 p-3 rounded-2xl border border-slate-100 space-y-1">
-                      <p className="font-bold text-slate-800">Opções de Envio:</p>
+                    <div className="text-xs text-slate-600 leading-relaxed bg-slate-50 p-3 rounded-xl border border-slate-200 space-y-1">
+                      <p className="font-semibold text-slate-900">Opções de Envio:</p>
                       <p>• Entrega regional rápida via motoboy ou transportadora.</p>
                       <p>• Opção de retirada imediata no balcão da loja física.</p>
                     </div>
                   )}
 
                   {activeTab === 'warranty' && (
-                    <div className="text-xs text-slate-600 leading-relaxed bg-slate-50/70 p-3 rounded-2xl border border-slate-100 space-y-1">
-                      <p className="font-bold text-slate-800">Garantia & Troca Fácil:</p>
+                    <div className="text-xs text-slate-600 leading-relaxed bg-slate-50 p-3 rounded-xl border border-slate-200 space-y-1">
+                      <p className="font-semibold text-slate-900">Garantia & Troca Fácil:</p>
                       <p>• Produto 100% original e conferido antes do envio.</p>
                       <p>• Suporte direto via WhatsApp para trocas de numeração ou dúvidas.</p>
                     </div>
@@ -666,7 +666,7 @@ export function ProductModal({
               {/* Rodapé: Contador de Quantidade e Botão Adicionar à Sacola (Fixo no Mobile) */}
               <div className="space-y-3 pt-3 border-t border-slate-100 sticky bottom-0 bg-white/95 backdrop-blur-md -mx-5 -mb-5 p-4 sm:p-0 sm:static sm:bg-transparent sm:mx-0 sm:mb-0 z-10 shadow-lg sm:shadow-none">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-slate-700">
+                  <span className="text-xs font-semibold text-slate-700">
                     Quantidade:
                   </span>
                   <div className="flex items-center border border-slate-200 rounded-xl overflow-hidden bg-slate-50 shadow-2xs">
@@ -679,7 +679,7 @@ export function ProductModal({
                     >
                       <Minus className="w-3.5 h-3.5" />
                     </button>
-                    <span className="w-10 text-center text-xs font-black text-brand-text-main select-none">
+                    <span className="w-10 text-center text-xs font-bold text-slate-900 select-none">
                       {quantity}
                     </span>
                     <button
@@ -706,8 +706,8 @@ export function ProductModal({
                   type="button"
                   onClick={handleAddToCart}
                   disabled={isOutOfStock}
-                  className="w-full py-3.5 px-4 rounded-2xl font-black text-xs sm:text-sm text-brand-contrast bg-brand-primary hover:bg-brand-primary-hover shadow-md hover:brightness-95 active:scale-98 transition flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                  style={{ backgroundColor: store.primary_color }}
+                  className="w-full py-3.5 px-4 rounded-xl font-bold text-xs sm:text-sm text-white bg-slate-900 hover:bg-slate-800 shadow-xs hover:brightness-95 active:scale-98 transition flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                  style={store.primary_color ? { backgroundColor: store.primary_color } : undefined}
                 >
                   <ShoppingBag className="w-4 h-4" />
                   {isOutOfStock ? (

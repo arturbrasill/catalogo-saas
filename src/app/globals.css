@@ -3,25 +3,25 @@
 @tailwind utilities;
 
 :root {
-  /* Dynamic White-Label Brand Tokens + Official NumClick Palette (#212529, #8338EC, #E9ECEF, #FB5607) */
-  --brand-primary: #FB5607;
-  --brand-primary-hover: #8338EC;
+  /* Dynamic White-Label Brand Tokens + Official NumClick Palette (#0F172A, #F8FAFC, #EA580C) */
+  --brand-primary: #EA580C;
+  --brand-primary-hover: #F97316;
   --brand-contrast: #ffffff;
-  --brand-surface: #E9ECEF;
+  --brand-surface: #F8FAFC;
   --brand-card: #ffffff;
-  --brand-border: #dee2e6;
-  --brand-text-main: #212529;
-  --brand-text-muted: #495057;
+  --brand-border: #E2E8F0;
+  --brand-text-main: #0F172A;
+  --brand-text-muted: #475569;
 
   /* Official NumClick Brand Tokens */
-  --numclick-dark: #212529;
-  --numclick-purple: #8338EC;
-  --numclick-light: #E9ECEF;
-  --numclick-orange: #FB5607;
+  --numclick-dark: #0F172A;
+  --numclick-purple: #0F172A;
+  --numclick-light: #F8FAFC;
+  --numclick-orange: #EA580C;
 
   /* Radius Tokens */
-  --radius-card: 1rem;
-  --radius-btn: 0.875rem;
+  --radius-card: 0.75rem;
+  --radius-btn: 0.75rem;
   --radius-badge: 9999px;
 
   /* Typography Tokens (with direct font-family fallbacks so CSS var() never fails) */

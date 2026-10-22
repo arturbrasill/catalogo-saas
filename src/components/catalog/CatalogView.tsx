@@ -243,7 +243,7 @@ function CatalogContent({ onStoreLoaded, tenantSlug }: CatalogContentProps) {
           <div className="h-16 sm:h-20 flex items-center justify-between gap-3 sm:gap-6">
             {/* Logo e Nome da Marca com Selo de Status da Loja */}
             <div className="flex items-center gap-3 min-w-0 flex-shrink-0">
-              <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-card bg-slate-900 border border-slate-800 overflow-hidden flex-shrink-0 flex items-center justify-center shadow-xs">
+              <div className="h-10 w-10 sm:h-11 sm:w-11 rounded-xl bg-slate-900 border border-slate-800 overflow-hidden flex-shrink-0 flex items-center justify-center shadow-2xs">
                 {store?.logo_url ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
@@ -254,19 +254,19 @@ function CatalogContent({ onStoreLoaded, tenantSlug }: CatalogContentProps) {
                 ) : (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
-                    src="/numclick-badge.png"
+                    src="/favicon.svg"
                     alt={store?.store_name || 'NumClick'}
-                    className="h-full w-full object-cover"
+                    className="h-6 w-6 object-contain"
                   />
                 )}
               </div>
               <div className="min-w-0">
-                <h1 className="text-sm sm:text-base md:text-lg font-black font-heading text-slate-900 tracking-tight truncate leading-tight">
+                <h1 className="text-sm sm:text-base md:text-lg font-bold text-slate-900 tracking-tight truncate leading-tight">
                   {store?.store_name || 'NumClick'}
                 </h1>
                 <div className="flex items-center gap-2 mt-0.5">
                   <span
-                    className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full border ${storeStatus.badgeClass}`}
+                    className={`inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full border ${storeStatus.badgeClass}`}
                     title={storeStatus.businessHours ? `Horário de atendimento: ${storeStatus.businessHours}` : storeStatus.statusLabel}
                   >
                     <span className={`h-1.5 w-1.5 rounded-full ${storeStatus.dotClass}`} />
@@ -289,7 +289,7 @@ function CatalogContent({ onStoreLoaded, tenantSlug }: CatalogContentProps) {
                   placeholder="Buscar produtos, marcas, referências..."
                   value={filters.searchTerm}
                   onChange={(e) => updateFilters({ searchTerm: e.target.value })}
-                  className="w-full rounded-btn border border-slate-200 bg-slate-50 pl-10 pr-9 py-2.5 text-xs sm:text-sm text-slate-900 placeholder-slate-400 focus:bg-white focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200 transition shadow-2xs"
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50 pl-10 pr-9 py-2 text-xs sm:text-sm text-slate-900 placeholder-slate-400 focus:bg-white focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20 transition"
                 />
                 {filters.searchTerm && (
                   <button
@@ -305,49 +305,47 @@ function CatalogContent({ onStoreLoaded, tenantSlug }: CatalogContentProps) {
             </div>
 
             {/* Ações: Favoritos e Sacola de Compras */}
-            <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+            <div className="flex items-center gap-2 sm:gap-2.5 flex-shrink-0">
               {/* Botão de Favoritos (Wishlist) */}
               <button
                 type="button"
                 onClick={openWishlist}
-                className="relative h-10 w-10 sm:h-11 sm:w-11 rounded-btn border border-slate-200/80 bg-white hover:bg-slate-50 text-slate-600 hover:text-rose-500 transition-all flex items-center justify-center cursor-pointer shadow-2xs"
+                className="relative h-10 w-10 sm:h-10 sm:w-10 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 hover:text-rose-500 transition-all flex items-center justify-center cursor-pointer"
                 title="Ver meus favoritos"
                 aria-label="Ver meus favoritos"
               >
-                <Heart className="w-5 h-5 stroke-[1.8]" />
+                <Heart className="w-4.5 h-4.5 stroke-[1.75]" />
                 {wishlistCount > 0 && (
-                  <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-rose-500 text-white text-[10px] font-black flex items-center justify-center shadow-xs">
+                  <span className="absolute -top-1.5 -right-1.5 h-5 min-w-[20px] px-1 rounded-full bg-orange-600 text-white text-[10px] font-bold flex items-center justify-center border border-white shadow-2xs">
                     {wishlistCount}
                   </span>
                 )}
               </button>
 
-              {/* Botão da Sacola */}
+              {/* Botão da Sacola com Contador em Badge Laranja */}
               <button
                 type="button"
                 onClick={openCart}
-                className="relative px-3.5 sm:px-5 py-2.5 rounded-btn text-brand-contrast bg-brand-primary hover:bg-brand-primary-hover shadow-xs hover:brightness-95 active:scale-97 transition-all flex items-center gap-2.5 cursor-pointer flex-shrink-0"
-                style={{ backgroundColor: store?.primary_color }}
+                className="relative px-3.5 sm:px-4 py-2 rounded-xl text-white bg-slate-900 hover:bg-slate-800 shadow-2xs active:scale-98 transition-all flex items-center gap-2.5 cursor-pointer flex-shrink-0"
+                style={store?.primary_color ? { backgroundColor: store.primary_color } : undefined}
                 aria-label="Abrir sacola de compras"
               >
-                <ShoppingBag className="w-4 h-4 sm:w-5 sm:h-5 stroke-[2]" />
+                <ShoppingBag className="w-4 h-4 sm:w-4.5 sm:h-4.5 stroke-[1.75]" />
                 <div className="hidden sm:flex flex-col items-start leading-none">
-                  <span className="text-[10px] font-bold opacity-85 uppercase tracking-wider">
+                  <span className="text-[10px] font-semibold opacity-85 uppercase tracking-wider">
                     Sacola
                   </span>
-                  <span className="text-xs sm:text-sm font-black mt-0.5">
+                  <span className="text-xs sm:text-sm font-bold mt-0.5">
                     {formatCurrency(cartSubtotal, store?.currency)}
                   </span>
                 </div>
-                {totalItemsCount > 0 && (
-                  <span
-                    className={`h-5 min-w-[20px] px-1 rounded-full bg-white text-brand-text-main text-[11px] font-black flex items-center justify-center shadow-xs transition-transform duration-300 ${
-                      hasNewItemPulse ? 'scale-125 ring-2 ring-emerald-400 animate-pulse' : 'scale-100'
-                    }`}
-                  >
-                    {totalItemsCount}
-                  </span>
-                )}
+                <span
+                  className={`h-5 min-w-[20px] px-1.5 rounded-full bg-orange-600 text-white border border-white/25 text-[11px] font-bold flex items-center justify-center shadow-2xs transition-transform duration-300 ${
+                    hasNewItemPulse ? 'scale-125 ring-2 ring-orange-400 animate-pulse' : 'scale-100'
+                  }`}
+                >
+                  {totalItemsCount}
+                </span>
               </button>
             </div>
           </div>
@@ -361,7 +359,7 @@ function CatalogContent({ onStoreLoaded, tenantSlug }: CatalogContentProps) {
                 placeholder="Buscar no catálogo..."
                 value={filters.searchTerm}
                 onChange={(e) => updateFilters({ searchTerm: e.target.value })}
-                className="w-full rounded-btn border border-slate-200 bg-slate-50 pl-9 pr-8 py-2 text-xs text-slate-900 placeholder-slate-400 focus:bg-white focus:outline-none focus:ring-1 focus:ring-slate-300 transition"
+                className="w-full rounded-xl border border-slate-200 bg-slate-50 pl-9 pr-8 py-2 text-xs text-slate-900 placeholder-slate-400 focus:bg-white focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20 transition"
               />
               {filters.searchTerm && (
                 <button
@@ -468,8 +466,8 @@ function CatalogContent({ onStoreLoaded, tenantSlug }: CatalogContentProps) {
                 store_id: '',
                 store_name: '',
                 logo_url: '',
-                primary_color: '#FB5607',
-                secondary_color: '#8338EC',
+                primary_color: '#EA580C',
+                secondary_color: '#0F172A',
                 whatsapp: '',
                 domain: '',
                 currency: 'BRL',
@@ -481,7 +479,7 @@ function CatalogContent({ onStoreLoaded, tenantSlug }: CatalogContentProps) {
 
         {/* Estado de Erro na API */}
         {errorMessage && (
-          <div className="rounded-3xl bg-rose-50 border border-rose-200 p-8 text-center space-y-3">
+          <div className="rounded-xl bg-rose-50 border border-rose-200 p-8 text-center space-y-3">
             <AlertCircle className="w-8 h-8 text-rose-500 mx-auto" />
             <h3 className="text-sm font-bold text-rose-900">
               Falha ao carregar o catálogo de produtos
@@ -557,9 +555,9 @@ function CatalogContent({ onStoreLoaded, tenantSlug }: CatalogContentProps) {
       )}
 
       {/* Rodapé Sofisticado */}
-      <footer className="border-t border-slate-200/80 bg-white py-10 text-center text-xs text-slate-500 space-y-3">
+      <footer className="border-t border-slate-200 bg-white py-10 text-center text-xs text-slate-500 space-y-3">
         <div className="max-w-7xl mx-auto px-4 space-y-2">
-          <p className="font-extrabold text-slate-800 text-sm">
+          <p className="font-bold text-slate-900 text-sm tracking-tight">
             {store?.store_name || 'NumClick'}
           </p>
           <p className="text-[11px] text-slate-400">
@@ -568,32 +566,32 @@ function CatalogContent({ onStoreLoaded, tenantSlug }: CatalogContentProps) {
           <div className="pt-2 flex items-center justify-center gap-4 text-[11px]">
             <Link
               href="/admin/login"
-              className="text-slate-500 hover:text-slate-800 font-medium underline transition"
+              className="text-slate-500 hover:text-slate-900 font-medium underline transition"
             >
               Acesso do Lojista
             </Link>
             <span>•</span>
             <Link
               href="/criar-loja"
-              className="text-slate-500 hover:text-slate-800 font-medium underline transition"
+              className="text-slate-500 hover:text-slate-900 font-medium underline transition"
             >
               Criar Minha Loja
             </Link>
             <span>•</span>
             <Link
               href="/landing"
-              className="inline-flex items-center gap-1 text-slate-500 hover:text-[#212529] font-medium transition"
+              className="inline-flex items-center gap-1 text-slate-500 hover:text-slate-900 font-medium transition"
             >
               <span>Feito com</span>
-              <span className="font-bold text-[#212529]">
-                Num<span className="text-[#FB5607]">Click</span>
+              <span className="font-bold text-slate-900">
+                Num<span className="text-orange-600">Click</span>
               </span>
             </Link>
           </div>
         </div>
       </footer>
 
-      {/* Sacola Flutuante Moderna (Floating Glassmorphism com Backdrop-Blur e Sombra Marcante) */}
+      {/* Sacola Flutuante Moderna */}
       {totalItemsCount > 0 && (
         <aside
           aria-label="Sacola de compras flutuante"
@@ -603,60 +601,56 @@ function CatalogContent({ onStoreLoaded, tenantSlug }: CatalogContentProps) {
             <button
               type="button"
               onClick={openCart}
-              className="w-full group p-2.5 sm:p-3 rounded-2xl sm:rounded-full bg-slate-950/85 hover:bg-slate-900/95 text-white backdrop-blur-xl border border-white/20 shadow-[0_16px_40px_-6px_rgba(15,23,42,0.45),0_0_20px_rgba(255,255,255,0.08)] flex items-center justify-between active:scale-[0.98] transition-all duration-200 cursor-pointer"
+              className="w-full group p-2.5 sm:p-3 rounded-xl bg-[#0B0F19] hover:bg-slate-900 text-white border border-slate-800 shadow-lg flex items-center justify-between active:scale-[0.98] transition-all duration-200 cursor-pointer"
             >
-              {/* Esquerda: Ícone com Badge de Pulso Animado */}
-              <div className="flex items-center gap-3 pl-1 sm:pl-2">
+              {/* Esquerda: Ícone com Badge Laranja */}
+              <div className="flex items-center gap-3 pl-1 sm:pl-1.5">
                 <div
-                  className="relative h-11 w-11 rounded-xl sm:rounded-full flex items-center justify-center text-white shadow-inner flex-shrink-0 transition-transform duration-200 group-hover:scale-105"
-                  style={{ backgroundColor: store?.primary_color || '#FB5607' }}
+                  className="relative h-10 w-10 rounded-lg flex items-center justify-center text-white flex-shrink-0 transition-transform duration-200 group-hover:scale-105"
+                  style={{ backgroundColor: store?.primary_color || '#EA580C' }}
                 >
-                  <ShoppingBag className="w-5 h-5 stroke-[2]" />
-                  {/* Badge com pulso animado */}
+                  <ShoppingBag className="w-4.5 h-4.5 stroke-[2]" />
                   <span
-                    className={`absolute -top-1 -right-1 h-5 min-w-[20px] px-1 rounded-full text-[10px] font-black flex items-center justify-center shadow-md transition-all duration-300 ${
+                    className={`absolute -top-1.5 -right-1.5 h-5 min-w-[20px] px-1 rounded-full text-[10px] font-bold flex items-center justify-center shadow-2xs transition-all duration-300 ${
                       hasNewItemPulse
-                        ? 'scale-125 bg-emerald-400 text-slate-950 ring-4 ring-emerald-400/40 animate-pulse'
-                        : 'scale-100 bg-white text-slate-900'
+                        ? 'scale-125 bg-orange-500 text-white ring-2 ring-orange-400 animate-pulse'
+                        : 'scale-100 bg-orange-600 text-white border border-[#0B0F19]'
                     }`}
                   >
                     {totalItemsCount}
                   </span>
-                  {hasNewItemPulse && (
-                    <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-emerald-400 opacity-75 animate-ping pointer-events-none" />
-                  )}
                 </div>
 
                 <div className="text-left leading-tight">
                   <div className="flex items-center gap-1.5">
-                    <span className="text-xs sm:text-sm font-black tracking-tight text-white block">
+                    <span className="text-xs sm:text-sm font-bold tracking-tight text-white block">
                       Ver Sacola
                     </span>
-                    <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                    <span className="inline-block h-1.5 w-1.5 rounded-full bg-orange-500 animate-pulse" />
                   </div>
-                  <span className="text-[11px] sm:text-xs text-slate-300 font-medium">
+                  <span className="text-[11px] sm:text-xs text-slate-400 font-medium">
                     {totalItemsCount} {totalItemsCount === 1 ? 'item adicionado' : 'itens adicionados'}
                   </span>
                 </div>
               </div>
 
               {/* Direita: Subtotal e Botão de Ação */}
-              <div className="flex items-center gap-2 sm:gap-3 pr-1">
+              <div className="flex items-center gap-2 sm:gap-3 pr-0.5">
                 <div className="text-right">
-                  <span className="text-[10px] text-slate-400 uppercase tracking-wider block font-bold leading-none">
+                  <span className="text-[10px] text-slate-400 uppercase tracking-wider block font-semibold leading-none">
                     Total
                   </span>
-                  <span className="text-xs sm:text-sm font-black text-white mt-0.5 block">
+                  <span className="text-xs sm:text-sm font-bold text-white mt-0.5 block">
                     {formatCurrency(cartSubtotal, store?.currency)}
                   </span>
                 </div>
 
                 <div
-                  className="h-9 px-3.5 sm:px-4 rounded-xl sm:rounded-full text-brand-contrast font-bold text-xs flex items-center gap-1.5 shadow-sm group-hover:brightness-110 active:scale-95 transition-all"
-                  style={{ backgroundColor: store?.primary_color || '#FB5607' }}
+                  className="h-9 px-3.5 sm:px-4 rounded-lg text-white font-semibold text-xs flex items-center gap-1.5 shadow-2xs group-hover:brightness-110 active:scale-95 transition-all bg-orange-600"
+                  style={store?.primary_color ? { backgroundColor: store.primary_color } : undefined}
                 >
                   <span className="hidden xs:inline">Avançar</span>
-                  <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
+                  <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" />
                 </div>
               </div>
             </button>

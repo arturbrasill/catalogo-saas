@@ -332,7 +332,7 @@ export default function AdminProdutosPage() {
         {/* Header da Página */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+            <h1 className="text-xl sm:text-2xl font-semibold text-slate-900 tracking-tight">
               Gerenciar Produtos
             </h1>
             <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
@@ -342,16 +342,16 @@ export default function AdminProdutosPage() {
           <button
             type="button"
             onClick={handleOpenNew}
-            className="inline-flex items-center gap-2 px-4 py-2.5 text-xs sm:text-sm font-bold text-white bg-[#FB5607] hover:bg-[#8338EC] rounded-2xl shadow-sm hover:shadow active:scale-98 transition-all self-start sm:self-auto cursor-pointer"
+            className="inline-flex items-center gap-2 px-4 py-2.5 text-xs sm:text-sm font-semibold text-white bg-slate-900 hover:bg-slate-800 rounded-xl shadow-xs transition-all self-start sm:self-auto cursor-pointer"
           >
-            <Plus className="w-4 h-4 stroke-[2.5]" />
+            <Plus className="w-4 h-4 stroke-[2.25]" />
             <span>Novo Produto</span>
           </button>
         </div>
 
         {/* Feedback Visual: Sucesso */}
         {successMessage && (
-          <div className="rounded-2xl bg-emerald-50 border border-emerald-200 p-4 text-xs sm:text-sm text-emerald-800 flex items-center justify-between shadow-xs animate-fade-in">
+          <div className="rounded-xl bg-emerald-50 border border-emerald-200 p-4 text-xs sm:text-sm text-emerald-800 flex items-center justify-between shadow-xs animate-fade-in">
             <div className="flex items-center gap-2.5">
               <CheckCircle2 className="w-5 h-5 text-emerald-600 flex-shrink-0" />
               <span className="font-semibold">{successMessage}</span>
@@ -369,7 +369,7 @@ export default function AdminProdutosPage() {
 
         {/* Feedback Visual: Erro */}
         {errorMessage && (
-          <div className="rounded-2xl bg-rose-50 border border-rose-200 p-4 text-xs sm:text-sm text-rose-800 flex items-center justify-between shadow-xs animate-shake">
+          <div className="rounded-xl bg-rose-50 border border-rose-200 p-4 text-xs sm:text-sm text-rose-800 flex items-center justify-between shadow-xs animate-shake">
             <div className="flex items-center gap-2.5">
               <AlertCircle className="w-5 h-5 text-rose-600 flex-shrink-0" />
               <span>{errorMessage}</span>
@@ -386,7 +386,7 @@ export default function AdminProdutosPage() {
         )}
 
         {/* Barra de Filtros e Busca em Tempo Real */}
-        <div className="bg-white rounded-3xl border border-slate-200/80 p-4 sm:p-5 shadow-xs space-y-3.5">
+        <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-5 shadow-xs space-y-3.5">
           <div className="flex flex-col md:flex-row gap-3">
             {/* Campo de Busca em Tempo Real */}
             <div className="relative flex-1">
@@ -396,7 +396,7 @@ export default function AdminProdutosPage() {
                 placeholder="Buscar por nome ou palavras-chave do produto..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full rounded-2xl border border-slate-200 bg-slate-50/60 pl-10 pr-9 py-2.5 text-xs sm:text-sm text-slate-900 placeholder-slate-400 focus:bg-white focus:border-slate-800 focus:outline-none focus:ring-4 focus:ring-slate-900/5 transition"
+                className="w-full rounded-xl border border-slate-200 bg-white pl-10 pr-9 py-2.5 text-xs sm:text-sm text-slate-900 placeholder-slate-400 focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20 transition"
               />
               {searchTerm && (
                 <button
@@ -416,7 +416,7 @@ export default function AdminProdutosPage() {
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value as any)}
-                className="w-full rounded-2xl border border-slate-200 bg-slate-50/60 px-3.5 py-2.5 text-xs sm:text-sm font-semibold text-slate-700 focus:bg-white focus:border-slate-800 focus:outline-none cursor-pointer"
+                className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs sm:text-sm font-semibold text-slate-700 focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20 cursor-pointer"
               >
                 <option value="ALL">Todos os Status</option>
                 <option value="ACTIVE">🟢 Somente Ativos</option>
@@ -427,7 +427,7 @@ export default function AdminProdutosPage() {
 
           {/* Filtro Rápido por Pílulas de Categoria */}
           <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none pt-1">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1 mr-1 flex-shrink-0">
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 flex items-center gap-1 mr-1 flex-shrink-0">
               <Filter className="w-3 h-3 text-slate-400" />
               Categorias:
             </span>
@@ -435,7 +435,7 @@ export default function AdminProdutosPage() {
             <button
               type="button"
               onClick={() => setSelectedCategory('ALL')}
-              className={`px-3 py-1 rounded-xl text-xs font-semibold whitespace-nowrap transition cursor-pointer flex-shrink-0 ${
+              className={`px-3 py-1 rounded-lg text-xs font-semibold whitespace-nowrap transition cursor-pointer flex-shrink-0 ${
                 selectedCategory === 'ALL'
                   ? 'bg-slate-900 text-white shadow-2xs'
                   : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
@@ -452,7 +452,7 @@ export default function AdminProdutosPage() {
                   key={c.id}
                   type="button"
                   onClick={() => setSelectedCategory(c.id)}
-                  className={`px-3 py-1 rounded-xl text-xs font-semibold whitespace-nowrap transition cursor-pointer flex-shrink-0 ${
+                  className={`px-3 py-1 rounded-lg text-xs font-semibold whitespace-nowrap transition cursor-pointer flex-shrink-0 ${
                     isSelected
                       ? 'bg-slate-900 text-white shadow-2xs'
                       : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
@@ -467,14 +467,14 @@ export default function AdminProdutosPage() {
 
         {/* Tabela de Produtos ou Empty State */}
         {isLoading ? (
-          <div className="bg-white rounded-3xl border border-slate-200/80 p-14 text-center shadow-xs">
+          <div className="bg-white rounded-xl border border-slate-200 p-14 text-center shadow-xs">
             <Loader2 className="w-8 h-8 animate-spin text-slate-900 mx-auto mb-3" />
             <p className="text-sm font-semibold text-slate-600">Sincronizando produtos da loja...</p>
           </div>
         ) : filteredProducts.length === 0 ? (
-          <div className="bg-white rounded-3xl border border-slate-200/80 p-12 text-center shadow-xs space-y-3">
+          <div className="bg-white rounded-xl border border-slate-200 p-12 text-center shadow-xs space-y-3">
             <Package className="w-12 h-12 text-slate-300 mx-auto stroke-1" />
-            <h3 className="text-base font-bold text-slate-900">
+            <h3 className="text-base font-semibold text-slate-900 tracking-tight">
               Nenhum produto cadastrado ou encontrado
             </h3>
             <p className="text-xs text-slate-500 max-w-sm mx-auto leading-relaxed">
@@ -486,7 +486,7 @@ export default function AdminProdutosPage() {
               <button
                 type="button"
                 onClick={handleOpenNew}
-                className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-slate-900 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded-xl transition cursor-pointer"
+                className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-white bg-slate-900 hover:bg-slate-800 rounded-xl transition cursor-pointer"
               >
                 <Plus className="w-4 h-4" />
                 Cadastrar Agora
@@ -499,24 +499,24 @@ export default function AdminProdutosPage() {
                   setSelectedCategory('ALL');
                   setStatusFilter('ALL');
                 }}
-                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-xl transition cursor-pointer"
+                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold text-slate-700 border border-slate-300 bg-white hover:bg-slate-100 rounded-xl transition cursor-pointer"
               >
                 Limpar todos os filtros
               </button>
             )}
           </div>
         ) : (
-          <div className="bg-white rounded-3xl border border-slate-200/80 overflow-hidden shadow-xs">
+          <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-xs">
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs sm:text-sm text-slate-600">
-                <thead className="bg-slate-50 border-b border-slate-200/80 text-[11px] uppercase tracking-wider font-bold text-slate-500">
+                <thead className="bg-slate-50 border-b border-slate-200 text-[11px] uppercase tracking-wider font-semibold text-slate-500">
                   <tr>
-                    <th className="px-5 py-4">Produto & Variações</th>
-                    <th className="px-4 py-4">Categoria</th>
-                    <th className="px-4 py-4">Preço</th>
-                    <th className="px-4 py-4">Estoque</th>
-                    <th className="px-4 py-4">Status (Liga/Desliga)</th>
-                    <th className="px-5 py-4 text-right">Ações</th>
+                    <th className="px-5 py-3.5">Produto & Variações</th>
+                    <th className="px-4 py-3.5">Categoria</th>
+                    <th className="px-4 py-3.5">Preço</th>
+                    <th className="px-4 py-3.5">Estoque</th>
+                    <th className="px-4 py-3.5">Status (Liga/Desliga)</th>
+                    <th className="px-5 py-3.5 text-right">Ações</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
@@ -525,7 +525,7 @@ export default function AdminProdutosPage() {
                       {/* Foto e Nome */}
                       <td className="px-5 py-3.5">
                         <div className="flex items-center gap-3.5">
-                          <div className="h-12 w-12 rounded-2xl bg-slate-100 border border-slate-200/70 flex-shrink-0 overflow-hidden flex items-center justify-center">
+                          <div className="h-12 w-12 rounded-xl bg-slate-100 border border-slate-200 flex-shrink-0 overflow-hidden flex items-center justify-center">
                             {prod.imagens && prod.imagens.length > 0 ? (
                               // eslint-disable-next-line @next/next/no-img-element
                               <img
@@ -539,25 +539,25 @@ export default function AdminProdutosPage() {
                           </div>
                           <div className="min-w-0">
                             <div className="flex items-center gap-2">
-                              <span className="font-bold text-slate-900 block leading-snug truncate max-w-xs">
+                              <span className="font-semibold text-slate-900 block leading-snug truncate max-w-xs">
                                 {prod.nome}
                               </span>
                               {prod.badge && (
-                                <span className="text-[9px] font-black uppercase text-amber-800 bg-amber-100 border border-amber-300 px-1.5 py-0.2 rounded-md flex-shrink-0">
+                                <span className="text-[9px] font-semibold uppercase text-orange-800 bg-orange-50 border border-orange-200 px-1.5 py-0.5 rounded-md flex-shrink-0">
                                   {prod.badge}
                                 </span>
                               )}
                             </div>
                             <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
                               {prod.variacoes && prod.variacoes.length > 0 ? (
-                                <span className="text-[10px] text-slate-700 bg-slate-100 px-2 py-0.5 rounded-md font-semibold border border-slate-200/60">
+                                <span className="text-[10px] text-slate-700 bg-slate-100 px-2 py-0.5 rounded-md font-semibold border border-slate-200">
                                   {prod.variacoes.length} {prod.variacoes.length === 1 ? 'variação' : 'variações'}
                                 </span>
                               ) : (
                                 <span className="text-[10px] text-slate-400">Padrão</span>
                               )}
                               {hasVariationPricing(prod.variacoes, prod.preco) && (
-                                <span className="text-[10px] font-bold text-emerald-800 bg-emerald-50 px-1.5 py-0.5 rounded-md border border-emerald-200 shadow-2xs">
+                                <span className="text-[10px] font-semibold text-emerald-800 bg-emerald-50 px-1.5 py-0.5 rounded-md border border-emerald-200">
                                   Preço variável
                                 </span>
                               )}
@@ -573,7 +573,7 @@ export default function AdminProdutosPage() {
 
                       {/* Categoria */}
                       <td className="px-4 py-3.5 text-xs font-semibold text-slate-700">
-                        <span className="bg-slate-100 px-2.5 py-1 rounded-xl border border-slate-200/60">
+                        <span className="bg-slate-100 px-2.5 py-1 rounded-lg border border-slate-200">
                           {getCategoryName(prod.categoriaId)}
                         </span>
                       </td>
@@ -582,15 +582,15 @@ export default function AdminProdutosPage() {
                       <td className="px-4 py-3.5">
                         <div className="leading-tight">
                           {hasVariationPricing(prod.variacoes, prod.preco) && (
-                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-0.5">
+                            <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block mb-0.5">
                               A partir de
                             </span>
                           )}
-                          <span className="font-bold text-slate-900 block">
+                          <span className="font-semibold text-slate-900 block">
                             R$ {prod.preco.toFixed(2).replace('.', ',')}
                           </span>
                           {prod.precoPromocional && (
-                            <span className="text-[11px] font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded inline-block mt-0.5">
+                            <span className="text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded inline-block mt-0.5">
                               Promo: R$ {prod.precoPromocional.toFixed(2).replace('.', ',')}
                             </span>
                           )}
@@ -604,15 +604,15 @@ export default function AdminProdutosPage() {
                             Ilimitado
                           </span>
                         ) : prod.estoque <= 3 && prod.estoque > 0 ? (
-                          <span className="text-[11px] font-bold text-amber-700 bg-amber-50 px-2.5 py-1 rounded-full border border-amber-200">
+                          <span className="text-[11px] font-semibold text-amber-700 bg-amber-50 px-2.5 py-1 rounded-full border border-amber-200">
                             {prod.estoque} unid.
                           </span>
                         ) : prod.estoque === 0 ? (
-                          <span className="text-[11px] font-bold text-rose-700 bg-rose-50 px-2.5 py-1 rounded-full border border-rose-200">
+                          <span className="text-[11px] font-semibold text-rose-700 bg-rose-50 px-2.5 py-1 rounded-full border border-rose-200">
                             Esgotado
                           </span>
                         ) : (
-                          <span className="text-[11px] font-semibold text-slate-700 bg-slate-100 px-2.5 py-1 rounded-full border border-slate-200/60">
+                          <span className="text-[11px] font-semibold text-slate-700 bg-slate-100 px-2.5 py-1 rounded-full border border-slate-200">
                             {prod.estoque} unid.
                           </span>
                         )}
@@ -655,7 +655,7 @@ export default function AdminProdutosPage() {
                           <button
                             type="button"
                             onClick={() => handleDuplicate(prod)}
-                            className="p-1.5 text-slate-400 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition cursor-pointer"
+                            className="p-1.5 text-slate-400 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition cursor-pointer"
                             title="Duplicar produto"
                             aria-label={`Duplicar ${prod.nome}`}
                           >
@@ -664,7 +664,7 @@ export default function AdminProdutosPage() {
                           <button
                             type="button"
                             onClick={() => handleOpenEdit(prod)}
-                            className="p-1.5 text-slate-400 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition cursor-pointer"
+                            className="p-1.5 text-slate-400 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition cursor-pointer"
                             title="Editar produto"
                             aria-label={`Editar ${prod.nome}`}
                           >
@@ -673,7 +673,7 @@ export default function AdminProdutosPage() {
                           <button
                             type="button"
                             onClick={() => setDeleteTarget(prod)}
-                            className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition cursor-pointer"
+                            className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition cursor-pointer"
                             title="Arquivar produto"
                             aria-label={`Arquivar ${prod.nome}`}
                           >
@@ -692,11 +692,11 @@ export default function AdminProdutosPage() {
         {/* Modal de Criação / Edição do Produto */}
         {isModalOpen && (
           <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-5 animate-fade-in">
-            <div className="bg-white rounded-3xl max-w-2xl w-full max-h-[92vh] overflow-y-auto shadow-2xl border border-slate-100 flex flex-col relative animate-scale-in">
+            <div className="bg-white rounded-xl max-w-2xl w-full max-h-[92vh] overflow-y-auto shadow-2xl border border-slate-200 flex flex-col relative animate-scale-in">
               {/* Header do Modal */}
-              <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between sticky top-0 bg-white/95 backdrop-blur-md z-10">
+              <div className="px-6 py-4 border-b border-slate-200 flex items-center justify-between sticky top-0 bg-white/95 backdrop-blur-md z-10">
                 <div>
-                  <h3 className="text-base sm:text-lg font-bold text-slate-900">
+                  <h3 className="text-base sm:text-lg font-semibold text-slate-900 tracking-tight">
                     {editingProduct ? 'Editar Produto' : 'Cadastrar Novo Produto'}
                   </h3>
                   <p className="text-xs text-slate-500">
@@ -706,7 +706,7 @@ export default function AdminProdutosPage() {
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="p-2 text-slate-400 hover:text-slate-800 hover:bg-slate-100 rounded-xl transition cursor-pointer"
+                  className="p-2 text-slate-400 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition cursor-pointer"
                   aria-label="Fechar modal"
                 >
                   <X className="w-5 h-5" />
@@ -716,7 +716,7 @@ export default function AdminProdutosPage() {
               {/* Formulário */}
               <form onSubmit={handleSave} className="p-6 space-y-5">
                 {formError && (
-                  <div className="p-3 bg-rose-50 border border-rose-200/80 rounded-2xl flex items-center gap-2 text-xs text-rose-800 animate-shake">
+                  <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl flex items-center gap-2 text-xs text-rose-800 animate-shake">
                     <AlertCircle className="w-4 h-4 text-rose-600 flex-shrink-0" />
                     <span>{formError}</span>
                   </div>
@@ -724,7 +724,7 @@ export default function AdminProdutosPage() {
 
                 {/* Nome do Produto */}
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">
+                  <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5">
                     Nome do Produto *
                   </label>
                   <input
@@ -733,19 +733,19 @@ export default function AdminProdutosPage() {
                     placeholder="Ex: Tênis Runner Air Confort"
                     value={formNome}
                     onChange={(e) => setFormNome(e.target.value)}
-                    className="w-full rounded-2xl border border-slate-200 px-3.5 py-2.5 text-xs sm:text-sm focus:border-slate-800 focus:outline-none focus:ring-4 focus:ring-slate-900/5"
+                    className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-xs sm:text-sm focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20"
                   />
                 </div>
 
                 {/* Categoria */}
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">
+                  <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5">
                     Categoria *
                   </label>
                   <select
                     value={formCategoriaId}
                     onChange={(e) => setFormCategoriaId(e.target.value)}
-                    className="w-full rounded-2xl border border-slate-200 px-3.5 py-2.5 text-xs sm:text-sm focus:border-slate-800 focus:outline-none focus:ring-4 focus:ring-slate-900/5 bg-white cursor-pointer"
+                    className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-xs sm:text-sm focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20 bg-white cursor-pointer"
                   >
                     <option value="">Selecione uma categoria...</option>
                     {categories.map((c) => (
@@ -759,7 +759,7 @@ export default function AdminProdutosPage() {
                 {/* Grid Preço Normal, Preço Promo e Estoque com Máscara de Moeda (R$ 0,00) */}
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div>
-                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">
+                    <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5">
                       Preço Normal *
                     </label>
                     <input
@@ -768,12 +768,12 @@ export default function AdminProdutosPage() {
                       placeholder="R$ 0,00"
                       value={formPreco}
                       onChange={(e) => setFormPreco(maskCurrency(e.target.value))}
-                      className="w-full rounded-2xl border border-slate-200 px-3.5 py-2.5 text-xs sm:text-sm font-semibold text-slate-900 focus:border-slate-800 focus:outline-none focus:ring-4 focus:ring-slate-900/5 font-mono"
+                      className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-xs sm:text-sm font-semibold text-slate-900 focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20 font-mono"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">
+                    <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5">
                       Preço Promocional
                     </label>
                     <input
@@ -781,19 +781,19 @@ export default function AdminProdutosPage() {
                       placeholder="R$ 0,00 (Opcional)"
                       value={formPrecoPromocional}
                       onChange={(e) => setFormPrecoPromocional(maskCurrency(e.target.value))}
-                      className="w-full rounded-2xl border border-slate-200 px-3.5 py-2.5 text-xs sm:text-sm font-semibold text-emerald-700 focus:border-slate-800 focus:outline-none focus:ring-4 focus:ring-slate-900/5 font-mono"
+                      className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-xs sm:text-sm font-semibold text-emerald-700 focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20 font-mono"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">
+                    <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5">
                       Estoque (-1 ilimitado)
                     </label>
                     <input
                       type="number"
                       value={formEstoque}
                       onChange={(e) => setFormEstoque(e.target.value)}
-                      className="w-full rounded-2xl border border-slate-200 px-3.5 py-2.5 text-xs sm:text-sm focus:border-slate-800 focus:outline-none focus:ring-4 focus:ring-slate-900/5"
+                      className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-xs sm:text-sm focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20"
                     />
                   </div>
                 </div>
@@ -801,7 +801,7 @@ export default function AdminProdutosPage() {
                 {/* Selo Promocional / Badge no Card da Foto */}
                 <div>
                   <div className="flex items-center justify-between mb-1.5">
-                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-700">
+                    <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700">
                       Selo Promocional / Badge na Foto
                     </label>
                     <span className="text-[10px] text-slate-400">Opcional</span>
@@ -812,7 +812,7 @@ export default function AdminProdutosPage() {
                     value={formBadge}
                     maxLength={30}
                     onChange={(e) => setFormBadge(e.target.value)}
-                    className="w-full rounded-2xl border border-slate-200 px-3.5 py-2.5 text-xs sm:text-sm focus:border-slate-800 focus:outline-none focus:ring-4 focus:ring-slate-900/5"
+                    className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-xs sm:text-sm focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20"
                   />
                   <div className="flex items-center gap-1.5 mt-2 flex-wrap">
                     <span className="text-[10px] font-semibold text-slate-400">Sugestões:</span>
@@ -821,7 +821,7 @@ export default function AdminProdutosPage() {
                         key={sug}
                         type="button"
                         onClick={() => setFormBadge(sug)}
-                        className={`px-2 py-0.5 rounded-full text-[10px] font-bold border transition cursor-pointer ${
+                        className={`px-2 py-0.5 rounded-full text-[10px] font-semibold border transition cursor-pointer ${
                           formBadge === sug
                             ? 'bg-slate-900 text-white border-transparent'
                             : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'
@@ -844,7 +844,7 @@ export default function AdminProdutosPage() {
 
                 {/* Descrição */}
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">
+                  <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5">
                     Descrição Detalhada
                   </label>
                   <textarea
@@ -852,7 +852,7 @@ export default function AdminProdutosPage() {
                     placeholder="Detalhes, material, medidas, garantia..."
                     value={formDescricao}
                     onChange={(e) => setFormDescricao(e.target.value)}
-                    className="w-full rounded-2xl border border-slate-200 px-3.5 py-2.5 text-xs sm:text-sm focus:border-slate-800 focus:outline-none focus:ring-4 focus:ring-slate-900/5"
+                    className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-xs sm:text-sm focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20"
                   />
                 </div>
 
@@ -877,7 +877,7 @@ export default function AdminProdutosPage() {
                 {/* Status Ativo / Inativo */}
                 <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
                   <div>
-                    <span className="text-xs font-bold text-slate-900 block">
+                    <span className="text-xs font-semibold text-slate-900 block">
                       Produto Ativo na Vitrine
                     </span>
                     <span className="text-[11px] text-slate-500">
@@ -911,14 +911,14 @@ export default function AdminProdutosPage() {
                   <button
                     type="button"
                     onClick={() => setIsModalOpen(false)}
-                    className="px-4 py-2.5 rounded-2xl text-xs font-bold text-slate-600 hover:bg-slate-100 transition cursor-pointer"
+                    className="px-4 py-2.5 rounded-xl border border-slate-300 text-xs font-semibold text-slate-700 hover:bg-slate-100 transition cursor-pointer"
                   >
                     Cancelar
                   </button>
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl text-xs font-bold text-white bg-[#FB5607] hover:bg-[#8338EC] shadow-md transition disabled:opacity-50 cursor-pointer"
+                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-semibold text-white bg-slate-900 hover:bg-slate-800 shadow-xs transition disabled:opacity-50 cursor-pointer"
                   >
                     {isSubmitting ? (
                       <>
