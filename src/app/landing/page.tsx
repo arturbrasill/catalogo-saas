@@ -4,16 +4,16 @@ import React, { useMemo } from 'react';
 import Link from 'next/link';
 import {
   ArrowRight,
+  ArrowUpRight,
   Check,
-  Smartphone,
   Store,
   MessageCircle,
-  Percent,
-  Tag,
-  Users,
+  DollarSign,
+  Zap,
+  Calendar,
   ShoppingBag,
-  ExternalLink,
   Clock,
+  Sparkles,
 } from 'lucide-react';
 import { normalizePhoneNumber } from '@/lib/whatsapp';
 import { DEMO_STORES, type DemoStore } from '@/lib/demoStores';
@@ -110,7 +110,7 @@ function LandingHeader() {
             className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold bg-slate-900 text-white hover:bg-slate-800 shadow-sm transition-colors"
           >
             <span>Testar por 7 Dias</span>
-            <ArrowRight className="w-3.5 h-3.5" />
+            <ArrowRight className="w-3.5 h-3.5" strokeWidth={1.75} />
           </Link>
         </div>
       </div>
@@ -140,7 +140,7 @@ function LandingHeader() {
 function SmartphoneCatalogMockup() {
   return (
     <div className="w-full max-w-sm mx-auto lg:mx-0 lg:ml-auto">
-      <div className="rounded-xl border border-slate-200 bg-slate-50 p-2.5 sm:p-3 shadow-sm">
+      <div className="rounded-xl border border-slate-200 bg-slate-50 p-2.5 sm:p-3 shadow-sm hover:border-slate-300 transition-colors">
         <div className="rounded-lg border border-slate-200 bg-white overflow-hidden">
           {/* Barra superior do navegador mobile */}
           <div className="px-3.5 py-2.5 bg-slate-50 border-b border-slate-200 flex items-center justify-between gap-2">
@@ -163,8 +163,8 @@ function SmartphoneCatalogMockup() {
               <p className="text-xs font-bold text-slate-900">Essenza Cosméticos</p>
               <p className="text-[11px] text-slate-500">Entrega rápida • Retirada na loja</p>
             </div>
-            <div className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-slate-100 border border-slate-200 text-xs font-semibold text-slate-800">
-              <ShoppingBag className="w-3.5 h-3.5 text-orange-600" />
+            <div className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-orange-50 border border-orange-200 text-xs font-semibold text-orange-700">
+              <ShoppingBag className="w-3.5 h-3.5 text-orange-600" strokeWidth={1.75} />
               <span>2 itens</span>
             </div>
           </div>
@@ -231,7 +231,7 @@ function SmartphoneCatalogMockup() {
             {/* Botão simulado de disparo para WhatsApp */}
             <div className="pt-1">
               <div className="w-full py-2.5 px-3 rounded-lg bg-slate-900 text-white text-xs font-semibold flex items-center justify-center gap-2">
-                <MessageCircle className="w-3.5 h-3.5 text-orange-500" />
+                <MessageCircle className="w-3.5 h-3.5 text-orange-500" strokeWidth={1.75} />
                 <span>Enviar Pedido Pronto no WhatsApp</span>
               </div>
             </div>
@@ -243,7 +243,7 @@ function SmartphoneCatalogMockup() {
 }
 
 /**
- * 2. HERO SECTION (CLAREZA IMEDIATA)
+ * 2. HERO SECTION (CLAREZA IMEDIATA - FUNDO BRANCO PURO)
  */
 function HeroSection() {
   return (
@@ -252,9 +252,15 @@ function HeroSection() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center">
           {/* Coluna de Texto e CTAs */}
           <div className="lg:col-span-7 space-y-6 text-left">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-700">
-              <span className="w-2 h-2 rounded-full bg-orange-600" />
-              <span>Catálogo digital para comércio local</span>
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-700">
+                <span className="w-2 h-2 rounded-full bg-orange-600" />
+                <span>Catálogo digital para comércio local</span>
+              </span>
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-orange-50 text-orange-700 border border-orange-200 text-xs font-semibold">
+                <Sparkles className="w-3 h-3 text-orange-600" strokeWidth={1.75} />
+                <span>✨ 7 dias grátis</span>
+              </span>
             </div>
 
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-slate-900 leading-[1.15]">
@@ -271,28 +277,29 @@ function HeroSection() {
                 className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-lg text-sm font-semibold bg-slate-900 text-white hover:bg-slate-800 shadow-sm transition-colors"
               >
                 <span>Começar Teste de 7 Dias Grátis</span>
-                <ArrowRight className="w-4 h-4" />
+                <ArrowRight className="w-4 h-4" strokeWidth={1.75} />
               </Link>
 
               <a
                 href="#demonstracao"
-                className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-lg text-sm font-semibold border border-slate-300 text-slate-700 bg-white hover:bg-slate-50 transition-colors"
+                className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-lg text-sm font-semibold border border-slate-300 text-slate-700 bg-white hover:bg-slate-50 hover:border-slate-400 transition-colors"
               >
+                <ShoppingBag className="w-4 h-4 text-orange-600" strokeWidth={1.75} />
                 <span>Ver Lojas de Exemplo</span>
               </a>
             </div>
 
             <div className="pt-1 flex flex-wrap items-center gap-x-6 gap-y-2 text-xs font-medium text-slate-600">
               <span className="inline-flex items-center gap-1.5">
-                <Check className="w-4 h-4 text-orange-600" />
+                <Check className="w-4 h-4 text-orange-600" strokeWidth={1.75} />
                 Sem cartão de crédito
               </span>
               <span className="inline-flex items-center gap-1.5">
-                <Check className="w-4 h-4 text-orange-600" />
+                <Check className="w-4 h-4 text-orange-600" strokeWidth={1.75} />
                 0% de comissão sobre vendas
               </span>
               <span className="inline-flex items-center gap-1.5">
-                <Check className="w-4 h-4 text-orange-600" />
+                <Check className="w-4 h-4 text-orange-600" strokeWidth={1.75} />
                 Pronto em 2 minutos
               </span>
             </div>
@@ -309,7 +316,7 @@ function HeroSection() {
 }
 
 /**
- * 3. DEMONSTRAÇÃO: RIGOROSAMENTE 2 LOJAS MODELO
+ * 3. DEMONSTRAÇÃO: RIGOROSAMENTE 2 LOJAS MODELO (FUNDO CLARO SUAVE #F8FAFC)
  * Para ativar o Slot 2 futuramente, basta atualizar o segundo item em `src/lib/demoStores.ts`
  * (`url: 'https://numclick.app/sua-loja'` e `isAvailable: true`) sem alterar o CSS.
  */
@@ -318,8 +325,8 @@ function DemoStoresSection({ stores }: { stores: DemoStore[] }) {
     <section id="demonstracao" className="bg-slate-50 py-16 sm:py-24 border-b border-slate-200">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 space-y-10">
         <div className="max-w-2xl space-y-3">
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-white border border-slate-200 text-xs font-semibold text-slate-700">
-            <Store className="w-3.5 h-3.5 text-orange-600" />
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white border border-slate-200 text-xs font-semibold text-slate-700">
+            <Store className="w-3.5 h-3.5 text-orange-600" strokeWidth={1.75} />
             <span>Demonstração ao Vivo</span>
           </span>
           <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">
@@ -340,14 +347,14 @@ function DemoStoresSection({ stores }: { stores: DemoStore[] }) {
                 <div
                   key={store.id}
                   data-slot-id={store.id}
-                  className="flex flex-col justify-between p-6 rounded-xl bg-white border border-slate-200 shadow-sm"
+                  className="flex flex-col justify-between p-6 rounded-xl bg-white border border-slate-200 hover:border-slate-400 shadow-sm transition-colors"
                 >
                   <div className="space-y-4">
                     <div className="flex items-center justify-between gap-3">
                       <div className="w-10 h-10 rounded-lg bg-slate-100 border border-slate-200 text-slate-600 flex items-center justify-center">
-                        <Clock className="w-5 h-5" />
+                        <Clock className="w-5 h-5" strokeWidth={1.75} />
                       </div>
-                      <span className="inline-flex items-center px-2.5 py-1 rounded-md bg-slate-100 border border-slate-200 text-xs font-semibold text-slate-700">
+                      <span className="inline-flex items-center px-2.5 py-1 rounded-full bg-slate-100 border border-slate-200 text-xs font-semibold text-slate-700">
                         Em Breve
                       </span>
                     </div>
@@ -368,7 +375,10 @@ function DemoStoresSection({ stores }: { stores: DemoStore[] }) {
                   </div>
 
                   <div className="mt-6 pt-4 border-t border-slate-200 flex items-center justify-between text-xs font-medium text-slate-500">
-                    <span>Nova loja demonstrativa em homologação</span>
+                    <span className="inline-flex items-center gap-1.5">
+                      <ShoppingBag className="w-3.5 h-3.5 text-slate-400" strokeWidth={1.75} />
+                      <span>Nova loja demonstrativa em homologação</span>
+                    </span>
                     <span className="font-mono text-slate-400">numclick.app/...</span>
                   </div>
                 </div>
@@ -383,14 +393,14 @@ function DemoStoresSection({ stores }: { stores: DemoStore[] }) {
                 target="_blank"
                 rel="noopener noreferrer"
                 data-slot-id={store.id}
-                className="group flex flex-col justify-between p-6 rounded-xl bg-white border border-slate-200 hover:border-slate-400 shadow-sm transition-colors"
+                className="group flex flex-col justify-between p-6 rounded-xl bg-white border border-slate-200 hover:border-slate-400 shadow-sm transition-all duration-200"
               >
                 <div className="space-y-4">
                   <div className="flex items-center justify-between gap-3">
                     <div className="w-10 h-10 rounded-lg bg-orange-50 border border-orange-200 text-orange-600 flex items-center justify-center">
-                      <Store className="w-5 h-5" />
+                      <ShoppingBag className="w-5 h-5" strokeWidth={1.75} />
                     </div>
-                    <span className="inline-flex items-center px-2.5 py-1 rounded-md bg-emerald-50 border border-emerald-200 text-xs font-semibold text-emerald-800">
+                    <span className="inline-flex items-center px-2.5 py-1 rounded-full bg-orange-50 border border-orange-200 text-xs font-semibold text-orange-700">
                       {store.badge}
                     </span>
                   </div>
@@ -411,9 +421,12 @@ function DemoStoresSection({ stores }: { stores: DemoStore[] }) {
                 </div>
 
                 <div className="mt-6 pt-4 border-t border-slate-200 flex items-center justify-between text-xs font-semibold text-slate-900">
-                  <span className="inline-flex items-center gap-1.5">
-                    <span>Acessar catálogo</span>
-                    <ExternalLink className="w-3.5 h-3.5 text-slate-500" />
+                  <span className="inline-flex items-center gap-1.5 group-hover:text-orange-600 transition-colors">
+                    <span>Acessar catálogo ao vivo</span>
+                    <ArrowUpRight
+                      className="w-4 h-4 text-orange-600 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform"
+                      strokeWidth={1.75}
+                    />
                   </span>
                   <span className="font-mono text-slate-600">numclick.app/essenza</span>
                 </div>
@@ -427,51 +440,56 @@ function DemoStoresSection({ stores }: { stores: DemoStore[] }) {
 }
 
 /**
- * 4. BENTO GRID DE RECURSOS (4 BLOCOS OBJETIVOS)
+ * 4. SEÇÃO ESCURA 1: BENTO GRID DE RECURSOS (4 BLOCOS OBJETIVOS EM #0B0F19)
  */
 const BENTO_FEATURES = [
   {
     title: 'Sem Comissão por Venda',
+    pill: 'Zero Taxas',
     description:
       '100% do lucro direto com o lojista. Você paga apenas a assinatura fixa mensal e recebe o valor integral dos pedidos via PIX, cartão ou dinheiro direto na sua conta.',
-    highlight: '0% de taxa por pedido • Recebimento direto pelo lojista',
-    icon: Percent,
+    highlight: '0% de comissão • Recebimento integral na conta da loja',
+    icon: DollarSign,
   },
   {
     title: 'Rápido no Celular',
+    pill: 'Carregamento Instantâneo',
     description:
-      'Sem aplicativos para baixar e com carregamento instantâneo. Seu cliente abre o link exclusivo da loja na bio do Instagram ou no WhatsApp e compra em segundos.',
+      'Sem aplicativos para baixar e com abertura imediata em qualquer navegador. Seu cliente acessa o link exclusivo na bio do Instagram ou no WhatsApp e compra em segundos.',
     highlight: 'Link próprio numclick.app/sualoja com SSL incluso',
-    icon: Smartphone,
+    icon: Zap,
   },
   {
     title: 'Campanhas e Descontos',
+    pill: 'Ofertas & Datas',
     description:
       'Descontos programados para datas comemorativas direto no painel. Ative promoções com preço original riscado, selos de oferta e cupons de desconto sem retrabalho.',
     highlight: 'Ativação imediata de ofertas e cupons no catálogo',
-    icon: Tag,
+    icon: Calendar,
   },
   {
     title: 'Múltiplos Atendentes',
+    pill: 'Equipe no WhatsApp',
     description:
       'Opção para o cliente escolher o vendedor no WhatsApp antes de enviar o pedido. Ideal para lojas com equipe de vendas ou atendimento setorizado.',
     highlight: 'Roteamento direto do pedido para o WhatsApp de cada vendedor',
-    icon: Users,
+    icon: MessageCircle,
   },
 ];
 
 function BentoFeaturesSection() {
   return (
-    <section id="como-funciona" className="bg-white py-16 sm:py-24 border-b border-slate-200">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 space-y-10">
+    <section id="como-funciona" className="bg-[#0B0F19] py-20 sm:py-24 border-b border-slate-800">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 space-y-12">
         <div className="max-w-2xl space-y-3">
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-700">
-            <span>Recursos Principais</span>
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-orange-500/10 border border-orange-500/20 text-xs font-semibold text-orange-400">
+            <Zap className="w-3.5 h-3.5 text-orange-400" strokeWidth={1.75} />
+            <span>Recursos & Diferenciais</span>
           </span>
-          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">
+          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-white">
             Estrutura direta para vender todos os dias
           </h2>
-          <p className="text-sm sm:text-base text-slate-600 leading-relaxed">
+          <p className="text-sm sm:text-base text-slate-400 leading-relaxed">
             Desenvolvido para eliminar o atrito no atendimento via WhatsApp e manter o controle total na mão do comerciante.
           </p>
         </div>
@@ -482,22 +500,25 @@ function BentoFeaturesSection() {
             return (
               <div
                 key={feature.title}
-                className="p-6 sm:p-7 rounded-xl bg-slate-50 border border-slate-200 shadow-sm flex flex-col justify-between space-y-5"
+                className="p-6 sm:p-7 rounded-xl bg-[#131B2E] border border-slate-800 hover:border-slate-700 transition-colors flex flex-col justify-between space-y-6"
               >
-                <div className="space-y-3">
-                  <div className="w-10 h-10 rounded-lg bg-white border border-slate-200 text-orange-600 flex items-center justify-center shadow-sm">
-                    <IconComponent className="w-5 h-5" />
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-orange-500/10 border border-orange-500/20 text-orange-400">
+                      <IconComponent className="w-4 h-4 text-orange-400" strokeWidth={1.75} />
+                      <span className="text-xs font-semibold">{feature.pill}</span>
+                    </div>
                   </div>
-                  <h3 className="text-lg font-bold tracking-tight text-slate-900">
+                  <h3 className="text-lg font-bold tracking-tight text-white">
                     {feature.title}
                   </h3>
-                  <p className="text-sm text-slate-600 leading-relaxed">
+                  <p className="text-sm text-slate-400 leading-relaxed">
                     {feature.description}
                   </p>
                 </div>
 
-                <div className="pt-4 border-t border-slate-200 flex items-center gap-2 text-xs font-semibold text-slate-700">
-                  <Check className="w-4 h-4 text-orange-600 flex-shrink-0" />
+                <div className="pt-4 border-t border-slate-800 flex items-center gap-2 text-xs font-medium text-slate-300">
+                  <Check className="w-4 h-4 text-orange-400 flex-shrink-0" strokeWidth={1.75} />
                   <span>{feature.highlight}</span>
                 </div>
               </div>
@@ -510,7 +531,7 @@ function BentoFeaturesSection() {
 }
 
 /**
- * 5. SEÇÃO DE PREÇO TRANSPARENTE (PLANO ÚNICO)
+ * 5. SEÇÃO DE PREÇO TRANSPARENTE (PLANO ÚNICO - FUNDO CLARO #F8FAFC)
  */
 const PLAN_INCLUSIONS = [
   'Catálogo ilimitado de produtos, fotos e categorias',
@@ -525,8 +546,9 @@ function PricingSection() {
     <section id="planos" className="bg-slate-50 py-16 sm:py-24 border-b border-slate-200">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 space-y-10">
         <div className="text-center max-w-xl mx-auto space-y-3">
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-white border border-slate-200 text-xs font-semibold text-slate-700">
-            <span>Assinatura Simples</span>
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-orange-50 border border-orange-200 text-xs font-semibold text-orange-700">
+            <Sparkles className="w-3.5 h-3.5 text-orange-600" strokeWidth={1.75} />
+            <span>✨ 7 dias grátis • Assinatura Simples</span>
           </span>
           <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">
             Preço único, transparente e sem taxas ocultas
@@ -537,12 +559,12 @@ function PricingSection() {
         </div>
 
         <div className="max-w-lg mx-auto">
-          <div className="rounded-xl bg-white border border-slate-200 p-6 sm:p-8 shadow-sm space-y-6">
+          <div className="rounded-xl bg-white border border-slate-200 hover:border-slate-400 transition-colors p-6 sm:p-8 shadow-sm space-y-6">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <h3 className="text-xl font-bold tracking-tight text-slate-900">
                 Plano Completo
               </h3>
-              <span className="inline-flex items-center px-3 py-1 rounded-md bg-orange-50 border border-orange-200 text-xs font-semibold text-orange-800">
+              <span className="inline-flex items-center px-3 py-1 rounded-full bg-orange-50 border border-orange-200 text-xs font-semibold text-orange-700">
                 7 Dias de Teste Grátis • Cancele quando quiser
               </span>
             </div>
@@ -557,7 +579,9 @@ function PricingSection() {
             <ul className="space-y-3 text-sm text-slate-700">
               {PLAN_INCLUSIONS.map((item) => (
                 <li key={item} className="flex items-start gap-2.5">
-                  <Check className="w-4 h-4 text-orange-600 flex-shrink-0 mt-0.5" />
+                  <span className="w-5 h-5 rounded-full bg-orange-50 border border-orange-200 text-orange-600 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <Check className="w-3.5 h-3.5" strokeWidth={1.75} />
+                  </span>
                   <span className="leading-relaxed">{item}</span>
                 </li>
               ))}
@@ -569,7 +593,7 @@ function PricingSection() {
                 className="w-full inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-lg text-sm font-semibold bg-slate-900 text-white hover:bg-slate-800 shadow-sm transition-colors"
               >
                 <span>Iniciar 7 Dias Grátis</span>
-                <ArrowRight className="w-4 h-4" />
+                <ArrowRight className="w-4 h-4" strokeWidth={1.75} />
               </Link>
               <p className="text-xs text-center text-slate-500">
                 Não cobramos comissão por venda • Ativação imediata sem cartão
@@ -583,7 +607,51 @@ function PricingSection() {
 }
 
 /**
- * 6. RODAPÉ FUNCIONAL
+ * 6. SEÇÃO ESCURA 2: CTA FINAL DE FECHAMENTO (ANTES DO RODAPÉ - #0B0F19)
+ */
+function FinalCtaSection({ whatsappUrl }: { whatsappUrl: string }) {
+  return (
+    <section className="bg-[#0B0F19] py-20 sm:py-24 border-b border-slate-800">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center space-y-6">
+        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-orange-500/10 border border-orange-500/20 text-xs font-semibold text-orange-400">
+          <Sparkles className="w-3.5 h-3.5 text-orange-400" strokeWidth={1.75} />
+          <span>✨ 7 dias grátis • Sem cartão de crédito</span>
+        </div>
+
+        <h2 className="text-2xl sm:text-4xl font-bold tracking-tight text-white max-w-2xl mx-auto">
+          Pronto para transformar as vendas da sua loja?
+        </h2>
+
+        <p className="text-sm sm:text-base text-slate-400 max-w-xl mx-auto leading-relaxed">
+          Crie seu catálogo digital em menos de 2 minutos e receba pedidos organizados, somados e sem comissões direto no seu WhatsApp.
+        </p>
+
+        <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
+          <Link
+            href="/criar-loja"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-lg text-sm bg-orange-600 hover:bg-orange-500 text-white font-medium shadow-lg shadow-orange-950/40 transition-colors"
+          >
+            <span>Começar Teste de 7 Dias Grátis</span>
+            <ArrowRight className="w-4 h-4" strokeWidth={1.75} />
+          </Link>
+
+          <a
+            href={whatsappUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-lg text-sm font-medium border border-slate-700 text-slate-300 hover:bg-slate-900 hover:text-white hover:border-slate-600 transition-colors"
+          >
+            <MessageCircle className="w-4 h-4 text-orange-400" strokeWidth={1.75} />
+            <span>Falar com Suporte no WhatsApp</span>
+          </a>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/**
+ * 7. RODAPÉ FUNCIONAL
  */
 function LandingFooter({ whatsappUrl }: { whatsappUrl: string }) {
   return (
@@ -619,9 +687,9 @@ function LandingFooter({ whatsappUrl }: { whatsappUrl: string }) {
               href={whatsappUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50 transition-colors"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50 hover:border-slate-400 transition-colors"
             >
-              <MessageCircle className="w-4 h-4 text-orange-600" />
+              <MessageCircle className="w-4 h-4 text-orange-600" strokeWidth={1.75} />
               <span>Suporte no WhatsApp</span>
             </a>
           </div>
@@ -659,6 +727,7 @@ export default function SaaSCommercialLandingPage() {
         <DemoStoresSection stores={DEMO_STORES} />
         <BentoFeaturesSection />
         <PricingSection />
+        <FinalCtaSection whatsappUrl={supportWhatsappUrl} />
       </main>
       <LandingFooter whatsappUrl={supportWhatsappUrl} />
     </div>
