@@ -69,32 +69,24 @@ export default function AdminLoginPage() {
       <main className="w-full max-w-[420px] bg-white rounded-3xl shadow-[0_20px_50px_rgba(33,37,41,0.1)] border border-[#212529]/10 p-8 sm:p-10 space-y-7 relative z-10 animate-fade-in transition-all">
         {/* Cabeçalho de Identidade */}
         <div className="text-center space-y-3">
-          <div className="inline-flex h-14 w-14 items-center justify-center rounded-2xl overflow-hidden shadow-md shadow-[#FB5607]/20">
+          <div className="inline-flex h-14 w-14 items-center justify-center rounded-2xl overflow-hidden bg-[#212529] border border-[#212529]/15 shadow-md shadow-[#212529]/10">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/numclick-badge.png"
               alt="NumClick"
-              className="w-full h-full object-contain"
+              className="w-full h-full object-cover"
             />
           </div>
 
-          <div className="space-y-1.5">
-            <div className="flex justify-center mb-1">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src="/marca/marca-light.svg"
-                alt="NumClick"
-                className="h-5 w-auto object-contain"
-              />
-            </div>
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#8338EC]/10 border border-[#8338EC]/25 text-[11px] font-bold text-[#8338EC] mb-1">
+          <div className="space-y-1">
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#8338EC]/10 border border-[#8338EC]/25 text-[11px] font-semibold text-[#8338EC] mb-1">
               <Sparkles className="w-3 h-3 text-[#FB5607]" />
               <span>{tenantSlug ? `Loja: ${tenantSlug}` : 'NumClick • Painel do Lojista'}</span>
             </div>
             <h1 className="text-2xl font-black text-[#212529] tracking-tight">
               Acesso Administrativo
             </h1>
-            <p className="text-xs sm:text-sm text-[#212529]/70 max-w-[280px] mx-auto leading-relaxed">
+            <p className="text-xs sm:text-sm text-slate-500 max-w-[280px] mx-auto leading-relaxed">
               Entre com seu usuário e senha escolhidos no cadastro para gerenciar sua loja no NumClick.
             </p>
           </div>

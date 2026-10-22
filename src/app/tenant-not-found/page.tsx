@@ -14,13 +14,14 @@ function TenantNotFoundContent() {
 
   return (
     <div className="max-w-md w-full bg-white rounded-3xl shadow-xl border border-[#212529]/10 p-8 text-center space-y-6">
-      <div className="flex items-center justify-center gap-2.5">
-        <div className="h-9 w-9 rounded-xl overflow-hidden flex items-center justify-center shadow-xs">
+      <div className="flex items-center justify-center gap-2">
+        <div className="h-8 w-8 rounded-xl overflow-hidden bg-[#212529] border border-[#212529]/20 flex items-center justify-center shadow-xs">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/numclick-badge.png" alt="NumClick" className="w-full h-full object-contain" />
+          <img src="/numclick-badge.png" alt="NumClick" className="w-full h-full object-cover" />
         </div>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/marca/marca-light.svg" alt="NumClick" className="h-5 w-auto object-contain" />
+        <span className="font-extrabold text-[#212529] text-base">
+          Num<span className="text-[#FB5607]">Click</span>
+        </span>
       </div>
 
       {/* Ícone */}

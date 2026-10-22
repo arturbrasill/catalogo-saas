@@ -144,26 +144,25 @@ export function AdminLayout({ children }: AdminLayoutProps) {
         >
           {/* Brand Header */}
           <div className="h-16 sm:h-20 flex items-center px-6 border-b border-white/10 gap-3">
-            <div className="h-10 w-10 rounded-xl overflow-hidden flex items-center justify-center text-white font-black shadow-lg shadow-black/40 flex-shrink-0">
+            <div className="h-9 w-9 rounded-xl overflow-hidden flex items-center justify-center shadow-sm bg-[#212529] border border-white/15 flex-shrink-0">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src="/numclick-badge.png"
                 alt="NumClick Logo"
-                className="w-full h-full object-contain"
+                className="w-full h-full object-cover"
               />
             </div>
-            <div className="min-w-0">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src="/marca/marca-dark.svg"
-                alt="NumClick"
-                className="h-4 w-auto object-contain object-left"
-              />
+            <div>
               <span
-                className="text-[11px] !text-[#FB5607] font-bold flex items-center gap-1 mt-1"
-                style={{ color: '#FB5607' }}
+                className="font-extrabold !text-white tracking-tight text-sm block leading-none"
+                style={{ color: '#ffffff' }}
               >
-                <span className="h-1.5 w-1.5 rounded-full bg-[#FB5607] animate-pulse" />
+                NumClick
+              </span>
+              <span
+                className="text-[11px] !text-white font-medium"
+                style={{ color: '#ffffff' }}
+              >
                 Painel do Lojista
               </span>
             </div>
@@ -399,20 +398,20 @@ export function AdminLayout({ children }: AdminLayoutProps) {
               >
                 <div className="h-16 sm:h-20 flex items-center justify-between px-5 border-b border-white/10">
                   <div className="flex items-center gap-2.5">
-                    <div className="h-8 w-8 rounded-lg overflow-hidden flex items-center justify-center">
+                    <div className="h-8 w-8 rounded-lg overflow-hidden flex items-center justify-center bg-[#212529] border border-white/15">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
                         src="/numclick-badge.png"
                         alt="NumClick Logo"
-                        className="w-full h-full object-contain"
+                        className="w-full h-full object-cover"
                       />
                     </div>
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src="/marca/marca-dark.svg"
-                      alt="NumClick"
-                      className="h-4 w-auto object-contain"
-                    />
+                    <span
+                      className="font-extrabold !text-white text-sm"
+                      style={{ color: '#ffffff' }}
+                    >
+                      NumClick • Lojista
+                    </span>
                   </div>
                   <button
                     type="button"

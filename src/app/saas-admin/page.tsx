@@ -425,18 +425,12 @@ export default function SaasAdminPage() {
       <div className="min-h-screen bg-[#212529] text-[#E9ECEF] flex items-center justify-center p-4 sm:p-6 py-12 sm:py-16">
         <div className="max-w-md w-full bg-[#212529] border border-white/15 rounded-2xl p-6 sm:p-8 shadow-2xl backdrop-blur-md">
           <div className="text-center mb-6">
-            <div className="flex items-center justify-center gap-2.5 mx-auto mb-3">
+            <div className="w-14 h-14 rounded-2xl overflow-hidden bg-[#212529] border border-white/15 flex items-center justify-center mx-auto mb-3 shadow-lg">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src="/numclick-badge.png"
                 alt="NumClick"
-                className="w-11 h-11 rounded-xl shadow-lg"
-              />
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src="/marca/marca-dark.svg"
-                alt="NumClick"
-                className="h-7 w-auto object-contain"
+                className="w-full h-full object-cover"
               />
             </div>
             <h1 className="text-xl sm:text-2xl font-extrabold text-white">NumClick SuperAdmin</h1>

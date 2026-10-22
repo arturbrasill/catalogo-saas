@@ -99,9 +99,9 @@ export default function SaaSCommercialLandingPage() {
       {/* ============================================================ */}
       <header className="sticky top-0 z-40 bg-[#E9ECEF]/90 backdrop-blur-md border-b border-[#212529]/10 transition-all">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 sm:h-20 flex items-center justify-between gap-4">
-          {/* Logo Oficial NumClick (Pasta marca/) */}
+          {/* Logo Oficial NumClick */}
           <Link href="/landing" className="flex items-center gap-2.5 group">
-            <div className="h-9 w-9 sm:h-10 sm:w-10 rounded-xl overflow-hidden shadow-xs border border-[#212529]/15 group-hover:scale-105 transition-transform flex items-center justify-center bg-[#FB5607]">
+            <div className="h-9 w-9 rounded-xl overflow-hidden shadow-xs border border-[#212529]/15 group-hover:scale-105 transition-transform flex items-center justify-center bg-[#212529]">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src="/numclick-badge.png"
@@ -109,14 +109,11 @@ export default function SaaSCommercialLandingPage() {
                 className="w-full h-full object-cover"
               />
             </div>
-            <div className="flex items-center gap-2">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src="/marca/marca-light.svg"
-                alt="NumClick"
-                className="h-5 sm:h-6 w-auto object-contain object-left"
-              />
-              <span className="text-[10px] font-bold tracking-wide bg-[#8338EC]/12 text-[#8338EC] border border-[#8338EC]/25 px-1.5 py-0.5 rounded-md hidden sm:inline-block">
+            <div className="flex items-center gap-1.5">
+              <span className="text-base font-extrabold tracking-tight text-[#212529]">
+                Num<span className="text-[#FB5607]">Click</span>
+              </span>
+              <span className="text-[10px] font-semibold tracking-wide bg-white text-[#212529]/75 border border-[#212529]/15 px-1.5 py-0.5 rounded-md hidden sm:inline-block">
                 SaaS
               </span>
             </div>
@@ -178,8 +175,7 @@ export default function SaaSCommercialLandingPage() {
 
           {/* Título Principal curto e focado na conversão */}
           <h1 className="text-3xl xs:text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight text-[#212529] leading-[1.14] max-w-3xl mx-auto break-words">
-            Transforme seu WhatsApp em uma{' '}
-            <span className="text-[#FB5607]">máquina de vendas</span>, sem taxas por pedido.
+            Transforme seu WhatsApp em uma máquina de vendas, sem taxas por pedido.
           </h1>
 
           {/* Subtítulo direto */}
@@ -953,8 +949,8 @@ export default function SaaSCommercialLandingPage() {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 space-y-8">
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
             <div className="space-y-1.5">
-              <div className="flex items-center gap-2.5">
-                <div className="h-8 w-8 rounded-lg overflow-hidden border border-white/15 flex items-center justify-center bg-[#FB5607]">
+              <div className="flex items-center gap-2">
+                <div className="h-7 w-7 rounded-lg overflow-hidden border border-white/15 flex items-center justify-center bg-[#212529]">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src="/numclick-badge.png"
@@ -962,12 +958,9 @@ export default function SaaSCommercialLandingPage() {
                     className="w-full h-full object-cover"
                   />
                 </div>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src="/marca/marca-dark.svg"
-                  alt="NumClick"
-                  className="h-5 w-auto object-contain"
-                />
+                <span className="text-base font-extrabold tracking-tight text-white">
+                  Num<span className="text-[#FB5607]">Click</span>
+                </span>
               </div>
               <p className="text-xs text-[#E9ECEF]/65 font-medium">
                 Feito para fortalecer o comércio local

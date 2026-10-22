@@ -119,12 +119,19 @@ export default function RootLayout({
         <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
         <link rel="icon" type="image/png" sizes="64x64" href="/favicon.png" />
         <link rel="apple-touch-icon" href="/apple-icon.png" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        {/* eslint-disable-next-line @next/next/no-page-custom-font */}
+        <link
+          rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Playfair+Display:wght@400;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap"
+        />
         <style
           id="saas-theme-tokens"
           dangerouslySetInnerHTML={{ __html: initialCssVariables }}
         />
       </head>
-      <body className="antialiased min-h-screen bg-[#E9ECEF] text-[#212529] font-sans selection:bg-[#FB5607] selection:text-white transition-colors duration-200">
+      <body className={`${plusJakartaSans.className} antialiased min-h-screen bg-slate-50 text-[#212529] font-sans selection:bg-[#FB5607] selection:text-white transition-colors duration-200`}>
         {children}
       </body>
     </html>

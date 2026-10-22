@@ -223,20 +223,19 @@ export default function CriarLojaPage() {
       <header className="h-16 sm:h-20 bg-white/95 backdrop-blur-md border-b border-[#212529]/10 sticky top-0 z-30 px-4 sm:px-8 flex items-center shadow-xs">
         <div className="max-w-4xl w-full mx-auto flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2.5 group">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="/numclick-badge.png"
-              alt="NumClick"
-              className="w-9 h-9 rounded-xl shadow-xs group-hover:scale-105 transition-transform object-contain"
-            />
-            <div className="leading-tight">
+            <div className="w-8 h-8 rounded-xl overflow-hidden bg-[#212529] border border-[#212529]/20 flex items-center justify-center shadow-xs group-hover:scale-105 transition-transform">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src="/marca/marca-light.svg"
+                src="/numclick-badge.png"
                 alt="NumClick"
-                className="h-4 sm:h-5 w-auto object-contain object-left"
+                className="w-full h-full object-cover"
               />
-              <span className="text-[10px] font-semibold text-[#8338EC] block mt-0.5">Plataforma de Catálogos Digitais</span>
+            </div>
+            <div className="leading-tight">
+              <span className="font-bold text-[#212529] tracking-tight text-sm sm:text-base">
+                Num<span className="text-[#FB5607]">Click</span>
+              </span>
+              <span className="text-[10px] text-slate-500 block">Plataforma de Catálogos Digitais</span>
             </div>
           </Link>
 

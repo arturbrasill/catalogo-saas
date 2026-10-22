@@ -135,6 +135,10 @@ export function generateThemeCssVariables(config?: Partial<StoreConfig> | null):
       --shadow-card: ${tokens.shadowCard};
       --shadow-card-hover: ${tokens.shadowCardHover};
 
+      --font-plus-jakarta: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-inter: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-playfair: 'Playfair Display', Georgia, 'Times New Roman', serif;
+      --font-space-grotesk: 'Space Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       --font-heading: ${tokens.fontHeading};
       --font-sans: ${tokens.fontSans};
       --letter-spacing-heading: ${tokens.letterSpacingHeading};
