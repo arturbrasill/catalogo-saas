@@ -44,20 +44,21 @@ export async function generateMetadata(): Promise<Metadata> {
     ? `Confira os produtos e novidades da loja ${tenant.name} e faça seu pedido direto pelo WhatsApp!`
     : 'NumClick: Plataforma White-Label de Catálogos Digitais de alta conversão para empresas locais venderem pelo WhatsApp sem taxas ou comissões.';
 
-  const iconUrl = tenant?.logo_url || '/favicon.ico';
-
   return {
     metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://numclick.app'),
     title,
     description,
     icons: {
-      icon: [
-        { url: iconUrl, sizes: 'any' },
-        { url: '/favicon-32x32.png', sizes: '32x32', type: 'image/png' },
-        { url: '/favicon.png', sizes: '64x64', type: 'image/png' },
-      ],
+      icon: tenant?.logo_url
+        ? [{ url: tenant.logo_url, sizes: 'any' }]
+        : [
+            { url: '/favicon.svg', type: 'image/svg+xml' },
+            { url: '/favicon.ico', sizes: 'any' },
+            { url: '/favicon-32x32.png', sizes: '32x32', type: 'image/png' },
+            { url: '/favicon.png', sizes: '64x64', type: 'image/png' },
+          ],
       apple: [{ url: tenant?.logo_url || '/apple-icon.png', sizes: '180x180', type: 'image/png' }],
-      shortcut: iconUrl,
+      shortcut: tenant?.logo_url || '/favicon.ico',
     },
     openGraph: {
       title,
@@ -115,10 +116,6 @@ export default function RootLayout({
       className={`${plusJakartaSans.variable} ${inter.variable} ${playfairDisplay.variable} ${spaceGrotesk.variable}`}
     >
       <head>
-        <link rel="icon" href="/favicon.ico" sizes="any" />
-        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
-        <link rel="icon" type="image/png" sizes="64x64" href="/favicon.png" />
-        <link rel="apple-touch-icon" href="/apple-icon.png" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         {/* eslint-disable-next-line @next/next/no-page-custom-font */}
@@ -131,7 +128,7 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: initialCssVariables }}
         />
       </head>
-      <body className={`${plusJakartaSans.className} antialiased min-h-screen bg-slate-50 text-[#212529] font-sans selection:bg-[#FB5607] selection:text-white transition-colors duration-200`}>
+      <body className={`${plusJakartaSans.className} antialiased min-h-screen bg-slate-50 text-slate-900 font-sans selection:bg-orange-600 selection:text-white transition-colors duration-200`}>
         {children}
       </body>
     </html>
