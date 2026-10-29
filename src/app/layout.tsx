@@ -3,7 +3,7 @@ import { Plus_Jakarta_Sans, Inter, Playfair_Display, Space_Grotesk } from 'next/
 import './globals.css';
 
 import { headers } from 'next/headers';
-import { findTenant } from '@/lib/tenantStore';
+import { findTenant, findTenantAsync } from '@/lib/tenantStore';
 import { generateThemeCssVariables } from '@/lib/themePresets';
 
 const plusJakartaSans = Plus_Jakarta_Sans({
@@ -32,14 +32,19 @@ const spaceGrotesk = Space_Grotesk({
 
 export async function generateMetadata(): Promise<Metadata> {
   const headersList = headers();
-  const tenantId = headersList.get('x-tenant-id');
-  const host = headersList.get('x-tenant-host');
-  const tenant = tenantId ? findTenant(tenantId) : (host ? findTenant(host) : null);
+  const isCatalogRoute = headersList.get('x-is-catalog-route') === 'true';
+  const tenantId = isCatalogRoute ? headersList.get('x-tenant-id') : null;
+  const host = isCatalogRoute ? headersList.get('x-tenant-host') : null;
+  const tenant = tenantId
+    ? await findTenantAsync(tenantId)
+    : host
+      ? await findTenantAsync(host)
+      : null;
 
   const storeName = tenant?.name || 'NumClick';
   const title = tenant?.name
     ? `${tenant.name} | Catálogo Oficial`
-    : 'NumClick | Catálogos Digitais & Vendas via WhatsApp';
+    : 'NumClick';
   const description = tenant?.name
     ? `Confira os produtos e novidades da loja ${tenant.name} e faça seu pedido direto pelo WhatsApp!`
     : 'NumClick: Plataforma White-Label de Catálogos Digitais de alta conversão para empresas locais venderem pelo WhatsApp sem taxas ou comissões.';
@@ -90,8 +95,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   const headersList = headers();
-  const tenantId = headersList.get('x-tenant-id');
-  const host = headersList.get('x-tenant-host');
+  const isCatalogRoute = headersList.get('x-is-catalog-route') === 'true';
+  const tenantId = isCatalogRoute ? headersList.get('x-tenant-id') : null;
+  const host = isCatalogRoute ? headersList.get('x-tenant-host') : null;
   const tenant = tenantId ? findTenant(tenantId) : (host ? findTenant(host) : null);
 
   const themePreset = tenant?.theme_preset || 'modern';

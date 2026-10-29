@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import {
   ArrowRight,
@@ -705,6 +705,12 @@ function LandingFooter({ whatsappUrl }: { whatsappUrl: string }) {
 }
 
 export default function SaaSCommercialLandingPage() {
+  useEffect(() => {
+    if (typeof document !== 'undefined') {
+      document.title = 'NumClick';
+    }
+  }, []);
+
   const commercialPhone =
     process.env.NEXT_PUBLIC_COMMERCIAL_WHATSAPP ||
     process.env.NEXT_PUBLIC_WHATSAPP ||

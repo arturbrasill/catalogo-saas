@@ -587,6 +587,21 @@ describe('Módulo 5 — Multi-Tenant e Resolução de Domínios (src/lib/tenantR
       expect(appTenantCookie).toBeTruthy();
       expect(appTenantCookie?.value).toContain('aura');
     });
+
+    it('Middleware NÃO deve injetar tenant da loja na raiz (/) do domínio principal numclick.app mesmo com cookie app_tenant presente', async () => {
+      const { middleware } = await import('../src/middleware');
+
+      const req = new NextRequest('https://numclick.app/', {
+        headers: {
+          host: 'numclick.app',
+          cookie: 'app_tenant=essenza',
+        },
+      });
+
+      const res = middleware(req);
+      expect(res).toBeTruthy();
+      expect(res.headers.get('x-middleware-override-headers')).toBeNull();
+    });
   });
 });
 

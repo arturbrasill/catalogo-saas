@@ -37,6 +37,18 @@ export function middleware(request: NextRequest) {
     request.headers.get('x-forwarded-host') || request.headers.get('host');
   const normalizedHost = normalizeHostname(rawHost);
 
+  const isSaasMainDomain =
+    normalizedHost === 'localhost' ||
+    normalizedHost === '127.0.0.1' ||
+    normalizedHost === 'numclick.app' ||
+    normalizedHost.endsWith('.vercel.app');
+
+  // Se for a raiz (/) do domínio principal do SaaS sem ?tenant= explícito na URL,
+  // trata-se da Landing Page oficial do NumClick (não deve usar cookie app_tenant de lojas visitadas)
+  if (cleanPath === '/' && isSaasMainDomain && !request.nextUrl.searchParams.get('tenant')) {
+    return NextResponse.next();
+  }
+
   // Extrai possível tenant da rota de primeiro nível (ex.: /aura-concept ou /aura-concept/...)
   const firstPathSegment = cleanPath.split('/')[1]?.toLowerCase();
   const RESERVED_ROUTES = new Set([
@@ -77,6 +89,9 @@ export function middleware(request: NextRequest) {
   requestHeaders.set('x-tenant-api-url', tenant.apiUrl || '');
   requestHeaders.set('x-tenant-host', normalizedHost);
   requestHeaders.set('x-tenant-status', tenant.subscriptionStatus || 'active');
+  if (!cleanPath.startsWith('/admin')) {
+    requestHeaders.set('x-is-catalog-route', 'true');
+  }
   if (tenant.subscriptionExpiresAt) {
     requestHeaders.set('x-tenant-expires-at', tenant.subscriptionExpiresAt);
   }
