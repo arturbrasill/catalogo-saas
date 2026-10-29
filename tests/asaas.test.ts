@@ -36,8 +36,8 @@ describe('Integração Asaas — Gateway de Pagamentos e Assinaturas', () => {
   });
 
   describe('Configurações e Variáveis de Ambiente', () => {
-    it('deve identificar o valor do plano mensal fixo de R$ 79,90 e anual de R$ 718,80', () => {
-      expect(ASAAS_MONTHLY_PRICE).toBe(79.9);
+    it('deve identificar o valor do plano mensal fixo de R$ 89,90 e anual de R$ 718,80', () => {
+      expect(ASAAS_MONTHLY_PRICE).toBe(89.9);
       expect(ASAAS_YEARLY_PRICE).toBe(718.8);
     });
 
@@ -145,7 +145,7 @@ describe('Integração Asaas — Gateway de Pagamentos e Assinaturas', () => {
       );
     });
 
-    it('deve criar assinatura recorrente com valor padrão 79.90, ciclo MONTHLY e vencimento pós-trial', async () => {
+    it('deve criar assinatura recorrente com valor padrão 89.90, ciclo MONTHLY e vencimento pós-trial', async () => {
       process.env['ASAAS_API_KEY'] = '$aact_prod_mock';
       process.env['ASAAS_ENVIRONMENT'] = 'production';
 
@@ -173,10 +173,10 @@ describe('Integração Asaas — Gateway de Pagamentos e Assinaturas', () => {
           body: JSON.stringify({
             customer: 'cus_asaas_real_999',
             billingType: 'UNDEFINED',
-            value: 79.9,
+            value: 89.9,
             nextDueDate: '2026-10-10',
             cycle: 'MONTHLY',
-            description: 'Assinatura Recorrente Mensal Catálogo Digital NumClick (R$ 79,90)',
+            description: 'Assinatura Recorrente Mensal Catálogo Digital NumClick (R$ 89,90)',
             externalReference: 'joao_calcados',
           }),
         })
@@ -214,12 +214,12 @@ describe('Integração Asaas — Gateway de Pagamentos e Assinaturas', () => {
       const calledBody = JSON.parse(mockFetch.mock.calls[0]![1]!.body as string);
       expect(calledBody.billingType).toBe('CREDIT_CARD');
       expect(calledBody.cycle).toBe('MONTHLY');
-      expect(calledBody.value).toBe(79.9);
+      expect(calledBody.value).toBe(89.9);
       expect(calledBody.nextDueDate).toBe('2026-10-10');
       expect(calledBody.creditCard.holderName).toBe('JOAO SILVA');
     });
 
-    it('deve criar cobrança de R$ 79,90 com vencimento especificado', async () => {
+    it('deve criar cobrança de R$ 89,90 com vencimento especificado', async () => {
       process.env['ASAAS_API_KEY'] = '$aact_prod_mock';
       process.env['ASAAS_ENVIRONMENT'] = 'production';
 
@@ -243,7 +243,7 @@ describe('Integração Asaas — Gateway de Pagamentos e Assinaturas', () => {
       expect(mockFetch).toHaveBeenCalledWith(
         'https://api.asaas.com/v3/payments',
         expect.objectContaining({
-          body: expect.stringContaining('"value":79.9'),
+          body: expect.stringContaining('"value":89.9'),
         })
       );
     });
@@ -259,7 +259,7 @@ describe('Integração Asaas — Gateway de Pagamentos e Assinaturas', () => {
             {
               id: 'pay_sub_1',
               status: 'PENDING',
-              value: 79.9,
+              value: 89.9,
               invoiceUrl: 'https://www.asaas.com/i/pay_sub_1',
               dueDate: '2026-10-10',
             },
@@ -288,7 +288,7 @@ describe('Integração Asaas — Gateway de Pagamentos e Assinaturas', () => {
             {
               id: 'pay_pending_99',
               status: 'PENDING',
-              value: 79.9,
+              value: 89.9,
               invoiceUrl: 'https://www.asaas.com/i/pay_pending_99',
               dueDate: '2026-10-10',
             },
@@ -472,7 +472,7 @@ describe('Integração Asaas — Gateway de Pagamentos e Assinaturas', () => {
   });
 
   describe('Checkout Endpoint (/api/asaas/checkout)', () => {
-    it('deve gerar assinatura mensal (R$ 79,90) e anual com trial de 7 dias', async () => {
+    it('deve gerar assinatura mensal (R$ 89,90) e anual com trial de 7 dias', async () => {
       const { POST: handleCheckout } = await import('../src/app/api/asaas/checkout/route');
 
       // Tenant de teste
@@ -500,7 +500,7 @@ describe('Integração Asaas — Gateway de Pagamentos e Assinaturas', () => {
       expect(resMonthly.status).toBe(200);
       const dataMonthly = await resMonthly.json();
       expect(dataMonthly.success).toBe(true);
-      expect(dataMonthly.data.value).toBe(79.9);
+      expect(dataMonthly.data.value).toBe(89.9);
       expect(dataMonthly.data.cycle).toBe('MONTHLY');
       expect(dataMonthly.data.nextDueDate).toBeDefined();
       expect(dataMonthly.data.invoiceUrl).toMatch(/https:\/\/sandbox\.asaas\.com\/(i|s)\//);

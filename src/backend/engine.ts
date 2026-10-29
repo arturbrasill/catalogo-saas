@@ -1194,7 +1194,7 @@ export function getLocalEngine(tenantId = 'loja_exemplo'): BackendEngine {
         nome: 'Sérum Facial Vitamina C 15%',
         descricao: 'Fórmula antioxidante pura com ácido hialurônico de triplo peso molecular e toque seco.',
         preco: 89.9,
-        precoPromocional: 79.9,
+        precoPromocional: 69.9,
         imagens: ['https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=600&auto=format&fit=crop&q=80'],
         variacoes: [
           { tipo: 'Volume', opcoes: ['30ml', '50ml'] }

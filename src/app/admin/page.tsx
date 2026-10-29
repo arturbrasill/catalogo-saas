@@ -123,7 +123,7 @@ export default function AdminDashboardPage() {
                   {store?.subscription_status === 'blocked' ? 'Acesso ao Catálogo Bloqueado' : 'Aviso de Pagamento Pendente'}
                 </h3>
                 <p className="text-xs sm:text-sm text-amber-800/90 mt-0.5">
-                  A cobrança da assinatura mensal recorrente (R$ 79,90) após o término dos 7 dias gratuitos está pendente ou não foi processada no Asaas. Regularize sua assinatura para garantir o funcionamento contínuo do seu catálogo.
+                  A cobrança da assinatura mensal recorrente (R$ 89,90) após o término dos 7 dias gratuitos está pendente ou não foi processada no Asaas. Regularize sua assinatura para garantir o funcionamento contínuo do seu catálogo.
                 </p>
               </div>
             </div>

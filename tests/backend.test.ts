@@ -193,7 +193,7 @@ describe('Módulo 1 — Backend & Engine de Persistência (Auditoria & Testes Fi
         slug: 'camisa-polo-confort',
         descricao: 'Polo em piquet de algodão',
         preco: 99.9,
-        precoPromocional: 79.9,
+        precoPromocional: 89.9,
         imagens: ['https://cdn.example.com/polo1.jpg'],
         variacoes: [
           { tipo: 'Tamanho', opcoes: ['P', 'M', 'G'] },
@@ -214,7 +214,7 @@ describe('Módulo 1 — Backend & Engine de Persistência (Auditoria & Testes Fi
       expect(prod.id).toMatch(/^prod_/);
       expect(prod.nome).toBe('Camisa Polo Confort');
       expect(prod.preco).toBe(99.9);
-      expect(prod.precoPromocional).toBe(79.9);
+      expect(prod.precoPromocional).toBe(89.9);
       expect(prod.variacoes.length).toBe(2);
       expect(prod.deletedAt).toBeNull();
     });

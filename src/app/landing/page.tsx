@@ -571,7 +571,7 @@ function PricingSection() {
 
             <div className="py-5 border-y border-slate-200 flex items-baseline gap-2">
               <span className="text-4xl sm:text-5xl font-bold tracking-tight text-slate-900">
-                R$ 79,90
+                R$ 89,90
               </span>
               <span className="text-sm font-medium text-slate-600">/ mês</span>
             </div>

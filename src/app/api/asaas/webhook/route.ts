@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
         asaasCustomerId: payment.customer,
         asaasPaymentLink: payment.invoiceUrl || tenant.asaasPaymentLink,
         pendingPayment: false,
-        notes: `Pagamento de R$ 79,90 confirmado via Asaas em ${new Date().toLocaleDateString('pt-BR')} (ID: ${payment.id}). Status mantido como ATIVO.`,
+        notes: `Pagamento de R$ 89,90 confirmado via Asaas em ${new Date().toLocaleDateString('pt-BR')} (ID: ${payment.id}). Status mantido como ATIVO.`,
       });
 
       return NextResponse.json({
@@ -62,7 +62,7 @@ export async function POST(request: NextRequest) {
         subscriptionStatus: 'blocked',
         pendingPayment: true,
         asaasPaymentLink: payment.invoiceUrl || tenant.asaasPaymentLink,
-        notes: `Cobrança de R$ 79,90 vencida após os 7 dias de degustação no Asaas em ${new Date().toLocaleDateString('pt-BR')} (ID: ${payment.id}). Loja bloqueada com aviso de pagamento pendente.`,
+        notes: `Cobrança de R$ 89,90 vencida após os 7 dias de degustação no Asaas em ${new Date().toLocaleDateString('pt-BR')} (ID: ${payment.id}). Loja bloqueada com aviso de pagamento pendente.`,
       });
 
       return NextResponse.json({

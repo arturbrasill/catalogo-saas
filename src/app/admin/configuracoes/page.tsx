@@ -1642,7 +1642,7 @@ export default function AdminConfiguracoesPage() {
                         className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-xs sm:text-sm font-semibold text-slate-900 focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20 font-mono"
                       />
                       <p className="text-[11px] text-slate-400 mt-1">
-                        Utilizado pelo gateway Asaas para emissão de faturas e QR Code Pix oficial de R$ 79,90/mês.
+                        Utilizado pelo gateway Asaas para emissão de faturas e QR Code Pix oficial de R$ 89,90/mês.
                       </p>
                     </div>
 
@@ -1837,7 +1837,7 @@ export default function AdminConfiguracoesPage() {
                           Plano Atual
                         </span>
                         <span className="font-bold text-slate-900 text-sm block">
-                          Plano Mensal - R$ 79,90/mês
+                          Plano Mensal - R$ 89,90/mês
                         </span>
                         <span className="text-[11px] text-slate-500 block">Catálogo Digital Ilimitado</span>
                       </div>
@@ -1947,7 +1947,7 @@ export default function AdminConfiguracoesPage() {
                           </p>
                         </div>
                         <div className="text-right">
-                          <span className="text-2xl font-bold text-white tracking-tight">R$ 79,90</span>
+                          <span className="text-2xl font-bold text-white tracking-tight">R$ 89,90</span>
                           <span className="text-[10px] text-slate-400 block font-medium">/mês</span>
                         </div>
                       </div>
@@ -1962,7 +1962,7 @@ export default function AdminConfiguracoesPage() {
                               className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-orange-600 hover:bg-orange-500 text-white font-semibold text-xs shadow-xs transition text-center"
                             >
                               <CreditCard className="w-4 h-4" />
-                              <span>Acessar Fatura no Asaas (R$ 79,90)</span>
+                              <span>Acessar Fatura no Asaas (R$ 89,90)</span>
                               <ExternalLink className="w-3.5 h-3.5" />
                             </a>
                             <button
@@ -1983,7 +1983,7 @@ export default function AdminConfiguracoesPage() {
                             className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-orange-600 hover:bg-orange-500 text-white font-semibold text-xs shadow-xs transition disabled:opacity-60 cursor-pointer text-center"
                           >
                             <CreditCard className="w-4 h-4" />
-                            <span>{isGeneratingInvoice ? 'Gerando Fatura...' : 'Acessar Link de Pagamento (R$ 79,90)'}</span>
+                            <span>{isGeneratingInvoice ? 'Gerando Fatura...' : 'Acessar Link de Pagamento (R$ 89,90)'}</span>
                             <ExternalLink className="w-3.5 h-3.5" />
                           </button>
                         )}

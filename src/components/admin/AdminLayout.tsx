@@ -308,7 +308,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                   ✨ Teste Grátis
                 </span>
                 <span className="text-orange-900">
-                  Você está no período de teste gratuito: restam <strong className="font-semibold underline decoration-orange-400">{daysRemaining} {daysRemaining === 1 ? 'dia' : 'dias'}</strong>. Sua assinatura será de <strong className="font-semibold">R$ 79,90/mês</strong>.
+                  Você está no período de teste gratuito: restam <strong className="font-semibold underline decoration-orange-400">{daysRemaining} {daysRemaining === 1 ? 'dia' : 'dias'}</strong>. Sua assinatura será de <strong className="font-semibold">R$ 89,90/mês</strong>.
                 </span>
               </div>
               <div className="flex items-center gap-2 shrink-0">

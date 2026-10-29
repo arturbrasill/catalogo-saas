@@ -141,14 +141,14 @@ describe('Product & Catalog Normalization QA & Resilience', () => {
     it('deve blindar produtos com propriedades ausentes da planilha', () => {
       const raw = {
         nome: 'Camisa Polo',
-        preco: 'R$ 79,90',
+        preco: 'R$ 89,90',
         precoPromocional: '59,90',
         imagens: '',
         variacoes: 'Tamanho: M, G',
       };
       const product = normalizeProduct(raw);
       expect(product.nome).toBe('Camisa Polo');
-      expect(product.preco).toBe(79.9);
+      expect(product.preco).toBe(89.9);
       expect(product.precoPromocional).toBe(59.9);
       expect(product.imagens[0]).toBe(DEFAULT_PRODUCT_IMAGE_FALLBACK);
       expect(product.variacoes).toEqual([{ tipo: 'Tamanho', opcoes: ['M', 'G'] }]);

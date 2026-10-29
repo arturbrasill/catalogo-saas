@@ -36,8 +36,8 @@ import { calculateSubtotal, buildWhatsAppUrl } from '@/lib/whatsapp';
 
 describe('Cálculo de Subtotal & WhatsApp URL', () => {
   it('deve aplicar preço promocional quando for menor que o preço original', () => {
-    const subtotal = calculateSubtotal(100.0, 2, 79.9);
-    expect(subtotal).toBeCloseTo(159.8, 2);
+    const subtotal = calculateSubtotal(100.0, 2, 89.9);
+    expect(subtotal).toBeCloseTo(179.8, 2);
   });
 
   it('deve ignorar preço promocional quando for maior que o preço normal', () => {

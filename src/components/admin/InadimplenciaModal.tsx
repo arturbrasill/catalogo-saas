@@ -37,7 +37,7 @@ export function InadimplenciaModal({
   // Código Pix Copia e Cola padrão ou link da fatura
   const invoiceUrl = store.asaas_payment_link || '/admin/configuracoes?tab=subscription';
   const pixKeySimulated =
-    '00020126580014br.gov.bcb.pix0136numclick-faturas@asaas.com.br520400005303986540579.905802BR5920NumClick Tecnologia6009Sao Paulo62070503***6304B9A2';
+    '00020126580014br.gov.bcb.pix0136numclick-faturas@asaas.com.br520400005303986540589.905802BR5920NumClick Tecnologia6009Sao Paulo62070503***6304B9A2';
 
   const handleCopyPix = () => {
     navigator.clipboard.writeText(pixKeySimulated);
@@ -111,7 +111,7 @@ export function InadimplenciaModal({
               <span className="text-xs text-[#212529]/60 block">Sem fidelidade • Cancele quando quiser</span>
             </div>
             <div className="text-right">
-              <span className="text-2xl font-black text-[#FB5607] tracking-tight">R$ 79,90</span>
+              <span className="text-2xl font-black text-[#FB5607] tracking-tight">R$ 89,90</span>
               <span className="text-[10px] text-[#212529]/50 block font-medium">/mês</span>
             </div>
           </div>
@@ -143,7 +143,7 @@ export function InadimplenciaModal({
                     src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(
                       pixKeySimulated
                     )}`}
-                    alt="QR Code PIX R$ 79,90"
+                    alt="QR Code PIX R$ 89,90"
                     className="w-full h-full object-contain"
                   />
                 </div>
@@ -176,7 +176,7 @@ export function InadimplenciaModal({
               className="w-full py-3.5 px-4 rounded-2xl bg-[#212529] hover:bg-[#FB5607] text-white font-extrabold text-sm shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer text-center"
             >
               <CreditCard className="w-4 h-4 text-[#FB5607]" />
-              <span>Pagar Fatura no Asaas (R$ 79,90)</span>
+              <span>Pagar Fatura no Asaas (R$ 89,90)</span>
               <ExternalLink className="w-3.5 h-3.5 text-[#E9ECEF]" />
             </a>
 

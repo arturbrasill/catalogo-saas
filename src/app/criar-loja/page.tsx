@@ -522,7 +522,7 @@ export default function CriarLojaPage() {
                     </div>
                   </label>
 
-                  {/* Plano Mensal R$ 79,90 */}
+                  {/* Plano Mensal R$ 89,90 */}
                   <label
                     className={`relative p-4 rounded-xl border cursor-pointer transition-all flex flex-col justify-between ${
                       plan === 'monthly'
@@ -552,7 +552,7 @@ export default function CriarLojaPage() {
                       </p>
                     </div>
                     <div className="mt-4 pt-2.5 border-t border-slate-200/60 font-extrabold text-sm text-[#212529] flex items-baseline justify-between">
-                      <span>R$ 79,90</span>
+                      <span>R$ 89,90</span>
                       <span className="text-[10px] font-normal text-slate-500">/mês</span>
                     </div>
                   </label>
@@ -802,7 +802,7 @@ export default function CriarLojaPage() {
                   <div className="flex items-center justify-between mb-1">
                     <span className="text-[11px] font-bold text-emerald-800 uppercase tracking-wider flex items-center gap-1">
                       <CreditCard className="w-3.5 h-3.5 text-emerald-600" />
-                      3. Fatura Asaas — R$ 79,90 (PIX, Cartão ou Boleto)
+                      3. Fatura Asaas — R$ 89,90 (PIX, Cartão ou Boleto)
                     </span>
                     <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full">
                       Aguardando Pagamento

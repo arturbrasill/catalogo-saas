@@ -6,7 +6,7 @@ import type {
   AsaasCreditCardHolderInfo,
 } from '@/types';
 
-export const ASAAS_MONTHLY_PRICE = 79.9;
+export const ASAAS_MONTHLY_PRICE = 89.9;
 export const ASAAS_YEARLY_PRICE = 718.8; // R$ 59,90/mês cobrado anualmente
 
 /**
@@ -129,7 +129,7 @@ export async function createOrGetAsaasCustomer(
 }
 
 /**
- * Cria uma cobrança ou link de fatura avulso de R$ 79,90 via Asaas (PIX, Cartão, Boleto)
+ * Cria uma cobrança ou link de fatura avulso de R$ 89,90 via Asaas (PIX, Cartão, Boleto)
  */
 export async function createAsaasPayment(
   input: AsaasPaymentInput
@@ -180,8 +180,8 @@ export async function createAsaasPayment(
 }
 
 /**
- * Cria uma assinatura mensal recorrente (padrão R$ 79,90) no Asaas
- * - Valor padrão: 79.90
+ * Cria uma assinatura mensal recorrente (padrão R$ 89,90) no Asaas
+ * - Valor padrão: 89.90
  * - Ciclo: 'MONTHLY'
  * - billingType: 'UNDEFINED' (ou 'CREDIT_CARD', 'PIX', 'BOLETO')
  * - Trial de 7 dias: primeira cobrança agendada para dataAtual + 7 dias (YYYY-MM-DD)
@@ -214,7 +214,7 @@ export async function createAsaasSubscription(
       value: valueToCharge,
       nextDueDate,
       cycle,
-      description: input.description || 'Assinatura Recorrente Mensal Catálogo Digital NumClick (R$ 79,90)',
+      description: input.description || 'Assinatura Recorrente Mensal Catálogo Digital NumClick (R$ 89,90)',
       externalReference: input.externalReference,
     };
 

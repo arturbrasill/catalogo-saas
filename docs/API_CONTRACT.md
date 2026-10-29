@@ -113,7 +113,7 @@ Retorna a lista de produtos ativos (que não sofreram soft delete e cuja categor
       "slug": "camisa-polo-confort",
       "descricao": "Polo 100% algodão piquet com toque macio.",
       "preco": 99.90,
-      "precoPromocional": 79.90,
+      "precoPromocional": 89.90,
       "imagens": [
         "https://cdn.example.com/polo-azul.jpg"
       ],
